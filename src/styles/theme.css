@@ -1,0 +1,396 @@
+:root {
+  --qlc-bg: #05070a;
+  --qlc-bg2: #090d12;
+  --qlc-panel: #0d131a;
+  --qlc-panel2: #111a23;
+  --qlc-text: #f4f7fb;
+  --qlc-muted: #9ca9b7;
+  --qlc-muted2: #6f7c89;
+  --qlc-silver: #c7ccd2;
+  --qlc-silver2: #7f8994;
+  --qlc-blue: #00a8ff;
+  --qlc-blue2: #5bd4ff;
+  --qlc-blue3: #0076b8;
+  --qlc-gold: #c89b3c;
+  --qlc-line: rgba(199, 204, 210, 0.14);
+  --qlc-glow: rgba(0, 168, 255, 0.18);
+  --qlc-max: 1180px;
+
+  --qlc-ok: #8ddfff;
+  --qlc-ok-border: rgba(0, 168, 255, 0.35);
+  --qlc-warn: #e8ca83;
+  --qlc-warn-border: rgba(200, 155, 60, 0.4);
+  --qlc-danger: #ff9292;
+  --qlc-danger-border: rgba(255, 110, 110, 0.4);
+  --qlc-success: #82e0bd;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: radial-gradient(circle at 80% 10%, rgba(0, 168, 255, 0.08), transparent 28%),
+    radial-gradient(circle at 10% 30%, rgba(200, 155, 60, 0.04), transparent 24%), var(--qlc-bg);
+  color: var(--qlc-text);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  line-height: 1.55;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+  color: inherit;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--qlc-panel2);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.qlc-container {
+  width: min(var(--qlc-max), calc(100% - 40px));
+  margin: auto;
+}
+
+.qlc-btn {
+  padding: 12px 20px;
+  border-radius: 10px;
+  border: 1px solid var(--qlc-line);
+  font-weight: 650;
+  font-size: 13px;
+  background: #0b1016;
+  color: var(--qlc-text);
+  cursor: pointer;
+  transition: 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.qlc-btn:hover {
+  border-color: rgba(91, 212, 255, 0.55);
+}
+.qlc-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.qlc-btn.primary {
+  background: linear-gradient(135deg, #009de9, #006fae);
+  box-shadow: 0 14px 40px rgba(0, 168, 255, 0.18);
+  border-color: transparent;
+}
+.qlc-btn.danger {
+  background: rgba(255, 110, 110, 0.1);
+  border-color: var(--qlc-danger-border);
+  color: #ffb3b3;
+}
+.qlc-btn.ghost {
+  background: transparent;
+}
+
+.qlc-card {
+  padding: 22px;
+  border: 1px solid var(--qlc-line);
+  border-radius: 18px;
+  background: rgba(13, 19, 26, 0.76);
+}
+
+.qlc-input,
+.qlc-select,
+.qlc-textarea {
+  width: 100%;
+  padding: 11px 13px;
+  border-radius: 9px;
+  border: 1px solid var(--qlc-line);
+  background: #080c11;
+  color: var(--qlc-text);
+  outline: none;
+  font-size: 13px;
+}
+.qlc-input:focus,
+.qlc-select:focus,
+.qlc-textarea:focus {
+  border-color: rgba(0, 168, 255, 0.55);
+}
+
+.qlc-label {
+  display: block;
+  font-size: 10px;
+  color: var(--qlc-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin: 12px 0 6px;
+}
+
+.qlc-badge {
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 1px solid var(--qlc-line);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.qlc-badge.ok {
+  border-color: var(--qlc-ok-border);
+  color: var(--qlc-ok);
+}
+.qlc-badge.warn {
+  border-color: var(--qlc-warn-border);
+  color: var(--qlc-warn);
+}
+.qlc-badge.danger {
+  border-color: var(--qlc-danger-border);
+  color: var(--qlc-danger);
+}
+.qlc-badge.muted {
+  color: var(--qlc-muted);
+}
+
+.qlc-table-wrap {
+  overflow: auto;
+  border: 1px solid var(--qlc-line);
+  border-radius: 14px;
+}
+.qlc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  min-width: 720px;
+}
+.qlc-table th,
+.qlc-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--qlc-line);
+  text-align: left;
+}
+.qlc-table th {
+  color: #91a1af;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.qlc-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.qlc-kicker {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--qlc-blue2);
+  margin-bottom: 8px;
+}
+
+.qlc-empty {
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--qlc-muted);
+  font-size: 13px;
+}
+
+.qlc-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  padding: 14px 18px;
+  border-radius: 12px;
+  border: 1px solid var(--qlc-line);
+  background: #0b1016;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  font-size: 13px;
+  z-index: 200;
+  max-width: 360px;
+}
+.qlc-toast.success {
+  border-color: var(--qlc-ok-border);
+}
+.qlc-toast.error {
+  border-color: var(--qlc-danger-border);
+  color: #ffb3b3;
+}
+
+.qlc-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 14px;
+  margin-top: 22px;
+}
+.qlc-stat-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 90px;
+}
+.qlc-stat-label {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--qlc-muted2);
+}
+.qlc-stat-value {
+  font-size: 28px;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+}
+.qlc-stat-hint {
+  font-size: 11px;
+  color: var(--qlc-muted);
+}
+
+.qlc-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.qlc-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(6px);
+  display: grid;
+  place-items: center;
+  z-index: 300;
+  padding: 20px;
+}
+.qlc-modal-panel {
+  width: min(560px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  background: #0b1016;
+  border: 1px solid var(--qlc-line);
+  border-radius: 20px;
+  padding: 26px;
+}
+.qlc-modal-panel h2 {
+  margin-top: 0;
+}
+.qlc-form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 22px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+@media (max-width: 600px) {
+  .qlc-form-actions {
+    flex-direction: column-reverse;
+  }
+  .qlc-form-actions button {
+    width: 100%;
+  }
+}
+.qlc-field-error {
+  color: #ffb3b3;
+  font-size: 12px;
+  margin-top: 6px;
+}
+
+.qlc-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 18px;
+  align-items: start;
+}
+
+.qlc-condition-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--qlc-line);
+  font-size: 13px;
+}
+.qlc-condition-row:last-of-type {
+  border-bottom: none;
+}
+
+.qlc-plain-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+}
+
+/*
+ * Animación del logotipo QLC — pensada para NO alterar el logo en absoluto.
+ * El propio logo (--logo-src) se usa como máscara: un brillo recorre la
+ * imagen, pero solo se ve donde el logo ya tiene píxeles (sus barras
+ * existentes). No se agregan barras nuevas ni gráficos alrededor del logo,
+ * y no depende de :hover — corre siempre, de forma lenta y continua.
+ */
+.qlc-logo-box {
+  position: relative;
+  display: block;
+}
+.qlc-logo-box .qlc-logo-media {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.qlc-logo-anim::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(100deg, transparent 38%, rgba(255, 255, 255, 0.55) 50%, transparent 62%);
+  background-repeat: no-repeat;
+  background-size: 260% 100%;
+  -webkit-mask-image: var(--logo-src);
+  mask-image: var(--logo-src);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-position: center;
+  mask-position: center;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  animation: qlc-logo-sweep 8s ease-in-out infinite;
+}
+@keyframes qlc-logo-sweep {
+  0%,
+  100% {
+    background-position: 140% 0;
+  }
+  50% {
+    background-position: -140% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .qlc-logo-anim::after {
+    animation: none;
+    display: none;
+  }
+}
