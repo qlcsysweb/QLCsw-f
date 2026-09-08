@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import api from '../../services/api';
+import api, { API_BASE_URL } from '../../services/api';
 
 const STATUS_LABELS = {
   PENDING: { text: '◌ Pendiente', className: 'warn' },
@@ -58,7 +58,7 @@ export default function ContractPage() {
           </p>
           {contract.originalDriveFileId && (
             <p>
-              <a href={`/api/client/contract/${contract.id}/download/original`} target="_blank" rel="noreferrer">
+              <a href={`${API_BASE_URL}/client/contract/${contract.id}/download/original`} target="_blank" rel="noreferrer">
                 Descargar contrato para revisar y firmar
               </a>
             </p>
@@ -66,7 +66,7 @@ export default function ContractPage() {
           {contract.signedDriveFileId ? (
             <div>
               <p>
-                <a href={`/api/client/contract/${contract.id}/download/signed`} target="_blank" rel="noreferrer">
+                <a href={`${API_BASE_URL}/client/contract/${contract.id}/download/signed`} target="_blank" rel="noreferrer">
                   Ver el documento que enviaste
                 </a>
               </p>

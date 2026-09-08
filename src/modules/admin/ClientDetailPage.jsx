@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import api from '../../services/api';
+import api, { API_BASE_URL } from '../../services/api';
 import ConfirmModal from '../../components/ConfirmModal';
 
 const CONDITION_LABELS = {
@@ -277,7 +277,7 @@ export default function ClientDetailPage() {
               <input type="file" className="qlc-input" accept=".pdf,image/*" onChange={uploadContract} disabled={uploading === 'contract'} />
               {contract?.originalDriveFileId && (
                 <a
-                  href={`/api/admin/contracts/${contract.id}/download/original`}
+                  href={`${API_BASE_URL}/admin/contracts/${contract.id}/download/original`}
                   target="_blank"
                   rel="noreferrer"
                   style={{ fontSize: 12 }}
@@ -291,7 +291,7 @@ export default function ClientDetailPage() {
                 <label className="qlc-label">Firmado (enviado por el cliente — bloqueado para él)</label>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
                   <a
-                    href={`/api/admin/contracts/${contract.id}/download/signed`}
+                    href={`${API_BASE_URL}/admin/contracts/${contract.id}/download/signed`}
                     target="_blank"
                     rel="noreferrer"
                     style={{ fontSize: 12 }}
@@ -314,7 +314,7 @@ export default function ClientDetailPage() {
               {client.documents.map((d) => (
                 <li key={d.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span>
-                    <a href={`/api/admin/documents/${d.id}/download`} target="_blank" rel="noreferrer">
+                    <a href={`${API_BASE_URL}/admin/documents/${d.id}/download`} target="_blank" rel="noreferrer">
                       {d.fileName}
                     </a>{' '}
                     <span style={{ color: 'var(--qlc-muted2)' }}>({d.category})</span>
@@ -365,7 +365,7 @@ export default function ClientDetailPage() {
                     <>
                       {' '}
                       ·{' '}
-                      <a href={`/api/admin/payment-reports/${p.id}/proof`} target="_blank" rel="noreferrer">
+                      <a href={`${API_BASE_URL}/admin/payment-reports/${p.id}/proof`} target="_blank" rel="noreferrer">
                         Ver comprobante
                       </a>
                     </>

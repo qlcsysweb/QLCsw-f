@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import api from '../../services/api';
+import api, { API_BASE_URL } from '../../services/api';
 import { PAYMENT_REPORT_STATUS, statusOf } from '../../utils/statusLabels';
 
 export default function PaymentsPage() {
@@ -123,7 +123,7 @@ export default function PaymentsPage() {
                   <>
                     {' '}
                     ·{' '}
-                    <a href={`/api/client/payment-reports/${r.id}/proof`} target="_blank" rel="noreferrer">
+                    <a href={`${API_BASE_URL}/client/payment-reports/${r.id}/proof`} target="_blank" rel="noreferrer">
                       Ver comprobante
                     </a>
                   </>

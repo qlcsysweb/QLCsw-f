@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import api from '../../services/api';
+import api, { API_BASE_URL } from '../../services/api';
 
 const CATEGORIES = [
   { value: 'identificacion', label: 'Identificación' },
@@ -65,7 +65,7 @@ export default function DocumentsPage() {
                 <span>
                   {CATEGORIES.find((c) => c.value === d.category)?.label || d.category}
                   <span style={{ color: 'var(--qlc-muted2)', marginLeft: 8, fontSize: 12 }}>
-                    <a href={`/api/client/documents/${d.id}/download`} target="_blank" rel="noreferrer">
+                    <a href={`${API_BASE_URL}/client/documents/${d.id}/download`} target="_blank" rel="noreferrer">
                       Ver
                     </a>
                   </span>
