@@ -20,6 +20,7 @@ export default function AdminLayout() {
     { to: '/admin/prospects', label: t('adminNav.prospects') },
     { to: '/admin/admins', label: t('adminNav.admins') },
     { to: '/admin/settings/drive', label: t('adminNav.driveSettings') },
+    { to: '/admin/settings/platform', label: t('adminNav.platformSettings') },
   ];
 
   const handleLogout = async () => {

@@ -9,6 +9,7 @@ export default function PaymentsPage() {
   const [config, setConfig] = useState(null);
   const [reports, setReports] = useState([]);
   const [amount, setAmount] = useState('');
+  const [reference, setReference] = useState('');
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
@@ -41,6 +42,7 @@ export default function PaymentsPage() {
     setError('');
     const fd = new FormData();
     fd.append('amount', amount);
+    if (reference) fd.append('reference', reference);
     const file = e.target.elements.proofFile.files[0];
     if (file) fd.append('file', file);
     try {
@@ -48,6 +50,7 @@ export default function PaymentsPage() {
       setMessage(t('clientPayments.reportedOk'));
       setTimeout(() => setMessage(''), 4000);
       setAmount('');
+      setReference('');
       e.target.reset();
       load();
     } catch (err) {
@@ -103,6 +106,14 @@ export default function PaymentsPage() {
           <form onSubmit={submit}>
             <label className="qlc-label">{t('clientPayments.amount')}</label>
             <input className="qlc-input" type="number" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} required />
+            <label className="qlc-label">{t('clientPayments.reference')}</label>
+            <input
+              className="qlc-input"
+              value={reference}
+              onChange={(e) => setReference(e.target.value)}
+              placeholder={t('clientPayments.referencePlaceholder')}
+              maxLength={200}
+            />
             <label className="qlc-label">{t('clientPayments.proof')}</label>
             <input type="file" name="proofFile" className="qlc-input" accept=".pdf,image/*" />
             <button className="qlc-btn primary" style={{ marginTop: 12, width: '100%' }} disabled={uploading}>
@@ -126,6 +137,9 @@ export default function PaymentsPage() {
                 <span className={`qlc-badge ${statusOf(paymentReportStatusMap, r.status).className}`}>
                   {statusOf(paymentReportStatusMap, r.status).text}
                 </span>
+                {r.reference && (
+                  <span style={{ color: 'var(--qlc-muted2)' }}> · {t('clientPayments.reference')}: {r.reference}</span>
+                )}
                 {r.proofDriveFileId && (
                   <>
                     {' '}

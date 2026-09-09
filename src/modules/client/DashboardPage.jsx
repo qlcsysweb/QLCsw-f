@@ -5,15 +5,23 @@ import { useLanguage } from '../../i18n/LanguageContext';
 import { getLocalizedModel } from '../../i18n/bilingualContent';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 
-function StatCard({ label, status }) {
-  return (
-    <div className="qlc-card qlc-stat-card">
+function StatCard({ label, status, to }) {
+  const content = (
+    <>
       <span className="qlc-stat-label">{label}</span>
       <span className={`qlc-badge ${status.className}`} style={{ fontSize: 14, padding: '8px 12px' }}>
         {status.text}
       </span>
-    </div>
+    </>
   );
+  if (to) {
+    return (
+      <Link className="qlc-card qlc-stat-card" to={to} style={{ display: 'flex', flexDirection: 'column' }}>
+        {content}
+      </Link>
+    );
+  }
+  return <div className="qlc-card qlc-stat-card">{content}</div>;
 }
 
 export default function DashboardPage() {
@@ -89,7 +97,7 @@ export default function DashboardPage() {
           </strong>
         </div>
         <StatCard label={t('clientDashboard.contract')} status={contractStatus} />
-        <StatCard label={t('clientDashboard.apiConnection')} status={apiStatus} />
+        <StatCard label={t('clientDashboard.apiConnection')} status={apiStatus} to="/client/api-connection" />
         <div className="qlc-card qlc-stat-card">
           <span className="qlc-stat-label">{t('clientDashboard.unreadNotifications')}</span>
           <strong className="qlc-stat-value">{dashboard.unreadNotifications}</strong>

@@ -17,6 +17,7 @@ import ProspectsPage from './modules/admin/ProspectsPage';
 import AdminsPage from './modules/admin/AdminsPage';
 import CmsPage from './modules/admin/cms/CmsPage';
 import GoogleDriveSettingsPage from './modules/admin/settings/GoogleDriveSettingsPage';
+import PlatformSettingsPage from './modules/admin/PlatformSettingsPage';
 
 import ClientLayout from './layouts/ClientLayout';
 import ClientDashboardPage from './modules/client/DashboardPage';
@@ -25,6 +26,7 @@ import ClientModelsPage from './modules/client/ModelsPage';
 import ClientProcessPage from './modules/client/ProcessPage';
 import ClientContractPage from './modules/client/ContractPage';
 import ClientDocumentsPage from './modules/client/DocumentsPage';
+import ClientApiConnectionPage from './modules/client/ApiConnectionPage';
 import ClientPaymentsPage from './modules/client/PaymentsPage';
 import ClientSupportPage from './modules/client/SupportPage';
 import ClientAppointmentsPage from './modules/client/AppointmentsPage';
@@ -57,6 +59,7 @@ function AppRoutes() {
               <Route path="clients/:id" element={<ClientDetailPage />} />
               <Route path="cms" element={<CmsPage />} />
               <Route path="settings/drive" element={<GoogleDriveSettingsPage />} />
+              <Route path="settings/platform" element={<PlatformSettingsPage />} />
               <Route path="payments" element={<AdminPaymentsPage />} />
               <Route path="appointments" element={<AdminAppointmentsPage />} />
               <Route path="support" element={<AdminSupportPage />} />
@@ -73,6 +76,7 @@ function AppRoutes() {
               <Route path="process" element={<ClientProcessPage />} />
               <Route path="contract" element={<ClientContractPage />} />
               <Route path="documents" element={<ClientDocumentsPage />} />
+              <Route path="api-connection" element={<ClientApiConnectionPage />} />
               <Route path="payments" element={<ClientPaymentsPage />} />
               <Route path="support" element={<ClientSupportPage />} />
               <Route path="appointments" element={<ClientAppointmentsPage />} />

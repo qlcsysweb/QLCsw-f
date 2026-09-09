@@ -23,7 +23,7 @@ export default function ContactoSection({ text, media = () => [] }) {
     setStatus('sending');
     setError('');
     try {
-      await api.post('/prospects', { ...form, source: 'web_publica' });
+      await api.post('/prospects', { ...form, source: 'web_publica', language });
       setStatus('sent');
       setForm(initialForm);
     } catch (err) {

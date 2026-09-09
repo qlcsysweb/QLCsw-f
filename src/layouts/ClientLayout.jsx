@@ -20,6 +20,7 @@ export default function ClientLayout() {
     { to: '/client/process', label: t('clientNav.process') },
     { to: '/client/contract', label: t('clientNav.contract') },
     { to: '/client/documents', label: t('clientNav.documents') },
+    { to: '/client/api-connection', label: t('clientNav.apiConnection') },
     { to: '/client/payments', label: t('clientNav.payments') },
     { to: '/client/support', label: t('clientNav.support') },
     { to: '/client/appointments', label: t('clientNav.appointments') },

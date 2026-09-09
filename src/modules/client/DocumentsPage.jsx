@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import api, { API_BASE_URL } from '../../services/api';
+import ConfirmModal from '../../components/ConfirmModal';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 
@@ -10,6 +11,7 @@ export default function DocumentsPage() {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState(null);
 
   const CATEGORIES = [
     { value: 'identificacion', label: t('clientDocuments.categoryId') },
@@ -49,6 +51,13 @@ export default function DocumentsPage() {
     }
   };
 
+  const removeDocument = async (docId) => {
+    await api.delete(`/client/documents/${docId}`);
+    setMessage(t('clientDocuments.deletedOk'));
+    setTimeout(() => setMessage(''), 4000);
+    load();
+  };
+
   return (
     <div>
       <div className="qlc-kicker">{t('clientDocuments.kicker')}</div>
@@ -75,7 +84,12 @@ export default function DocumentsPage() {
                     </a>
                   </span>
                 </span>
-                <span className="qlc-badge ok">{t('clientDocuments.sent')}</span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span className="qlc-badge ok">{t('clientDocuments.sent')}</span>
+                  <button className="qlc-btn ghost" onClick={() => setConfirmDelete(d)}>
+                    {t('clientDocuments.delete')}
+                  </button>
+                </span>
               </li>
             ))}
           </ul>
@@ -86,6 +100,17 @@ export default function DocumentsPage() {
           </p>
         )}
       </div>
+
+      {confirmDelete && (
+        <ConfirmModal
+          title={t('clientDocuments.deleteTitle')}
+          message={t('clientDocuments.deleteMessage')}
+          confirmLabel={t('clientDocuments.delete')}
+          twoStep
+          onClose={() => setConfirmDelete(null)}
+          onConfirm={() => removeDocument(confirmDelete.id)}
+        />
+      )}
 
       {availableCategories.length > 0 ? (
         <form className="qlc-card" style={{ maxWidth: 480 }} onSubmit={upload}>

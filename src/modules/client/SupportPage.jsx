@@ -12,6 +12,7 @@ function ChatPanel({ session, onClose }) {
   const [content, setContent] = useState('');
   const [remaining, setRemaining] = useState(null);
   const [current, setCurrent] = useState(session);
+  const [sendError, setSendError] = useState('');
   const pollRef = useRef(null);
 
   const refresh = () =>
@@ -49,12 +50,13 @@ function ChatPanel({ session, onClose }) {
   const send = async (e) => {
     e.preventDefault();
     if (!content.trim()) return;
+    setSendError('');
     try {
       await api.post(`/client/chat/${session.id}/messages`, { content });
       setContent('');
       refresh();
     } catch (err) {
-      alert(translateBackendMessage(err.message, language));
+      setSendError(translateBackendMessage(err.message, language));
     }
   };
 
@@ -98,6 +100,7 @@ function ChatPanel({ session, onClose }) {
                 ))
               )}
             </div>
+            {sendError && <div className="qlc-field-error" style={{ marginTop: 8 }}>{sendError}</div>}
             <form onSubmit={send} style={{ display: 'flex', gap: 8, marginTop: 10 }}>
               <input
                 className="qlc-input"
@@ -181,6 +184,9 @@ export default function SupportPage() {
             <ul className="qlc-plain-list">
               {cases.map((c) => (
                 <li key={c.id}>
+                  <span style={{ color: 'var(--qlc-muted2)', fontSize: 12 }}>
+                    {t('clientSupport.caseNumber')}#{c.caseNumber}
+                  </span>{' '}
                   <strong>{c.subject}</strong> —{' '}
                   <span className={`qlc-badge ${statusOf(supportCaseStatusMap, c.status).className}`}>
                     {statusOf(supportCaseStatusMap, c.status).text}

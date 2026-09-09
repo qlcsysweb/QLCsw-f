@@ -38,6 +38,12 @@ export const CHAT_SESSION_STATUS = (t) => ({
   CLOSED: { text: `✓ ${t('status.chatSession.closed')}`, className: 'muted' },
 });
 
+export const API_CONNECTION_STATUS = (t) => ({
+  CONECTADA: { text: `● ${t('status.apiConnection.connected')}`, className: 'ok' },
+  DESCONECTADA: { text: `× ${t('status.apiConnection.disconnected')}`, className: 'muted' },
+  PENDIENTE: { text: `◌ ${t('status.apiConnection.pending')}`, className: 'warn' },
+});
+
 export const PROSPECT_STATUS = (t) => ({
   NUEVO: { text: `◌ ${t('status.prospect.new')}`, className: 'warn' },
   CONTACTADO: { text: `! ${t('status.prospect.contacted')}`, className: 'warn' },

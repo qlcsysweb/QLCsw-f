@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import api, { API_BASE_URL } from '../../services/api';
 import ConfirmModal from '../../components/ConfirmModal';
 import { ACCOUNT_STATUS, PAYMENT_REPORT_STATUS, statusOf } from '../../utils/statusLabels';
@@ -50,8 +50,39 @@ function ConditionRow({ condition, onUpdate, t }) {
   );
 }
 
+function MaskedSecret({ label, value, t }) {
+  const [revealed, setRevealed] = useState(false);
+  const [copied, setCopied] = useState(false);
+  if (!value) return null;
+  const masked = '•'.repeat(Math.min(value.length, 24));
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      // Clipboard puede fallar en contexto no seguro; no bloquea la vista.
+    }
+  };
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, marginBottom: 8 }}>
+      <span style={{ color: 'var(--qlc-muted)', minWidth: 80 }}>{label}:</span>
+      <code style={{ flex: 1, wordBreak: 'break-all', color: 'var(--qlc-text)' }}>{revealed ? value : masked}</code>
+      <button type="button" className="qlc-btn ghost" onClick={() => setRevealed((r) => !r)}>
+        {revealed ? t('adminClientDetail.hideSecret') : t('adminClientDetail.revealSecret')}
+      </button>
+      <button type="button" className="qlc-btn ghost" onClick={copy}>
+        {copied ? t('adminClientDetail.copied') : t('adminClientDetail.copy')}
+      </button>
+    </div>
+  );
+}
+
 export default function ClientDetailPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { t, language } = useLanguage();
   const [client, setClient] = useState(null);
   const [contract, setContract] = useState(null);
@@ -64,6 +95,7 @@ export default function ClientDetailPage() {
   const [confirmDeactivate, setConfirmDeactivate] = useState(false);
   const [confirmDeleteDoc, setConfirmDeleteDoc] = useState(null);
   const [confirmResetSigned, setConfirmResetSigned] = useState(false);
+  const [confirmDeleteClient, setConfirmDeleteClient] = useState(false);
 
   const accountStatusMap = ACCOUNT_STATUS(t);
   const paymentReportStatusMap = PAYMENT_REPORT_STATUS(t);
@@ -192,10 +224,16 @@ export default function ClientDetailPage() {
     load();
   };
 
+  const deleteClientAccount = async () => {
+    await api.delete(`/admin/clients/${id}`);
+    navigate('/admin/clients');
+  };
+
   if (error) return <div className="qlc-empty">{error}</div>;
   if (!client) return <div className="qlc-empty">{t('adminClientDetail.loadingClient')}</div>;
 
   const clientAccStatus = statusOf(accountStatusMap, client.status);
+  const conditionsSummary = client.conditionsSummary || { total: 0, confirmed: 0, allConfirmed: false };
 
   return (
     <div>
@@ -224,6 +262,9 @@ export default function ClientDetailPage() {
               {t('adminClientDetail.activateAccount')}
             </button>
           )}
+          <button className="qlc-btn danger" onClick={() => setConfirmDeleteClient(true)}>
+            {t('adminClientDetail.deleteClient')}
+          </button>
         </div>
       </div>
 
@@ -236,7 +277,12 @@ export default function ClientDetailPage() {
 
       <div className="qlc-detail-grid">
         <div className="qlc-card">
-          <h3 style={{ marginTop: 0 }}>{t('adminClientDetail.activationProcess')}</h3>
+          <h3 style={{ marginTop: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            {t('adminClientDetail.activationProcess')}
+            <span className={`qlc-badge ${conditionsSummary.allConfirmed ? 'ok' : 'muted'}`}>
+              {conditionsSummary.confirmed}/{conditionsSummary.total}
+            </span>
+          </h3>
           {client.process?.conditions?.map((c) => (
             <ConditionRow key={c.id} condition={c} onUpdate={updateCondition} t={t} />
           ))}
@@ -260,6 +306,12 @@ export default function ClientDetailPage() {
           <h3>
             {t('adminClientDetail.apiConnection')} ({client.apiConnection?.exchangeName || 'Bitget'})
           </h3>
+          {(client.apiConnection?.apiKey || client.apiConnection?.apiSecret) && (
+            <div style={{ borderBottom: '1px solid var(--qlc-line)', paddingBottom: 12, marginBottom: 12 }}>
+              <MaskedSecret label="API Key" value={client.apiConnection?.apiKey} t={t} />
+              <MaskedSecret label="API Secret" value={client.apiConnection?.apiSecret} t={t} />
+            </div>
+          )}
           <form onSubmit={saveApiConnection}>
             <label className="qlc-label">{t('adminClientDetail.status')}</label>
             <select
@@ -448,6 +500,17 @@ export default function ClientDetailPage() {
           twoStep
           onClose={() => setConfirmDeleteDoc(null)}
           onConfirm={() => removeDocument(confirmDeleteDoc.id)}
+        />
+      )}
+
+      {confirmDeleteClient && (
+        <ConfirmModal
+          title={t('adminClientDetail.deleteClientTitle')}
+          message={t('adminClientDetail.deleteClientMessage').replace('{name}', `${client.firstName} ${client.lastName}`)}
+          confirmLabel={t('adminClientDetail.deleteClient')}
+          twoStep
+          onClose={() => setConfirmDeleteClient(false)}
+          onConfirm={deleteClientAccount}
         />
       )}
     </div>

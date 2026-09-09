@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
-import { ACCOUNT_STATUS, statusOf } from '../../utils/statusLabels';
+import { ACCOUNT_STATUS, API_CONNECTION_STATUS, statusOf } from '../../utils/statusLabels';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 import { getLocalizedModel } from '../../i18n/bilingualContent';
@@ -95,11 +95,7 @@ export default function ClientsListPage() {
   const [showCreate, setShowCreate] = useState(false);
 
   const accountStatusMap = ACCOUNT_STATUS(t);
-  const apiStatusMap = {
-    CONECTADA: { text: t('status.apiConnection.connected'), className: 'ok' },
-    DESCONECTADA: { text: t('status.apiConnection.disconnected'), className: 'muted' },
-    PENDIENTE: { text: t('status.apiConnection.pending'), className: 'muted' },
-  };
+  const apiStatusMap = API_CONNECTION_STATUS(t);
 
   const load = () => {
     setLoading(true);
@@ -154,6 +150,7 @@ export default function ClientsListPage() {
                 <th>{t('adminClientsList.status')}</th>
                 <th>{t('adminClientsList.model')}</th>
                 <th>{t('adminClientsList.api')}</th>
+                <th>{t('adminClientsList.process')}</th>
                 <th></th>
               </tr>
             </thead>
@@ -161,6 +158,7 @@ export default function ClientsListPage() {
               {items.map((c) => {
                 const accStatus = statusOf(accountStatusMap, c.status);
                 const apiStatus = apiStatusMap[c.apiConnection?.status] || apiStatusMap.PENDIENTE;
+                const summary = c.conditionsSummary || { confirmed: 0, total: 0, allConfirmed: false };
                 return (
                   <tr key={c.id}>
                     <td>
@@ -178,6 +176,16 @@ export default function ClientsListPage() {
                     </td>
                     <td>
                       <span className={`qlc-badge ${apiStatus.className}`}>{apiStatus.text}</span>
+                    </td>
+                    <td>
+                      <span
+                        className={`qlc-badge ${summary.allConfirmed && !c.process?.isActivated ? 'ok' : 'muted'}`}
+                        title={summary.allConfirmed ? t('adminClientsList.readyToActivate') : ''}
+                      >
+                        {summary.allConfirmed && !c.process?.isActivated
+                          ? `✓ ${t('adminClientsList.readyToActivate')}`
+                          : `${summary.confirmed}/${summary.total}`}
+                      </span>
                     </td>
                     <td>
                       <Link className="qlc-btn ghost" to={`/admin/clients/${c.id}`}>

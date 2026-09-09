@@ -1,16 +1,25 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../../services/api';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 
-function StatCard({ label, value, hint }) {
-  return (
-    <div className="qlc-card qlc-stat-card">
+function StatCard({ label, value, hint, to }) {
+  const content = (
+    <>
       <span className="qlc-stat-label">{label}</span>
       <strong className="qlc-stat-value">{value}</strong>
       {hint && <span className="qlc-stat-hint">{hint}</span>}
-    </div>
+    </>
   );
+  if (to) {
+    return (
+      <Link className="qlc-card qlc-stat-card" to={to} style={{ display: 'flex', flexDirection: 'column' }}>
+        {content}
+      </Link>
+    );
+  }
+  return <div className="qlc-card qlc-stat-card">{content}</div>;
 }
 
 export default function DashboardPage() {
@@ -34,22 +43,30 @@ export default function DashboardPage() {
       <h1 style={{ marginTop: 0 }}>{t('adminDashboard.title')}</h1>
 
       <div className="qlc-stat-grid">
-        <StatCard label={t('adminDashboard.totalClients')} value={summary.clients.total} />
-        <StatCard label={t('adminDashboard.activeClients')} value={summary.clients.active} />
-        <StatCard label={t('adminDashboard.pendingClients')} value={summary.clients.pending} />
-        <StatCard label={t('adminDashboard.underReview')} value={summary.clients.review} />
-        <StatCard label={t('adminDashboard.newProspects')} value={summary.prospects.new} />
+        <StatCard label={t('adminDashboard.totalClients')} value={summary.clients.total} to="/admin/clients" />
+        <StatCard label={t('adminDashboard.activeClients')} value={summary.clients.active} to="/admin/clients" />
+        <StatCard label={t('adminDashboard.pendingClients')} value={summary.clients.pending} to="/admin/clients" />
+        <StatCard label={t('adminDashboard.underReview')} value={summary.clients.review} to="/admin/clients" />
+        <StatCard label={t('adminDashboard.inactiveClients')} value={summary.clients.inactive} to="/admin/clients" />
+        <StatCard
+          label={t('adminDashboard.readyToActivate')}
+          value={summary.readyToActivate}
+          hint={t('adminDashboard.readyToActivateHint')}
+          to="/admin/clients"
+        />
+        <StatCard label={t('adminDashboard.newProspects')} value={summary.prospects.new} to="/admin/prospects" />
         <StatCard
           label={t('adminDashboard.unregisteredProspects')}
           value={summary.prospects.unregistered}
           hint={t('adminDashboard.unregisteredProspectsHint')}
+          to="/admin/prospects"
         />
-        <StatCard label={t('adminDashboard.pendingAppointments')} value={summary.appointments.pending} />
-        <StatCard label={t('adminDashboard.pendingPayments')} value={summary.payments.pending} />
-        <StatCard label={t('adminDashboard.pendingContracts')} value={summary.contracts.pending} />
-        <StatCard label={t('adminDashboard.apiConnected')} value={summary.apiConnections.connected} hint="Bitget" />
-        <StatCard label={t('adminDashboard.apiDisconnected')} value={summary.apiConnections.disconnected} />
-        <StatCard label={t('adminDashboard.apiPending')} value={summary.apiConnections.pending} />
+        <StatCard label={t('adminDashboard.pendingAppointments')} value={summary.appointments.pending} to="/admin/appointments" />
+        <StatCard label={t('adminDashboard.pendingPayments')} value={summary.payments.pending} to="/admin/payments" />
+        <StatCard label={t('adminDashboard.pendingContracts')} value={summary.contracts.pending} to="/admin/clients" />
+        <StatCard label={t('adminDashboard.apiConnected')} value={summary.apiConnections.connected} hint="Bitget" to="/admin/clients" />
+        <StatCard label={t('adminDashboard.apiDisconnected')} value={summary.apiConnections.disconnected} to="/admin/clients" />
+        <StatCard label={t('adminDashboard.apiPending')} value={summary.apiConnections.pending} to="/admin/clients" />
       </div>
 
       <div className="qlc-card" style={{ marginTop: 24 }}>
