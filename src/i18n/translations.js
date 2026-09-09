@@ -296,6 +296,7 @@ const es = {
     preview: 'Previsualizar',
     backToEdit: '← Volver a editar',
     saveConfirmMessage: 'Se actualizará esta sección en la página pública de inmediato.',
+    pendingTranslation: 'Pendiente de traducción',
   },
 
   adminCms: {
@@ -1194,6 +1195,7 @@ const en = {
     preview: 'Preview',
     backToEdit: '← Back to editing',
     saveConfirmMessage: 'This section will be updated on the public site immediately.',
+    pendingTranslation: 'Pending translation',
   },
 
   adminCms: {

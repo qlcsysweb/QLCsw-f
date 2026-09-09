@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
 import { useLanguage } from '../../i18n/LanguageContext';
+import { pickBilingual } from '../../i18n/bilingualContent';
 
 function StatCard({ label, status }) {
   return (
@@ -15,7 +16,7 @@ function StatCard({ label, status }) {
 }
 
 export default function DashboardPage() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [dashboard, setDashboard] = useState(null);
   const [error, setError] = useState('');
 
@@ -83,7 +84,7 @@ export default function DashboardPage() {
         <div className="qlc-card qlc-stat-card">
           <span className="qlc-stat-label">{t('clientDashboard.model')}</span>
           <strong className="qlc-stat-value" style={{ fontSize: 20 }}>
-            {dashboard.model?.name || t('clientDashboard.unassigned')}
+            {dashboard.model ? pickBilingual(dashboard.model.name, dashboard.model.nameEn, language) : t('clientDashboard.unassigned')}
           </strong>
         </div>
         <StatCard label={t('clientDashboard.contract')} status={contractStatus} />

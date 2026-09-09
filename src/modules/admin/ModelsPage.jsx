@@ -4,6 +4,7 @@ import Modal from '../../components/Modal';
 import ConfirmSaveModal from '../../components/ConfirmSaveModal';
 import UnsavedChangesModal from '../../components/UnsavedChangesModal';
 import useUnsavedGuard from '../../components/useUnsavedGuard';
+import BilingualField from '../../components/BilingualField';
 import { useLanguage } from '../../i18n/LanguageContext';
 
 function ModelEditModal({ model, onClose, onSaved }) {
@@ -23,10 +24,15 @@ function ModelEditModal({ model, onClose, onSaved }) {
     try {
       await api.patch(`/admin/models/${model.id}`, {
         name: form.name,
+        nameEn: form.nameEn || null,
         tagline: form.tagline,
+        taglineEn: form.taglineEn || null,
         description: form.description,
+        descriptionEn: form.descriptionEn || null,
         conditions: form.conditions,
+        conditionsEn: form.conditionsEn || null,
         period: form.period,
+        periodEn: form.periodEn || null,
         objective: form.objective,
         isActive: form.isActive,
       });
@@ -42,7 +48,7 @@ function ModelEditModal({ model, onClose, onSaved }) {
       title={`${t('adminModels.editModalTitle')} — ${model.key}`}
       subtitle={t('adminModels.editModalSubtitle')}
       onClose={requestClose}
-      width={560}
+      width={760}
     >
       <form
         onSubmit={(e) => {
@@ -50,16 +56,42 @@ function ModelEditModal({ model, onClose, onSaved }) {
           setConfirmingSave(true);
         }}
       >
-        <label className="qlc-label">{t('adminModels.name')}</label>
-        <input className="qlc-input" value={form.name} onChange={update('name')} />
-        <label className="qlc-label">{t('adminModels.tagline')}</label>
-        <input className="qlc-input" value={form.tagline || ''} onChange={update('tagline')} />
-        <label className="qlc-label">{t('adminModels.description')}</label>
-        <textarea className="qlc-textarea" rows={3} value={form.description} onChange={update('description')} />
-        <label className="qlc-label">{t('adminModels.conditions')}</label>
-        <input className="qlc-input" value={form.conditions || ''} onChange={update('conditions')} />
-        <label className="qlc-label">{t('adminModels.period')}</label>
-        <input className="qlc-input" value={form.period || ''} onChange={update('period')} />
+        <BilingualField
+          label={t('adminModels.name')}
+          esValue={form.name}
+          enValue={form.nameEn}
+          onEsChange={update('name')}
+          onEnChange={update('nameEn')}
+        />
+        <BilingualField
+          label={t('adminModels.tagline')}
+          esValue={form.tagline}
+          enValue={form.taglineEn}
+          onEsChange={update('tagline')}
+          onEnChange={update('taglineEn')}
+        />
+        <BilingualField
+          label={t('adminModels.description')}
+          esValue={form.description}
+          enValue={form.descriptionEn}
+          onEsChange={update('description')}
+          onEnChange={update('descriptionEn')}
+          textarea
+        />
+        <BilingualField
+          label={t('adminModels.conditions')}
+          esValue={form.conditions}
+          enValue={form.conditionsEn}
+          onEsChange={update('conditions')}
+          onEnChange={update('conditionsEn')}
+        />
+        <BilingualField
+          label={t('adminModels.period')}
+          esValue={form.period}
+          enValue={form.periodEn}
+          onEsChange={update('period')}
+          onEnChange={update('periodEn')}
+        />
         <label className="qlc-label">{t('adminModels.objective')}</label>
         <input className="qlc-input" value={form.objective || ''} onChange={update('objective')} />
         <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 14, fontSize: 13 }}>
@@ -92,6 +124,7 @@ export default function ModelsPage() {
   const { t } = useLanguage();
   const [models, setModels] = useState([]);
   const [note, setNote] = useState('');
+  const [noteEn, setNoteEn] = useState('');
   const [editingModel, setEditingModel] = useState(null);
   const [message, setMessage] = useState('');
   const [savingNote, setSavingNote] = useState(false);
@@ -101,6 +134,7 @@ export default function ModelsPage() {
     api.get('/admin/content').then(({ data }) => {
       const row = data.content.find((r) => r.section === 'modelos' && r.key === 'note');
       setNote(row?.value || '');
+      setNoteEn(row?.valueEn || '');
     });
   };
   useEffect(load, []);
@@ -114,7 +148,7 @@ export default function ModelsPage() {
     e.preventDefault();
     setSavingNote(true);
     try {
-      await api.put('/admin/content', { section: 'modelos', key: 'note', value: note });
+      await api.put('/admin/content', { section: 'modelos', key: 'note', value: note, valueEn: noteEn?.trim() ? noteEn : null });
       flash(t('adminModels.noteSaved'));
     } finally {
       setSavingNote(false);
@@ -145,10 +179,18 @@ export default function ModelsPage() {
         ))}
       </div>
 
-      <form className="qlc-card" style={{ marginTop: 18, maxWidth: 640 }} onSubmit={saveNote}>
+      <form className="qlc-card" style={{ marginTop: 18, maxWidth: 880 }} onSubmit={saveNote}>
         <h3 style={{ marginTop: 0 }}>{t('adminModels.warningNoteTitle')}</h3>
         <p style={{ fontSize: 12, color: 'var(--qlc-muted2)' }}>{t('adminModels.warningNoteHint')}</p>
-        <textarea className="qlc-textarea" rows={2} value={note} onChange={(e) => setNote(e.target.value)} />
+        <BilingualField
+          label={t('adminModels.warningNoteTitle')}
+          esValue={note}
+          enValue={noteEn}
+          onEsChange={(e) => setNote(e.target.value)}
+          onEnChange={(e) => setNoteEn(e.target.value)}
+          textarea
+          rows={2}
+        />
         <div className="qlc-form-actions">
           <button className="qlc-btn primary" disabled={savingNote}>
             {savingNote ? t('common.saving') : t('adminModels.saveNote')}

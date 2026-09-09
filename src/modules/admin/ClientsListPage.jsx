@@ -4,6 +4,7 @@ import api from '../../services/api';
 import { ACCOUNT_STATUS, statusOf } from '../../utils/statusLabels';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
+import { pickBilingual } from '../../i18n/bilingualContent';
 
 function CreateClientModal({ onClose, onCreated }) {
   const { t, language } = useLanguage();
@@ -86,7 +87,7 @@ function CreateClientModal({ onClose, onCreated }) {
 }
 
 export default function ClientsListPage() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [items, setItems] = useState([]);
   const [total, setTotal] = useState(0);
   const [search, setSearch] = useState('');
@@ -170,7 +171,11 @@ export default function ClientsListPage() {
                     <td>
                       <span className={`qlc-badge ${accStatus.className}`}>{accStatus.text}</span>
                     </td>
-                    <td>{c.clientModel?.model?.name || t('adminClientsList.unassigned')}</td>
+                    <td>
+                      {c.clientModel?.model
+                        ? pickBilingual(c.clientModel.model.name, c.clientModel.model.nameEn, language)
+                        : t('adminClientsList.unassigned')}
+                    </td>
                     <td>
                       <span className={`qlc-badge ${apiStatus.className}`}>{apiStatus.text}</span>
                     </td>

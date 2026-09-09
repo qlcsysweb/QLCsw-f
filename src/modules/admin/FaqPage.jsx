@@ -5,25 +5,38 @@ import ConfirmModal from '../../components/ConfirmModal';
 import ConfirmSaveModal from '../../components/ConfirmSaveModal';
 import UnsavedChangesModal from '../../components/UnsavedChangesModal';
 import useUnsavedGuard from '../../components/useUnsavedGuard';
+import BilingualField from '../../components/BilingualField';
 import { useLanguage } from '../../i18n/LanguageContext';
 
 function FaqFormModal({ faq, onClose, onSaved }) {
   const { t } = useLanguage();
   const [question, setQuestion] = useState(faq?.question || '');
+  const [questionEn, setQuestionEn] = useState(faq?.questionEn || '');
   const [answer, setAnswer] = useState(faq?.answer || '');
+  const [answerEn, setAnswerEn] = useState(faq?.answerEn || '');
   const [confirmingSave, setConfirmingSave] = useState(false);
   const [error, setError] = useState('');
 
-  const isDirty = () => question !== (faq?.question || '') || answer !== (faq?.answer || '');
+  const isDirty = () =>
+    question !== (faq?.question || '') ||
+    questionEn !== (faq?.questionEn || '') ||
+    answer !== (faq?.answer || '') ||
+    answerEn !== (faq?.answerEn || '');
   const { requestClose, promptOpen, confirmDiscard, cancelDiscard } = useUnsavedGuard(isDirty, onClose);
 
   const doSave = async () => {
     setError('');
     try {
+      const payload = {
+        question,
+        questionEn: questionEn?.trim() ? questionEn : null,
+        answer,
+        answerEn: answerEn?.trim() ? answerEn : null,
+      };
       if (faq) {
-        await api.patch(`/admin/faq/${faq.id}`, { question, answer });
+        await api.patch(`/admin/faq/${faq.id}`, payload);
       } else {
-        await api.post('/admin/faq', { question, answer });
+        await api.post('/admin/faq', payload);
       }
       onSaved();
     } catch (err) {
@@ -33,7 +46,7 @@ function FaqFormModal({ faq, onClose, onSaved }) {
   };
 
   return (
-    <Modal title={faq ? t('adminFaq.editTitle') : t('adminFaq.newTitle')} onClose={requestClose} width={520}>
+    <Modal title={faq ? t('adminFaq.editTitle') : t('adminFaq.newTitle')} onClose={requestClose} width={720}>
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -41,10 +54,21 @@ function FaqFormModal({ faq, onClose, onSaved }) {
           setConfirmingSave(true);
         }}
       >
-        <label className="qlc-label">{t('adminFaq.question')}</label>
-        <input className="qlc-input" value={question} onChange={(e) => setQuestion(e.target.value)} required />
-        <label className="qlc-label">{t('adminFaq.answer')}</label>
-        <textarea className="qlc-textarea" rows={3} value={answer} onChange={(e) => setAnswer(e.target.value)} required />
+        <BilingualField
+          label={t('adminFaq.question')}
+          esValue={question}
+          enValue={questionEn}
+          onEsChange={(e) => setQuestion(e.target.value)}
+          onEnChange={(e) => setQuestionEn(e.target.value)}
+        />
+        <BilingualField
+          label={t('adminFaq.answer')}
+          esValue={answer}
+          enValue={answerEn}
+          onEsChange={(e) => setAnswer(e.target.value)}
+          onEnChange={(e) => setAnswerEn(e.target.value)}
+          textarea
+        />
         {error && <div className="qlc-field-error">{error}</div>}
         <div className="qlc-form-actions">
           <button type="button" className="qlc-btn ghost" onClick={requestClose}>

@@ -182,7 +182,7 @@ export default function CmsPage() {
       const bySection = {};
       data.content.forEach((row) => {
         bySection[row.section] = bySection[row.section] || {};
-        bySection[row.section][row.key] = row.value;
+        bySection[row.section][row.key] = { value: row.value, valueEn: row.valueEn };
       });
       setContent(bySection);
     });
