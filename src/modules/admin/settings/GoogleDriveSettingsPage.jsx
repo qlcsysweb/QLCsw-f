@@ -1,15 +1,11 @@
 import { useEffect, useState } from 'react';
 import api from '../../../services/api';
 import ConfirmModal from '../../../components/ConfirmModal';
-
-const CAPABILITY_LABELS = {
-  canCreate: 'Puede crear carpetas',
-  canUpload: 'Puede subir archivos',
-  canDownload: 'Puede descargar archivos',
-  canDelete: 'Puede eliminar archivos',
-};
+import { useLanguage } from '../../../i18n/LanguageContext';
+import { translateBackendMessage } from '../../../i18n/backendMessages';
 
 export default function GoogleDriveSettingsPage() {
+  const { t, language } = useLanguage();
   const [config, setConfig] = useState(null);
   const [form, setForm] = useState({ rootFolderId: '', rootFolderName: '' });
   const [testResult, setTestResult] = useState(null);
@@ -18,6 +14,13 @@ export default function GoogleDriveSettingsPage() {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [confirmingDisconnect, setConfirmingDisconnect] = useState(false);
+
+  const CAPABILITY_LABELS = {
+    canCreate: t('adminDrive.capCreate'),
+    canUpload: t('adminDrive.capUpload'),
+    canDownload: t('adminDrive.capDownload'),
+    canDelete: t('adminDrive.capDelete'),
+  };
 
   const load = () =>
     api.get('/admin/drive-config').then(({ data }) => {
@@ -31,7 +34,7 @@ export default function GoogleDriveSettingsPage() {
     load();
   }, []);
 
-  if (!config) return <div className="qlc-empty">Cargando configuración…</div>;
+  if (!config) return <div className="qlc-empty">{t('adminDrive.loadingConfig')}</div>;
 
   const flash = (msg) => {
     setMessage(msg);
@@ -49,9 +52,9 @@ export default function GoogleDriveSettingsPage() {
         isEnabled: true,
       });
       setConfig(data.config);
-      flash('✓ Configuración de Google Drive guardada correctamente.');
+      flash(t('adminDrive.saved'));
     } catch (err) {
-      setError(err.message);
+      setError(translateBackendMessage(err.message, language));
     } finally {
       setSaving(false);
     }
@@ -65,9 +68,9 @@ export default function GoogleDriveSettingsPage() {
       const { data } = await api.post('/admin/drive-config/test');
       setConfig(data.config);
       setTestResult(data);
-      if (!data.ok) setError(data.message);
+      if (!data.ok) setError(translateBackendMessage(data.message, language));
     } catch (err) {
-      setError(err.message);
+      setError(translateBackendMessage(err.message, language));
     } finally {
       setTesting(false);
     }
@@ -77,24 +80,20 @@ export default function GoogleDriveSettingsPage() {
     const { data } = await api.post('/admin/drive-config/disconnect');
     setConfig(data.config);
     setTestResult(null);
-    flash('Google Drive fue desconectado. La plataforma no podrá subir ni descargar documentos hasta que lo reactives.');
+    flash(t('adminDrive.disconnectedNotice'));
   };
 
   const statusLabel = config.isConnected
-    ? { text: 'CONECTADO', className: 'ok', dot: '●' }
+    ? { text: t('adminDrive.connected'), className: 'ok', dot: '●' }
     : config.hasServiceAccountCreds
-    ? { text: 'DESCONECTADO', className: 'danger', dot: '×' }
-    : { text: 'NO CONFIGURADO', className: 'muted', dot: '—' };
+    ? { text: t('adminDrive.disconnected'), className: 'danger', dot: '×' }
+    : { text: t('adminDrive.notConfigured'), className: 'muted', dot: '—' };
 
   return (
     <div>
-      <div className="qlc-kicker">CONFIGURACIÓN</div>
-      <h1 style={{ marginTop: 0 }}>Google Drive</h1>
-      <p style={{ color: 'var(--qlc-muted)', maxWidth: 640 }}>
-        QLC guarda todos los contratos, comprobantes y documentos de clientes en una sola carpeta
-        corporativa de Google Drive. Los clientes nunca conectan su propio Drive — solo usan la
-        interfaz de QLC.
-      </p>
+      <div className="qlc-kicker">{t('adminDrive.kicker')}</div>
+      <h1 style={{ marginTop: 0 }}>{t('adminDrive.title')}</h1>
+      <p style={{ color: 'var(--qlc-muted)', maxWidth: 640 }}>{t('adminDrive.intro')}</p>
 
       {message && <div className="qlc-card" style={{ borderColor: 'var(--qlc-ok-border)', marginBottom: 16 }}>{message}</div>}
 
@@ -107,24 +106,18 @@ export default function GoogleDriveSettingsPage() {
 
         {!config.hasServiceAccountCreds && (
           <div className="qlc-card" style={{ borderColor: 'var(--qlc-warn-border)', marginBottom: 20 }}>
-            <p style={{ margin: 0, fontSize: 13 }}>
-              La credencial técnica de la cuenta de servicio todavía no está configurada en el
-              servidor. Esto lo configura quien administra la infraestructura (variables
-              <code> GOOGLE_SERVICE_ACCOUNT_EMAIL</code> y <code>GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY</code>
-              ). Una vez hecho eso, la carpeta y el resto de la conexión se administran desde aquí,
-              sin volver a tocar archivos de configuración.
-            </p>
+            <p style={{ margin: 0, fontSize: 13 }}>{t('adminDrive.noCredsNotice')}</p>
           </div>
         )}
 
         {config.hasServiceAccountCreds && (
           <p style={{ fontSize: 12, color: 'var(--qlc-muted2)', marginTop: -10, marginBottom: 20 }}>
-            Cuenta técnica configurada: {config.serviceAccountEmailMasked}
+            {t('adminDrive.technicalAccountConfigured')}: {config.serviceAccountEmailMasked}
           </p>
         )}
 
         <form onSubmit={save}>
-          <label className="qlc-label">Nombre de la carpeta principal</label>
+          <label className="qlc-label">{t('adminDrive.folderNameLabel')}</label>
           <input
             className="qlc-input"
             value={form.rootFolderName}
@@ -132,7 +125,7 @@ export default function GoogleDriveSettingsPage() {
             placeholder="QLC"
           />
 
-          <label className="qlc-label">Folder ID de Google Drive</label>
+          <label className="qlc-label">{t('adminDrive.folderIdLabel')}</label>
           <input
             className="qlc-input"
             value={form.rootFolderId}
@@ -140,19 +133,18 @@ export default function GoogleDriveSettingsPage() {
             placeholder="Ej: 1AbCdEfGhIjKlMnOpQrStUvWxYz"
           />
           <p style={{ fontSize: 11, color: 'var(--qlc-muted2)', marginTop: 6 }}>
-            Se obtiene de la URL de la carpeta en Google Drive. Recuerda compartir esa carpeta con
-            el email de la cuenta de servicio (arriba) con permiso de Editor.
-            {config.usingBootstrapFolder && ' Actualmente se está usando la carpeta configurada por infraestructura.'}
+            {t('adminDrive.folderIdHint')}
+            {config.usingBootstrapFolder && t('adminDrive.usingBootstrapFolder')}
           </p>
 
           {error && <div className="qlc-field-error">{error}</div>}
 
           <div className="qlc-form-actions">
             <button type="button" className="qlc-btn ghost" onClick={testConnection} disabled={testing}>
-              {testing ? 'Probando…' : 'Probar conexión'}
+              {testing ? t('adminDrive.testing') : t('adminDrive.testConnection')}
             </button>
             <button className="qlc-btn primary" disabled={saving}>
-              {saving ? 'Guardando…' : 'Guardar'}
+              {saving ? t('common.saving') : t('common.save')}
             </button>
           </div>
         </form>
@@ -160,7 +152,7 @@ export default function GoogleDriveSettingsPage() {
         {testResult?.ok && (
           <div className="qlc-card" style={{ marginTop: 18, borderColor: 'var(--qlc-ok-border)' }}>
             <p style={{ margin: '0 0 10px', fontSize: 13 }}>
-              ✓ Conectado correctamente con la carpeta "{testResult.folderName}".
+              {t('adminDrive.connectedOk')} "{testResult.folderName}".
             </p>
             {testResult.capabilities &&
               Object.entries(CAPABILITY_LABELS).map(([key, label]) => (
@@ -173,15 +165,15 @@ export default function GoogleDriveSettingsPage() {
 
         {config.lastTestedAt && !testResult && (
           <p style={{ fontSize: 11, color: 'var(--qlc-muted2)', marginTop: 14 }}>
-            Última prueba: {new Date(config.lastTestedAt).toLocaleString()} —{' '}
-            {config.lastTestStatus === 'OK' ? '✓ correcta' : '! ' + config.lastTestMessage}
+            {t('adminDrive.lastTest')}: {new Date(config.lastTestedAt).toLocaleString()} —{' '}
+            {config.lastTestStatus === 'OK' ? t('adminDrive.correct') : '! ' + translateBackendMessage(config.lastTestMessage, language)}
           </p>
         )}
 
         {config.isConnected && (
           <div className="qlc-form-actions" style={{ marginTop: 20, borderTop: '1px solid var(--qlc-line)', paddingTop: 16 }}>
             <button className="qlc-btn danger" onClick={() => setConfirmingDisconnect(true)}>
-              Desconectar
+              {t('adminDrive.disconnect')}
             </button>
           </div>
         )}
@@ -189,9 +181,9 @@ export default function GoogleDriveSettingsPage() {
 
       {confirmingDisconnect && (
         <ConfirmModal
-          title="¿Desconectar Google Drive?"
-          message="Mientras esté desconectado, ni el administrador ni los clientes podrán subir o descargar contratos, documentos o comprobantes. Podrás reactivarlo guardando la configuración nuevamente."
-          confirmLabel="Desconectar"
+          title={t('adminDrive.disconnectTitle')}
+          message={t('adminDrive.disconnectMessage')}
+          confirmLabel={t('adminDrive.disconnect')}
           onClose={() => setConfirmingDisconnect(false)}
           onConfirm={disconnect}
         />

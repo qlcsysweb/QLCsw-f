@@ -1,9 +1,13 @@
 import { useState } from 'react';
 import Modal from './Modal';
+import { useLanguage } from '../i18n/LanguageContext';
 
-export default function ConfirmSaveModal({ onCancel, onConfirm, message = 'Se actualizará esta información en el sistema.' }) {
+export default function ConfirmSaveModal({ onCancel, onConfirm, message }) {
+  const { t } = useLanguage();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+
+  const resolvedMessage = message || t('modals.saveChangesDefault');
 
   const confirm = async () => {
     setSaving(true);
@@ -17,15 +21,15 @@ export default function ConfirmSaveModal({ onCancel, onConfirm, message = 'Se ac
   };
 
   return (
-    <Modal title="¿Guardar cambios?" onClose={onCancel} width={420}>
-      <p style={{ color: 'var(--qlc-muted)', fontSize: 14, marginTop: 0 }}>{message}</p>
+    <Modal title={t('modals.saveChangesTitle')} onClose={onCancel} width={420}>
+      <p style={{ color: 'var(--qlc-muted)', fontSize: 14, marginTop: 0 }}>{resolvedMessage}</p>
       {error && <div className="qlc-field-error">{error}</div>}
       <div className="qlc-form-actions">
         <button className="qlc-btn ghost" onClick={onCancel} disabled={saving}>
-          Cancelar
+          {t('modals.cancel')}
         </button>
         <button className="qlc-btn primary" onClick={confirm} disabled={saving}>
-          {saving ? 'Guardando…' : 'Guardar cambios'}
+          {saving ? t('modals.saving') : t('modals.saveChanges')}
         </button>
       </div>
     </Modal>

@@ -1,11 +1,13 @@
 import SectionMedia from './SectionMedia';
+import { useLanguage } from '../../../i18n/LanguageContext';
 
 export default function SobreQlcSection({ text, media = () => [] }) {
+  const { t } = useLanguage();
   return (
     <section id="sobre-qlc" className="section alt">
       <div className="container">
-        <div className="kicker">Nuestra Naturaleza</div>
-        <h2>Sobre QLC</h2>
+        <div className="kicker">{t('sobreQlcSection.kicker')}</div>
+        <h2>{t('sobreQlcSection.title')}</h2>
 
         <div className="clean-card" style={{ marginTop: 35 }}>
           <h3 style={{ fontSize: 18, marginBottom: 25, color: '#fff', fontWeight: 600 }}>
@@ -18,7 +20,7 @@ export default function SobreQlcSection({ text, media = () => [] }) {
 
           <div style={{ borderTop: '1px solid var(--line)', paddingTop: 25 }}>
             <strong style={{ color: 'var(--qlc-blue2)', display: 'block', fontSize: 20, marginBottom: 15 }}>
-              Somos una infraestructura tecnológica para la ejecución de estrategias de trading.
+              {t('sobreQlcSection.strapline')}
             </strong>
 
             <p style={{ color: 'var(--qlc-muted)', fontSize: 15, marginBottom: 15, lineHeight: 1.6 }}>

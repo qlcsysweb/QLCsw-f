@@ -1,48 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
-
-const CONDITION_LABELS = {
-  CONTRACT: 'Contrato firmado',
-  FUNDS: 'Fondos disponibles',
-  PAYMENT: 'Pago reportado',
-  API: 'Conexión API',
-  ACTIVATION: 'Activación',
-};
-
-const CONDITION_STATUS = {
-  CONFIRMED: { text: '✓ Completado', className: 'ok' },
-  REJECTED: { text: '× Rechazado', className: 'danger' },
-  PENDING: { text: '◌ Pendiente', className: 'warn' },
-};
-
-const ACCOUNT_STATUS = {
-  ACTIVE: { text: '● Activa', className: 'ok' },
-  PENDING: { text: '◌ Pendiente', className: 'warn' },
-  REVIEW: { text: '! En revisión', className: 'warn' },
-  INACTIVE: { text: '× Inactiva', className: 'danger' },
-};
-
-const CONTRACT_STATUS = {
-  PENDING: { text: '◌ Pendiente', className: 'warn' },
-  UPLOADED: { text: '! Requiere tu firma', className: 'warn' },
-  RECEIVED_SIGNED: { text: '✓ Enviado', className: 'ok' },
-  REJECTED: { text: '× Rechazado', className: 'danger' },
-};
-
-const API_STATUS = {
-  CONECTADA: { text: '● Conectada', className: 'ok' },
-  DESCONECTADA: { text: '× Desconectada', className: 'danger' },
-  PENDIENTE: { text: '◌ Pendiente', className: 'warn' },
-};
-
-const APPOINTMENT_STATUS = {
-  PENDING: { text: '◌ Pendiente de respuesta', className: 'warn' },
-  AUTORIZADA: { text: '✓ Autorizada', className: 'ok' },
-  RECHAZADA: { text: '× Rechazada', className: 'danger' },
-  COMPLETADA: { text: '✓ Completada', className: 'ok' },
-  CANCELADA: { text: '× Cancelada', className: 'danger' },
-};
+import { useLanguage } from '../../i18n/LanguageContext';
 
 function StatCard({ label, status }) {
   return (
@@ -56,8 +15,46 @@ function StatCard({ label, status }) {
 }
 
 export default function DashboardPage() {
+  const { t } = useLanguage();
   const [dashboard, setDashboard] = useState(null);
   const [error, setError] = useState('');
+
+  const CONDITION_LABELS = {
+    CONTRACT: t('status.conditionType.CONTRACT'),
+    FUNDS: t('status.conditionType.FUNDS'),
+    PAYMENT: t('status.conditionType.PAYMENT'),
+    API: t('status.conditionType.API'),
+    ACTIVATION: t('status.conditionType.ACTIVATION'),
+  };
+  const CONDITION_STATUS = {
+    CONFIRMED: { text: `✓ ${t('status.condition.completed')}`, className: 'ok' },
+    REJECTED: { text: `× ${t('status.condition.rejected')}`, className: 'danger' },
+    PENDING: { text: `◌ ${t('status.condition.pending')}`, className: 'warn' },
+  };
+  const ACCOUNT_STATUS = {
+    ACTIVE: { text: `● ${t('status.account.active')}`, className: 'ok' },
+    PENDING: { text: `◌ ${t('status.account.pending')}`, className: 'warn' },
+    REVIEW: { text: `! ${t('status.account.review')}`, className: 'warn' },
+    INACTIVE: { text: `× ${t('status.account.inactive')}`, className: 'danger' },
+  };
+  const CONTRACT_STATUS = {
+    PENDING: { text: `◌ ${t('status.contract.pending')}`, className: 'warn' },
+    UPLOADED: { text: `! ${t('status.contract.uploaded')}`, className: 'warn' },
+    RECEIVED_SIGNED: { text: `✓ ${t('status.contract.receivedSigned')}`, className: 'ok' },
+    REJECTED: { text: `× ${t('status.contract.rejected')}`, className: 'danger' },
+  };
+  const API_STATUS = {
+    CONECTADA: { text: `● ${t('status.apiConnection.connected')}`, className: 'ok' },
+    DESCONECTADA: { text: `× ${t('status.apiConnection.disconnected')}`, className: 'danger' },
+    PENDIENTE: { text: `◌ ${t('status.apiConnection.pending')}`, className: 'warn' },
+  };
+  const APPOINTMENT_STATUS = {
+    PENDING: { text: `◌ ${t('status.appointment.pending')}`, className: 'warn' },
+    AUTORIZADA: { text: `✓ ${t('status.appointment.authorized')}`, className: 'ok' },
+    RECHAZADA: { text: `× ${t('status.appointment.rejected')}`, className: 'danger' },
+    COMPLETADA: { text: `✓ ${t('status.appointment.completed')}`, className: 'ok' },
+    CANCELADA: { text: `× ${t('status.appointment.cancelled')}`, className: 'danger' },
+  };
 
   useEffect(() => {
     api
@@ -67,7 +64,7 @@ export default function DashboardPage() {
   }, []);
 
   if (error) return <div className="qlc-empty">{error}</div>;
-  if (!dashboard) return <div className="qlc-empty">Cargando…</div>;
+  if (!dashboard) return <div className="qlc-empty">{t('common.loading')}</div>;
 
   const accountStatus = ACCOUNT_STATUS[dashboard.status] || ACCOUNT_STATUS.PENDING;
   const contractStatus = CONTRACT_STATUS[dashboard.contractStatus] || CONTRACT_STATUS.PENDING;
@@ -78,27 +75,27 @@ export default function DashboardPage() {
 
   return (
     <div>
-      <div className="qlc-kicker">PORTAL DEL CLIENTE</div>
-      <h1 style={{ marginTop: 0 }}>Bienvenido, {dashboard.firstName}</h1>
+      <div className="qlc-kicker">{t('clientDashboard.kicker')}</div>
+      <h1 style={{ marginTop: 0 }}>{t('clientDashboard.welcome').replace('{name}', dashboard.firstName)}</h1>
 
       <div className="qlc-stat-grid">
-        <StatCard label="Estado de cuenta" status={accountStatus} />
+        <StatCard label={t('clientDashboard.accountStatus')} status={accountStatus} />
         <div className="qlc-card qlc-stat-card">
-          <span className="qlc-stat-label">Modelo</span>
+          <span className="qlc-stat-label">{t('clientDashboard.model')}</span>
           <strong className="qlc-stat-value" style={{ fontSize: 20 }}>
-            {dashboard.model?.name || 'Sin asignar'}
+            {dashboard.model?.name || t('clientDashboard.unassigned')}
           </strong>
         </div>
-        <StatCard label="Contrato" status={contractStatus} />
-        <StatCard label="Conexión API" status={apiStatus} />
+        <StatCard label={t('clientDashboard.contract')} status={contractStatus} />
+        <StatCard label={t('clientDashboard.apiConnection')} status={apiStatus} />
         <div className="qlc-card qlc-stat-card">
-          <span className="qlc-stat-label">Notificaciones sin leer</span>
+          <span className="qlc-stat-label">{t('clientDashboard.unreadNotifications')}</span>
           <strong className="qlc-stat-value">{dashboard.unreadNotifications}</strong>
         </div>
       </div>
 
       <div className="qlc-card" style={{ marginTop: 24 }}>
-        <h3 style={{ marginTop: 0 }}>Proceso de activación</h3>
+        <h3 style={{ marginTop: 0 }}>{t('clientDashboard.activationProcess')}</h3>
         {dashboard.process?.conditions?.map((c) => {
           const s = CONDITION_STATUS[c.status] || CONDITION_STATUS.PENDING;
           return (
@@ -110,14 +107,14 @@ export default function DashboardPage() {
         })}
         {dashboard.process?.isActivated && (
           <div style={{ marginTop: 12, color: 'var(--qlc-ok)', fontSize: 13 }}>
-            ✓ Tu cuenta está completamente activada.
+            {t('clientDashboard.accountFullyActivated')}
           </div>
         )}
       </div>
 
       {dashboard.nextAppointment && (
         <div className="qlc-card" style={{ marginTop: 16 }}>
-          <h3 style={{ marginTop: 0 }}>Próxima cita</h3>
+          <h3 style={{ marginTop: 0 }}>{t('clientDashboard.nextAppointment')}</h3>
           <p style={{ fontSize: 13, color: 'var(--qlc-muted)' }}>
             {new Date(dashboard.nextAppointment.requestedDate).toLocaleDateString()} ·{' '}
             {dashboard.nextAppointment.requestedTime} —{' '}
@@ -128,13 +125,13 @@ export default function DashboardPage() {
 
       <div style={{ display: 'flex', gap: 10, marginTop: 20, flexWrap: 'wrap' }}>
         <Link className="qlc-btn primary" to="/client/contract">
-          Ver contrato
+          {t('clientDashboard.viewContract')}
         </Link>
         <Link className="qlc-btn ghost" to="/client/payments">
-          Reportar pago
+          {t('clientDashboard.reportPayment')}
         </Link>
         <Link className="qlc-btn ghost" to="/client/support">
-          Soporte
+          {t('clientDashboard.support')}
         </Link>
       </div>
     </div>

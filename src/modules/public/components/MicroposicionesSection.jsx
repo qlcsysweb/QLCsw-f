@@ -1,22 +1,24 @@
 import SectionMedia from './SectionMedia';
+import { useLanguage } from '../../../i18n/LanguageContext';
 
 export default function MicroposicionesSection({ text, media = () => [] }) {
+  const { t } = useLanguage();
   return (
     <section className="section" id="microposiciones">
       <div className="container">
-        <div className="kicker">MICROPOSICIONES</div>
+        <div className="kicker">{t('microposicionesSection.kicker')}</div>
         <h2>
-          Una nueva escala para
+          {t('microposicionesSection.titleLine1')}
           <br />
-          <span className="gradient">el Copytrading Institucional.</span>
+          <span className="gradient">{t('microposicionesSection.titleLine2')}</span>
         </h2>
         <div className="micro-hero">
           <div>
-            <div className="kicker">DISEÑADO PARA INVERSORES INDIVIDUALES</div>
+            <div className="kicker">{t('microposicionesSection.designedKicker')}</div>
             <h3>
-              El tamaño cambia.
+              {t('microposicionesSection.subtitleLine1')}
               <br />
-              La infraestructura no.
+              {t('microposicionesSection.subtitleLine2')}
             </h3>
             <p>
               {text(

@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import api from '../../services/api';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 export default function ModelsPage() {
+  const { t } = useLanguage();
   const [models, setModels] = useState([]);
   const [currentModelKey, setCurrentModelKey] = useState(null);
   const [message, setMessage] = useState('');
@@ -17,7 +19,7 @@ export default function ModelsPage() {
     setSaving(modelKey);
     try {
       await api.patch('/client/model', { modelKey });
-      setMessage('Modelo seleccionado y confirmado.');
+      setMessage(t('clientModels.confirmed'));
       setTimeout(() => setMessage(''), 3000);
       load();
     } finally {
@@ -27,8 +29,8 @@ export default function ModelsPage() {
 
   return (
     <div>
-      <div className="qlc-kicker">MODELOS DE PARTICIPACIÓN</div>
-      <h1 style={{ marginTop: 0 }}>Elige tu modelo</h1>
+      <div className="qlc-kicker">{t('clientModels.kicker')}</div>
+      <h1 style={{ marginTop: 0 }}>{t('clientModels.title')}</h1>
       {message && <div className="qlc-card" style={{ borderColor: 'var(--qlc-ok-border)', marginBottom: 16 }}>{message}</div>}
 
       <div className="qlc-detail-grid">
@@ -37,15 +39,27 @@ export default function ModelsPage() {
             <div className="qlc-kicker">{m.key}</div>
             <h3 style={{ margin: '6px 0' }}>{m.name}</h3>
             <p style={{ color: 'var(--qlc-muted)', fontSize: 13 }}>{m.description}</p>
-            {m.conditions && <p style={{ fontSize: 12, color: 'var(--qlc-muted2)' }}>Condiciones: {m.conditions}</p>}
-            {m.objective && <p style={{ fontSize: 12, color: 'var(--qlc-muted2)' }}>Objetivo: {m.objective}</p>}
+            {m.conditions && (
+              <p style={{ fontSize: 12, color: 'var(--qlc-muted2)' }}>
+                {t('clientModels.conditions')}: {m.conditions}
+              </p>
+            )}
+            {m.objective && (
+              <p style={{ fontSize: 12, color: 'var(--qlc-muted2)' }}>
+                {t('clientModels.objective')}: {m.objective}
+              </p>
+            )}
             <button
               className={`qlc-btn ${currentModelKey === m.key ? 'ghost' : 'primary'}`}
               style={{ width: '100%', marginTop: 12 }}
               disabled={currentModelKey === m.key || saving === m.key}
               onClick={() => select(m.key)}
             >
-              {currentModelKey === m.key ? 'Modelo actual' : saving === m.key ? 'Guardando…' : 'Seleccionar y confirmar'}
+              {currentModelKey === m.key
+                ? t('clientModels.currentModel')
+                : saving === m.key
+                  ? t('common.saving')
+                  : t('clientModels.selectConfirm')}
             </button>
           </div>
         ))}

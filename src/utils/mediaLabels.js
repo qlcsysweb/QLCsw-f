@@ -1,25 +1,30 @@
 // Ubicaciones válidas para multimedia del sitio público — debe reflejar
-// exactamente el enum del backend (mediaController.js LOCATIONS).
-export const MEDIA_LOCATIONS = [
-  { value: 'logo', label: 'Logo (marca QLC)' },
-  { value: 'hero', label: 'Hero' },
-  { value: 'modelo', label: 'Modelo' },
-  { value: 'como_funciona', label: 'Cómo funciona' },
-  { value: 'tecnologia', label: 'Tecnología' },
-  { value: 'microposiciones', label: 'Microposiciones' },
-  { value: 'modelos', label: 'Modelos' },
-  { value: 'resultados', label: 'Resultados / Track Record' },
-  { value: 'seguridad', label: 'Seguridad' },
-  { value: 'sobre_qlc', label: 'Sobre QLC' },
-  { value: 'faq', label: 'FAQ' },
-  { value: 'contacto', label: 'Contacto' },
-  { value: 'footer', label: 'Footer' },
+// exactamente el enum del backend (mediaController.js LOCATIONS). Los
+// nombres se traducen según el idioma personal de quien esté viendo el panel.
+const LOCATION_VALUES = [
+  'logo',
+  'hero',
+  'modelo',
+  'como_funciona',
+  'tecnologia',
+  'microposiciones',
+  'modelos',
+  'resultados',
+  'seguridad',
+  'sobre_qlc',
+  'faq',
+  'contacto',
+  'footer',
 ];
 
-export function locationLabel(value) {
-  return MEDIA_LOCATIONS.find((l) => l.value === value)?.label || value;
+export function getMediaLocations(t) {
+  return LOCATION_VALUES.map((value) => ({ value, label: t(`mediaLocations.${value}`) }));
 }
 
-export function mediaTypeLabel(type) {
-  return type === 'VIDEO' ? 'Video' : 'Imagen';
+export function locationLabel(t, value) {
+  return t(`mediaLocations.${value}`, value);
+}
+
+export function mediaTypeLabel(t, type) {
+  return type === 'VIDEO' ? t('mediaType.video') : t('mediaType.image');
 }

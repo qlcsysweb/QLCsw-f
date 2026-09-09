@@ -6,6 +6,7 @@ import ModelsPage from '../ModelsPage';
 import FaqPage from '../FaqPage';
 import TrackRecordPage from '../TrackRecordPage';
 import MediaLibraryPage from './MediaLibraryPage';
+import { useLanguage } from '../../../i18n/LanguageContext';
 
 import Hero from '../../public/components/Hero';
 import ModeloSection from '../../public/components/ModeloSection';
@@ -17,163 +18,164 @@ import SobreQlcSection from '../../public/components/SobreQlcSection';
 import ContactoSection from '../../public/components/ContactoSection';
 import PublicFooter from '../../public/components/PublicFooter';
 
-const SECTIONS = [
-  {
-    key: 'multimedia',
-    label: 'MULTIMEDIA',
-    description: 'Logo animado, imágenes y videos de la página pública — subir, publicar, ordenar y asignar a cada sección.',
-    kind: 'custom',
-  },
-  {
-    key: 'hero',
-    label: 'HERO',
-    description: 'Título principal, frase destacada y estadísticas de portada.',
-    kind: 'content',
-    section: 'hero',
-    fields: [
-      { key: 'eyebrow', label: 'Etiqueta superior', fallback: 'Institutional Copytrading Infrastructure' },
-      { key: 'title_line1', label: 'Título — línea 1', fallback: 'Copytrading Institucional.' },
-      { key: 'title_line2', label: 'Título — línea 2 (resaltada)', fallback: 'Accesible desde 20 USDT.' },
-      { key: 'lead', label: 'Descripción', type: 'textarea', fallback: '' },
-      { key: 'mini_platform_label', label: 'Plataforma (mini stat)', fallback: 'BITGET' },
-      { key: 'mini_platform_value', label: 'Valor de plataforma (mini stat)', fallback: 'Elite Trader' },
-    ],
-    PreviewComponent: Hero,
-  },
-  {
-    key: 'modelo',
-    label: 'MODELO',
-    description: '"El concepto" — cómo se presenta la propuesta de copytrading.',
-    kind: 'content',
-    section: 'modelo',
-    fields: [
-      { key: 'kicker', label: 'Etiqueta', fallback: 'EL CONCEPTO' },
-      { key: 'h2_line1', label: 'Título — línea 1', fallback: 'Copytrading institucional.' },
-      { key: 'h2_line2', label: 'Título — línea 2 (resaltada)', fallback: 'Sin salir de tu cuenta.' },
-      { key: 'intro', label: 'Texto introductorio', type: 'textarea', fallback: '' },
-    ],
-    PreviewComponent: ModeloSection,
-  },
-  {
-    key: 'como_funciona',
-    label: 'CÓMO FUNCIONA',
-    description: 'Explicación del flujo cliente → API → QLC.',
-    kind: 'content',
-    section: 'como_funciona',
-    fields: [
-      { key: 'kicker', label: 'Etiqueta', fallback: 'CÓMO FUNCIONA' },
-      { key: 'h2_line1', label: 'Título — línea 1', fallback: 'Tu cuenta.' },
-      { key: 'h2_line2', label: 'Título — línea 2 (resaltada)', fallback: 'Nuestra infraestructura.' },
-      { key: 'sub', label: 'Subtítulo', type: 'textarea', fallback: '' },
-      { key: 'connection_title', label: 'Título de la conexión directa', fallback: '' },
-      { key: 'connection_text', label: 'Texto de la conexión directa', type: 'textarea', fallback: '' },
-    ],
-    PreviewComponent: ComoFuncionaSection,
-  },
-  {
-    key: 'tecnologia',
-    label: 'TECNOLOGÍA',
-    description: 'Infraestructura tecnológica de QLC.',
-    kind: 'content',
-    section: 'tecnologia',
-    fields: [
-      { key: 'kicker', label: 'Etiqueta', fallback: 'INFRAESTRUCTURA' },
-      { key: 'h2_line1', label: 'Título — línea 1', fallback: 'Una arquitectura.' },
-      { key: 'h2_line2', label: 'Título — línea 2 (resaltada)', fallback: 'Una experiencia sencilla.' },
-      { key: 'sub', label: 'Subtítulo', type: 'textarea', fallback: '' },
-    ],
-    PreviewComponent: TecnologiaSection,
-  },
-  {
-    key: 'microposiciones',
-    label: 'MICROPOSICIONES',
-    description: 'Rango de inversión y texto de escala.',
-    kind: 'content',
-    section: 'microposiciones',
-    fields: [
-      { key: 'range', label: 'Rango (ej. 20–400 USDT)', fallback: '20–400 USDT' },
-      { key: 'lead', label: 'Texto', type: 'textarea', fallback: '' },
-    ],
-    PreviewComponent: MicroposicionesSection,
-  },
-  {
-    key: 'modelos',
-    label: 'MODELOS',
-    description: 'Flexible, Performance y Compound — datos reales de cada modelo.',
-    kind: 'custom',
-  },
-  {
-    key: 'track_record',
-    label: 'TRACK RECORD',
-    description: 'Referencia externa verificable (Bitget), ranking y enlace.',
-    kind: 'custom',
-  },
-  {
-    key: 'seguridad',
-    label: 'SEGURIDAD',
-    description: 'Control del capital y de la conexión API.',
-    kind: 'content',
-    section: 'seguridad',
-    fields: [
-      { key: 'kicker', label: 'Etiqueta', fallback: 'CONTROL' },
-      { key: 'h2_line1', label: 'Título — línea 1', fallback: 'Tu cuenta.' },
-      { key: 'h2_line2', label: 'Título — línea 2 (resaltada)', fallback: 'Tu capital. Tu control.' },
-    ],
-    PreviewComponent: SeguridadSection,
-  },
-  {
-    key: 'sobre_qlc',
-    label: 'Sobre QLC',
-    description: 'Naturaleza y descripción institucional de QLC.',
-    kind: 'content',
-    section: 'sobre_qlc',
-    fields: [
-      { key: 'intro', label: 'Frase institucional', type: 'textarea', fallback: '' },
-      { key: 'body_1', label: 'Párrafo 1', type: 'textarea', fallback: '' },
-      { key: 'body_2', label: 'Párrafo 2', type: 'textarea', fallback: '' },
-      { key: 'body_3', label: 'Párrafo 3 (destacado)', type: 'textarea', fallback: '' },
-    ],
-    PreviewComponent: SobreQlcSection,
-  },
-  {
-    key: 'faq',
-    label: 'FAQ',
-    description: 'Preguntas frecuentes — crear, editar, eliminar y reordenar.',
-    kind: 'custom',
-  },
-  {
-    key: 'contacto',
-    label: 'Contacto',
-    description: 'Título, subtítulo y llamada a la acción de registro.',
-    kind: 'content',
-    section: 'contacto',
-    fields: [
-      { key: 'kicker', label: 'Etiqueta', fallback: 'QUANTUM LIQUIDITY CAPITAL' },
-      { key: 'title', label: 'Título', fallback: 'COPYTRADING INSTITUCIONAL.' },
-      { key: 'sub', label: 'Subtítulo', type: 'textarea', fallback: '' },
-    ],
-    PreviewComponent: ContactoSection,
-  },
-  {
-    key: 'footer',
-    label: 'FOOTER',
-    description: 'Tagline y aviso de riesgo / disclaimer.',
-    kind: 'content',
-    section: 'footer',
-    fields: [
-      { key: 'tagline', label: 'Tagline', fallback: '' },
-      { key: 'disclaimer', label: 'Disclaimer de riesgo', type: 'textarea', rows: 4, fallback: '' },
-    ],
-    PreviewComponent: PublicFooter,
-  },
-];
-
 export default function CmsPage() {
+  const { t } = useLanguage();
   const [content, setContent] = useState({});
   const [trackRecord, setTrackRecord] = useState(null);
   const [activeSection, setActiveSection] = useState(null);
   const [customModal, setCustomModal] = useState(null);
   const [message, setMessage] = useState('');
+
+  const SECTIONS = [
+    {
+      key: 'multimedia',
+      label: t('adminCms.multimediaLabel'),
+      description: t('adminCms.multimediaDesc'),
+      kind: 'custom',
+    },
+    {
+      key: 'hero',
+      label: t('adminCms.heroLabel'),
+      description: t('adminCms.heroDesc'),
+      kind: 'content',
+      section: 'hero',
+      fields: [
+        { key: 'eyebrow', label: t('adminCms.fieldEyebrow'), fallback: 'Institutional Copytrading Infrastructure' },
+        { key: 'title_line1', label: t('adminCms.fieldTitleLine1'), fallback: 'Copytrading Institucional.' },
+        { key: 'title_line2', label: t('adminCms.fieldTitleLine2Highlight'), fallback: 'Accesible desde 20 USDT.' },
+        { key: 'lead', label: t('adminCms.fieldDescription'), type: 'textarea', fallback: '' },
+        { key: 'mini_platform_label', label: t('adminCms.fieldMiniPlatformLabel'), fallback: 'BITGET' },
+        { key: 'mini_platform_value', label: t('adminCms.fieldMiniPlatformValue'), fallback: 'Elite Trader' },
+      ],
+      PreviewComponent: Hero,
+    },
+    {
+      key: 'modelo',
+      label: t('adminCms.modeloLabel'),
+      description: t('adminCms.modeloDesc'),
+      kind: 'content',
+      section: 'modelo',
+      fields: [
+        { key: 'kicker', label: t('adminCms.fieldLabel'), fallback: 'EL CONCEPTO' },
+        { key: 'h2_line1', label: t('adminCms.fieldTitleLine1'), fallback: 'Copytrading institucional.' },
+        { key: 'h2_line2', label: t('adminCms.fieldTitleLine2Highlight'), fallback: 'Sin salir de tu cuenta.' },
+        { key: 'intro', label: t('adminCms.fieldIntroText'), type: 'textarea', fallback: '' },
+      ],
+      PreviewComponent: ModeloSection,
+    },
+    {
+      key: 'como_funciona',
+      label: t('adminCms.comoFuncionaLabel'),
+      description: t('adminCms.comoFuncionaDesc'),
+      kind: 'content',
+      section: 'como_funciona',
+      fields: [
+        { key: 'kicker', label: t('adminCms.fieldLabel'), fallback: 'CÓMO FUNCIONA' },
+        { key: 'h2_line1', label: t('adminCms.fieldTitleLine1'), fallback: 'Tu cuenta.' },
+        { key: 'h2_line2', label: t('adminCms.fieldTitleLine2Highlight'), fallback: 'Nuestra infraestructura.' },
+        { key: 'sub', label: t('adminCms.fieldSubtitle'), type: 'textarea', fallback: '' },
+        { key: 'connection_title', label: t('adminCms.fieldConnectionTitle'), fallback: '' },
+        { key: 'connection_text', label: t('adminCms.fieldConnectionText'), type: 'textarea', fallback: '' },
+      ],
+      PreviewComponent: ComoFuncionaSection,
+    },
+    {
+      key: 'tecnologia',
+      label: t('adminCms.tecnologiaLabel'),
+      description: t('adminCms.tecnologiaDesc'),
+      kind: 'content',
+      section: 'tecnologia',
+      fields: [
+        { key: 'kicker', label: t('adminCms.fieldLabel'), fallback: 'INFRAESTRUCTURA' },
+        { key: 'h2_line1', label: t('adminCms.fieldTitleLine1'), fallback: 'Una arquitectura.' },
+        { key: 'h2_line2', label: t('adminCms.fieldTitleLine2Highlight'), fallback: 'Una experiencia sencilla.' },
+        { key: 'sub', label: t('adminCms.fieldSubtitle'), type: 'textarea', fallback: '' },
+      ],
+      PreviewComponent: TecnologiaSection,
+    },
+    {
+      key: 'microposiciones',
+      label: t('adminCms.microposicionesLabel'),
+      description: t('adminCms.microposicionesDesc'),
+      kind: 'content',
+      section: 'microposiciones',
+      fields: [
+        { key: 'range', label: t('adminCms.fieldRange'), fallback: '20–400 USDT' },
+        { key: 'lead', label: t('adminCms.fieldText'), type: 'textarea', fallback: '' },
+      ],
+      PreviewComponent: MicroposicionesSection,
+    },
+    {
+      key: 'modelos',
+      label: t('adminCms.modelosLabel'),
+      description: t('adminCms.modelosDesc'),
+      kind: 'custom',
+    },
+    {
+      key: 'track_record',
+      label: t('adminCms.trackRecordLabel'),
+      description: t('adminCms.trackRecordDesc'),
+      kind: 'custom',
+    },
+    {
+      key: 'seguridad',
+      label: t('adminCms.seguridadLabel'),
+      description: t('adminCms.seguridadDesc'),
+      kind: 'content',
+      section: 'seguridad',
+      fields: [
+        { key: 'kicker', label: t('adminCms.fieldLabel'), fallback: 'CONTROL' },
+        { key: 'h2_line1', label: t('adminCms.fieldTitleLine1'), fallback: 'Tu cuenta.' },
+        { key: 'h2_line2', label: t('adminCms.fieldTitleLine2Highlight'), fallback: 'Tu capital. Tu control.' },
+      ],
+      PreviewComponent: SeguridadSection,
+    },
+    {
+      key: 'sobre_qlc',
+      label: t('adminCms.sobreQlcLabel'),
+      description: t('adminCms.sobreQlcDesc'),
+      kind: 'content',
+      section: 'sobre_qlc',
+      fields: [
+        { key: 'intro', label: t('adminCms.fieldInstitutionalPhrase'), type: 'textarea', fallback: '' },
+        { key: 'body_1', label: t('adminCms.fieldParagraph1'), type: 'textarea', fallback: '' },
+        { key: 'body_2', label: t('adminCms.fieldParagraph2'), type: 'textarea', fallback: '' },
+        { key: 'body_3', label: t('adminCms.fieldParagraph3Highlight'), type: 'textarea', fallback: '' },
+      ],
+      PreviewComponent: SobreQlcSection,
+    },
+    {
+      key: 'faq',
+      label: t('adminCms.faqLabel'),
+      description: t('adminCms.faqDesc'),
+      kind: 'custom',
+    },
+    {
+      key: 'contacto',
+      label: t('adminCms.contactoLabel'),
+      description: t('adminCms.contactoDesc'),
+      kind: 'content',
+      section: 'contacto',
+      fields: [
+        { key: 'kicker', label: t('adminCms.fieldLabel'), fallback: 'QUANTUM LIQUIDITY CAPITAL' },
+        { key: 'title', label: t('adminCms.fieldTitle'), fallback: 'COPYTRADING INSTITUCIONAL.' },
+        { key: 'sub', label: t('adminCms.fieldSubtitle'), type: 'textarea', fallback: '' },
+      ],
+      PreviewComponent: ContactoSection,
+    },
+    {
+      key: 'footer',
+      label: t('adminCms.footerLabel'),
+      description: t('adminCms.footerDesc'),
+      kind: 'content',
+      section: 'footer',
+      fields: [
+        { key: 'tagline', label: t('adminCms.fieldTagline'), fallback: '' },
+        { key: 'disclaimer', label: t('adminCms.fieldRiskDisclaimer'), type: 'textarea', rows: 4, fallback: '' },
+      ],
+      PreviewComponent: PublicFooter,
+    },
+  ];
 
   const load = () => {
     api.get('/admin/content').then(({ data }) => {
@@ -198,19 +200,16 @@ export default function CmsPage() {
 
   const handleSaved = () => {
     setActiveSection(null);
-    setMessage('✓ Cambios guardados correctamente.');
+    setMessage(t('adminCms.changesSaved'));
     setTimeout(() => setMessage(''), 3500);
     load();
   };
 
   return (
     <div>
-      <div className="qlc-kicker">CONTENIDO DEL SITIO</div>
-      <h1 style={{ marginTop: 0 }}>Editor de la página pública</h1>
-      <p style={{ color: 'var(--qlc-muted)', maxWidth: 640 }}>
-        Cada tarjeta corresponde a una sección real de la página pública. Los cambios que guardes
-        aquí se publican de inmediato — no necesitas tocar código.
-      </p>
+      <div className="qlc-kicker">{t('adminCms.kicker')}</div>
+      <h1 style={{ marginTop: 0 }}>{t('adminCms.title')}</h1>
+      <p style={{ color: 'var(--qlc-muted)', maxWidth: 640 }}>{t('adminCms.intro')}</p>
 
       {message && (
         <div className="qlc-card" style={{ borderColor: 'var(--qlc-ok-border)', marginBottom: 16 }}>
@@ -224,7 +223,7 @@ export default function CmsPage() {
             <div className="qlc-kicker">{s.label}</div>
             <p style={{ fontSize: 13, color: 'var(--qlc-muted)', minHeight: 40 }}>{s.description}</p>
             <button className="qlc-btn primary" style={{ width: '100%' }} onClick={() => openSection(s)}>
-              Editar
+              {t('adminCms.edit')}
             </button>
           </div>
         ))}
@@ -244,22 +243,22 @@ export default function CmsPage() {
       )}
 
       {customModal === 'modelos' && (
-        <Modal title="Modelos de participación" onClose={() => setCustomModal(null)} width={960}>
+        <Modal title={t('adminCms.modelsModalTitle')} onClose={() => setCustomModal(null)} width={960}>
           <ModelsPage />
         </Modal>
       )}
       {customModal === 'track_record' && (
-        <Modal title="Track Record" onClose={() => setCustomModal(null)} width={640}>
+        <Modal title={t('adminCms.trackRecordLabel')} onClose={() => setCustomModal(null)} width={640}>
           <TrackRecordPage />
         </Modal>
       )}
       {customModal === 'faq' && (
-        <Modal title="Preguntas frecuentes" onClose={() => setCustomModal(null)} width={720}>
+        <Modal title={t('adminCms.faqModalTitle')} onClose={() => setCustomModal(null)} width={720}>
           <FaqPage />
         </Modal>
       )}
       {customModal === 'multimedia' && (
-        <Modal title="Multimedia" onClose={() => setCustomModal(null)} width={960}>
+        <Modal title={t('adminCms.multimediaModalTitle')} onClose={() => setCustomModal(null)} width={960}>
           <MediaLibraryPage />
         </Modal>
       )}

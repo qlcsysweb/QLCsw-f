@@ -5,7 +5,8 @@ import ConfirmModal from '../../../components/ConfirmModal';
 import ConfirmSaveModal from '../../../components/ConfirmSaveModal';
 import UnsavedChangesModal from '../../../components/UnsavedChangesModal';
 import useUnsavedGuard from '../../../components/useUnsavedGuard';
-import { MEDIA_LOCATIONS, locationLabel, mediaTypeLabel } from '../../../utils/mediaLabels';
+import { getMediaLocations, locationLabel, mediaTypeLabel } from '../../../utils/mediaLabels';
+import { useLanguage } from '../../../i18n/LanguageContext';
 
 function Thumb({ item }) {
   if (item.type === 'VIDEO') {
@@ -15,22 +16,27 @@ function Thumb({ item }) {
 }
 
 function PreviewModal({ item, onClose }) {
+  const { t } = useLanguage();
   return (
-    <Modal title={item.title || item.fileName} subtitle={`${mediaTypeLabel(item.type)} · ${locationLabel(item.location)}`} onClose={onClose} width={720}>
+    <Modal
+      title={item.title || item.fileName}
+      subtitle={`${mediaTypeLabel(t, item.type)} · ${locationLabel(t, item.location)}`}
+      onClose={onClose}
+      width={720}
+    >
       {item.type === 'VIDEO' ? (
         <video src={item.url} controls muted autoPlay style={{ width: '100%', borderRadius: 12, maxHeight: 480 }} />
       ) : (
         <img src={item.url} alt="" style={{ width: '100%', borderRadius: 12, maxHeight: 480, objectFit: 'contain' }} />
       )}
-      <p style={{ color: 'var(--qlc-muted)', fontSize: 13, marginTop: 12 }}>
-        Esta previsualización con controles solo está disponible aquí, en el panel administrativo. En la
-        página pública este recurso se muestra sin controles ni interacción, integrado al diseño.
-      </p>
+      <p style={{ color: 'var(--qlc-muted)', fontSize: 13, marginTop: 12 }}>{t('adminMedia.previewControlsNotice')}</p>
     </Modal>
   );
 }
 
 function EditModal({ item, onClose, onSaved }) {
+  const { t } = useLanguage();
+  const MEDIA_LOCATIONS = getMediaLocations(t);
   const initial = {
     location: item.location,
     title: item.title || '',
@@ -58,28 +64,28 @@ function EditModal({ item, onClose, onSaved }) {
   };
 
   return (
-    <Modal title="Editar multimedia" onClose={requestClose} width={520}>
+    <Modal title={t('adminMedia.editModalTitle')} onClose={requestClose} width={520}>
       <form
         onSubmit={(e) => {
           e.preventDefault();
           setConfirmingSave(true);
         }}
       >
-        <label className="qlc-label">Título interno</label>
+        <label className="qlc-label">{t('adminMedia.internalTitleLabel')}</label>
         <input
           className="qlc-input"
           value={values.title}
           onChange={(e) => setValues((v) => ({ ...v, title: e.target.value }))}
-          placeholder="Ej. Video principal del Hero"
+          placeholder={t('adminMedia.internalTitleExample')}
         />
-        <label className="qlc-label">Descripción interna</label>
+        <label className="qlc-label">{t('adminMedia.internalDescriptionLabel')}</label>
         <textarea
           className="qlc-textarea"
           rows={2}
           value={values.description}
           onChange={(e) => setValues((v) => ({ ...v, description: e.target.value }))}
         />
-        <label className="qlc-label">Ubicación</label>
+        <label className="qlc-label">{t('adminMedia.location')}</label>
         <select
           className="qlc-select"
           value={values.location}
@@ -91,7 +97,7 @@ function EditModal({ item, onClose, onSaved }) {
             </option>
           ))}
         </select>
-        <label className="qlc-label">Orden (cuando la sección tiene varios recursos)</label>
+        <label className="qlc-label">{t('adminMedia.orderHint')}</label>
         <input
           className="qlc-input"
           type="number"
@@ -105,7 +111,7 @@ function EditModal({ item, onClose, onSaved }) {
             checked={values.isPublished}
             onChange={(e) => setValues((v) => ({ ...v, isPublished: e.target.checked }))}
           />
-          Publicado (visible en la página pública)
+          {t('adminMedia.publishedCheckbox')}
         </label>
         <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6, fontSize: 13 }}>
           <input
@@ -113,24 +119,22 @@ function EditModal({ item, onClose, onSaved }) {
             checked={values.isPrimary}
             onChange={(e) => setValues((v) => ({ ...v, isPrimary: e.target.checked }))}
           />
-          {values.location === 'logo'
-            ? 'Usar como logo activo (reemplaza al que esté activo ahora)'
-            : 'Recurso principal de esta sección'}
+          {values.location === 'logo' ? t('adminMedia.useAsActiveLogoCheckbox') : t('adminMedia.mainResourceCheckbox')}
         </label>
 
         {error && <div className="qlc-field-error">{error}</div>}
 
         <div className="qlc-form-actions">
           <button type="button" className="qlc-btn ghost" onClick={requestClose}>
-            Cancelar
+            {t('common.cancel')}
           </button>
-          <button className="qlc-btn primary">✓ Guardar cambios</button>
+          <button className="qlc-btn primary">{t('modals.saveChanges')}</button>
         </div>
       </form>
 
       {confirmingSave && (
         <ConfirmSaveModal
-          message="Se actualizará este recurso multimedia. Si está publicado, el cambio se reflejará de inmediato en la página pública."
+          message={t('adminMedia.editSaveConfirmMessage')}
           onCancel={() => setConfirmingSave(false)}
           onConfirm={doSave}
         />
@@ -141,6 +145,7 @@ function EditModal({ item, onClose, onSaved }) {
 }
 
 function ReplaceModal({ item, onClose, onSaved }) {
+  const { t } = useLanguage();
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
@@ -161,10 +166,14 @@ function ReplaceModal({ item, onClose, onSaved }) {
   };
 
   return (
-    <Modal title="Reemplazar archivo" subtitle={`Usado en: ${locationLabel(item.location)}`} onClose={onClose} width={480}>
+    <Modal
+      title={t('adminMedia.replaceModalTitle')}
+      subtitle={`${t('adminMedia.usedIn')}: ${locationLabel(t, item.location)}`}
+      onClose={onClose}
+      width={480}
+    >
       <p style={{ color: 'var(--qlc-muted)', fontSize: 13, marginTop: 0 }}>
-        El archivo actual ({item.fileName}) se reemplazará por el nuevo. La ubicación, el estado de
-        publicación y el orden se conservan — no queda ninguna referencia al archivo anterior.
+        {t('adminMedia.currentFile')} ({item.fileName}) {t('adminMedia.replaceNotice')}
       </p>
       <input
         className="qlc-input"
@@ -175,10 +184,10 @@ function ReplaceModal({ item, onClose, onSaved }) {
       {error && <div className="qlc-field-error">{error}</div>}
       <div className="qlc-form-actions">
         <button className="qlc-btn ghost" onClick={onClose} disabled={uploading}>
-          Cancelar
+          {t('common.cancel')}
         </button>
         <button className="qlc-btn primary" onClick={doReplace} disabled={!file || uploading}>
-          {uploading ? 'Reemplazando…' : 'Reemplazar'}
+          {uploading ? t('adminMedia.replacing') : t('adminMedia.replace')}
         </button>
       </div>
     </Modal>
@@ -186,6 +195,8 @@ function ReplaceModal({ item, onClose, onSaved }) {
 }
 
 function UploadForm({ onUploaded }) {
+  const { t } = useLanguage();
+  const MEDIA_LOCATIONS = getMediaLocations(t);
   const [location, setLocation] = useState('');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -197,11 +208,11 @@ function UploadForm({ onUploaded }) {
   const submit = async (e) => {
     e.preventDefault();
     if (!file) {
-      setError('Selecciona una imagen o un video.');
+      setError(t('adminMedia.selectImageOrVideo'));
       return;
     }
     if (!location) {
-      setError('Elige a qué ubicación pertenece este archivo.');
+      setError(t('adminMedia.selectLocationError'));
       return;
     }
     setUploading(true);
@@ -228,8 +239,8 @@ function UploadForm({ onUploaded }) {
 
   return (
     <form className="qlc-card" onSubmit={submit} style={{ marginBottom: 20 }}>
-      <h3 style={{ marginTop: 0 }}>+ Agregar multimedia</h3>
-      <label className="qlc-label">Archivo (PNG, JPG, WEBP, GIF, MP4 o WEBM)</label>
+      <h3 style={{ marginTop: 0 }}>{t('adminMedia.addMedia')}</h3>
+      <label className="qlc-label">{t('adminMedia.file')}</label>
       <input
         ref={fileInputRef}
         className="qlc-input"
@@ -237,10 +248,10 @@ function UploadForm({ onUploaded }) {
         accept="image/png,image/jpeg,image/webp,image/gif,video/mp4,video/webm"
         onChange={(e) => setFile(e.target.files[0])}
       />
-      <label className="qlc-label">Ubicación</label>
+      <label className="qlc-label">{t('adminMedia.location')}</label>
       <select className="qlc-select" value={location} onChange={(e) => setLocation(e.target.value)}>
         <option value="" disabled>
-          Selecciona dónde se usará este archivo…
+          {t('adminMedia.selectLocation')}
         </option>
         {MEDIA_LOCATIONS.map((l) => (
           <option key={l.value} value={l.value}>
@@ -250,20 +261,19 @@ function UploadForm({ onUploaded }) {
       </select>
       {location === 'logo' && (
         <div className="qlc-field-hint" style={{ marginTop: -6, marginBottom: 10, fontSize: 12, color: 'var(--qlc-gold)' }}>
-          Después de subirlo, ábrelo con "Editar" y marca "Publicado" y "Usar como logo activo" — de lo
-          contrario no reemplazará al logo actual del sitio.
+          {t('adminMedia.logoHint')}
         </div>
       )}
-      <label className="qlc-label">Título interno (opcional)</label>
-      <input className="qlc-input" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Solo para identificarlo aquí en el panel" />
-      <label className="qlc-label">Descripción interna (opcional)</label>
+      <label className="qlc-label">{t('adminMedia.internalTitle')}</label>
+      <input className="qlc-input" value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t('adminMedia.internalTitlePlaceholder')} />
+      <label className="qlc-label">{t('adminMedia.internalDescription')}</label>
       <textarea className="qlc-textarea" rows={2} value={description} onChange={(e) => setDescription(e.target.value)} />
 
       {error && <div className="qlc-field-error">{error}</div>}
 
       <div className="qlc-form-actions">
         <button className="qlc-btn primary" disabled={uploading}>
-          {uploading ? 'Subiendo…' : 'Subir'}
+          {uploading ? t('adminMedia.uploading') : t('adminMedia.upload')}
         </button>
       </div>
     </form>
@@ -271,6 +281,8 @@ function UploadForm({ onUploaded }) {
 }
 
 export default function MediaLibraryPage() {
+  const { t } = useLanguage();
+  const MEDIA_LOCATIONS = getMediaLocations(t);
   const [items, setItems] = useState([]);
   const [filter, setFilter] = useState('all');
   const [message, setMessage] = useState('');
@@ -291,20 +303,23 @@ export default function MediaLibraryPage() {
 
   const togglePublish = async (item) => {
     await api.patch(`/admin/media/${item.id}`, { isPublished: !item.isPublished });
-    flash(item.isPublished ? '— Recurso desactivado. Ya no aparece en la página pública.' : '✓ Recurso publicado.');
+    flash(item.isPublished ? t('adminMedia.deactivatedNotice') : t('adminMedia.publishedNotice'));
     load();
   };
 
   const visibleItems = filter === 'all' ? items : items.filter((i) => i.location === filter);
 
+  const logoWarning = (item) => {
+    if (!item.isPublished && !item.isPrimary) return t('adminMedia.notActiveLogoMissingBoth');
+    if (!item.isPublished) return t('adminMedia.notActiveLogoMissingPublished');
+    return t('adminMedia.notActiveLogoMissingPrimary');
+  };
+
   return (
     <div>
-      <div className="qlc-kicker">MULTIMEDIA</div>
-      <h1 style={{ marginTop: 0 }}>Imágenes y videos del sitio público</h1>
-      <p style={{ color: 'var(--qlc-muted)', maxWidth: 640 }}>
-        Sube, publica y ordena las imágenes y videos que aparecen en la página pública, incluyendo el
-        logo animado. Solo lo que marques como "Publicado" se muestra a los visitantes.
-      </p>
+      <div className="qlc-kicker">{t('adminMedia.kicker')}</div>
+      <h1 style={{ marginTop: 0 }}>{t('adminMedia.title')}</h1>
+      <p style={{ color: 'var(--qlc-muted)', maxWidth: 640 }}>{t('adminMedia.intro')}</p>
 
       {message && (
         <div className="qlc-card" style={{ borderColor: 'var(--qlc-ok-border)', marginBottom: 16 }}>
@@ -312,12 +327,12 @@ export default function MediaLibraryPage() {
         </div>
       )}
 
-      <UploadForm onUploaded={() => { flash('✓ Archivo subido correctamente.'); load(); }} />
+      <UploadForm onUploaded={() => { flash(t('adminMedia.uploadedOk')); load(); }} />
 
       <div style={{ marginBottom: 14 }}>
-        <label className="qlc-label">Filtrar por ubicación</label>
+        <label className="qlc-label">{t('adminMedia.filterByLocation')}</label>
         <select className="qlc-select" value={filter} onChange={(e) => setFilter(e.target.value)}>
-          <option value="all">Todas las ubicaciones</option>
+          <option value="all">{t('adminMedia.allLocations')}</option>
           {MEDIA_LOCATIONS.map((l) => (
             <option key={l.value} value={l.value}>
               {l.label}
@@ -327,7 +342,7 @@ export default function MediaLibraryPage() {
       </div>
 
       {visibleItems.length === 0 ? (
-        <div className="qlc-empty">No hay multimedia en esta ubicación todavía.</div>
+        <div className="qlc-empty">{t('adminMedia.noneInLocation')}</div>
       ) : (
         visibleItems.map((item) => (
           <div className="qlc-card" key={item.id} style={{ marginBottom: 12 }}>
@@ -336,36 +351,32 @@ export default function MediaLibraryPage() {
               <div style={{ flex: 1, minWidth: 180 }}>
                 <strong>{item.title || item.fileName}</strong>
                 <div style={{ fontSize: 12, color: 'var(--qlc-muted)', marginTop: 2 }}>
-                  {mediaTypeLabel(item.type)} · {locationLabel(item.location)} · Orden {item.order}
-                  {item.isPrimary ? ' · Principal' : ''}
+                  {mediaTypeLabel(t, item.type)} · {locationLabel(t, item.location)} · {t('adminMedia.order')} {item.order}
+                  {item.isPrimary ? ` · ${t('adminMedia.primary')}` : ''}
                 </div>
               </div>
               <span className={`qlc-badge ${item.isPublished ? 'ok' : 'muted'}`}>
-                {item.isPublished ? '✓ Publicado' : '— No publicado'}
+                {item.isPublished ? t('adminMedia.published') : t('adminMedia.unpublished')}
               </span>
             </div>
             {item.location === 'logo' && !(item.isPublished && item.isPrimary) && (
-              <div style={{ fontSize: 12, color: 'var(--qlc-gold)', marginTop: 8 }}>
-                ⚠ Todavía no es el logo activo del sitio — le falta {!item.isPublished && 'Publicado'}
-                {!item.isPublished && !item.isPrimary && ' y '}
-                {!item.isPrimary && '"Usar como logo activo"'}. Ábrelo con "Editar" para activarlo.
-              </div>
+              <div style={{ fontSize: 12, color: 'var(--qlc-gold)', marginTop: 8 }}>{logoWarning(item)}</div>
             )}
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 12 }}>
               <button className="qlc-btn ghost" onClick={() => setPreviewItem(item)}>
-                Vista previa
+                {t('adminMedia.preview')}
               </button>
               <button className="qlc-btn ghost" onClick={() => setEditingItem(item)}>
-                Editar
+                {t('adminMedia.edit')}
               </button>
               <button className="qlc-btn ghost" onClick={() => togglePublish(item)}>
-                {item.isPublished ? 'Desactivar' : 'Publicar'}
+                {item.isPublished ? t('adminMedia.deactivate') : t('adminMedia.publish')}
               </button>
               <button className="qlc-btn ghost" onClick={() => setReplacingItem(item)}>
-                Reemplazar
+                {t('adminMedia.replace')}
               </button>
               <button className="qlc-btn danger" onClick={() => setDeletingItem(item)}>
-                Eliminar
+                {t('adminMedia.delete')}
               </button>
             </div>
           </div>
@@ -379,7 +390,7 @@ export default function MediaLibraryPage() {
           onClose={() => setEditingItem(null)}
           onSaved={() => {
             setEditingItem(null);
-            flash('✓ Cambios guardados.');
+            flash(t('adminMedia.changesSaved'));
             load();
           }}
         />
@@ -390,23 +401,23 @@ export default function MediaLibraryPage() {
           onClose={() => setReplacingItem(null)}
           onSaved={() => {
             setReplacingItem(null);
-            flash('✓ Archivo reemplazado.');
+            flash(t('adminMedia.fileReplaced'));
             load();
           }}
         />
       )}
       {deletingItem && (
         <ConfirmModal
-          title="¿Eliminar este recurso?"
-          message={`Se eliminará "${deletingItem.title || deletingItem.fileName}" (usado en: ${locationLabel(
-            deletingItem.location
-          )}) de forma permanente, incluyendo el archivo en Cloudinary. Dejará de aparecer en la página pública.`}
-          confirmLabel="Eliminar"
+          title={t('adminMedia.deleteTitle')}
+          message={t('adminMedia.deleteMessage')
+            .replace('{name}', deletingItem.title || deletingItem.fileName)
+            .replace('{location}', locationLabel(t, deletingItem.location))}
+          confirmLabel={t('adminMedia.delete')}
           twoStep
           onClose={() => setDeletingItem(null)}
           onConfirm={async () => {
             await api.delete(`/admin/media/${deletingItem.id}`);
-            flash('✓ Recurso eliminado.');
+            flash(t('adminMedia.deleted'));
             load();
           }}
         />

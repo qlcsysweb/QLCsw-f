@@ -1,12 +1,15 @@
 import SectionMedia from './SectionMedia';
-
-const CARDS = [
-  { title: 'CAPITAL EN TU CUENTA', text: 'El capital permanece en la cuenta del cliente en el exchange.' },
-  { title: 'CONEXIÓN API', text: 'La operación se realiza mediante una conexión autorizada con permisos limitados.' },
-  { title: 'SIN CUSTODIA', text: 'QLC no necesita recibir ni trasladar los fondos del cliente para ejecutar la estrategia.' },
-];
+import { useLanguage } from '../../../i18n/LanguageContext';
 
 export default function SeguridadSection({ text, media = () => [] }) {
+  const { t } = useLanguage();
+
+  const CARDS = [
+    { title: t('seguridadSection.card1Title'), text: t('seguridadSection.card1Text') },
+    { title: t('seguridadSection.card2Title'), text: t('seguridadSection.card2Text') },
+    { title: t('seguridadSection.card3Title'), text: t('seguridadSection.card3Text') },
+  ];
+
   return (
     <section className="section" id="seguridad">
       <div className="container">

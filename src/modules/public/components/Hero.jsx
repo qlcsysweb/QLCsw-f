@@ -1,7 +1,9 @@
 import QlcLogo from '../../../components/QlcLogo';
 import SectionMedia from './SectionMedia';
+import { useLanguage } from '../../../i18n/LanguageContext';
 
 export default function Hero({ text, media = () => [], trackRecord }) {
+  const { t } = useLanguage();
   return (
     <section className="hero" id="inicio-hero">
       <div className="container hero-grid">
@@ -23,18 +25,18 @@ export default function Hero({ text, media = () => [], trackRecord }) {
           </p>
           <div className="actions">
             <a className="btn primary" href="#como-funciona">
-              Cómo funciona
+              {t('hero.howItWorks')}
             </a>
             <a className="btn secondary" href="#modelos">
-              Ver modelos
+              {t('hero.seeModels')}
             </a>
           </div>
           <div className="trust">
-            <span>Tu capital</span>
+            <span>{t('hero.trustCapital')}</span>
             <span>·</span>
-            <span>Tu cuenta</span>
+            <span>{t('hero.trustAccount')}</span>
             <span>·</span>
-            <span>Nuestra estrategia</span>
+            <span>{t('hero.trustStrategy')}</span>
           </div>
         </div>
 
@@ -47,15 +49,15 @@ export default function Hero({ text, media = () => [], trackRecord }) {
             </div>
             <div className="mini">
               <b>{trackRecord?.ranking || '#XXX'}</b>
-              <span>Clasificación actual</span>
+              <span>{t('hero.currentRanking')}</span>
             </div>
             <div className="mini">
-              <b>TRACK RECORD</b>
-              <span>Datos públicos</span>
+              <b>{t('hero.trackRecord')}</b>
+              <span>{t('hero.publicData')}</span>
             </div>
             <div className="mini">
               <b>API</b>
-              <span>Ejecución algorítmica QLC</span>
+              <span>{t('hero.algoExecution')}</span>
             </div>
           </div>
         </div>

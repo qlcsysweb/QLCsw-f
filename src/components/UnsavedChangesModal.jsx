@@ -1,17 +1,17 @@
 import Modal from './Modal';
+import { useLanguage } from '../i18n/LanguageContext';
 
 export default function UnsavedChangesModal({ onKeepEditing, onDiscard }) {
+  const { t } = useLanguage();
   return (
-    <Modal title="Hay cambios sin guardar" onClose={onKeepEditing} width={420}>
-      <p style={{ color: 'var(--qlc-muted)', fontSize: 14, marginTop: 0 }}>
-        Si sales ahora perderás los cambios realizados.
-      </p>
+    <Modal title={t('modals.unsavedTitle')} onClose={onKeepEditing} width={420}>
+      <p style={{ color: 'var(--qlc-muted)', fontSize: 14, marginTop: 0 }}>{t('modals.unsavedMessage')}</p>
       <div className="qlc-form-actions">
         <button className="qlc-btn ghost" onClick={onDiscard}>
-          Salir sin guardar
+          {t('modals.discard')}
         </button>
         <button className="qlc-btn primary" onClick={onKeepEditing}>
-          Seguir editando
+          {t('modals.keepEditing')}
         </button>
       </div>
     </Modal>

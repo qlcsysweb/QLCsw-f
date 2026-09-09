@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import api from '../../services/api';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 function StatCard({ label, value, hint }) {
   return (
@@ -12,6 +13,7 @@ function StatCard({ label, value, hint }) {
 }
 
 export default function DashboardPage() {
+  const { t } = useLanguage();
   const [summary, setSummary] = useState(null);
   const [error, setError] = useState('');
 
@@ -23,45 +25,45 @@ export default function DashboardPage() {
   }, []);
 
   if (error) return <div className="qlc-empty">{error}</div>;
-  if (!summary) return <div className="qlc-empty">Cargando indicadores…</div>;
+  if (!summary) return <div className="qlc-empty">{t('adminDashboard.loadingIndicators')}</div>;
 
   return (
     <div>
-      <div className="qlc-kicker">PANEL ADMINISTRATIVO</div>
-      <h1 style={{ marginTop: 0 }}>Resumen general</h1>
+      <div className="qlc-kicker">{t('adminDashboard.kicker')}</div>
+      <h1 style={{ marginTop: 0 }}>{t('adminDashboard.title')}</h1>
 
       <div className="qlc-stat-grid">
-        <StatCard label="Clientes totales" value={summary.clients.total} />
-        <StatCard label="Clientes activos" value={summary.clients.active} />
-        <StatCard label="Clientes pendientes" value={summary.clients.pending} />
-        <StatCard label="En revisión" value={summary.clients.review} />
-        <StatCard label="Prospectos nuevos" value={summary.prospects.new} />
+        <StatCard label={t('adminDashboard.totalClients')} value={summary.clients.total} />
+        <StatCard label={t('adminDashboard.activeClients')} value={summary.clients.active} />
+        <StatCard label={t('adminDashboard.pendingClients')} value={summary.clients.pending} />
+        <StatCard label={t('adminDashboard.underReview')} value={summary.clients.review} />
+        <StatCard label={t('adminDashboard.newProspects')} value={summary.prospects.new} />
         <StatCard
-          label="Prospectos sin registro"
+          label={t('adminDashboard.unregisteredProspects')}
           value={summary.prospects.unregistered}
-          hint="Solicitaron información pero no tienen cuenta"
+          hint={t('adminDashboard.unregisteredProspectsHint')}
         />
-        <StatCard label="Citas pendientes" value={summary.appointments.pending} />
-        <StatCard label="Pagos por revisar" value={summary.payments.pending} />
-        <StatCard label="Contratos pendientes" value={summary.contracts.pending} />
-        <StatCard label="API conectadas" value={summary.apiConnections.connected} hint="Bitget" />
-        <StatCard label="API desconectadas" value={summary.apiConnections.disconnected} />
-        <StatCard label="API pendientes" value={summary.apiConnections.pending} />
+        <StatCard label={t('adminDashboard.pendingAppointments')} value={summary.appointments.pending} />
+        <StatCard label={t('adminDashboard.pendingPayments')} value={summary.payments.pending} />
+        <StatCard label={t('adminDashboard.pendingContracts')} value={summary.contracts.pending} />
+        <StatCard label={t('adminDashboard.apiConnected')} value={summary.apiConnections.connected} hint="Bitget" />
+        <StatCard label={t('adminDashboard.apiDisconnected')} value={summary.apiConnections.disconnected} />
+        <StatCard label={t('adminDashboard.apiPending')} value={summary.apiConnections.pending} />
       </div>
 
       <div className="qlc-card" style={{ marginTop: 24 }}>
-        <h3 style={{ marginTop: 0 }}>Documentos recientes</h3>
+        <h3 style={{ marginTop: 0 }}>{t('adminDashboard.recentDocuments')}</h3>
         {summary.recentDocuments.length === 0 ? (
-          <div className="qlc-empty">Sin documentos recientes.</div>
+          <div className="qlc-empty">{t('adminDashboard.noRecentDocuments')}</div>
         ) : (
           <div className="qlc-table-wrap">
             <table className="qlc-table">
               <thead>
                 <tr>
-                  <th>Cliente</th>
-                  <th>Categoría</th>
-                  <th>Archivo</th>
-                  <th>Fecha</th>
+                  <th>{t('adminDashboard.client')}</th>
+                  <th>{t('adminDashboard.category')}</th>
+                  <th>{t('adminDashboard.file')}</th>
+                  <th>{t('adminDashboard.date')}</th>
                 </tr>
               </thead>
               <tbody>

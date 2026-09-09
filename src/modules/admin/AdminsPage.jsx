@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react';
 import api from '../../services/api';
 import ConfirmModal from '../../components/ConfirmModal';
+import { useLanguage } from '../../i18n/LanguageContext';
+import { translateBackendMessage } from '../../i18n/backendMessages';
 
 export default function AdminsPage() {
+  const { t, language } = useLanguage();
   const [admins, setAdmins] = useState([]);
   const [limit, setLimit] = useState(3);
   const [form, setForm] = useState({ firstName: '', lastName: '', email: '', username: '', password: '' });
@@ -26,7 +29,7 @@ export default function AdminsPage() {
       setForm({ firstName: '', lastName: '', email: '', username: '', password: '' });
       load();
     } catch (err) {
-      setError(err.message);
+      setError(translateBackendMessage(err.message, language));
     }
   };
 
@@ -37,19 +40,19 @@ export default function AdminsPage() {
 
   return (
     <div>
-      <div className="qlc-kicker">ADMINISTRADORES</div>
+      <div className="qlc-kicker">{t('adminAdmins.kicker')}</div>
       <h1 style={{ marginTop: 0 }}>
-        Administradores ({admins.length}/{limit})
+        {t('adminAdmins.title')} ({admins.length}/{limit})
       </h1>
 
       <div className="qlc-table-wrap" style={{ marginBottom: 20 }}>
         <table className="qlc-table">
           <thead>
             <tr>
-              <th>Nombre</th>
-              <th>Usuario</th>
-              <th>Último acceso</th>
-              <th>Estado</th>
+              <th>{t('adminAdmins.name')}</th>
+              <th>{t('adminAdmins.user')}</th>
+              <th>{t('adminAdmins.lastLogin')}</th>
+              <th>{t('adminAdmins.status')}</th>
               <th></th>
             </tr>
           </thead>
@@ -63,7 +66,7 @@ export default function AdminsPage() {
                 <td>{a.lastLoginAt ? new Date(a.lastLoginAt).toLocaleString() : '—'}</td>
                 <td>
                   <span className={`qlc-badge ${a.isActive ? 'ok' : 'danger'}`}>
-                    {a.isActive ? 'ACTIVO' : 'INACTIVO'}
+                    {a.isActive ? t('adminAdmins.active') : t('adminAdmins.inactive')}
                   </span>
                 </td>
                 <td>
@@ -71,7 +74,7 @@ export default function AdminsPage() {
                     className="qlc-btn ghost"
                     onClick={() => (a.isActive ? setConfirmDeactivate(a) : toggleActive(a.id, true))}
                   >
-                    {a.isActive ? 'Desactivar' : 'Activar'}
+                    {a.isActive ? t('adminAdmins.deactivate') : t('adminAdmins.activate')}
                   </button>
                 </td>
               </tr>
@@ -82,29 +85,32 @@ export default function AdminsPage() {
 
       {admins.length < limit && (
         <form className="qlc-card" style={{ maxWidth: 480 }} onSubmit={create}>
-          <h3 style={{ marginTop: 0 }}>Nuevo administrador</h3>
-          <label className="qlc-label">Nombre</label>
+          <h3 style={{ marginTop: 0 }}>{t('adminAdmins.newAdmin')}</h3>
+          <label className="qlc-label">{t('adminAdmins.firstName')}</label>
           <input className="qlc-input" value={form.firstName} onChange={(e) => setForm((f) => ({ ...f, firstName: e.target.value }))} required />
-          <label className="qlc-label">Apellidos</label>
+          <label className="qlc-label">{t('adminAdmins.lastName')}</label>
           <input className="qlc-input" value={form.lastName} onChange={(e) => setForm((f) => ({ ...f, lastName: e.target.value }))} required />
-          <label className="qlc-label">Email</label>
+          <label className="qlc-label">{t('adminAdmins.email')}</label>
           <input className="qlc-input" type="email" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} required />
-          <label className="qlc-label">Usuario</label>
+          <label className="qlc-label">{t('adminAdmins.username')}</label>
           <input className="qlc-input" value={form.username} onChange={(e) => setForm((f) => ({ ...f, username: e.target.value }))} required />
-          <label className="qlc-label">Contraseña</label>
+          <label className="qlc-label">{t('adminAdmins.password')}</label>
           <input className="qlc-input" type="password" value={form.password} onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))} required minLength={8} />
           {error && <div className="qlc-field-error">{error}</div>}
           <div className="qlc-form-actions">
-            <button className="qlc-btn primary">Crear administrador</button>
+            <button className="qlc-btn primary">{t('adminAdmins.createAdmin')}</button>
           </div>
         </form>
       )}
 
       {confirmDeactivate && (
         <ConfirmModal
-          title="¿Desactivar administrador?"
-          message={`${confirmDeactivate.profile?.firstName} ${confirmDeactivate.profile?.lastName} no podrá iniciar sesión en el panel administrativo hasta que lo reactives.`}
-          confirmLabel="Desactivar"
+          title={t('adminAdmins.deactivateTitle')}
+          message={t('adminAdmins.deactivateMessage').replace(
+            '{name}',
+            `${confirmDeactivate.profile?.firstName} ${confirmDeactivate.profile?.lastName}`
+          )}
+          confirmLabel={t('adminAdmins.deactivate')}
           onClose={() => setConfirmDeactivate(null)}
           onConfirm={() => toggleActive(confirmDeactivate.id, false)}
         />

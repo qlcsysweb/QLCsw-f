@@ -1,18 +1,21 @@
 import { useEffect, useState } from 'react';
 import api, { API_BASE_URL } from '../../services/api';
-
-const CATEGORIES = [
-  { value: 'identificacion', label: 'Identificación' },
-  { value: 'comprobante_domicilio', label: 'Comprobante de domicilio' },
-  { value: 'otro', label: 'Otro' },
-];
+import { useLanguage } from '../../i18n/LanguageContext';
+import { translateBackendMessage } from '../../i18n/backendMessages';
 
 export default function DocumentsPage() {
+  const { t, language } = useLanguage();
   const [documents, setDocuments] = useState([]);
   const [form, setForm] = useState({ category: 'identificacion', description: '' });
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+
+  const CATEGORIES = [
+    { value: 'identificacion', label: t('clientDocuments.categoryId') },
+    { value: 'comprobante_domicilio', label: t('clientDocuments.categoryAddress') },
+    { value: 'otro', label: t('clientDocuments.categoryOther') },
+  ];
 
   const load = () => api.get('/client/documents').then(({ data }) => setDocuments(data.documents));
   useEffect(() => {
@@ -34,13 +37,13 @@ export default function DocumentsPage() {
     fd.append('description', form.description);
     try {
       await api.post('/client/documents', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
-      setMessage('Documento enviado correctamente.');
+      setMessage(t('clientDocuments.sentOk'));
       setTimeout(() => setMessage(''), 4000);
       e.target.reset();
       setForm((f) => ({ ...f, description: '' }));
       load();
     } catch (err) {
-      setError(err.message);
+      setError(translateBackendMessage(err.message, language));
     } finally {
       setUploading(false);
     }
@@ -48,16 +51,18 @@ export default function DocumentsPage() {
 
   return (
     <div>
-      <div className="qlc-kicker">MIS DOCUMENTOS</div>
-      <h1 style={{ marginTop: 0 }}>Documentos</h1>
+      <div className="qlc-kicker">{t('clientDocuments.kicker')}</div>
+      <h1 style={{ marginTop: 0 }}>{t('clientDocuments.title')}</h1>
 
       {message && <div className="qlc-card" style={{ borderColor: 'var(--qlc-ok-border)', marginBottom: 16 }}>{message}</div>}
       {error && <div className="qlc-card" style={{ borderColor: 'var(--qlc-danger-border)', marginBottom: 16 }}>{error}</div>}
 
       <div className="qlc-card" style={{ marginBottom: 20 }}>
-        <h3 style={{ marginTop: 0 }}>Documentos enviados ({documents.length})</h3>
+        <h3 style={{ marginTop: 0 }}>
+          {t('clientDocuments.sentDocuments')} ({documents.length})
+        </h3>
         {documents.length === 0 ? (
-          <div className="qlc-empty">Sin documentos enviados todavía.</div>
+          <div className="qlc-empty">{t('clientDocuments.noneSent')}</div>
         ) : (
           <ul className="qlc-plain-list">
             {documents.map((d) => (
@@ -66,27 +71,26 @@ export default function DocumentsPage() {
                   {CATEGORIES.find((c) => c.value === d.category)?.label || d.category}
                   <span style={{ color: 'var(--qlc-muted2)', marginLeft: 8, fontSize: 12 }}>
                     <a href={`${API_BASE_URL}/client/documents/${d.id}/download`} target="_blank" rel="noreferrer">
-                      Ver
+                      {t('clientDocuments.view')}
                     </a>
                   </span>
                 </span>
-                <span className="qlc-badge ok">✓ Enviado</span>
+                <span className="qlc-badge ok">{t('clientDocuments.sent')}</span>
               </li>
             ))}
           </ul>
         )}
         {documents.length > 0 && (
           <p style={{ fontSize: 12, color: 'var(--qlc-muted2)', marginTop: 12, marginBottom: 0 }}>
-            Los documentos enviados quedan bloqueados para modificaciones. Si necesitas reemplazar
-            alguno, contacta con QLC desde Soporte.
+            {t('clientDocuments.lockedNotice')}
           </p>
         )}
       </div>
 
       {availableCategories.length > 0 ? (
         <form className="qlc-card" style={{ maxWidth: 480 }} onSubmit={upload}>
-          <h3 style={{ marginTop: 0 }}>Subir documento</h3>
-          <label className="qlc-label">Categoría</label>
+          <h3 style={{ marginTop: 0 }}>{t('clientDocuments.uploadTitle')}</h3>
+          <label className="qlc-label">{t('clientDocuments.category')}</label>
           <select
             className="qlc-select"
             value={form.category}
@@ -98,19 +102,17 @@ export default function DocumentsPage() {
               </option>
             ))}
           </select>
-          <label className="qlc-label">Descripción (opcional)</label>
+          <label className="qlc-label">{t('clientDocuments.description')}</label>
           <input className="qlc-input" value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} />
-          <label className="qlc-label">Archivo</label>
-          <p style={{ fontSize: 12, color: 'var(--qlc-muted2)', marginTop: -4 }}>
-            Formatos permitidos: PDF, PNG, JPG o WEBP. Tamaño máximo 15 MB.
-          </p>
+          <label className="qlc-label">{t('clientDocuments.file')}</label>
+          <p style={{ fontSize: 12, color: 'var(--qlc-muted2)', marginTop: -4 }}>{t('clientDocuments.fileHint')}</p>
           <input type="file" name="docFile" className="qlc-input" accept=".pdf,image/*" required />
           <button className="qlc-btn primary" style={{ marginTop: 12, width: '100%' }} disabled={uploading}>
-            {uploading ? 'Subiendo…' : 'Subir documento'}
+            {uploading ? t('clientDocuments.uploading') : t('clientDocuments.uploadDocument')}
           </button>
         </form>
       ) : (
-        <div className="qlc-empty">Ya enviaste un documento en cada categoría disponible.</div>
+        <div className="qlc-empty">{t('clientDocuments.allCategoriesSent')}</div>
       )}
     </div>
   );

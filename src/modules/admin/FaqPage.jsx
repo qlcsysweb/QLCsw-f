@@ -5,8 +5,10 @@ import ConfirmModal from '../../components/ConfirmModal';
 import ConfirmSaveModal from '../../components/ConfirmSaveModal';
 import UnsavedChangesModal from '../../components/UnsavedChangesModal';
 import useUnsavedGuard from '../../components/useUnsavedGuard';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 function FaqFormModal({ faq, onClose, onSaved }) {
+  const { t } = useLanguage();
   const [question, setQuestion] = useState(faq?.question || '');
   const [answer, setAnswer] = useState(faq?.answer || '');
   const [confirmingSave, setConfirmingSave] = useState(false);
@@ -31,7 +33,7 @@ function FaqFormModal({ faq, onClose, onSaved }) {
   };
 
   return (
-    <Modal title={faq ? 'Editar pregunta' : 'Nueva pregunta frecuente'} onClose={requestClose} width={520}>
+    <Modal title={faq ? t('adminFaq.editTitle') : t('adminFaq.newTitle')} onClose={requestClose} width={520}>
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -39,22 +41,22 @@ function FaqFormModal({ faq, onClose, onSaved }) {
           setConfirmingSave(true);
         }}
       >
-        <label className="qlc-label">Pregunta</label>
+        <label className="qlc-label">{t('adminFaq.question')}</label>
         <input className="qlc-input" value={question} onChange={(e) => setQuestion(e.target.value)} required />
-        <label className="qlc-label">Respuesta</label>
+        <label className="qlc-label">{t('adminFaq.answer')}</label>
         <textarea className="qlc-textarea" rows={3} value={answer} onChange={(e) => setAnswer(e.target.value)} required />
         {error && <div className="qlc-field-error">{error}</div>}
         <div className="qlc-form-actions">
           <button type="button" className="qlc-btn ghost" onClick={requestClose}>
-            Cancelar
+            {t('common.cancel')}
           </button>
-          <button className="qlc-btn primary">✓ Guardar</button>
+          <button className="qlc-btn primary">{t('modals.saveChanges')}</button>
         </div>
       </form>
 
       {confirmingSave && (
         <ConfirmSaveModal
-          message="Se actualizará la sección de preguntas frecuentes en la página pública."
+          message={t('adminFaq.saveConfirmMessage')}
           onCancel={() => setConfirmingSave(false)}
           onConfirm={doSave}
         />
@@ -65,6 +67,7 @@ function FaqFormModal({ faq, onClose, onSaved }) {
 }
 
 export default function FaqPage() {
+  const { t } = useLanguage();
   const [faqs, setFaqs] = useState([]);
   const [editingFaq, setEditingFaq] = useState(null);
   const [creating, setCreating] = useState(false);
@@ -102,43 +105,45 @@ export default function FaqPage() {
     <div>
       <div className="qlc-page-header">
         <div>
-          <div className="qlc-kicker">PREGUNTAS FRECUENTES</div>
-          <h1 style={{ margin: 0 }}>FAQ ({faqs.length})</h1>
+          <div className="qlc-kicker">{t('adminFaq.kicker')}</div>
+          <h1 style={{ margin: 0 }}>
+            {t('adminFaq.title')} ({faqs.length})
+          </h1>
         </div>
         <button className="qlc-btn primary" onClick={() => setCreating(true)}>
-          + Nueva pregunta
+          {t('adminFaq.newQuestion')}
         </button>
       </div>
 
       {message && <div className="qlc-card" style={{ borderColor: 'var(--qlc-ok-border)', marginBottom: 16 }}>{message}</div>}
 
       {faqs.length === 0 ? (
-        <div className="qlc-empty">Sin preguntas todavía.</div>
+        <div className="qlc-empty">{t('adminFaq.none')}</div>
       ) : (
         faqs.map((faq, index) => (
           <div className="qlc-card" key={faq.id} style={{ marginBottom: 12 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
               <strong>{faq.question}</strong>
               <span className={`qlc-badge ${faq.isActive ? 'ok' : 'muted'}`}>
-                {faq.isActive ? '● Visible' : '— Oculta'}
+                {faq.isActive ? t('adminFaq.visible') : t('adminFaq.hidden')}
               </span>
             </div>
             <p style={{ color: 'var(--qlc-muted)', fontSize: 13 }}>{faq.answer}</p>
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
               <button className="qlc-btn ghost" onClick={() => move(index, -1)} disabled={index === 0}>
-                ↑ Subir
+                {t('adminFaq.moveUp')}
               </button>
               <button className="qlc-btn ghost" onClick={() => move(index, 1)} disabled={index === faqs.length - 1}>
-                ↓ Bajar
+                {t('adminFaq.moveDown')}
               </button>
               <button className="qlc-btn ghost" onClick={() => setEditingFaq(faq)}>
-                Editar
+                {t('adminFaq.edit')}
               </button>
               <button className="qlc-btn ghost" onClick={() => toggleActive(faq)}>
-                {faq.isActive ? 'Ocultar' : 'Mostrar'}
+                {faq.isActive ? t('adminFaq.hide') : t('adminFaq.show')}
               </button>
               <button className="qlc-btn danger" onClick={() => setDeletingFaq(faq)}>
-                Eliminar
+                {t('adminFaq.delete')}
               </button>
             </div>
           </div>
@@ -150,7 +155,7 @@ export default function FaqPage() {
           onClose={() => setCreating(false)}
           onSaved={() => {
             setCreating(false);
-            flash('✓ Pregunta agregada.');
+            flash(t('adminFaq.added'));
             load();
           }}
         />
@@ -161,21 +166,21 @@ export default function FaqPage() {
           onClose={() => setEditingFaq(null)}
           onSaved={() => {
             setEditingFaq(null);
-            flash('✓ Cambios guardados.');
+            flash(t('adminFaq.changesSaved'));
             load();
           }}
         />
       )}
       {deletingFaq && (
         <ConfirmModal
-          title="¿Eliminar pregunta?"
-          message={`Esta acción eliminará permanentemente "${deletingFaq.question}" de la página pública.`}
-          confirmLabel="Eliminar"
+          title={t('adminFaq.deleteTitle')}
+          message={t('adminFaq.deleteMessage').replace('{question}', deletingFaq.question)}
+          confirmLabel={t('adminFaq.delete')}
           twoStep
           onClose={() => setDeletingFaq(null)}
           onConfirm={async () => {
             await api.delete(`/admin/faq/${deletingFaq.id}`);
-            flash('✓ Pregunta eliminada.');
+            flash(t('adminFaq.deleted'));
             load();
           }}
         />

@@ -1,30 +1,32 @@
 import SectionMedia from './SectionMedia';
+import { useLanguage } from '../../../i18n/LanguageContext';
 
 export default function PublicFooter({ text, media = () => [] }) {
+  const { t } = useLanguage();
   return (
     <footer className="footer">
       <div className="container footer-grid">
         <div>
           <h4>QUANTUM LIQUIDITY CAPITAL</h4>
-          <div>Institutional Trading Infrastructure</div>
+          <div>{t('footer.institutionalTagline')}</div>
           <div style={{ marginTop: 14, color: '#aab4bd' }}>
             {text('footer', 'tagline', 'Copytrading Institucional. Accesible desde 20 USDT.')}
           </div>
         </div>
         <div>
-          <h4>Navegación</h4>
+          <h4>{t('footer.navigationHeading')}</h4>
           <div>
-            <a href="#modelo">Modelo</a> · <a href="#como-funciona">Cómo funciona</a> ·{' '}
-            <a href="#tecnologia">Tecnología</a>
+            <a href="#modelo">{t('nav.modelo')}</a> · <a href="#como-funciona">{t('nav.comoFunciona')}</a> ·{' '}
+            <a href="#tecnologia">{t('nav.tecnologia')}</a>
           </div>
           <div>
-            <a href="#modelos">Modelos de participación</a> · <a href="#resultados">Resultados</a> ·{' '}
-            <a href="#seguridad">Seguridad</a> · <a href="#sobre-qlc">Sobre QLC</a>
+            <a href="#modelos">{t('nav.modelos')}</a> · <a href="#resultados">{t('nav.resultados')}</a> ·{' '}
+            <a href="#seguridad">{t('nav.seguridad')}</a> · <a href="#sobre-qlc">{t('nav.sobreQlc')}</a>
           </div>
         </div>
         <div>
-          <h4>Accesos</h4>
-          <div>Clientes · Administradores · Registro</div>
+          <h4>{t('footer.accessHeading')}</h4>
+          <div>{t('footer.accessLine')}</div>
           <div style={{ marginTop: 8 }}>QLC.NET</div>
         </div>
       </div>

@@ -1,16 +1,18 @@
 import SectionMedia from './SectionMedia';
+import { useLanguage } from '../../../i18n/LanguageContext';
 
 export default function ModelosSection({ models, text, media = () => [] }) {
+  const { t } = useLanguage();
   return (
     <section className="section alt" id="modelos">
       <div className="container">
-        <div className="kicker">MODELOS DE PARTICIPACIÓN</div>
+        <div className="kicker">{t('modelosSection.kicker')}</div>
         <h2>
-          Tres formas.
+          {t('modelosSection.titleLine1')}
           <br />
-          <span className="gradient">Una misma infraestructura.</span>
+          <span className="gradient">{t('modelosSection.titleLine2')}</span>
         </h2>
-        <p className="sub">QLC contempla diferentes modalidades para distintos perfiles de participación.</p>
+        <p className="sub">{t('modelosSection.sub')}</p>
 
         <div className="models">
           {models.map((m) => (
@@ -27,7 +29,7 @@ export default function ModelosSection({ models, text, media = () => [] }) {
               )}
               {m.objective && (
                 <p>
-                  Objetivo: <strong>{m.objective}</strong>
+                  {t('modelosSection.objective')}: <strong>{m.objective}</strong>
                   {m.period ? ` (${m.period})` : ''}
                 </p>
               )}

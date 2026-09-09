@@ -1,14 +1,17 @@
 import SectionMedia from './SectionMedia';
-
-const FLOW = [
-  { label: '01 · Cliente', text: 'Abre su cuenta en el exchange.' },
-  { label: '02 · API', text: 'Autoriza la conexión con QLC.' },
-  { label: '03 · QLC', text: 'Ejecuta la estrategia cuantitativa.' },
-  { label: '04 · Operación', text: 'Las posiciones se ejecutan en su cuenta.' },
-  { label: '05 · Resultado', text: 'El resultado permanece en la cuenta.' },
-];
+import { useLanguage } from '../../../i18n/LanguageContext';
 
 export default function ComoFuncionaSection({ text, media = () => [] }) {
+  const { t } = useLanguage();
+
+  const FLOW = [
+    { label: t('comoFuncionaSection.flow01Label'), text: t('comoFuncionaSection.flow01Text') },
+    { label: t('comoFuncionaSection.flow02Label'), text: t('comoFuncionaSection.flow02Text') },
+    { label: t('comoFuncionaSection.flow03Label'), text: t('comoFuncionaSection.flow03Text') },
+    { label: t('comoFuncionaSection.flow04Label'), text: t('comoFuncionaSection.flow04Text') },
+    { label: t('comoFuncionaSection.flow05Label'), text: t('comoFuncionaSection.flow05Text') },
+  ];
+
   return (
     <section className="section" id="como-funciona">
       <div className="container">
@@ -28,7 +31,7 @@ export default function ComoFuncionaSection({ text, media = () => [] }) {
 
         <div className="connection">
           <div className="connection-copy">
-            <div className="kicker">CONEXIÓN DIRECTA</div>
+            <div className="kicker">{t('comoFuncionaSection.directConnection')}</div>
             <h3>{text('como_funciona', 'connection_title', 'El capital permanece donde pertenece.')}</h3>
             <p>
               {text(
@@ -38,9 +41,9 @@ export default function ComoFuncionaSection({ text, media = () => [] }) {
               )}
             </p>
             <div className="statusbar">
-              <span className="status ok">CUENTA DEL CLIENTE</span>
-              <span className="status ok">API AUTORIZADA</span>
-              <span className="status ok">SIN RETIROS</span>
+              <span className="status ok">{t('comoFuncionaSection.clientAccount')}</span>
+              <span className="status ok">{t('comoFuncionaSection.apiAuthorized')}</span>
+              <span className="status ok">{t('comoFuncionaSection.noWithdrawals')}</span>
             </div>
           </div>
           <div className="flow-line">

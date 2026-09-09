@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import api from '../../../services/api';
 import SectionMedia from './SectionMedia';
+import { useLanguage } from '../../../i18n/LanguageContext';
 
 const initialForm = { firstName: '', lastName: '', email: '', phone: '', message: '' };
 
 export default function ContactoSection({ text, media = () => [] }) {
+  const { t } = useLanguage();
   const [form, setForm] = useState(initialForm);
   const [status, setStatus] = useState('idle'); // idle | sending | sent | error
   const [error, setError] = useState('');
@@ -14,7 +16,7 @@ export default function ContactoSection({ text, media = () => [] }) {
   const submit = async (e) => {
     e.preventDefault();
     if (!form.firstName || !form.email) {
-      setError('Nombre y email son obligatorios.');
+      setError(t('contact.requiredError'));
       return;
     }
     setStatus('sending');
@@ -42,37 +44,34 @@ export default function ContactoSection({ text, media = () => [] }) {
           </div>
           <div>
             <a className="btn primary" href="#registro-form">
-              Solicitar información
+              {t('contact.submit')}
             </a>
           </div>
         </div>
 
         <div className="registro-panel" id="registro-form">
-          <div className="kicker">REGISTRO</div>
-          <h3 style={{ margin: '4px 0 18px' }}>Solicita información y comienza tu proceso</h3>
+          <div className="kicker">{t('contact.registerKicker')}</div>
+          <h3 style={{ margin: '4px 0 18px' }}>{t('contact.registerSubtitle')}</h3>
 
           {status === 'sent' ? (
-            <p style={{ color: 'var(--qlc-blue2)', fontSize: 14 }}>
-              Gracias. Hemos recibido tu solicitud — un miembro del equipo de QLC se pondrá en contacto
-              contigo en breve.
-            </p>
+            <p style={{ color: 'var(--qlc-blue2)', fontSize: 14 }}>{t('contact.successMessage')}</p>
           ) : (
             <form onSubmit={submit}>
-              <label>Nombre</label>
+              <label>{t('contact.firstName')}</label>
               <input value={form.firstName} onChange={update('firstName')} required />
-              <label>Apellidos</label>
+              <label>{t('contact.lastName')}</label>
               <input value={form.lastName} onChange={update('lastName')} />
-              <label>Email</label>
+              <label>{t('contact.email')}</label>
               <input type="email" value={form.email} onChange={update('email')} required />
-              <label>Teléfono (opcional)</label>
+              <label>{t('contact.phone')}</label>
               <input value={form.phone} onChange={update('phone')} />
-              <label>Mensaje (opcional)</label>
+              <label>{t('contact.message')}</label>
               <textarea rows={3} value={form.message} onChange={update('message')} />
 
               {error && <div style={{ color: '#ffb3b3', fontSize: 12, marginBottom: 10 }}>{error}</div>}
 
               <button className="btn primary" type="submit" disabled={status === 'sending'} style={{ width: '100%' }}>
-                {status === 'sending' ? 'Enviando…' : 'Solicitar información'}
+                {status === 'sending' ? t('contact.sending') : t('contact.submit')}
               </button>
             </form>
           )}

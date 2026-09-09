@@ -4,6 +4,7 @@ import ConfirmSaveModal from '../../../components/ConfirmSaveModal';
 import UnsavedChangesModal from '../../../components/UnsavedChangesModal';
 import useUnsavedGuard from '../../../components/useUnsavedGuard';
 import api from '../../../services/api';
+import { useLanguage } from '../../../i18n/LanguageContext';
 import '../../public/public.css';
 
 /*
@@ -12,6 +13,7 @@ import '../../public/public.css';
  * pública para la vista previa — nunca duplica el diseño.
  */
 export default function SectionContentModal({ title, section, fields, currentValues, PreviewComponent, previewProps = {}, onClose, onSaved }) {
+  const { t } = useLanguage();
   const initialValues = (() => {
     const initial = {};
     fields.forEach((f) => {
@@ -45,7 +47,7 @@ export default function SectionContentModal({ title, section, fields, currentVal
   };
 
   return (
-    <Modal title={title} subtitle="Los cambios se publican de inmediato en la página pública al guardar." onClose={requestClose} width={720}>
+    <Modal title={title} subtitle={t('adminSectionModal.subtitle')} onClose={requestClose} width={720}>
       {!showPreview ? (
         <form
           onSubmit={(e) => {
@@ -68,12 +70,12 @@ export default function SectionContentModal({ title, section, fields, currentVal
 
           <div className="qlc-form-actions">
             <button type="button" className="qlc-btn ghost" onClick={() => setShowPreview(true)}>
-              Previsualizar
+              {t('adminSectionModal.preview')}
             </button>
             <button type="button" className="qlc-btn ghost" onClick={requestClose}>
-              Cancelar
+              {t('common.cancel')}
             </button>
-            <button className="qlc-btn primary">✓ Guardar cambios</button>
+            <button className="qlc-btn primary">{t('modals.saveChanges')}</button>
           </div>
         </form>
       ) : (
@@ -83,7 +85,7 @@ export default function SectionContentModal({ title, section, fields, currentVal
           </div>
           <div className="qlc-form-actions">
             <button className="qlc-btn ghost" onClick={() => setShowPreview(false)}>
-              ← Volver a editar
+              {t('adminSectionModal.backToEdit')}
             </button>
           </div>
         </div>
@@ -91,7 +93,7 @@ export default function SectionContentModal({ title, section, fields, currentVal
 
       {confirmingSave && (
         <ConfirmSaveModal
-          message="Se actualizará esta sección en la página pública de inmediato."
+          message={t('adminSectionModal.saveConfirmMessage')}
           onCancel={() => setConfirmingSave(false)}
           onConfirm={doSave}
         />

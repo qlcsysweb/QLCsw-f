@@ -2,9 +2,12 @@ import { useEffect, useRef, useState } from 'react';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { SUPPORT_CASE_STATUS, CHAT_SESSION_STATUS, statusOf } from '../../utils/statusLabels';
+import { useLanguage } from '../../i18n/LanguageContext';
+import { translateBackendMessage } from '../../i18n/backendMessages';
 
 function ChatPanel({ session, onClose }) {
   const { user } = useAuth();
+  const { t, language } = useLanguage();
   const [messages, setMessages] = useState([]);
   const [content, setContent] = useState('');
   const [remaining, setRemaining] = useState(null);
@@ -34,8 +37,8 @@ function ChatPanel({ session, onClose }) {
       setRemaining(Math.max(0, Math.floor(ms / 1000)));
     };
     tick();
-    const t = setInterval(tick, 1000);
-    return () => clearInterval(t);
+    const timer = setInterval(tick, 1000);
+    return () => clearInterval(timer);
   }, [current]);
 
   const start = async () => {
@@ -51,7 +54,7 @@ function ChatPanel({ session, onClose }) {
       setContent('');
       refresh();
     } catch (err) {
-      alert(err.message);
+      alert(translateBackendMessage(err.message, language));
     }
   };
 
@@ -62,19 +65,19 @@ function ChatPanel({ session, onClose }) {
     <div className="qlc-modal-overlay" onClick={onClose}>
       <div className="qlc-modal-panel" onClick={(e) => e.stopPropagation()} style={{ display: 'flex', flexDirection: 'column', height: 520 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2 style={{ margin: 0 }}>Chat de soporte</h2>
+          <h2 style={{ margin: 0 }}>{t('clientSupport.chatTitle')}</h2>
           <button className="qlc-btn ghost" onClick={onClose}>
-            Cerrar
+            {t('clientSupport.close')}
           </button>
         </div>
 
         {current?.status === 'SCHEDULED' && (
           <div style={{ marginTop: 16 }}>
             <p style={{ fontSize: 13, color: 'var(--qlc-muted)' }}>
-              Tu cita fue autorizada. Tienes {current.durationMinutes} minutos de chat en vivo con el equipo de QLC.
+              {t('clientSupport.appointmentAuthorized').replace('{minutes}', current.durationMinutes)}
             </p>
             <button className="qlc-btn primary" onClick={start}>
-              Iniciar chat
+              {t('clientSupport.startChat')}
             </button>
           </div>
         )}
@@ -82,15 +85,15 @@ function ChatPanel({ session, onClose }) {
         {current?.status === 'ACTIVE' && (
           <>
             <div style={{ fontSize: 12, color: 'var(--qlc-gold)', margin: '10px 0' }}>
-              Tiempo restante: {minutes}:{String(seconds).padStart(2, '0')}
+              {t('clientSupport.timeRemaining')}: {minutes}:{String(seconds).padStart(2, '0')}
             </div>
             <div style={{ flex: 1, overflowY: 'auto', border: '1px solid var(--qlc-line)', borderRadius: 10, padding: 10 }}>
               {messages.length === 0 ? (
-                <div className="qlc-empty">Sin mensajes todavía.</div>
+                <div className="qlc-empty">{t('clientSupport.noMessages')}</div>
               ) : (
                 messages.map((m) => (
                   <div key={m.id} style={{ marginBottom: 8, fontSize: 13 }}>
-                    <strong>{m.senderUserId === user.id ? 'Tú' : 'QLC'}:</strong> {m.content}
+                    <strong>{m.senderUserId === user.id ? t('clientSupport.you') : 'QLC'}:</strong> {m.content}
                   </div>
                 ))
               )}
@@ -100,16 +103,16 @@ function ChatPanel({ session, onClose }) {
                 className="qlc-input"
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                placeholder="Escribe un mensaje…"
+                placeholder={t('clientSupport.messagePlaceholder')}
               />
-              <button className="qlc-btn primary">Enviar</button>
+              <button className="qlc-btn primary">{t('clientSupport.send')}</button>
             </form>
           </>
         )}
 
         {current?.status === 'CLOSED' && (
           <div className="qlc-empty" style={{ marginTop: 20 }}>
-            Esta sesión de chat ha finalizado.
+            {t('clientSupport.chatEnded')}
           </div>
         )}
       </div>
@@ -118,10 +121,14 @@ function ChatPanel({ session, onClose }) {
 }
 
 export default function SupportPage() {
+  const { t } = useLanguage();
   const [cases, setCases] = useState([]);
   const [sessions, setSessions] = useState([]);
   const [form, setForm] = useState({ subject: '', message: '' });
   const [activeChat, setActiveChat] = useState(null);
+
+  const supportCaseStatusMap = SUPPORT_CASE_STATUS(t);
+  const chatSessionStatusMap = CHAT_SESSION_STATUS(t);
 
   const load = () => {
     api.get('/client/support-cases').then(({ data }) => setCases(data.cases));
@@ -139,24 +146,24 @@ export default function SupportPage() {
 
   return (
     <div>
-      <div className="qlc-kicker">SOPORTE</div>
-      <h1 style={{ marginTop: 0 }}>Soporte y chat</h1>
+      <div className="qlc-kicker">{t('clientSupport.kicker')}</div>
+      <h1 style={{ marginTop: 0 }}>{t('clientSupport.title')}</h1>
 
       {sessions.filter((s) => s.status !== 'CLOSED').length > 0 && (
         <div className="qlc-card" style={{ marginBottom: 20 }}>
-          <h3 style={{ marginTop: 0 }}>Chat disponible</h3>
+          <h3 style={{ marginTop: 0 }}>{t('clientSupport.availableChat')}</h3>
           {sessions
             .filter((s) => s.status !== 'CLOSED')
             .map((s) => (
               <div key={s.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0' }}>
                 <span>
-                  Sesión de {s.durationMinutes} minutos —{' '}
-                  <span className={`qlc-badge ${statusOf(CHAT_SESSION_STATUS, s.status).className}`}>
-                    {statusOf(CHAT_SESSION_STATUS, s.status).text}
+                  {t('clientSupport.sessionOf').replace('{minutes}', s.durationMinutes)} —{' '}
+                  <span className={`qlc-badge ${statusOf(chatSessionStatusMap, s.status).className}`}>
+                    {statusOf(chatSessionStatusMap, s.status).text}
                   </span>
                 </span>
                 <button className="qlc-btn primary" onClick={() => setActiveChat(s)}>
-                  Abrir chat
+                  {t('clientSupport.openChat')}
                 </button>
               </div>
             ))}
@@ -165,16 +172,18 @@ export default function SupportPage() {
 
       <div className="qlc-detail-grid">
         <div className="qlc-card">
-          <h3 style={{ marginTop: 0 }}>Mis casos ({cases.length})</h3>
+          <h3 style={{ marginTop: 0 }}>
+            {t('clientSupport.myCases')} ({cases.length})
+          </h3>
           {cases.length === 0 ? (
-            <div className="qlc-empty">Sin casos de soporte.</div>
+            <div className="qlc-empty">{t('clientSupport.noCases')}</div>
           ) : (
             <ul className="qlc-plain-list">
               {cases.map((c) => (
                 <li key={c.id}>
                   <strong>{c.subject}</strong> —{' '}
-                  <span className={`qlc-badge ${statusOf(SUPPORT_CASE_STATUS, c.status).className}`}>
-                    {statusOf(SUPPORT_CASE_STATUS, c.status).text}
+                  <span className={`qlc-badge ${statusOf(supportCaseStatusMap, c.status).className}`}>
+                    {statusOf(supportCaseStatusMap, c.status).text}
                   </span>
                   <div style={{ color: 'var(--qlc-muted2)', fontSize: 12 }}>{c.message}</div>
                 </li>
@@ -184,13 +193,13 @@ export default function SupportPage() {
         </div>
 
         <form className="qlc-card" onSubmit={createCase}>
-          <h3 style={{ marginTop: 0 }}>Nuevo caso</h3>
-          <label className="qlc-label">Asunto</label>
+          <h3 style={{ marginTop: 0 }}>{t('clientSupport.newCase')}</h3>
+          <label className="qlc-label">{t('clientSupport.subject')}</label>
           <input className="qlc-input" value={form.subject} onChange={(e) => setForm((f) => ({ ...f, subject: e.target.value }))} required />
-          <label className="qlc-label">Mensaje</label>
+          <label className="qlc-label">{t('clientSupport.message')}</label>
           <textarea className="qlc-textarea" rows={4} value={form.message} onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))} required />
           <div className="qlc-form-actions">
-            <button className="qlc-btn primary">Crear caso</button>
+            <button className="qlc-btn primary">{t('clientSupport.createCase')}</button>
           </div>
         </form>
       </div>

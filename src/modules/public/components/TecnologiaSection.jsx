@@ -1,13 +1,16 @@
 import SectionMedia from './SectionMedia';
-
-const PILLARS = [
-  { icon: '◈', title: 'ESTRATEGIA', text: 'QLC desarrolla y ejecuta una estrategia de trading cuantitativo.' },
-  { icon: '◌', title: 'ALGORITMOS', text: 'La lógica operativa se convierte en reglas sistemáticas de ejecución.' },
-  { icon: '↔', title: 'API', text: 'La infraestructura se comunica directamente con la cuenta autorizada.' },
-  { icon: '▦', title: 'MICROPOSICIONES', text: 'La ejecución está diseñada para trabajar con posiciones de tamaño reducido.' },
-];
+import { useLanguage } from '../../../i18n/LanguageContext';
 
 export default function TecnologiaSection({ text, media = () => [] }) {
+  const { t } = useLanguage();
+
+  const PILLARS = [
+    { icon: '◈', title: t('tecnologiaSection.pillarStrategyTitle'), text: t('tecnologiaSection.pillarStrategyText') },
+    { icon: '◌', title: t('tecnologiaSection.pillarAlgorithmsTitle'), text: t('tecnologiaSection.pillarAlgorithmsText') },
+    { icon: '↔', title: t('tecnologiaSection.pillarApiTitle'), text: t('tecnologiaSection.pillarApiText') },
+    { icon: '▦', title: t('tecnologiaSection.pillarMicroTitle'), text: t('tecnologiaSection.pillarMicroText') },
+  ];
+
   return (
     <section className="section alt" id="tecnologia">
       <div className="container">

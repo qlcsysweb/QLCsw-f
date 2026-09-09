@@ -1,6 +1,8 @@
 import SectionMedia from './SectionMedia';
+import { useLanguage } from '../../../i18n/LanguageContext';
 
 export default function ResultadosSection({ trackRecord, text, media = () => [] }) {
+  const { t } = useLanguage();
   const platformName = trackRecord?.platformName || 'Bitget';
   const ranking = trackRecord?.ranking || '#XXX';
   const profileLink = trackRecord?.profileLink;
@@ -31,11 +33,11 @@ export default function ResultadosSection({ trackRecord, text, media = () => [] 
 
           {profileLink ? (
             <a href={profileLink} target="_blank" rel="noreferrer" className="btn primary" style={{ marginTop: 25, display: 'inline-block' }}>
-              Comprobar perfil en {platformName} →
+              {t('resultadosSection.checkProfile')} {platformName} →
             </a>
           ) : (
             <span className="btn secondary" style={{ marginTop: 25, display: 'inline-block', opacity: 0.6, cursor: 'default' }}>
-              Enlace de perfil próximamente
+              {t('resultadosSection.linkComingSoon')}
             </span>
           )}
         </div>
@@ -44,19 +46,19 @@ export default function ResultadosSection({ trackRecord, text, media = () => [] 
           <div className="hero-mini" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
             <div className="mini">
               <b>{platformName}</b>
-              <span>ELITE TRADER</span>
+              <span>{t('resultadosSection.eliteTrader')}</span>
             </div>
             <div className="mini">
               <b>{ranking}</b>
-              <span>CLASIFICACIÓN ACTUAL</span>
+              <span>{t('hero.currentRanking')}</span>
             </div>
             <div className="mini">
-              <b>TRACK RECORD</b>
-              <span>DATOS PÚBLICOS</span>
+              <b>{t('hero.trackRecord')}</b>
+              <span>{t('hero.publicData')}</span>
             </div>
             <div className="mini">
               <b>API</b>
-              <span>EJECUCIÓN ALGORÍTMICA QLC</span>
+              <span>{t('hero.algoExecution')}</span>
             </div>
           </div>
         </div>

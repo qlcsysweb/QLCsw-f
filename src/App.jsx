@@ -1,5 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { LanguageProvider, useLanguage } from './i18n/LanguageContext';
+import WelcomeLanguageGate from './i18n/WelcomeLanguageGate';
 import ProtectedRoute from './routes/ProtectedRoute';
 import LoginPage from './pages/LoginPage';
 import PublicHomePage from './modules/public/PublicHomePage';
@@ -28,11 +30,14 @@ import ClientSupportPage from './modules/client/SupportPage';
 import ClientAppointmentsPage from './modules/client/AppointmentsPage';
 import ClientNotificationsPage from './modules/client/NotificationsPage';
 
-export default function App() {
+function AppRoutes() {
+  const { hasChosenLanguage } = useLanguage();
+
+  if (!hasChosenLanguage) return <WelcomeLanguageGate />;
+
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <Routes>
+    <AuthProvider>
+      <Routes>
           <Route path="/" element={<PublicHomePage />} />
           <Route path="/login" element={<LoginPage />} />
 
@@ -67,8 +72,17 @@ export default function App() {
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </AuthProvider>
+      </Routes>
+    </AuthProvider>
+  );
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <LanguageProvider>
+        <AppRoutes />
+      </LanguageProvider>
     </BrowserRouter>
   );
 }

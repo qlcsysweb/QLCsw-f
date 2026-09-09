@@ -1,10 +1,20 @@
 import { useEffect, useState } from 'react';
 import api from '../../services/api';
 import ConfirmModal from '../../components/ConfirmModal';
-
-const DAY_LABELS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+import { APPOINTMENT_STATUS, statusOf } from '../../utils/statusLabels';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 function AvailabilityEditor() {
+  const { t } = useLanguage();
+  const DAY_LABELS = [
+    t('days.sunday'),
+    t('days.monday'),
+    t('days.tuesday'),
+    t('days.wednesday'),
+    t('days.thursday'),
+    t('days.friday'),
+    t('days.saturday'),
+  ];
   const [slots, setSlots] = useState([]);
   const [message, setMessage] = useState('');
   const [saving, setSaving] = useState(false);
@@ -30,7 +40,7 @@ function AvailabilityEditor() {
     setSaving(true);
     try {
       await api.put('/admin/availability', { slots });
-      setMessage('Disponibilidad actualizada.');
+      setMessage(t('adminAppointments.availabilityUpdated'));
       setTimeout(() => setMessage(''), 3000);
       load();
     } finally {
@@ -40,10 +50,8 @@ function AvailabilityEditor() {
 
   return (
     <div className="qlc-card" style={{ marginBottom: 20 }}>
-      <h3 style={{ marginTop: 0 }}>Disponibilidad semanal</h3>
-      <p style={{ color: 'var(--qlc-muted)', fontSize: 13 }}>
-        Define los días y horarios en los que los clientes y prospectos pueden solicitar citas.
-      </p>
+      <h3 style={{ marginTop: 0 }}>{t('adminAppointments.weeklyAvailability')}</h3>
+      <p style={{ color: 'var(--qlc-muted)', fontSize: 13 }}>{t('adminAppointments.availabilityIntro')}</p>
       {DAY_LABELS.map((label, dayOfWeek) => {
         const slot = slots.find((s) => s.dayOfWeek === dayOfWeek);
         return (
@@ -57,7 +65,7 @@ function AvailabilityEditor() {
             </label>
             {slot ? (
               <>
-                <span style={{ fontSize: 12, color: 'var(--qlc-muted2)' }}>de</span>
+                <span style={{ fontSize: 12, color: 'var(--qlc-muted2)' }}>{t('adminAppointments.from')}</span>
                 <input
                   className="qlc-input"
                   type="time"
@@ -72,7 +80,9 @@ function AvailabilityEditor() {
                 />
               </>
             ) : (
-              <span style={{ fontSize: 12, color: 'var(--qlc-muted2)', gridColumn: 'span 3' }}>No disponible</span>
+              <span style={{ fontSize: 12, color: 'var(--qlc-muted2)', gridColumn: 'span 3' }}>
+                {t('adminAppointments.notAvailable')}
+              </span>
             )}
           </div>
         );
@@ -80,7 +90,7 @@ function AvailabilityEditor() {
       <div className="qlc-form-actions">
         {message && <span style={{ color: 'var(--qlc-ok)', fontSize: 12 }}>{message}</span>}
         <button className="qlc-btn primary" onClick={save} disabled={saving}>
-          {saving ? 'Guardando…' : 'Guardar disponibilidad'}
+          {saving ? t('common.saving') : t('adminAppointments.saveAvailability')}
         </button>
       </div>
     </div>
@@ -88,8 +98,11 @@ function AvailabilityEditor() {
 }
 
 export default function AppointmentsPage() {
+  const { t } = useLanguage();
   const [appointments, setAppointments] = useState([]);
   const [confirmReject, setConfirmReject] = useState(null);
+
+  const appointmentStatusMap = APPOINTMENT_STATUS(t);
 
   const load = () => api.get('/admin/appointments').then(({ data }) => setAppointments(data.appointments));
   useEffect(() => {
@@ -103,53 +116,56 @@ export default function AppointmentsPage() {
 
   return (
     <div>
-      <div className="qlc-kicker">CITAS</div>
-      <h1 style={{ marginTop: 0 }}>Citas y disponibilidad</h1>
+      <div className="qlc-kicker">{t('adminAppointments.kicker')}</div>
+      <h1 style={{ marginTop: 0 }}>{t('adminAppointments.title')}</h1>
 
       <AvailabilityEditor />
 
-      <h3>Solicitudes de cita</h3>
+      <h3>{t('adminAppointments.requestsTitle')}</h3>
       {appointments.length === 0 ? (
-        <div className="qlc-empty">No hay citas registradas.</div>
+        <div className="qlc-empty">{t('adminAppointments.none')}</div>
       ) : (
         <div className="qlc-table-wrap">
           <table className="qlc-table">
             <thead>
               <tr>
-                <th>Solicitante</th>
-                <th>Fecha</th>
-                <th>Hora</th>
-                <th>Estado</th>
+                <th>{t('adminAppointments.requester')}</th>
+                <th>{t('adminAppointments.date')}</th>
+                <th>{t('adminAppointments.time')}</th>
+                <th>{t('adminAppointments.status')}</th>
                 <th></th>
               </tr>
             </thead>
             <tbody>
-              {appointments.map((a) => (
-                <tr key={a.id}>
-                  <td>
-                    {a.client
-                      ? `${a.client.firstName} ${a.client.lastName}`
-                      : `${a.prospect?.firstName || ''} ${a.prospect?.lastName || ''} (prospecto)`}
-                  </td>
-                  <td>{new Date(a.requestedDate).toLocaleDateString()}</td>
-                  <td>{a.requestedTime}</td>
-                  <td>
-                    <span className="qlc-badge warn">{a.status}</span>
-                  </td>
-                  <td style={{ display: 'flex', gap: 6 }}>
-                    {a.status === 'PENDING' && (
-                      <>
-                        <button className="qlc-btn ghost" onClick={() => updateStatus(a.id, 'AUTORIZADA')}>
-                          Autorizar
-                        </button>
-                        <button className="qlc-btn ghost" onClick={() => setConfirmReject(a)}>
-                          Rechazar
-                        </button>
-                      </>
-                    )}
-                  </td>
-                </tr>
-              ))}
+              {appointments.map((a) => {
+                const s = statusOf(appointmentStatusMap, a.status);
+                return (
+                  <tr key={a.id}>
+                    <td>
+                      {a.client
+                        ? `${a.client.firstName} ${a.client.lastName}`
+                        : `${a.prospect?.firstName || ''} ${a.prospect?.lastName || ''} ${t('adminAppointments.prospectTag')}`}
+                    </td>
+                    <td>{new Date(a.requestedDate).toLocaleDateString()}</td>
+                    <td>{a.requestedTime}</td>
+                    <td>
+                      <span className={`qlc-badge ${s.className}`}>{s.text}</span>
+                    </td>
+                    <td style={{ display: 'flex', gap: 6 }}>
+                      {a.status === 'PENDING' && (
+                        <>
+                          <button className="qlc-btn ghost" onClick={() => updateStatus(a.id, 'AUTORIZADA')}>
+                            {t('adminAppointments.authorize')}
+                          </button>
+                          <button className="qlc-btn ghost" onClick={() => setConfirmReject(a)}>
+                            {t('adminAppointments.reject')}
+                          </button>
+                        </>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -157,9 +173,9 @@ export default function AppointmentsPage() {
 
       {confirmReject && (
         <ConfirmModal
-          title="¿Rechazar esta cita?"
-          message="El solicitante verá su cita marcada como rechazada."
-          confirmLabel="Rechazar"
+          title={t('adminAppointments.rejectTitle')}
+          message={t('adminAppointments.rejectMessage')}
+          confirmLabel={t('adminAppointments.reject')}
           onClose={() => setConfirmReject(null)}
           onConfirm={() => updateStatus(confirmReject.id, 'RECHAZADA')}
         />

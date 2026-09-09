@@ -4,8 +4,10 @@ import Modal from '../../components/Modal';
 import ConfirmSaveModal from '../../components/ConfirmSaveModal';
 import UnsavedChangesModal from '../../components/UnsavedChangesModal';
 import useUnsavedGuard from '../../components/useUnsavedGuard';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 function ModelEditModal({ model, onClose, onSaved }) {
+  const { t } = useLanguage();
   const [form, setForm] = useState(model);
   const [confirmingSave, setConfirmingSave] = useState(false);
   const [error, setError] = useState('');
@@ -36,42 +38,47 @@ function ModelEditModal({ model, onClose, onSaved }) {
   };
 
   return (
-    <Modal title={`Editar modelo — ${model.key}`} subtitle="Estos datos se muestran tal cual en la página pública y en el portal del cliente." onClose={requestClose} width={560}>
+    <Modal
+      title={`${t('adminModels.editModalTitle')} — ${model.key}`}
+      subtitle={t('adminModels.editModalSubtitle')}
+      onClose={requestClose}
+      width={560}
+    >
       <form
         onSubmit={(e) => {
           e.preventDefault();
           setConfirmingSave(true);
         }}
       >
-        <label className="qlc-label">Nombre</label>
+        <label className="qlc-label">{t('adminModels.name')}</label>
         <input className="qlc-input" value={form.name} onChange={update('name')} />
-        <label className="qlc-label">Frase (tagline)</label>
+        <label className="qlc-label">{t('adminModels.tagline')}</label>
         <input className="qlc-input" value={form.tagline || ''} onChange={update('tagline')} />
-        <label className="qlc-label">Descripción</label>
+        <label className="qlc-label">{t('adminModels.description')}</label>
         <textarea className="qlc-textarea" rows={3} value={form.description} onChange={update('description')} />
-        <label className="qlc-label">Condiciones</label>
+        <label className="qlc-label">{t('adminModels.conditions')}</label>
         <input className="qlc-input" value={form.conditions || ''} onChange={update('conditions')} />
-        <label className="qlc-label">Período</label>
+        <label className="qlc-label">{t('adminModels.period')}</label>
         <input className="qlc-input" value={form.period || ''} onChange={update('period')} />
-        <label className="qlc-label">Objetivo</label>
+        <label className="qlc-label">{t('adminModels.objective')}</label>
         <input className="qlc-input" value={form.objective || ''} onChange={update('objective')} />
         <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 14, fontSize: 13 }}>
-          <input type="checkbox" checked={form.isActive} onChange={update('isActive')} /> Visible en la web pública
+          <input type="checkbox" checked={form.isActive} onChange={update('isActive')} /> {t('adminModels.visibleOnPublicSite')}
         </label>
 
         {error && <div className="qlc-field-error">{error}</div>}
 
         <div className="qlc-form-actions">
           <button type="button" className="qlc-btn ghost" onClick={requestClose}>
-            Cancelar
+            {t('common.cancel')}
           </button>
-          <button className="qlc-btn primary">✓ Guardar cambios</button>
+          <button className="qlc-btn primary">{t('modals.saveChanges')}</button>
         </div>
       </form>
 
       {confirmingSave && (
         <ConfirmSaveModal
-          message="Se actualizará este modelo en la página pública y en el portal del cliente."
+          message={t('adminModels.saveConfirmMessage')}
           onCancel={() => setConfirmingSave(false)}
           onConfirm={doSave}
         />
@@ -82,6 +89,7 @@ function ModelEditModal({ model, onClose, onSaved }) {
 }
 
 export default function ModelsPage() {
+  const { t } = useLanguage();
   const [models, setModels] = useState([]);
   const [note, setNote] = useState('');
   const [editingModel, setEditingModel] = useState(null);
@@ -107,7 +115,7 @@ export default function ModelsPage() {
     setSavingNote(true);
     try {
       await api.put('/admin/content', { section: 'modelos', key: 'note', value: note });
-      flash('✓ Nota guardada.');
+      flash(t('adminModels.noteSaved'));
     } finally {
       setSavingNote(false);
     }
@@ -115,12 +123,9 @@ export default function ModelsPage() {
 
   return (
     <div>
-      <div className="qlc-kicker">MODELOS DE PARTICIPACIÓN</div>
-      <h1 style={{ marginTop: 0 }}>Modelos</h1>
-      <p style={{ color: 'var(--qlc-muted)', maxWidth: 640 }}>
-        Estos datos se editan aquí y se reflejan automáticamente en la página pública y en el
-        portal del cliente — no requieren cambios de código.
-      </p>
+      <div className="qlc-kicker">{t('adminModels.kicker')}</div>
+      <h1 style={{ marginTop: 0 }}>{t('adminModels.title')}</h1>
+      <p style={{ color: 'var(--qlc-muted)', maxWidth: 640 }}>{t('adminModels.intro')}</p>
 
       {message && <div className="qlc-card" style={{ borderColor: 'var(--qlc-ok-border)', marginBottom: 16 }}>{message}</div>}
 
@@ -131,24 +136,22 @@ export default function ModelsPage() {
             <h3 style={{ margin: '6px 0' }}>{m.name}</h3>
             <p style={{ color: 'var(--qlc-muted)', fontSize: 13 }}>{m.tagline}</p>
             <span className={`qlc-badge ${m.isActive ? 'ok' : 'muted'}`}>
-              {m.isActive ? '● Visible' : '— Oculto'}
+              {m.isActive ? t('adminModels.visible') : t('adminModels.hidden')}
             </span>
             <button className="qlc-btn primary" style={{ width: '100%', marginTop: 14 }} onClick={() => setEditingModel(m)}>
-              Editar
+              {t('adminModels.edit')}
             </button>
           </div>
         ))}
       </div>
 
       <form className="qlc-card" style={{ marginTop: 18, maxWidth: 640 }} onSubmit={saveNote}>
-        <h3 style={{ marginTop: 0 }}>Nota de advertencia</h3>
-        <p style={{ fontSize: 12, color: 'var(--qlc-muted2)' }}>
-          Se muestra debajo de los modelos en la página pública (aclaración de que no son garantía de resultados).
-        </p>
+        <h3 style={{ marginTop: 0 }}>{t('adminModels.warningNoteTitle')}</h3>
+        <p style={{ fontSize: 12, color: 'var(--qlc-muted2)' }}>{t('adminModels.warningNoteHint')}</p>
         <textarea className="qlc-textarea" rows={2} value={note} onChange={(e) => setNote(e.target.value)} />
         <div className="qlc-form-actions">
           <button className="qlc-btn primary" disabled={savingNote}>
-            {savingNote ? 'Guardando…' : '✓ Guardar nota'}
+            {savingNote ? t('common.saving') : t('adminModels.saveNote')}
           </button>
         </div>
       </form>
@@ -159,7 +162,7 @@ export default function ModelsPage() {
           onClose={() => setEditingModel(null)}
           onSaved={() => {
             setEditingModel(null);
-            flash('✓ Cambios guardados correctamente.');
+            flash(t('adminModels.changesSaved'));
             load();
           }}
         />

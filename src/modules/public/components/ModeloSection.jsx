@@ -1,14 +1,17 @@
 import SectionMedia from './SectionMedia';
-
-const FEATURES = [
-  { icon: '01', title: 'Trading cuantitativo', text: 'Una metodología sistemática aplicada a la ejecución de la estrategia.' },
-  { icon: '02', title: 'Algoritmos', text: 'Reglas programadas para transformar la estrategia en decisiones operativas.' },
-  { icon: '03', title: 'Ejecución automatizada', text: 'La operación se ejecuta directamente en la cuenta conectada.' },
-  { icon: '04', title: 'API', text: 'Conexión autorizada entre la cuenta del cliente y la infraestructura QLC.' },
-  { icon: '05', title: 'Microposiciones', text: 'Una arquitectura diseñada para operar con posiciones de tamaño reducido.' },
-];
+import { useLanguage } from '../../../i18n/LanguageContext';
 
 export default function ModeloSection({ text, media = () => [] }) {
+  const { t } = useLanguage();
+
+  const FEATURES = [
+    { icon: '01', title: t('modeloSection.feature01Title'), text: t('modeloSection.feature01Text') },
+    { icon: '02', title: t('modeloSection.feature02Title'), text: t('modeloSection.feature02Text') },
+    { icon: '03', title: t('modeloSection.feature03Title'), text: t('modeloSection.feature03Text') },
+    { icon: '04', title: t('modeloSection.feature04Title'), text: t('modeloSection.feature04Text') },
+    { icon: '05', title: t('modeloSection.feature05Title'), text: t('modeloSection.feature05Text') },
+  ];
+
   return (
     <section className="section alt" id="modelo">
       <div className="container">

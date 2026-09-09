@@ -117,13 +117,92 @@
   border-color: #4db8ff;
   background: rgba(17, 68, 105, 0.24);
 }
+.qlc-public .qlc-nav-menu-wrap {
+  position: relative;
+  margin-left: 10px;
+}
 .qlc-public .menu {
-  display: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: none;
   border: 1px solid var(--line);
   color: white;
   border-radius: 9px;
-  padding: 8px;
+  padding: 8px 12px;
+  font-size: 16px;
+  cursor: pointer;
+}
+.qlc-public .menu:hover {
+  border-color: rgba(110, 190, 255, 0.42);
+}
+.qlc-public .qlc-nav-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 29;
+  background: rgba(0, 0, 0, 0.35);
+}
+.qlc-public .qlc-nav-menu-panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 30;
+  width: 260px;
+  max-width: calc(100vw - 32px);
+  background: var(--qlc-panel, #0d131a);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+}
+.qlc-public .qlc-nav-menu-heading {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--qlc-muted, #9ca9b7);
+  margin-bottom: 10px;
+}
+.qlc-public .qlc-nav-menu-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.qlc-public .qlc-nav-menu-lang {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--line);
+  color: #f2f6fa;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+.qlc-public .qlc-nav-menu-lang.active {
+  border-color: rgba(110, 190, 255, 0.5);
+  background: rgba(0, 168, 255, 0.1);
+}
+.qlc-public .qlc-nav-menu-divider {
+  height: 1px;
+  background: var(--line);
+  margin: 16px 0;
+}
+.qlc-public .qlc-nav-menu-links {
+  gap: 4px;
+}
+.qlc-public .qlc-nav-menu-links a {
+  padding: 8px 6px;
+  font-size: 13px;
+  color: #dbe4ec;
+  border-radius: 8px;
+}
+.qlc-public .qlc-nav-menu-links a:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: white;
 }
 
 /* ---------- HERO ---------- */
@@ -648,8 +727,7 @@
   .qlc-public .nav-links {
     display: none;
   }
-  .qlc-public .menu {
-    display: block;
+  .qlc-public .qlc-nav-menu-wrap {
     margin-left: auto;
   }
   .qlc-public .hero-grid,

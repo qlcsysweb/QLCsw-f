@@ -3,16 +3,20 @@ import api from '../../services/api';
 import ConfirmModal from '../../components/ConfirmModal';
 import ConfirmSaveModal from '../../components/ConfirmSaveModal';
 import { PAYMENT_REPORT_STATUS, statusOf } from '../../utils/statusLabels';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 const emptyForm = { network: '', walletAddress: '', paymentLink: '', instructions: '' };
 
 export default function PaymentsPage() {
+  const { t } = useLanguage();
   const [config, setConfig] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [reports, setReports] = useState([]);
   const [message, setMessage] = useState('');
   const [confirmReject, setConfirmReject] = useState(null);
   const [confirmSave, setConfirmSave] = useState(false);
+
+  const paymentReportStatusMap = PAYMENT_REPORT_STATUS(t);
 
   const load = () => {
     api.get('/admin/payment-config').then(({ data }) => {
@@ -33,7 +37,7 @@ export default function PaymentsPage() {
   const saveConfig = async () => {
     await api.put('/admin/payment-config', form);
     setConfirmSave(false);
-    setMessage('Configuración de pagos actualizada.');
+    setMessage(t('adminPayments.updated'));
     setTimeout(() => setMessage(''), 3000);
     load();
   };
@@ -54,8 +58,8 @@ export default function PaymentsPage() {
 
   return (
     <div>
-      <div className="qlc-kicker">PAGOS</div>
-      <h1 style={{ marginTop: 0 }}>Configuración e informes de pago</h1>
+      <div className="qlc-kicker">{t('adminPayments.kicker')}</div>
+      <h1 style={{ marginTop: 0 }}>{t('adminPayments.title')}</h1>
 
       <div className="qlc-detail-grid">
         <form
@@ -65,43 +69,45 @@ export default function PaymentsPage() {
             setConfirmSave(true);
           }}
         >
-          <h3 style={{ marginTop: 0 }}>Datos de pago</h3>
+          <h3 style={{ marginTop: 0 }}>{t('adminPayments.paymentData')}</h3>
           {config?.qrUrl && <img src={config.qrUrl} alt="QR de pago" style={{ width: 120, borderRadius: 10, marginBottom: 10 }} />}
-          <label className="qlc-label">Código QR</label>
+          <label className="qlc-label">{t('adminPayments.qrCode')}</label>
           <input className="qlc-input" type="file" accept="image/*" onChange={uploadQr} />
-          <label className="qlc-label">Moneda</label>
-          <input className="qlc-input" value="USDT" disabled title="QLC opera únicamente en USDT" />
-          <label className="qlc-label">Red</label>
+          <label className="qlc-label">{t('adminPayments.currency')}</label>
+          <input className="qlc-input" value="USDT" disabled title={t('adminPayments.currencyHint')} />
+          <label className="qlc-label">{t('adminPayments.network')}</label>
           <input
             className="qlc-input"
-            placeholder="Ej. TRC20, ERC20, BEP20"
+            placeholder={t('adminPayments.networkPlaceholder')}
             value={form.network}
             onChange={(e) => setForm((f) => ({ ...f, network: e.target.value }))}
           />
-          <label className="qlc-label">Wallet</label>
+          <label className="qlc-label">{t('adminPayments.wallet')}</label>
           <input className="qlc-input" value={form.walletAddress} onChange={(e) => setForm((f) => ({ ...f, walletAddress: e.target.value }))} />
-          <label className="qlc-label">Liga de wallet</label>
+          <label className="qlc-label">{t('adminPayments.walletLink')}</label>
           <input className="qlc-input" value={form.paymentLink} onChange={(e) => setForm((f) => ({ ...f, paymentLink: e.target.value }))} />
-          <label className="qlc-label">Instrucciones</label>
+          <label className="qlc-label">{t('adminPayments.instructions')}</label>
           <textarea className="qlc-textarea" rows={3} value={form.instructions} onChange={(e) => setForm((f) => ({ ...f, instructions: e.target.value }))} />
           <div className="qlc-form-actions">
             {message && <span style={{ color: 'var(--qlc-ok)', fontSize: 12 }}>{message}</span>}
-            <button className="qlc-btn primary">Guardar</button>
+            <button className="qlc-btn primary">{t('common.save')}</button>
           </div>
         </form>
 
         {confirmSave && (
           <ConfirmSaveModal
-            message="Se actualizará la configuración de pagos (moneda, red, wallet, liga y/o instrucciones) que ven todos los clientes."
+            message={t('adminPayments.saveConfirmMessage')}
             onCancel={() => setConfirmSave(false)}
             onConfirm={saveConfig}
           />
         )}
 
         <div className="qlc-card">
-          <h3 style={{ marginTop: 0 }}>Reportes de pago ({reports.length})</h3>
+          <h3 style={{ marginTop: 0 }}>
+            {t('adminPayments.reports')} ({reports.length})
+          </h3>
           {reports.length === 0 ? (
-            <div className="qlc-empty">Sin reportes.</div>
+            <div className="qlc-empty">{t('adminPayments.noReports')}</div>
           ) : (
             <ul className="qlc-plain-list">
               {reports.map((r) => (
@@ -111,17 +117,17 @@ export default function PaymentsPage() {
                       {r.client?.firstName} {r.client?.lastName} — {r.amount} {r.currency}
                     </span>
                     {(() => {
-                      const s = statusOf(PAYMENT_REPORT_STATUS, r.status, 'PENDING');
+                      const s = statusOf(paymentReportStatusMap, r.status, 'PENDING');
                       return <span className={`qlc-badge ${s.className}`}>{s.text}</span>;
                     })()}
                   </div>
                   {['PENDING', 'EN_REVISION'].includes(r.status) && (
                     <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
                       <button className="qlc-btn ghost" onClick={() => review(r.id, 'APROBADO')}>
-                        Aprobar
+                        {t('adminPayments.approve')}
                       </button>
                       <button className="qlc-btn ghost" onClick={() => setConfirmReject(r)}>
-                        Rechazar
+                        {t('adminPayments.reject')}
                       </button>
                     </div>
                   )}
@@ -134,9 +140,12 @@ export default function PaymentsPage() {
 
       {confirmReject && (
         <ConfirmModal
-          title="¿Rechazar este pago?"
-          message={`El cliente ${confirmReject.client?.firstName} ${confirmReject.client?.lastName} verá su reporte de ${confirmReject.amount} ${confirmReject.currency} marcado como rechazado.`}
-          confirmLabel="Rechazar"
+          title={t('adminPayments.rejectTitle')}
+          message={t('adminPayments.rejectMessage')
+            .replace('{name}', `${confirmReject.client?.firstName} ${confirmReject.client?.lastName}`)
+            .replace('{amount}', confirmReject.amount)
+            .replace('{currency}', confirmReject.currency)}
+          confirmLabel={t('adminPayments.reject')}
           onClose={() => setConfirmReject(null)}
           onConfirm={() => review(confirmReject.id, 'RECHAZADO')}
         />

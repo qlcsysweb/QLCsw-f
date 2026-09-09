@@ -1,23 +1,26 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import QlcLogo from '../components/QlcLogo';
+import { useLanguage } from '../i18n/LanguageContext';
+import LanguageSwitcherCompact from '../i18n/LanguageSwitcherCompact';
 import './AdminLayout.css';
-
-const NAV_ITEMS = [
-  { to: '/admin', label: 'Dashboard', end: true },
-  { to: '/admin/clients', label: 'Clientes' },
-  { to: '/admin/cms', label: 'Contenido del sitio' },
-  { to: '/admin/payments', label: 'Pagos' },
-  { to: '/admin/appointments', label: 'Citas' },
-  { to: '/admin/support', label: 'Soporte' },
-  { to: '/admin/prospects', label: 'Prospectos' },
-  { to: '/admin/admins', label: 'Administradores' },
-  { to: '/admin/settings/drive', label: 'Configuración · Google Drive' },
-];
 
 export default function AdminLayout() {
   const { user, logout } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
+
+  const NAV_ITEMS = [
+    { to: '/admin', label: t('adminNav.dashboard'), end: true },
+    { to: '/admin/clients', label: t('adminNav.clients') },
+    { to: '/admin/cms', label: t('adminNav.content') },
+    { to: '/admin/payments', label: t('adminNav.payments') },
+    { to: '/admin/appointments', label: t('adminNav.appointments') },
+    { to: '/admin/support', label: t('adminNav.support') },
+    { to: '/admin/prospects', label: t('adminNav.prospects') },
+    { to: '/admin/admins', label: t('adminNav.admins') },
+    { to: '/admin/settings/drive', label: t('adminNav.driveSettings') },
+  ];
 
   const handleLogout = async () => {
     await logout();
@@ -29,7 +32,7 @@ export default function AdminLayout() {
       <aside className="qlc-admin-sidebar">
         <div className="qlc-admin-brand">
           <QlcLogo alt="QLC" />
-          <span>QLC ADMIN</span>
+          <span>{t('adminNav.brand')}</span>
         </div>
         <nav>
           {NAV_ITEMS.map((item) => (
@@ -48,8 +51,9 @@ export default function AdminLayout() {
             {user?.profile?.firstName} {user?.profile?.lastName}
           </div>
           <div className="qlc-admin-user-role">{user?.username}</div>
+          <LanguageSwitcherCompact />
           <button className="qlc-btn ghost" onClick={handleLogout}>
-            Cerrar sesión
+            {t('common.logout')}
           </button>
         </div>
       </aside>

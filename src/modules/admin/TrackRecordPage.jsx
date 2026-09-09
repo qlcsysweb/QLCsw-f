@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import api from '../../services/api';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 export default function TrackRecordPage() {
+  const { t } = useLanguage();
   const [record, setRecord] = useState(null);
   const [form, setForm] = useState(null);
   const [message, setMessage] = useState('');
@@ -16,7 +18,7 @@ export default function TrackRecordPage() {
     load();
   }, []);
 
-  if (!form) return <div className="qlc-empty">Cargando…</div>;
+  if (!form) return <div className="qlc-empty">{t('common.loading')}</div>;
 
   const update = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
 
@@ -31,7 +33,7 @@ export default function TrackRecordPage() {
         profileLink: form.profileLink || '',
         ranking: form.ranking,
       });
-      setMessage('Track Record actualizado.');
+      setMessage(t('adminTrackRecord.updated'));
       setTimeout(() => setMessage(''), 3000);
       load();
     } finally {
@@ -41,29 +43,29 @@ export default function TrackRecordPage() {
 
   return (
     <div>
-      <div className="qlc-kicker">TRACK RECORD</div>
-      <h1 style={{ marginTop: 0 }}>Referencia externa verificable</h1>
+      <div className="qlc-kicker">{t('adminTrackRecord.kicker')}</div>
+      <h1 style={{ marginTop: 0 }}>{t('adminTrackRecord.title')}</h1>
       <form className="qlc-card" style={{ maxWidth: 560 }} onSubmit={submit}>
-        <label className="qlc-label">Título</label>
+        <label className="qlc-label">{t('adminTrackRecord.fieldTitle')}</label>
         <input className="qlc-input" value={form.title} onChange={update('title')} />
-        <label className="qlc-label">Descripción</label>
+        <label className="qlc-label">{t('adminTrackRecord.description')}</label>
         <textarea className="qlc-textarea" rows={3} value={form.description} onChange={update('description')} />
-        <label className="qlc-label">Plataforma</label>
+        <label className="qlc-label">{t('adminTrackRecord.platform')}</label>
         <input className="qlc-input" value={form.platformName} onChange={update('platformName')} />
-        <label className="qlc-label">Enlace del perfil (Bitget)</label>
+        <label className="qlc-label">{t('adminTrackRecord.profileLink')}</label>
         <input
           className="qlc-input"
           value={form.profileLink || ''}
           onChange={update('profileLink')}
           placeholder="https://www.bitget.com/copytrading/..."
         />
-        <label className="qlc-label">Clasificación actual</label>
+        <label className="qlc-label">{t('adminTrackRecord.currentRanking')}</label>
         <input className="qlc-input" value={form.ranking} onChange={update('ranking')} placeholder="#XXX" />
 
         <div className="qlc-form-actions">
           {message && <span style={{ color: 'var(--qlc-ok)', fontSize: 12 }}>{message}</span>}
           <button className="qlc-btn primary" disabled={saving}>
-            {saving ? 'Guardando…' : 'Guardar cambios'}
+            {saving ? t('common.saving') : t('modals.saveChanges')}
           </button>
         </div>
       </form>
