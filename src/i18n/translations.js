@@ -62,7 +62,7 @@ const es = {
     comoFunciona: 'Cómo funciona',
     tecnologia: 'Tecnología',
     microposiciones: 'Microposiciones',
-    modelos: 'Modelos',
+    modelos: 'Modelos de participación',
     resultados: 'Resultados',
     seguridad: 'Seguridad',
     sobreQlc: 'Sobre QLC',
