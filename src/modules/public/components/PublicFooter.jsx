@@ -1,8 +1,10 @@
 import SectionMedia from './SectionMedia';
 import { useLanguage } from '../../../i18n/LanguageContext';
+import useSectionNav from '../useSectionNav';
 
 export default function PublicFooter({ text, media = () => [] }) {
   const { t } = useLanguage();
+  const goToSection = useSectionNav();
   return (
     <footer className="footer">
       <div className="container footer-grid">
@@ -16,12 +18,15 @@ export default function PublicFooter({ text, media = () => [] }) {
         <div>
           <h4>{t('footer.navigationHeading')}</h4>
           <div>
-            <a href="#modelo">{t('nav.modelo')}</a> · <a href="#como-funciona">{t('nav.comoFunciona')}</a> ·{' '}
-            <a href="#tecnologia">{t('nav.tecnologia')}</a>
+            <a href="/modelo" onClick={goToSection('/modelo', 'modelo')}>{t('nav.modelo')}</a> ·{' '}
+            <a href="/como-funciona" onClick={goToSection('/como-funciona', 'como-funciona')}>{t('nav.comoFunciona')}</a> ·{' '}
+            <a href="/tecnologia" onClick={goToSection('/tecnologia', 'tecnologia')}>{t('nav.tecnologia')}</a>
           </div>
           <div>
-            <a href="#modelos">{t('nav.modelos')}</a> · <a href="#resultados">{t('nav.resultados')}</a> ·{' '}
-            <a href="#seguridad">{t('nav.seguridad')}</a> · <a href="#sobre-qlc">{t('nav.sobreQlc')}</a>
+            <a href="/modelos" onClick={goToSection('/modelos', 'modelos')}>{t('nav.modelos')}</a> ·{' '}
+            <a href="/resultados" onClick={goToSection('/resultados', 'resultados')}>{t('nav.resultados')}</a> ·{' '}
+            <a href="/seguridad" onClick={goToSection('/seguridad', 'seguridad')}>{t('nav.seguridad')}</a> ·{' '}
+            <a href="/sobre-qlc" onClick={goToSection('/sobre-qlc', 'sobre-qlc')}>{t('nav.sobreQlc')}</a>
           </div>
         </div>
         <div>

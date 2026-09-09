@@ -44,7 +44,14 @@ export default function ContactoSection({ text, media = () => [] }) {
             </p>
           </div>
           <div>
-            <a className="btn primary" href="#registro-form">
+            <a
+              className="btn primary"
+              href="#registro-form"
+              onClick={(e) => {
+                e.preventDefault();
+                document.getElementById('registro-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }}
+            >
               {t('contact.submit')}
             </a>
           </div>

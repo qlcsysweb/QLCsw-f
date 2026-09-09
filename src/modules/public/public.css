@@ -32,6 +32,14 @@
   background: rgba(5, 7, 10, 0.78);
   backdrop-filter: blur(18px);
   border-bottom: 1px solid var(--line);
+  transition: transform 0.35s ease, background 0.3s ease, box-shadow 0.3s ease;
+}
+.qlc-public .nav.nav-scrolled {
+  background: rgba(5, 7, 10, 0.94);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+}
+.qlc-public .nav.nav-hidden {
+  transform: translateY(-100%);
 }
 .qlc-public .nav-inner {
   height: 76px;
@@ -43,7 +51,7 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  min-width: 225px;
+  flex-shrink: 0;
 }
 .qlc-public .brand {
   display: flex;
@@ -67,13 +75,61 @@
   letter-spacing: 0.22em;
   font-weight: 700;
 }
+
+/* Enlaces de navegación — visibles siempre, sin menú hamburguesa. En
+   pantallas angostas la fila entera se desplaza horizontalmente en vez de
+   desbordar la página (ver responsive más abajo). */
+.qlc-public .nav-links {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.qlc-public .nav-links::-webkit-scrollbar {
+  display: none;
+}
+.qlc-public .nav-links a {
+  position: relative;
+  font-size: 12px;
+  color: var(--qlc-muted);
+  white-space: nowrap;
+  padding: 6px 0;
+  transition: color 0.2s ease;
+}
+.qlc-public .nav-links a:hover {
+  color: var(--qlc-text);
+}
+.qlc-public .nav-links a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--qlc-blue);
+  transform: scaleX(0);
+  transition: transform 0.25s ease;
+}
+.qlc-public .nav-links a.active {
+  color: var(--qlc-text);
+  font-weight: 600;
+}
+.qlc-public .nav-links a.active::after {
+  transform: scaleX(1);
+}
+
 .qlc-public .qlc-nav-actions {
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 10px;
   flex-wrap: nowrap;
-  margin-left: auto;
+  flex-shrink: 0;
 }
 .qlc-public .access-btn {
   display: inline-flex;
@@ -98,63 +154,56 @@
   transform: translateY(-1px);
 }
 .qlc-public .access-primary {
-  border-color: #4db8ff;
-  background: rgba(17, 68, 105, 0.24);
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--qlc-blue), var(--qlc-blue3));
+  color: #04101a;
+  box-shadow: 0 10px 26px rgba(0, 168, 255, 0.28);
 }
-.qlc-public .qlc-nav-menu-wrap {
+.qlc-public .access-primary:hover {
+  background: linear-gradient(135deg, var(--qlc-blue2), var(--qlc-blue));
+  box-shadow: 0 12px 30px rgba(0, 168, 255, 0.38);
+}
+
+/* Selector de idioma — dropdown compacto, abre hacia abajo. Mismo patrón de
+   cierre (clic afuera cierra, clic en opción actúa y cierra) que cualquier
+   menú de la interfaz — nunca se confunde con el comportamiento de un modal. */
+.qlc-public .qlc-nav-lang {
   position: relative;
 }
-.qlc-public .menu {
+.qlc-public .qlc-nav-lang-btn {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  gap: 4px;
   background: none;
   border: 1px solid var(--line);
-  color: white;
-  border-radius: 9px;
-  padding: 8px 12px;
-  font-size: 16px;
+  color: var(--qlc-text);
+  border-radius: 999px;
+  padding: 0 12px;
+  min-height: 36px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
   cursor: pointer;
 }
-.qlc-public .menu:hover {
+.qlc-public .qlc-nav-lang-btn:hover {
   border-color: rgba(110, 190, 255, 0.42);
 }
-.qlc-nav-menu-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 15;
-  background: rgba(0, 0, 0, 0.35);
-}
-.qlc-public .qlc-nav-menu-panel {
+.qlc-public .qlc-nav-lang-panel {
   position: absolute;
   top: calc(100% + 10px);
   right: 0;
   z-index: 30;
-  width: 260px;
-  max-width: calc(100vw - 32px);
-  max-height: calc(100vh - 90px);
-  overflow-y: auto;
-  background: var(--qlc-panel, #0d131a);
+  width: 170px;
+  background: var(--qlc-panel);
   border: 1px solid var(--line);
-  border-radius: 16px;
+  border-radius: 14px;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
-  padding: 18px;
+  padding: 10px;
   display: flex;
   flex-direction: column;
+  gap: 6px;
 }
-.qlc-public .qlc-nav-menu-heading {
-  font-size: 11px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--qlc-muted, #9ca9b7);
-  margin-bottom: 10px;
-}
-.qlc-public .qlc-nav-menu-section {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.qlc-public .qlc-nav-menu-lang {
+.qlc-public .qlc-nav-lang-option {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -162,32 +211,20 @@
   border: 1px solid var(--line);
   color: #f2f6fa;
   border-radius: 10px;
-  padding: 10px 12px;
+  padding: 9px 10px;
   font-size: 13px;
   text-align: left;
   cursor: pointer;
 }
-.qlc-public .qlc-nav-menu-lang.active {
+.qlc-public .qlc-nav-lang-option.active {
   border-color: rgba(110, 190, 255, 0.5);
   background: rgba(0, 168, 255, 0.1);
 }
-.qlc-public .qlc-nav-menu-divider {
-  height: 1px;
-  background: var(--line);
-  margin: 16px 0;
-}
-.qlc-public .qlc-nav-menu-links {
-  gap: 4px;
-}
-.qlc-public .qlc-nav-menu-links a {
-  padding: 8px 6px;
-  font-size: 13px;
-  color: #dbe4ec;
-  border-radius: 8px;
-}
-.qlc-public .qlc-nav-menu-links a:hover {
-  background: rgba(255, 255, 255, 0.04);
-  color: white;
+.qlc-nav-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 15;
+  background: transparent;
 }
 
 /* ---------- HERO ---------- */
@@ -707,6 +744,12 @@
     padding: 0 10px;
     font-size: 10px;
   }
+  .qlc-public .nav-links {
+    gap: 16px;
+  }
+  .qlc-public .nav-links a {
+    font-size: 11px;
+  }
 }
 @media (max-width: 980px) {
   .qlc-public .hero-grid,
@@ -744,6 +787,20 @@
     padding: 12px 0;
     row-gap: 10px;
   }
+  .qlc-public .brand-area {
+    order: 1;
+  }
+  .qlc-public .qlc-nav-actions {
+    order: 2;
+    margin-left: auto;
+  }
+  .qlc-public .nav-links {
+    order: 3;
+    flex: none;
+    width: 100%;
+    gap: 18px;
+    justify-content: flex-start;
+  }
   .qlc-public .feature-list {
     grid-template-columns: 1fr;
   }
@@ -766,6 +823,22 @@
 @media (max-width: 600px) {
   .qlc-public .container {
     width: min(calc(100% - 28px), var(--max));
+  }
+  .qlc-public .access-btn {
+    padding: 0 10px;
+    font-size: 10px;
+    min-height: 34px;
+  }
+  .qlc-public .qlc-nav-lang-btn {
+    padding: 0 9px;
+    font-size: 10px;
+    min-height: 34px;
+  }
+  .qlc-public .qlc-nav-actions {
+    gap: 6px;
+  }
+  .qlc-public .nav-links {
+    gap: 14px;
   }
   .qlc-public .hero {
     min-height: auto;

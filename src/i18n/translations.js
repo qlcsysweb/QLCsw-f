@@ -70,6 +70,7 @@ const es = {
     registro: 'Registro',
     accesoClientes: 'Acceso cliente',
     accesoAdmins: 'Acceso administrador',
+    iniciarSesion: 'Iniciar sesión',
   },
 
   footer: {
@@ -1018,6 +1019,7 @@ const en = {
     registro: 'Register',
     accesoClientes: 'Client access',
     accesoAdmins: 'Administrator access',
+    iniciarSesion: 'Sign in',
   },
 
   footer: {

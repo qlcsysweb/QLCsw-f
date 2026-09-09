@@ -39,6 +39,15 @@ function AppRoutes() {
     <AuthProvider>
       <Routes>
           <Route path="/" element={<PublicHomePage />} />
+          <Route path="/modelo" element={<PublicHomePage />} />
+          <Route path="/como-funciona" element={<PublicHomePage />} />
+          <Route path="/tecnologia" element={<PublicHomePage />} />
+          <Route path="/microposiciones" element={<PublicHomePage />} />
+          <Route path="/modelos" element={<PublicHomePage />} />
+          <Route path="/resultados" element={<PublicHomePage />} />
+          <Route path="/seguridad" element={<PublicHomePage />} />
+          <Route path="/sobre-qlc" element={<PublicHomePage />} />
+          <Route path="/faq" element={<PublicHomePage />} />
           <Route path="/login" element={<LoginPage />} />
 
           <Route element={<ProtectedRoute role="ADMIN" />}>

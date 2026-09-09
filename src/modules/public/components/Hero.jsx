@@ -1,9 +1,11 @@
 import QlcLogo from '../../../components/QlcLogo';
 import SectionMedia from './SectionMedia';
 import { useLanguage } from '../../../i18n/LanguageContext';
+import useSectionNav from '../useSectionNav';
 
 export default function Hero({ text, media = () => [], trackRecord }) {
   const { t } = useLanguage();
+  const goToSection = useSectionNav();
   return (
     <section className="hero" id="inicio-hero">
       <div className="container hero-grid">
@@ -24,10 +26,10 @@ export default function Hero({ text, media = () => [], trackRecord }) {
             )}
           </p>
           <div className="actions">
-            <a className="btn primary" href="#como-funciona">
+            <a className="btn primary" href="/como-funciona" onClick={goToSection('/como-funciona', 'como-funciona')}>
               {t('hero.howItWorks')}
             </a>
-            <a className="btn secondary" href="#modelos">
+            <a className="btn secondary" href="/modelos" onClick={goToSection('/modelos', 'modelos')}>
               {t('hero.seeModels')}
             </a>
           </div>
