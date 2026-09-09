@@ -10,7 +10,7 @@ export default function Hero({ text, media = () => [], trackRecord }) {
             <span className="dot"></span> {text('hero', 'eyebrow', 'Institutional Copytrading Infrastructure')}
           </div>
           <h1>
-            {text('hero', 'title_line1', 'Trading institucional.')}
+            {text('hero', 'title_line1', 'Copytrading Institucional.')}
             <br />
             <span className="gradient">{text('hero', 'title_line2', 'Accesible desde 20 USDT.')}</span>
           </h1>

@@ -8,7 +8,7 @@ export default function MicroposicionesSection({ text, media = () => [] }) {
         <h2>
           Una nueva escala para
           <br />
-          <span className="gradient">el trading institucional.</span>
+          <span className="gradient">el Copytrading Institucional.</span>
         </h2>
         <div className="micro-hero">
           <div>
@@ -22,7 +22,7 @@ export default function MicroposicionesSection({ text, media = () => [] }) {
               {text(
                 'microposiciones',
                 'lead',
-                'QLC adapta una arquitectura de trading institucional a cuentas individuales mediante una metodología basada en microposiciones y ejecución sistemática.'
+                'QLC adapta una arquitectura de copytrading institucional a cuentas individuales mediante una metodología basada en microposiciones y ejecución sistemática.'
               )}
             </p>
           </div>

@@ -32,7 +32,7 @@ const SECTIONS = [
     section: 'hero',
     fields: [
       { key: 'eyebrow', label: 'Etiqueta superior', fallback: 'Institutional Copytrading Infrastructure' },
-      { key: 'title_line1', label: 'Título — línea 1', fallback: 'Trading institucional.' },
+      { key: 'title_line1', label: 'Título — línea 1', fallback: 'Copytrading Institucional.' },
       { key: 'title_line2', label: 'Título — línea 2 (resaltada)', fallback: 'Accesible desde 20 USDT.' },
       { key: 'lead', label: 'Descripción', type: 'textarea', fallback: '' },
       { key: 'mini_platform_label', label: 'Plataforma (mini stat)', fallback: 'BITGET' },
@@ -123,7 +123,7 @@ const SECTIONS = [
   },
   {
     key: 'sobre_qlc',
-    label: 'SOBRE QLC',
+    label: 'Sobre QLC',
     description: 'Naturaleza y descripción institucional de QLC.',
     kind: 'content',
     section: 'sobre_qlc',
@@ -143,7 +143,7 @@ const SECTIONS = [
   },
   {
     key: 'contacto',
-    label: 'CONTACTO',
+    label: 'Contacto',
     description: 'Título, subtítulo y llamada a la acción de registro.',
     kind: 'content',
     section: 'contacto',

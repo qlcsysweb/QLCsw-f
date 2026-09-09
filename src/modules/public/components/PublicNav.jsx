@@ -9,7 +9,7 @@ const LINKS = [
   { href: '#modelos', label: 'Modelos' },
   { href: '#resultados', label: 'Resultados' },
   { href: '#seguridad', label: 'Seguridad' },
-  { href: '#sobre-qlc', label: 'SOBRE QLC' },
+  { href: '#sobre-qlc', label: 'Sobre QLC' },
   { href: '#faq', label: 'FAQ' },
 ];
 

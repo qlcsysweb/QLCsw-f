@@ -8,7 +8,7 @@ export default function PublicFooter({ text, media = () => [] }) {
           <h4>QUANTUM LIQUIDITY CAPITAL</h4>
           <div>Institutional Trading Infrastructure</div>
           <div style={{ marginTop: 14, color: '#aab4bd' }}>
-            {text('footer', 'tagline', 'Trading institucional. Accesible desde 20 USDT.')}
+            {text('footer', 'tagline', 'Copytrading Institucional. Accesible desde 20 USDT.')}
           </div>
         </div>
         <div>
@@ -18,8 +18,8 @@ export default function PublicFooter({ text, media = () => [] }) {
             <a href="#tecnologia">Tecnología</a>
           </div>
           <div>
-            <a href="#modelos">Modelos</a> · <a href="#resultados">Resultados</a> ·{' '}
-            <a href="#seguridad">Seguridad</a> · <a href="#sobre-qlc">SOBRE QLC</a>
+            <a href="#modelos">Modelos de participación</a> · <a href="#resultados">Resultados</a> ·{' '}
+            <a href="#seguridad">Seguridad</a> · <a href="#sobre-qlc">Sobre QLC</a>
           </div>
         </div>
         <div>
