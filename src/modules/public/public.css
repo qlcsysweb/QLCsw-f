@@ -67,28 +67,13 @@
   letter-spacing: 0.22em;
   font-weight: 700;
 }
-.qlc-public .nav-links {
-  display: flex;
-  gap: 16px;
-  align-items: center;
-  justify-content: center;
-  flex: 1;
-}
-.qlc-public .nav-links a {
-  font-size: 11px;
-  color: #aeb9c5;
-  transition: 0.2s;
-  white-space: nowrap;
-}
-.qlc-public .nav-links a:hover {
-  color: white;
-}
 .qlc-public .header-access {
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 8px;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
+  row-gap: 8px;
   margin-left: auto;
 }
 .qlc-public .access-btn {
@@ -719,17 +704,8 @@
     padding: 0 10px;
     font-size: 10px;
   }
-  .qlc-public .nav-links {
-    gap: 10px;
-  }
 }
 @media (max-width: 980px) {
-  .qlc-public .nav-links {
-    display: none;
-  }
-  .qlc-public .qlc-nav-menu-wrap {
-    margin-left: auto;
-  }
   .qlc-public .hero-grid,
   .qlc-public .section-intro,
   .qlc-public .connection {
@@ -759,8 +735,16 @@
   }
 }
 @media (max-width: 700px) {
+  .qlc-public .nav-inner {
+    flex-wrap: wrap;
+    height: auto;
+    padding: 12px 0;
+    row-gap: 10px;
+  }
   .qlc-public .header-access {
-    display: none;
+    width: 100%;
+    justify-content: flex-start;
+    margin-left: 0;
   }
   .qlc-public .feature-list {
     grid-template-columns: 1fr;

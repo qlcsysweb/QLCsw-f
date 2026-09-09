@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import api from '../../services/api';
 import { useLanguage } from '../../i18n/LanguageContext';
+import { translateBackendMessage } from '../../i18n/backendMessages';
 
 function StatCard({ label, value, hint }) {
   return (
@@ -13,7 +14,7 @@ function StatCard({ label, value, hint }) {
 }
 
 export default function DashboardPage() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [summary, setSummary] = useState(null);
   const [error, setError] = useState('');
 
@@ -21,7 +22,7 @@ export default function DashboardPage() {
     api
       .get('/admin/dashboard')
       .then(({ data }) => setSummary(data.summary))
-      .catch((err) => setError(err.message));
+      .catch((err) => setError(translateBackendMessage(err.message, language)));
   }, []);
 
   if (error) return <div className="qlc-empty">{error}</div>;

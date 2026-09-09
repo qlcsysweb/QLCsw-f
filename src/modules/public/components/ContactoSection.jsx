@@ -2,11 +2,12 @@ import { useState } from 'react';
 import api from '../../../services/api';
 import SectionMedia from './SectionMedia';
 import { useLanguage } from '../../../i18n/LanguageContext';
+import { translateBackendMessage } from '../../../i18n/backendMessages';
 
 const initialForm = { firstName: '', lastName: '', email: '', phone: '', message: '' };
 
 export default function ContactoSection({ text, media = () => [] }) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [form, setForm] = useState(initialForm);
   const [status, setStatus] = useState('idle'); // idle | sending | sent | error
   const [error, setError] = useState('');
@@ -27,7 +28,7 @@ export default function ContactoSection({ text, media = () => [] }) {
       setForm(initialForm);
     } catch (err) {
       setStatus('error');
-      setError(err.message);
+      setError(translateBackendMessage(err.message, language));
     }
   };
 

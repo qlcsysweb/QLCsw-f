@@ -7,9 +7,10 @@ import UnsavedChangesModal from '../../components/UnsavedChangesModal';
 import useUnsavedGuard from '../../components/useUnsavedGuard';
 import BilingualField from '../../components/BilingualField';
 import { useLanguage } from '../../i18n/LanguageContext';
+import { translateBackendMessage } from '../../i18n/backendMessages';
 
 function FaqFormModal({ faq, onClose, onSaved }) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [question, setQuestion] = useState(faq?.question || '');
   const [questionEn, setQuestionEn] = useState(faq?.questionEn || '');
   const [answer, setAnswer] = useState(faq?.answer || '');
@@ -40,7 +41,7 @@ function FaqFormModal({ faq, onClose, onSaved }) {
       }
       onSaved();
     } catch (err) {
-      setError(err.message);
+      setError(translateBackendMessage(err.message, language));
       throw err;
     }
   };

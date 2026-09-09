@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import api from '../../services/api';
 import { useLanguage } from '../../i18n/LanguageContext';
-import { pickBilingual } from '../../i18n/bilingualContent';
+import { getLocalizedModel } from '../../i18n/bilingualContent';
 
 export default function ModelsPage() {
   const { t, language } = useLanguage();
-  const [models, setModels] = useState([]);
+  const [modelsRaw, setModels] = useState([]);
   const [currentModelKey, setCurrentModelKey] = useState(null);
   const [message, setMessage] = useState('');
   const [saving, setSaving] = useState('');
@@ -15,6 +15,8 @@ export default function ModelsPage() {
     api.get('/client/me').then(({ data }) => setCurrentModelKey(data.profile.model?.key || null));
   };
   useEffect(load, []);
+
+  const models = useMemo(() => modelsRaw.map((m) => getLocalizedModel(m, language)), [modelsRaw, language]);
 
   const select = async (modelKey) => {
     setSaving(modelKey);
@@ -38,11 +40,11 @@ export default function ModelsPage() {
         {models.map((m) => (
           <div className="qlc-card" key={m.id}>
             <div className="qlc-kicker">{m.key}</div>
-            <h3 style={{ margin: '6px 0' }}>{pickBilingual(m.name, m.nameEn, language)}</h3>
-            <p style={{ color: 'var(--qlc-muted)', fontSize: 13 }}>{pickBilingual(m.description, m.descriptionEn, language)}</p>
+            <h3 style={{ margin: '6px 0' }}>{m.name}</h3>
+            <p style={{ color: 'var(--qlc-muted)', fontSize: 13 }}>{m.description}</p>
             {m.conditions && (
               <p style={{ fontSize: 12, color: 'var(--qlc-muted2)' }}>
-                {t('clientModels.conditions')}: {pickBilingual(m.conditions, m.conditionsEn, language)}
+                {t('clientModels.conditions')}: {m.conditions}
               </p>
             )}
             {m.objective && (

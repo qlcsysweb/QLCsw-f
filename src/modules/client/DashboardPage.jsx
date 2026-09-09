@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
 import { useLanguage } from '../../i18n/LanguageContext';
-import { pickBilingual } from '../../i18n/bilingualContent';
+import { getLocalizedModel } from '../../i18n/bilingualContent';
+import { translateBackendMessage } from '../../i18n/backendMessages';
 
 function StatCard({ label, status }) {
   return (
@@ -61,7 +62,7 @@ export default function DashboardPage() {
     api
       .get('/client/dashboard')
       .then(({ data }) => setDashboard(data.dashboard))
-      .catch((err) => setError(err.message));
+      .catch((err) => setError(translateBackendMessage(err.message, language)));
   }, []);
 
   if (error) return <div className="qlc-empty">{error}</div>;
@@ -84,7 +85,7 @@ export default function DashboardPage() {
         <div className="qlc-card qlc-stat-card">
           <span className="qlc-stat-label">{t('clientDashboard.model')}</span>
           <strong className="qlc-stat-value" style={{ fontSize: 20 }}>
-            {dashboard.model ? pickBilingual(dashboard.model.name, dashboard.model.nameEn, language) : t('clientDashboard.unassigned')}
+            {dashboard.model ? getLocalizedModel(dashboard.model, language).name : t('clientDashboard.unassigned')}
           </strong>
         </div>
         <StatCard label={t('clientDashboard.contract')} status={contractStatus} />

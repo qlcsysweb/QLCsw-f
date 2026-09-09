@@ -7,6 +7,7 @@ import UnsavedChangesModal from '../../../components/UnsavedChangesModal';
 import useUnsavedGuard from '../../../components/useUnsavedGuard';
 import { getMediaLocations, locationLabel, mediaTypeLabel } from '../../../utils/mediaLabels';
 import { useLanguage } from '../../../i18n/LanguageContext';
+import { translateBackendMessage } from '../../../i18n/backendMessages';
 
 function Thumb({ item }) {
   if (item.type === 'VIDEO') {
@@ -35,7 +36,7 @@ function PreviewModal({ item, onClose }) {
 }
 
 function EditModal({ item, onClose, onSaved }) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const MEDIA_LOCATIONS = getMediaLocations(t);
   const initial = {
     location: item.location,
@@ -58,7 +59,7 @@ function EditModal({ item, onClose, onSaved }) {
       await api.patch(`/admin/media/${item.id}`, values);
       onSaved();
     } catch (err) {
-      setError(err.message);
+      setError(translateBackendMessage(err.message, language));
       throw err;
     }
   };
@@ -145,7 +146,7 @@ function EditModal({ item, onClose, onSaved }) {
 }
 
 function ReplaceModal({ item, onClose, onSaved }) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
@@ -160,7 +161,7 @@ function ReplaceModal({ item, onClose, onSaved }) {
       await api.post(`/admin/media/${item.id}/replace`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
       onSaved();
     } catch (err) {
-      setError(err.message);
+      setError(translateBackendMessage(err.message, language));
       setUploading(false);
     }
   };
@@ -195,7 +196,7 @@ function ReplaceModal({ item, onClose, onSaved }) {
 }
 
 function UploadForm({ onUploaded }) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const MEDIA_LOCATIONS = getMediaLocations(t);
   const [location, setLocation] = useState('');
   const [title, setTitle] = useState('');
@@ -231,7 +232,7 @@ function UploadForm({ onUploaded }) {
       if (fileInputRef.current) fileInputRef.current.value = '';
       onUploaded();
     } catch (err) {
-      setError(err.message);
+      setError(translateBackendMessage(err.message, language));
     } finally {
       setUploading(false);
     }

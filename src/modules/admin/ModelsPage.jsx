@@ -6,9 +6,10 @@ import UnsavedChangesModal from '../../components/UnsavedChangesModal';
 import useUnsavedGuard from '../../components/useUnsavedGuard';
 import BilingualField from '../../components/BilingualField';
 import { useLanguage } from '../../i18n/LanguageContext';
+import { translateBackendMessage } from '../../i18n/backendMessages';
 
 function ModelEditModal({ model, onClose, onSaved }) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [form, setForm] = useState(model);
   const [confirmingSave, setConfirmingSave] = useState(false);
   const [error, setError] = useState('');
@@ -38,7 +39,7 @@ function ModelEditModal({ model, onClose, onSaved }) {
       });
       onSaved();
     } catch (err) {
-      setError(err.message);
+      setError(translateBackendMessage(err.message, language));
       throw err;
     }
   };

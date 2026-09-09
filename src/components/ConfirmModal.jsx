@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Modal from './Modal';
 import { useLanguage } from '../i18n/LanguageContext';
+import { translateBackendMessage } from '../i18n/backendMessages';
 
 /*
  * Modal de confirmación para acciones destructivas o irreversibles
@@ -21,7 +22,7 @@ export default function ConfirmModal({
   onConfirm,
   onClose,
 }) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -36,7 +37,7 @@ export default function ConfirmModal({
       await onConfirm();
       onClose();
     } catch (err) {
-      setError(err.message);
+      setError(translateBackendMessage(err.message, language));
       setLoading(false);
     }
   };

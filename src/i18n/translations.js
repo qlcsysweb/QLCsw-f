@@ -68,8 +68,8 @@ const es = {
     sobreQlc: 'Sobre QLC',
     faq: 'FAQ',
     registro: 'Registro',
-    accesoClientes: 'Acceso a Clientes',
-    accesoAdmins: 'Acceso a Administradores',
+    accesoClientes: 'Acceso cliente',
+    accesoAdmins: 'Acceso administrador',
   },
 
   footer: {
@@ -674,6 +674,55 @@ const es = {
     newBadge: 'Nuevo',
   },
 
+  // Plantillas bilingües para notificaciones generadas por el sistema
+  // (ver backend/src/utils/notify.js). Cada notificación nueva guarda un
+  // templateKey + templateParams (códigos, nunca texto ya traducido); el
+  // frontend arma la frase final aquí según el idioma activo. Las
+  // notificaciones antiguas sin templateKey siguen mostrando su texto
+  // literal guardado en NeonDB (nunca se pierden ni se alteran).
+  notificationTemplates: {
+    payment_status_updated: {
+      title: 'Actualización de tu pago reportado',
+      message: 'Tu pago de {amount} {currency} fue marcado como: {status}',
+    },
+    appointment_status_updated: {
+      title: 'Actualización de tu cita',
+      message: 'Tu solicitud de cita fue: {status}',
+    },
+    document_resubmit: {
+      title: 'Puedes volver a enviar tu documento',
+      message: 'QLC eliminó tu documento de "{category}". Ya puedes subir uno nuevo.',
+    },
+    api_connection_status_updated: {
+      title: 'Actualización de tu conexión API',
+      message: 'Estado de tu conexión API: {status}',
+    },
+    contract_available: {
+      title: 'Contrato disponible',
+      message: 'Tu contrato ya está disponible para revisión y firma.',
+    },
+    contract_status_updated: {
+      title: 'Actualización de tu contrato',
+      message: 'Estado de tu contrato: {status}',
+    },
+    contract_signed_reset: {
+      title: 'Tu contrato firmado fue reiniciado',
+      message: 'QLC eliminó tu archivo firmado. Puedes volver a subirlo cuando quieras.',
+    },
+    process_condition_updated: {
+      title: 'Actualización de tu proceso',
+      message: '{conditionType}: {status}',
+    },
+    process_activated: {
+      title: 'Cuenta activada',
+      message: 'Tu cuenta QLC ha sido activada.',
+    },
+    welcome: {
+      title: 'Bienvenido a QLC',
+      message: 'Tu cuenta fue creada. Completa tu proceso para comenzar.',
+    },
+  },
+
   clientAppointments: {
     kicker: 'CITAS',
     title: 'Citas',
@@ -967,8 +1016,8 @@ const en = {
     sobreQlc: 'About QLC',
     faq: 'FAQ',
     registro: 'Register',
-    accesoClientes: 'Client Access',
-    accesoAdmins: 'Administrator Access',
+    accesoClientes: 'Client access',
+    accesoAdmins: 'Administrator access',
   },
 
   footer: {
@@ -1571,6 +1620,49 @@ const en = {
     markAllRead: 'Mark all as read',
     none: 'No notifications.',
     newBadge: 'New',
+  },
+
+  notificationTemplates: {
+    payment_status_updated: {
+      title: 'Update on your reported payment',
+      message: 'Your payment of {amount} {currency} was marked as: {status}',
+    },
+    appointment_status_updated: {
+      title: 'Update on your appointment',
+      message: 'Your appointment request was: {status}',
+    },
+    document_resubmit: {
+      title: 'You can resubmit your document',
+      message: 'QLC removed your document from "{category}". You can now upload a new one.',
+    },
+    api_connection_status_updated: {
+      title: 'Update on your API connection',
+      message: 'Your API connection status: {status}',
+    },
+    contract_available: {
+      title: 'Contract available',
+      message: 'Your contract is now available for review and signing.',
+    },
+    contract_status_updated: {
+      title: 'Update on your contract',
+      message: 'Your contract status: {status}',
+    },
+    contract_signed_reset: {
+      title: 'Your signed contract was reset',
+      message: 'QLC removed your signed file. You can upload it again whenever you want.',
+    },
+    process_condition_updated: {
+      title: 'Update on your process',
+      message: '{conditionType}: {status}',
+    },
+    process_activated: {
+      title: 'Account activated',
+      message: 'Your QLC account has been activated.',
+    },
+    welcome: {
+      title: 'Welcome to QLC',
+      message: 'Your account was created. Complete your process to get started.',
+    },
   },
 
   clientAppointments: {

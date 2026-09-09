@@ -5,7 +5,7 @@ import ConfirmModal from '../../components/ConfirmModal';
 import { ACCOUNT_STATUS, PAYMENT_REPORT_STATUS, statusOf } from '../../utils/statusLabels';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
-import { pickBilingual } from '../../i18n/bilingualContent';
+import { getLocalizedModel } from '../../i18n/bilingualContent';
 
 function ConditionRow({ condition, onUpdate, t }) {
   const [saving, setSaving] = useState(false);
@@ -254,7 +254,7 @@ export default function ClientDetailPage() {
           <h3 style={{ marginTop: 0 }}>{t('adminClientDetail.model')}</h3>
           <p style={{ color: 'var(--qlc-muted)', fontSize: 13 }}>
             {client.clientModel?.model
-              ? pickBilingual(client.clientModel.model.name, client.clientModel.model.nameEn, language)
+              ? getLocalizedModel(client.clientModel.model, language).name
               : t('adminClientDetail.noModelAssigned')}
           </p>
           <h3>

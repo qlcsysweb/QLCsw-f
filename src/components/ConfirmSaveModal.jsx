@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import Modal from './Modal';
 import { useLanguage } from '../i18n/LanguageContext';
+import { translateBackendMessage } from '../i18n/backendMessages';
 
 export default function ConfirmSaveModal({ onCancel, onConfirm, message }) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -15,7 +16,7 @@ export default function ConfirmSaveModal({ onCancel, onConfirm, message }) {
     try {
       await onConfirm();
     } catch (err) {
-      setError(err.message);
+      setError(translateBackendMessage(err.message, language));
       setSaving(false);
     }
   };

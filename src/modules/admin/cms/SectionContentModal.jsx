@@ -6,6 +6,7 @@ import useUnsavedGuard from '../../../components/useUnsavedGuard';
 import api from '../../../services/api';
 import { useLanguage } from '../../../i18n/LanguageContext';
 import { isTranslationPending } from '../../../i18n/bilingualContent';
+import { translateBackendMessage } from '../../../i18n/backendMessages';
 import '../../public/public.css';
 
 /*
@@ -57,7 +58,7 @@ export default function SectionContentModal({ title, section, fields, currentVal
       await api.put('/admin/content/bulk', { items });
       onSaved();
     } catch (err) {
-      setError(err.message);
+      setError(translateBackendMessage(err.message, language));
       throw err;
     }
   };

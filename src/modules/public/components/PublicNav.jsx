@@ -30,24 +30,6 @@ export default function PublicNav() {
             <span className="brand-name">QLC</span>
           </a>
         </div>
-        <div className="nav-links">
-          {LINKS.map((l) => (
-            <a key={l.href} href={l.href}>
-              {l.label}
-            </a>
-          ))}
-        </div>
-        <div className="header-access">
-          <a className="access-btn" href="#contacto">
-            {t('nav.registro')}
-          </a>
-          <Link className="access-btn" to="/login">
-            {t('nav.accesoClientes')}
-          </Link>
-          <Link className="access-btn access-primary" to="/login">
-            {t('nav.accesoAdmins')}
-          </Link>
-        </div>
 
         <div className="qlc-nav-menu-wrap">
           <button
@@ -91,23 +73,24 @@ export default function PublicNav() {
                     </a>
                   ))}
                 </div>
-
-                <div className="qlc-nav-menu-divider" />
-
-                <div className="qlc-nav-menu-section qlc-nav-menu-links">
-                  <a href="#contacto" onClick={closeMenu}>
-                    {t('nav.registro')}
-                  </a>
-                  <Link to="/login" onClick={closeMenu}>
-                    {t('nav.accesoClientes')}
-                  </Link>
-                  <Link to="/login" onClick={closeMenu}>
-                    {t('nav.accesoAdmins')}
-                  </Link>
-                </div>
               </div>
             </>
           )}
+        </div>
+
+        <div className="header-access">
+          <a className="access-btn" href="#registro-form">
+            {t('contact.submit')}
+          </a>
+          <a className="access-btn" href="#contacto">
+            {t('nav.registro')}
+          </a>
+          <Link className="access-btn" to="/login">
+            {t('nav.accesoClientes')}
+          </Link>
+          <Link className="access-btn access-primary" to="/login">
+            {t('nav.accesoAdmins')}
+          </Link>
         </div>
       </div>
     </nav>

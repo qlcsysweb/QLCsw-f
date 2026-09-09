@@ -4,7 +4,7 @@ import api from '../../services/api';
 import { ACCOUNT_STATUS, statusOf } from '../../utils/statusLabels';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
-import { pickBilingual } from '../../i18n/bilingualContent';
+import { getLocalizedModel } from '../../i18n/bilingualContent';
 
 function CreateClientModal({ onClose, onCreated }) {
   const { t, language } = useLanguage();
@@ -173,7 +173,7 @@ export default function ClientsListPage() {
                     </td>
                     <td>
                       {c.clientModel?.model
-                        ? pickBilingual(c.clientModel.model.name, c.clientModel.model.nameEn, language)
+                        ? getLocalizedModel(c.clientModel.model, language).name
                         : t('adminClientsList.unassigned')}
                     </td>
                     <td>
