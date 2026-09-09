@@ -64,7 +64,7 @@ function ChatPanel({ session, onClose }) {
   const seconds = remaining !== null ? remaining % 60 : null;
 
   return (
-    <div className="qlc-modal-overlay" onClick={onClose}>
+    <div className="qlc-modal-overlay">
       <div className="qlc-modal-panel" onClick={(e) => e.stopPropagation()} style={{ display: 'flex', flexDirection: 'column', height: 520 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h2 style={{ margin: 0 }}>

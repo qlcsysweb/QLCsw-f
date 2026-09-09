@@ -39,7 +39,7 @@ function CreateClientModal({ onClose, onCreated }) {
   };
 
   return (
-    <div className="qlc-modal-overlay" onClick={onClose}>
+    <div className="qlc-modal-overlay">
       <div className="qlc-modal-panel" onClick={(e) => e.stopPropagation()}>
         <h2>{t('adminClientsList.modalTitle')}</h2>
         <form onSubmit={submit}>

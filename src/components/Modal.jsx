@@ -2,7 +2,7 @@ import './Modal.css';
 
 export default function Modal({ title, subtitle, onClose, children, width = 560 }) {
   return (
-    <div className="qlc-modal-overlay" onClick={onClose}>
+    <div className="qlc-modal-overlay">
       <div
         className="qlc-modal-panel"
         style={{ maxWidth: width }}

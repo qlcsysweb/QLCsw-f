@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import QlcLogo from '../../../components/QlcLogo';
 import { useLanguage } from '../../../i18n/LanguageContext';
@@ -31,66 +32,77 @@ export default function PublicNav() {
           </a>
         </div>
 
-        <div className="qlc-nav-menu-wrap">
-          <button
-            type="button"
-            className="menu"
-            aria-label={t('menu.open')}
-            aria-expanded={menuOpen}
-            onClick={() => setMenuOpen((v) => !v)}
-          >
-            ☰
-          </button>
-
-          {menuOpen && (
-            <>
-              <div className="qlc-nav-menu-backdrop" onClick={closeMenu} />
-              <div className="qlc-nav-menu-panel">
-                <div className="qlc-nav-menu-section">
-                  <div className="qlc-nav-menu-heading">{t('language.label')}</div>
-                  <button
-                    type="button"
-                    className={`qlc-nav-menu-lang${language === 'es' ? ' active' : ''}`}
-                    onClick={() => setLanguage('es')}
-                  >
-                    🇪🇸 Español
-                  </button>
-                  <button
-                    type="button"
-                    className={`qlc-nav-menu-lang${language === 'en' ? ' active' : ''}`}
-                    onClick={() => setLanguage('en')}
-                  >
-                    🇺🇸 English
-                  </button>
-                </div>
-
-                <div className="qlc-nav-menu-divider" />
-
-                <div className="qlc-nav-menu-section qlc-nav-menu-links">
-                  {LINKS.map((l) => (
-                    <a key={l.href} href={l.href} onClick={closeMenu}>
-                      {l.label}
-                    </a>
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
-        </div>
-
-        <div className="header-access">
+        <div className="qlc-nav-actions">
           <a className="access-btn" href="#registro-form">
             {t('contact.submit')}
           </a>
-          <a className="access-btn" href="#contacto">
-            {t('nav.registro')}
-          </a>
-          <Link className="access-btn" to="/login">
-            {t('nav.accesoClientes')}
-          </Link>
-          <Link className="access-btn access-primary" to="/login">
-            {t('nav.accesoAdmins')}
-          </Link>
+
+          <div className="qlc-nav-menu-wrap">
+            <button
+              type="button"
+              className="menu"
+              aria-label={t('menu.open')}
+              aria-expanded={menuOpen}
+              onClick={() => setMenuOpen((v) => !v)}
+            >
+              ☰
+            </button>
+
+            {menuOpen && (
+              <>
+                {createPortal(<div className="qlc-nav-menu-backdrop" onClick={closeMenu} />, document.body)}
+                <div className="qlc-nav-menu-panel">
+                  <div className="qlc-nav-menu-section qlc-nav-menu-links">
+                    {LINKS.map((l) => (
+                      <a key={l.href} href={l.href} onClick={closeMenu}>
+                        {l.label}
+                      </a>
+                    ))}
+                  </div>
+
+                  <div className="qlc-nav-menu-divider" />
+
+                  <div className="qlc-nav-menu-section qlc-nav-menu-links">
+                    <a href="#contacto" onClick={closeMenu}>
+                      {t('nav.registro')}
+                    </a>
+                    <Link to="/login" onClick={closeMenu}>
+                      {t('nav.accesoClientes')}
+                    </Link>
+                    <Link to="/login" onClick={closeMenu}>
+                      {t('nav.accesoAdmins')}
+                    </Link>
+                  </div>
+
+                  <div className="qlc-nav-menu-divider" />
+
+                  <div className="qlc-nav-menu-section">
+                    <div className="qlc-nav-menu-heading">{t('language.label')}</div>
+                    <button
+                      type="button"
+                      className={`qlc-nav-menu-lang${language === 'es' ? ' active' : ''}`}
+                      onClick={() => {
+                        setLanguage('es');
+                        closeMenu();
+                      }}
+                    >
+                      🇪🇸 Español
+                    </button>
+                    <button
+                      type="button"
+                      className={`qlc-nav-menu-lang${language === 'en' ? ' active' : ''}`}
+                      onClick={() => {
+                        setLanguage('en');
+                        closeMenu();
+                      }}
+                    >
+                      🇺🇸 English
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </nav>

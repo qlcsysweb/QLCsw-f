@@ -67,13 +67,12 @@
   letter-spacing: 0.22em;
   font-weight: 700;
 }
-.qlc-public .header-access {
+.qlc-public .qlc-nav-actions {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 8px;
-  flex-wrap: wrap;
-  row-gap: 8px;
+  gap: 10px;
+  flex-wrap: nowrap;
   margin-left: auto;
 }
 .qlc-public .access-btn {
@@ -104,7 +103,6 @@
 }
 .qlc-public .qlc-nav-menu-wrap {
   position: relative;
-  margin-left: 10px;
 }
 .qlc-public .menu {
   display: inline-flex;
@@ -121,10 +119,10 @@
 .qlc-public .menu:hover {
   border-color: rgba(110, 190, 255, 0.42);
 }
-.qlc-public .qlc-nav-menu-backdrop {
+.qlc-nav-menu-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 29;
+  z-index: 15;
   background: rgba(0, 0, 0, 0.35);
 }
 .qlc-public .qlc-nav-menu-panel {
@@ -134,6 +132,8 @@
   z-index: 30;
   width: 260px;
   max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 90px);
+  overflow-y: auto;
   background: var(--qlc-panel, #0d131a);
   border: 1px solid var(--line);
   border-radius: 16px;
@@ -703,7 +703,7 @@
   .qlc-public .flow-line {
     grid-template-columns: repeat(5, 1fr);
   }
-  .qlc-public .header-access .access-btn {
+  .qlc-public .qlc-nav-actions .access-btn {
     padding: 0 10px;
     font-size: 10px;
   }
@@ -743,11 +743,6 @@
     height: auto;
     padding: 12px 0;
     row-gap: 10px;
-  }
-  .qlc-public .header-access {
-    width: 100%;
-    justify-content: flex-start;
-    margin-left: 0;
   }
   .qlc-public .feature-list {
     grid-template-columns: 1fr;
