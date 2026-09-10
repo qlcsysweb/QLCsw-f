@@ -6,6 +6,7 @@ import { ACCOUNT_STATUS, API_CONNECTION_STATUS, statusOf } from '../../utils/sta
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 import { getLocalizedModel } from '../../i18n/bilingualContent';
+import CapitalIncreasePanel from './CapitalIncreasePanel';
 
 export default function ClientDetailPage() {
   const { id } = useParams();
@@ -27,7 +28,6 @@ export default function ClientDetailPage() {
   const apiStatusMap = API_CONNECTION_STATUS(t);
   const CATEGORIES = [
     { value: 'identificacion', label: t('adminClientDetail.categoryId') },
-    { value: 'comprobante_domicilio', label: t('adminClientDetail.categoryAddress') },
     { value: 'otro', label: t('adminClientDetail.categoryOther') },
   ];
 
@@ -131,6 +131,11 @@ export default function ClientDetailPage() {
           <div style={{ color: 'var(--qlc-muted)', fontSize: 13 }}>
             <a href={`mailto:${client.user?.email}`}>{client.user?.email}</a>
           </div>
+          {client.nationality && (
+            <div style={{ color: 'var(--qlc-muted)', fontSize: 13 }}>
+              {t('adminClientDetail.nationality')}: {client.nationality}
+            </div>
+          )}
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
           <span className={`qlc-badge ${clientAccStatus.className}`}>{clientAccStatus.text}</span>
@@ -215,6 +220,8 @@ export default function ClientDetailPage() {
           </table>
         )}
       </div>
+
+      <CapitalIncreasePanel clientId={id} subaccounts={subaccounts} />
 
       <div className="qlc-detail-grid">
         <div className="qlc-card">

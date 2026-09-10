@@ -31,6 +31,7 @@ import ClientWalletPage from './modules/client/WalletPage';
 import ClientSupportPage from './modules/client/SupportPage';
 import ClientAppointmentsPage from './modules/client/AppointmentsPage';
 import ClientNotificationsPage from './modules/client/NotificationsPage';
+import ClientCapitalIncreasePage from './modules/client/CapitalIncreasePage';
 
 function AppRoutes() {
   const { hasChosenLanguage } = useLanguage();
@@ -79,6 +80,7 @@ function AppRoutes() {
               <Route path="api-subaccounts/:id" element={<ClientSubaccountDetailPage />} />
               <Route path="documents" element={<ClientDocumentsPage />} />
               <Route path="wallet" element={<ClientWalletPage />} />
+              <Route path="capital-increase" element={<ClientCapitalIncreasePage />} />
               <Route path="support" element={<ClientSupportPage />} />
               <Route path="appointments" element={<ClientAppointmentsPage />} />
               <Route path="notifications" element={<ClientNotificationsPage />} />

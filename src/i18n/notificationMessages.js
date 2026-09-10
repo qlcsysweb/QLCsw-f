@@ -51,6 +51,7 @@ const STATUS_LABEL_KEYS = {
       REJECTED: 'status.condition.rejected',
     },
     conditionType: {
+      WALLET: 'status.conditionType.WALLET',
       CONTRACT: 'status.conditionType.CONTRACT',
       FUNDS: 'status.conditionType.FUNDS',
       PAYMENT: 'status.conditionType.PAYMENT',
@@ -61,7 +62,6 @@ const STATUS_LABEL_KEYS = {
   document_resubmit: {
     category: {
       identificacion: 'clientDocuments.categoryId',
-      comprobante_domicilio: 'clientDocuments.categoryAddress',
       otro: 'clientDocuments.categoryOther',
     },
   },

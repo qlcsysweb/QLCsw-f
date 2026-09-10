@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api, { API_BASE_URL } from '../../services/api';
 import Modal from '../../components/Modal';
-import { API_CONNECTION_STATUS, PAYMENT_REPORT_STATUS, statusOf } from '../../utils/statusLabels';
+import { API_CONNECTION_STATUS, PAYMENT_REPORT_STATUS, STATEMENT_STATUS, statusOf } from '../../utils/statusLabels';
 import { formatCdmxDate } from '../../utils/cdmxTime';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
@@ -66,6 +66,7 @@ export default function SubaccountDetailPage() {
 
   const apiStatusMap = API_CONNECTION_STATUS(t);
   const paymentStatusMap = PAYMENT_REPORT_STATUS(t);
+  const statementStatusMap = STATEMENT_STATUS(t);
 
   const CONTRACT_STATUS_LABELS = {
     PENDING: { text: `◌ ${t('status.contract.pending')}`, className: 'warn' },
@@ -229,7 +230,7 @@ export default function SubaccountDetailPage() {
         <div className="qlc-card" style={{ marginBottom: 16 }}>
           <h3 style={{ marginTop: 0 }}>{t('clientProcess.title')}</h3>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10 }}>
-            {['CONTRACT', 'FUNDS', 'PAYMENT', 'API', 'ACTIVATION'].map((type) => {
+            {['WALLET', 'CONTRACT', 'FUNDS', 'PAYMENT', 'API', 'ACTIVATION'].map((type) => {
               const condition = subaccount.process.conditions.find((c) => c.type === type);
               const cStatus = condition?.status || 'PENDING';
               const info =
@@ -396,18 +397,37 @@ export default function SubaccountDetailPage() {
             <div className="qlc-empty">{t('clientSubaccountDetail.noStatements')}</div>
           ) : (
             <ul className="qlc-plain-list">
-              {statements.map((s) => (
-                <li key={s.id} style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>
-                    {formatCdmxDate(s.periodStart)} – {formatCdmxDate(s.periodEnd)} · {s.resultPercentage}%
-                  </span>
-                  {s.pdfDriveFileId && (
-                    <a href={`${API_BASE_URL}/client/statements/${s.id}/download`} target="_blank" rel="noreferrer">
-                      {t('clientSubaccountDetail.viewPdf')}
-                    </a>
-                  )}
-                </li>
-              ))}
+              {statements.map((s) => {
+                const stStatus = statusOf(statementStatusMap, s.displayStatus, 'DISPONIBLE');
+                return (
+                  <li key={s.id} style={{ display: 'flex', flexDirection: 'column', gap: 6, paddingBottom: 10, borderBottom: '1px solid var(--qlc-line)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span>
+                        {formatCdmxDate(s.periodStart)} – {formatCdmxDate(s.periodEnd)} · {s.resultPercentage}%
+                      </span>
+                      <span className={`qlc-badge ${stStatus.className}`}>{stStatus.text}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12 }}>
+                      {s.pdfDriveFileId && (
+                        <a href={`${API_BASE_URL}/client/statements/${s.id}/download`} target="_blank" rel="noreferrer">
+                          {t('clientSubaccountDetail.viewPdf')}
+                        </a>
+                      )}
+                    </div>
+                    {s.evidenceDocuments?.length > 0 && (
+                      <div style={{ fontSize: 12, color: 'var(--qlc-muted)' }}>
+                        {t('clientSubaccountDetail.statementEvidence')}:{' '}
+                        {s.evidenceDocuments.map((d, idx) => (
+                          <span key={d.id}>
+                            {idx > 0 && ', '}
+                            <a href={`${API_BASE_URL}/client/documents/${d.id}/download`} target="_blank" rel="noreferrer">{d.fileName}</a>
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           )}
         </div>

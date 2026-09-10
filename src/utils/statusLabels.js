@@ -44,6 +44,16 @@ export const API_CONNECTION_STATUS = (t) => ({
   PENDIENTE: { text: `◌ ${t('status.apiConnection.pending')}`, className: 'warn' },
 });
 
+// CORRECCIÓN 5: estado visible de un Estado de Cuenta — NO_DISPONIBLE se usa
+// para el estado vacío (todavía no hay estados de cuenta generados);
+// DISPONIBLE/PENDIENTE_DE_PAGO llegan calculados desde el backend
+// (displayStatus) a partir de commission/commissionPaid.
+export const STATEMENT_STATUS = (t) => ({
+  NO_DISPONIBLE: { text: `× ${t('status.statement.notAvailable')}`, className: 'muted' },
+  DISPONIBLE: { text: `✓ ${t('status.statement.available')}`, className: 'ok' },
+  PENDIENTE_DE_PAGO: { text: `! ${t('status.statement.pendingPayment')}`, className: 'warn' },
+});
+
 export const PROSPECT_STATUS = (t) => ({
   NUEVO: { text: `◌ ${t('status.prospect.new')}`, className: 'warn' },
   CONTACTADO: { text: `! ${t('status.prospect.contacted')}`, className: 'warn' },

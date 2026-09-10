@@ -13,7 +13,7 @@ export default function RegisterPage() {
   const { register } = useAuth();
   const { t, language } = useLanguage();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ firstName: '', lastName: '', email: '', password: '' });
+  const [form, setForm] = useState({ firstName: '', lastName: '', email: '', password: '', nationality: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -49,6 +49,8 @@ export default function RegisterPage() {
           <input className="qlc-input" value={form.firstName} onChange={update('firstName')} required />
           <label className="qlc-label">{t('register.lastName')}</label>
           <input className="qlc-input" value={form.lastName} onChange={update('lastName')} required />
+          <label className="qlc-label">{t('register.nationality')}</label>
+          <input className="qlc-input" value={form.nationality} onChange={update('nationality')} required />
           <label className="qlc-label">{t('register.email')}</label>
           <input className="qlc-input" type="email" value={form.email} onChange={update('email')} required />
           <label className="qlc-label">{t('register.password')}</label>

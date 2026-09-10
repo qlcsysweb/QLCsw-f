@@ -65,6 +65,22 @@ export default function DashboardPage() {
       <div className="qlc-kicker">{t('clientDashboard.kicker')}</div>
       <h1 style={{ marginTop: 0 }}>{t('clientDashboard.welcome').replace('{name}', dashboard.firstName)}</h1>
 
+      <div
+        className="qlc-card"
+        style={{
+          borderColor: 'var(--qlc-warn-border)',
+          marginBottom: 20,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 10,
+        }}
+      >
+        <span className="qlc-badge warn" style={{ fontSize: 14, padding: '8px 12px', whiteSpace: 'nowrap' }}>
+          ⚠ {t('clientDashboard.bitgetOnlyBadge')}
+        </span>
+        <span style={{ fontSize: 13, color: 'var(--qlc-muted)' }}>{t('clientDashboard.bitgetOnlyNotice')}</span>
+      </div>
+
       <div className="qlc-stat-grid">
         <div className="qlc-card qlc-stat-card">
           <span className="qlc-stat-label">{t('clientDashboard.accountStatus')}</span>

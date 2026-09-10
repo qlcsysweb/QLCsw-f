@@ -15,7 +15,6 @@ export default function DocumentsPage() {
 
   const CATEGORIES = [
     { value: 'identificacion', label: t('clientDocuments.categoryId') },
-    { value: 'comprobante_domicilio', label: t('clientDocuments.categoryAddress') },
     { value: 'otro', label: t('clientDocuments.categoryOther') },
   ];
 

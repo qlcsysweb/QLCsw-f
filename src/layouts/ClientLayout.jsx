@@ -19,6 +19,7 @@ export default function ClientLayout() {
     { to: '/client/api-subaccounts', label: t('clientNav.subaccounts') },
     { to: '/client/documents', label: t('clientNav.documents') },
     { to: '/client/wallet', label: t('clientNav.wallet') },
+    { to: '/client/capital-increase', label: t('clientNav.capitalIncrease') },
     { to: '/client/support', label: t('clientNav.support') },
     { to: '/client/appointments', label: t('clientNav.appointments') },
   ];

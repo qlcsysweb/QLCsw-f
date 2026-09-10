@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api, { API_BASE_URL } from '../../services/api';
 import ConfirmModal from '../../components/ConfirmModal';
-import { API_CONNECTION_STATUS, PAYMENT_REPORT_STATUS, statusOf } from '../../utils/statusLabels';
+import { API_CONNECTION_STATUS, PAYMENT_REPORT_STATUS, STATEMENT_STATUS, statusOf } from '../../utils/statusLabels';
 import { formatCdmxDate } from '../../utils/cdmxTime';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
@@ -83,12 +83,15 @@ export default function AdminSubaccountDetailPage() {
   const [contractUploading, setContractUploading] = useState(false);
   const [confirmResetSigned, setConfirmResetSigned] = useState(false);
   const [statementForm, setStatementForm] = useState({
-    periodStart: '', periodEnd: '', startingBalance: '', endingBalance: '', resultAmount: '', resultPercentage: '', commission: '0', activityNotes: '', adminNotes: '',
+    periodStart: '', periodEnd: '', startingBalance: '', endingBalance: '', resultAmount: '', resultPercentage: '', volatility: '', netResult: '', commission: '0', activityNotes: '', adminNotes: '',
   });
   const [creatingStatement, setCreatingStatement] = useState(false);
+  const [evidenceUploading, setEvidenceUploading] = useState(null);
+  const [sendingStatement, setSendingStatement] = useState(null);
 
   const apiStatusMap = API_CONNECTION_STATUS(t);
   const paymentStatusMap = PAYMENT_REPORT_STATUS(t);
+  const statementStatusMap = STATEMENT_STATUS(t);
   const CONTRACT_STATUS_LABELS = {
     PENDING: { text: t('status.contract.pending'), className: 'warn' },
     UPLOADED: { text: t('status.contract.uploaded'), className: 'warn' },
@@ -182,19 +185,56 @@ export default function AdminSubaccountDetailPage() {
     load();
   };
 
+  // CORRECCIÓN 5: "desde" se autocompleta en el backend a partir del fin del
+  // periodo anterior de esta subcuenta/API — solo se envía si todavía no
+  // existe ningún estado de cuenta previo (primer periodo).
+  const hasPreviousStatement = statements.length > 0;
+  const latestPeriodEnd = hasPreviousStatement
+    ? statements.reduce((max, s) => (new Date(s.periodEnd) > new Date(max) ? s.periodEnd : max), statements[0].periodEnd)
+    : null;
+
   const createStatement = async (e) => {
     e.preventDefault();
     setCreatingStatement(true);
     setError('');
     try {
-      await api.post(`/admin/api-subaccounts/${id}/statements`, statementForm);
+      const payload = { ...statementForm };
+      if (hasPreviousStatement) delete payload.periodStart;
+      await api.post(`/admin/api-subaccounts/${id}/statements`, payload);
       flash(t('adminClientDetail.statementCreated'));
-      setStatementForm({ periodStart: '', periodEnd: '', startingBalance: '', endingBalance: '', resultAmount: '', resultPercentage: '', commission: '0', activityNotes: '', adminNotes: '' });
+      setStatementForm({ periodStart: '', periodEnd: '', startingBalance: '', endingBalance: '', resultAmount: '', resultPercentage: '', volatility: '', netResult: '', commission: '0', activityNotes: '', adminNotes: '' });
       load();
     } catch (err) {
       setError(translateBackendMessage(err.message, language));
     } finally {
       setCreatingStatement(false);
+    }
+  };
+
+  const uploadEvidence = async (statementId, file) => {
+    if (!file) return;
+    setEvidenceUploading(statementId);
+    const fd = new FormData();
+    fd.append('file', file);
+    try {
+      await api.post(`/admin/statements/${statementId}/evidence`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      load();
+    } catch (err) {
+      setError(translateBackendMessage(err.message, language));
+    } finally {
+      setEvidenceUploading(null);
+    }
+  };
+
+  const sendStatementToClient = async (statementId) => {
+    setSendingStatement(statementId);
+    try {
+      await api.post(`/admin/statements/${statementId}/send`);
+      flash(t('adminClientDetail.sentToClientOk'));
+    } catch (err) {
+      setError(translateBackendMessage(err.message, language));
+    } finally {
+      setSendingStatement(null);
     }
   };
 
@@ -345,23 +385,65 @@ export default function AdminSubaccountDetailPage() {
           <h3 style={{ marginTop: 0 }}>{t('adminClientDetail.statements')} ({statements.length})</h3>
           {statements.length > 0 && (
             <ul className="qlc-plain-list" style={{ marginBottom: 14 }}>
-              {statements.map((s) => (
-                <li key={s.id} style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>{formatCdmxDate(s.periodStart)} – {formatCdmxDate(s.periodEnd)} · {s.resultPercentage}%</span>
-                  {s.pdfDriveFileId && (
-                    <a href={`${API_BASE_URL}/admin/statements/${s.id}/download`} target="_blank" rel="noreferrer">{t('clientSubaccountDetail.viewPdf')}</a>
-                  )}
-                </li>
-              ))}
+              {statements.map((s) => {
+                const stStatus = statusOf(statementStatusMap, s.displayStatus, 'DISPONIBLE');
+                return (
+                  <li key={s.id} style={{ display: 'flex', flexDirection: 'column', gap: 6, paddingBottom: 10, borderBottom: '1px solid var(--qlc-line)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span>{formatCdmxDate(s.periodStart)} – {formatCdmxDate(s.periodEnd)} · {s.resultPercentage}%</span>
+                      <span className={`qlc-badge ${stStatus.className}`}>{stStatus.text}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12 }}>
+                      <span style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                        {s.pdfDriveFileId && (
+                          <a href={`${API_BASE_URL}/admin/statements/${s.id}/download`} target="_blank" rel="noreferrer">{t('clientSubaccountDetail.viewPdf')}</a>
+                        )}
+                        <label style={{ cursor: 'pointer', color: 'var(--qlc-muted)' }}>
+                          {evidenceUploading === s.id ? t('common.saving') : t('adminClientDetail.uploadEvidence')}
+                          <input
+                            type="file"
+                            accept=".pdf,image/*"
+                            style={{ display: 'none' }}
+                            disabled={evidenceUploading === s.id}
+                            onChange={(e) => uploadEvidence(s.id, e.target.files[0])}
+                          />
+                        </label>
+                      </span>
+                      <button className="qlc-btn ghost" disabled={sendingStatement === s.id} onClick={() => sendStatementToClient(s.id)}>
+                        {sendingStatement === s.id ? t('common.sending') : t('adminClientDetail.sendToClient')}
+                      </button>
+                    </div>
+                    {s.evidenceDocuments?.length > 0 && (
+                      <div style={{ fontSize: 12, color: 'var(--qlc-muted)' }}>
+                        {t('adminClientDetail.statementEvidence')}:{' '}
+                        {s.evidenceDocuments.map((d, idx) => (
+                          <span key={d.id}>
+                            {idx > 0 && ', '}
+                            <a href={`${API_BASE_URL}/admin/documents/${d.id}/download`} target="_blank" rel="noreferrer">{d.fileName}</a>
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           )}
           <form onSubmit={createStatement} style={{ borderTop: '1px solid var(--qlc-line)', paddingTop: 14 }}>
             <h4 style={{ margin: '0 0 8px' }}>{t('adminClientDetail.newStatement')}</h4>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-              <div>
-                <label className="qlc-label">{t('adminClientDetail.periodStart')}</label>
-                <input className="qlc-input" type="date" value={statementForm.periodStart} onChange={(e) => setStatementForm((f) => ({ ...f, periodStart: e.target.value }))} required />
-              </div>
+              {hasPreviousStatement ? (
+                <div style={{ gridColumn: '1 / -1' }}>
+                  <label className="qlc-label">{t('adminClientDetail.periodStart')}</label>
+                  <input className="qlc-input" value={formatCdmxDate(latestPeriodEnd)} disabled />
+                  <p style={{ fontSize: 11, color: 'var(--qlc-muted2)', margin: '4px 0 0' }}>{t('adminClientDetail.periodStartAuto')}</p>
+                </div>
+              ) : (
+                <div>
+                  <label className="qlc-label">{t('adminClientDetail.periodStart')}</label>
+                  <input className="qlc-input" type="date" value={statementForm.periodStart} onChange={(e) => setStatementForm((f) => ({ ...f, periodStart: e.target.value }))} required />
+                </div>
+              )}
               <div>
                 <label className="qlc-label">{t('adminClientDetail.periodEnd')}</label>
                 <input className="qlc-input" type="date" value={statementForm.periodEnd} onChange={(e) => setStatementForm((f) => ({ ...f, periodEnd: e.target.value }))} required />
@@ -381,6 +463,14 @@ export default function AdminSubaccountDetailPage() {
               <div>
                 <label className="qlc-label">{t('adminClientDetail.resultPercentage')}</label>
                 <input className="qlc-input" type="number" step="0.01" value={statementForm.resultPercentage} onChange={(e) => setStatementForm((f) => ({ ...f, resultPercentage: e.target.value }))} required />
+              </div>
+              <div>
+                <label className="qlc-label">{t('adminClientDetail.volatility')}</label>
+                <input className="qlc-input" value={statementForm.volatility} onChange={(e) => setStatementForm((f) => ({ ...f, volatility: e.target.value }))} />
+              </div>
+              <div>
+                <label className="qlc-label">{t('adminClientDetail.netResult')}</label>
+                <input className="qlc-input" type="number" step="0.01" value={statementForm.netResult} onChange={(e) => setStatementForm((f) => ({ ...f, netResult: e.target.value }))} />
               </div>
               <div>
                 <label className="qlc-label">{t('adminClientDetail.commission')}</label>

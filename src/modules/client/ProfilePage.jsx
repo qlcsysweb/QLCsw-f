@@ -27,6 +27,12 @@ export default function ProfilePage() {
       <div className="qlc-card" style={{ maxWidth: 480 }}>
         <label className="qlc-label">{t('clientProfile.email')}</label>
         <input className="qlc-input" value={profile.email} disabled />
+        {profile.nationality && (
+          <>
+            <label className="qlc-label">{t('clientProfile.nationality')}</label>
+            <input className="qlc-input" value={profile.nationality} disabled />
+          </>
+        )}
         <label className="qlc-label">{t('clientProfile.accountStatus')}</label>
         <div style={{ marginBottom: 12 }}>
           <span className={`qlc-badge ${statusOf(accountStatusMap, profile.status).className}`}>
