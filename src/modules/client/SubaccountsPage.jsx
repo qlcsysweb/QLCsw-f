@@ -36,9 +36,12 @@ export default function SubaccountsPage() {
             return (
               <Link key={s.id} to={`/client/api-subaccounts/${s.id}`} className="qlc-card" style={{ display: 'block' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <h3 style={{ margin: 0 }}>{s.identifier || t('clientSubaccounts.unassignedIdentifier')}</h3>
+                  <h3 style={{ margin: 0 }}>{t('clientSubaccounts.subaccountLabel')} #{s.slotIndex}</h3>
                   <span className={`qlc-badge ${status.className}`}>{status.text}</span>
                 </div>
+                <p style={{ color: 'var(--qlc-muted)', fontSize: 12, marginTop: 4, marginBottom: 4 }}>
+                  {t('clientSubaccounts.operatorUser')}: {s.identifier || t('clientSubaccounts.unassignedIdentifier')}
+                </p>
                 <p style={{ color: 'var(--qlc-muted)', fontSize: 13, marginBottom: 4 }}>
                   {t('clientSubaccounts.model')}: {model ? model.name : t('clientSubaccounts.noModel')}
                 </p>

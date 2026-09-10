@@ -20,6 +20,7 @@ import AdminsPage from './modules/admin/AdminsPage';
 import CmsPage from './modules/admin/cms/CmsPage';
 import GoogleDriveSettingsPage from './modules/admin/settings/GoogleDriveSettingsPage';
 import PlatformSettingsPage from './modules/admin/PlatformSettingsPage';
+import AdminGuidesPage from './modules/admin/GuidesPage';
 
 import ClientLayout from './layouts/ClientLayout';
 import ClientDashboardPage from './modules/client/DashboardPage';
@@ -32,6 +33,7 @@ import ClientSupportPage from './modules/client/SupportPage';
 import ClientAppointmentsPage from './modules/client/AppointmentsPage';
 import ClientNotificationsPage from './modules/client/NotificationsPage';
 import ClientCapitalIncreasePage from './modules/client/CapitalIncreasePage';
+import ClientGuidesPage from './modules/client/GuidesPage';
 
 function AppRoutes() {
   const { hasChosenLanguage } = useLanguage();
@@ -62,6 +64,7 @@ function AppRoutes() {
               <Route path="clients/:id" element={<ClientDetailPage />} />
               <Route path="clients/:clientId/api-subaccounts/:id" element={<AdminSubaccountDetailPage />} />
               <Route path="cms" element={<CmsPage />} />
+              <Route path="guides" element={<AdminGuidesPage />} />
               <Route path="settings/drive" element={<GoogleDriveSettingsPage />} />
               <Route path="settings/platform" element={<PlatformSettingsPage />} />
               <Route path="payments" element={<AdminPaymentsPage />} />
@@ -79,6 +82,7 @@ function AppRoutes() {
               <Route path="api-subaccounts" element={<ClientSubaccountsPage />} />
               <Route path="api-subaccounts/:id" element={<ClientSubaccountDetailPage />} />
               <Route path="documents" element={<ClientDocumentsPage />} />
+              <Route path="guides" element={<ClientGuidesPage />} />
               <Route path="wallet" element={<ClientWalletPage />} />
               <Route path="capital-increase" element={<ClientCapitalIncreasePage />} />
               <Route path="support" element={<ClientSupportPage />} />

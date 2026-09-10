@@ -14,6 +14,7 @@ export default function AdminLayout() {
     { to: '/admin', label: t('adminNav.dashboard'), end: true },
     { to: '/admin/clients', label: t('adminNav.clients') },
     { to: '/admin/cms', label: t('adminNav.content') },
+    { to: '/admin/guides', label: t('adminNav.guides') },
     { to: '/admin/payments', label: t('adminNav.payments') },
     { to: '/admin/appointments', label: t('adminNav.appointments') },
     { to: '/admin/support', label: t('adminNav.support') },

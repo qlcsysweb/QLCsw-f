@@ -325,6 +325,12 @@ export default function SubaccountDetailPage() {
               <strong>{t('clientApiConnection.requiredCapital')}:</strong> {subaccount.requiredCapital} USDT
             </p>
           )}
+          {subaccount.capitalDistributionItems?.length > 0 && (
+            <p style={{ fontSize: 14 }}>
+              <strong>{t('clientApiConnection.capitalReceived')}:</strong>{' '}
+              {subaccount.capitalDistributionItems.reduce((sum, i) => sum + Number(i.amount), 0)} USDT
+            </p>
+          )}
           {subaccount.requiredCapital != null && !subaccount.clientReportedCapitalReady && (
             <button className="qlc-btn primary" style={{ width: '100%', marginBottom: 12 }} onClick={reportCapitalReady}>
               {t('clientApiConnection.reportCapitalReady')}
@@ -346,6 +352,23 @@ export default function SubaccountDetailPage() {
               {savingApi ? t('common.saving') : t('clientApiConnection.save')}
             </button>
           </form>
+
+          {subaccount.connectionEvents?.length > 0 && (
+            <div style={{ marginTop: 16, borderTop: '1px solid var(--qlc-line)', paddingTop: 12 }}>
+              <h4 style={{ margin: '0 0 8px' }}>{t('clientApiConnection.connectionHistory')}</h4>
+              <ul className="qlc-plain-list">
+                {subaccount.connectionEvents.map((ev) => (
+                  <li key={ev.id} style={{ fontSize: 12, color: 'var(--qlc-muted)' }}>
+                    <span className={`qlc-badge ${ev.eventType === 'DISCONNECTED' ? 'danger' : 'ok'}`}>
+                      {t(`clientApiConnection.connectionEvent${ev.eventType}`)}
+                    </span>{' '}
+                    {formatCdmxDate(ev.occurredAt)}
+                    {ev.reason && ` — ${ev.reason}`}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
 
         <div className="qlc-card">

@@ -81,6 +81,32 @@ export default function DashboardPage() {
         <span style={{ fontSize: 13, color: 'var(--qlc-muted)' }}>{t('clientDashboard.bitgetOnlyNotice')}</span>
       </div>
 
+      <div className="qlc-card" style={{ marginBottom: 20 }}>
+        <h3 style={{ marginTop: 0, marginBottom: 12 }}>{t('clientDashboard.flowTitle')}</h3>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
+          {[
+            'flowRegister',
+            'flowMainAccount',
+            'flowNationality',
+            'flowWallet',
+            'flowModel',
+            'flowContract',
+            'flowApi',
+            'flowCapital',
+            'flowDistribution',
+            'flowStatements',
+            'flowPayments',
+          ].map((key, idx, arr) => (
+            <span key={key} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span className="qlc-badge muted" style={{ whiteSpace: 'nowrap' }}>
+                {idx + 1}. {t(`clientDashboard.${key}`)}
+              </span>
+              {idx < arr.length - 1 && <span style={{ color: 'var(--qlc-muted2)' }}>→</span>}
+            </span>
+          ))}
+        </div>
+      </div>
+
       <div className="qlc-stat-grid">
         <div className="qlc-card qlc-stat-card">
           <span className="qlc-stat-label">{t('clientDashboard.accountStatus')}</span>
@@ -150,6 +176,9 @@ export default function DashboardPage() {
         </Link>
         <Link className="qlc-btn ghost" to="/client/support">
           {t('clientDashboard.support')}
+        </Link>
+        <Link className="qlc-btn ghost" to="/client/guides">
+          {t('clientDashboard.readGuide')}
         </Link>
         <button className="qlc-btn ghost" onClick={downloadGuide}>
           {t('clientDashboard.downloadGuide')}

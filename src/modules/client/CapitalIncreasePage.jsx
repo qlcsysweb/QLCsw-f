@@ -5,24 +5,31 @@ import { formatCdmxDate } from '../../utils/cdmxTime';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 
-// CORRECCIÓN 7 — Invitación para aumento de saldo operativo. El cliente
-// nunca crea/modifica invitaciones, solicitudes ni distribuciones: solo
-// responde a lo que QLC ya publicó (aceptar/rechazar/marcar como leído).
+const BLOCK_SIZE = 20;
+
+// CORRECCIÓN 7/8 — Invitación para aumento de saldo operativo. El cliente
+// acepta/rechaza la invitación y, una vez autorizada por QLC, es el ÚNICO
+// responsable de distribuir el monto entre sus propias subcuentas/API, en
+// bloques de 20 USDT — QLC nunca hace esta distribución por el cliente.
 export default function CapitalIncreasePage() {
   const { t, language } = useLanguage();
   const [data, setData] = useState(null);
+  const [subaccounts, setSubaccounts] = useState(null);
   const [amount, setAmount] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [togglingId, setTogglingId] = useState(null);
   const [confirmReject, setConfirmReject] = useState(false);
+  const [confirmFinish, setConfirmFinish] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
   const load = () => api.get('/client/capital-increase').then(({ data }) => setData(data));
   useEffect(() => {
     load();
+    api.get('/client/api-subaccounts').then(({ data }) => setSubaccounts(data.subaccounts));
   }, []);
 
-  if (!data) return <div className="qlc-empty">{t('common.loading')}</div>;
+  if (!data || !subaccounts) return <div className="qlc-empty">{t('common.loading')}</div>;
 
   const flash = (msg) => {
     setMessage(msg);
@@ -51,12 +58,34 @@ export default function CapitalIncreasePage() {
     load();
   };
 
-  const markRead = async () => {
+  const requestedAmount = data.request ? Number(data.request.requestedAmount) : 0;
+  const items = data.request?.distribution?.items || [];
+  const distributedTotal = items.reduce((sum, i) => sum + Number(i.amount), 0);
+  const pending = requestedAmount - distributedTotal;
+  const selectedIds = new Set(items.map((i) => i.apiSubaccountId));
+
+  const toggleSubaccount = async (apiSubaccountId, currentlySelected) => {
+    setTogglingId(apiSubaccountId);
+    setError('');
+    try {
+      await api.post(`/client/capital-increase/requests/${data.request.id}/distribution/toggle`, {
+        apiSubaccountId,
+        selected: !currentlySelected,
+      });
+      load();
+    } catch (err) {
+      setError(translateBackendMessage(err.message, language));
+    } finally {
+      setTogglingId(null);
+    }
+  };
+
+  const confirmDistribution = async () => {
     setSubmitting(true);
     setError('');
     try {
-      await api.post(`/client/capital-increase/requests/${data.request.id}/mark-read`);
-      flash(t('clientCapitalIncrease.markedReadOk'));
+      await api.post(`/client/capital-increase/requests/${data.request.id}/distribution/confirm`);
+      flash(t('clientCapitalIncrease.distributionConfirmedOk'));
       load();
     } catch (err) {
       setError(translateBackendMessage(err.message, language));
@@ -64,9 +93,6 @@ export default function CapitalIncreasePage() {
       setSubmitting(false);
     }
   };
-
-  const items = data.request?.distribution?.items || [];
-  const totalDistributed = items.reduce((sum, i) => sum + Number(i.amount), 0);
 
   return (
     <div>
@@ -87,19 +113,23 @@ export default function CapitalIncreasePage() {
         <div className="qlc-card" style={{ maxWidth: 640 }}>
           <span className="qlc-badge ok" style={{ fontSize: 13 }}>{t('clientCapitalIncrease.unlocked')}</span>
           <p style={{ fontSize: 14, lineHeight: 1.6, marginTop: 12 }}>{t('clientCapitalIncrease.unlockedCopy')}</p>
+          {data.invitation.message && (
+            <p style={{ fontSize: 13, fontStyle: 'italic', color: 'var(--qlc-muted)' }}>"{data.invitation.message}"</p>
+          )}
           <div style={{ fontSize: 13, color: 'var(--qlc-muted)', marginBottom: 16 }}>
             <div>{t('clientCapitalIncrease.currentBalance')}: {String(data.invitation.currentBalance)} USDT</div>
             <div>{t('clientCapitalIncrease.maxAmount')}: {String(data.invitation.maxAmount)} USDT</div>
             <div>{t('clientCapitalIncrease.expiresAt')}: {formatCdmxDate(data.invitation.expiresAt)}</div>
           </div>
+          <div className="qlc-guide-notice">{t('clientCapitalIncrease.blockRule')}</div>
           <form onSubmit={accept} style={{ display: 'flex', gap: 10, alignItems: 'flex-end', flexWrap: 'wrap' }}>
             <div>
               <label className="qlc-label">{t('clientCapitalIncrease.requestedAmount')}</label>
               <input
                 className="qlc-input"
                 type="number"
-                step="0.01"
-                min="0.01"
+                step={BLOCK_SIZE}
+                min={BLOCK_SIZE}
                 max={String(data.invitation.maxAmount)}
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
@@ -129,11 +159,65 @@ export default function CapitalIncreasePage() {
         </div>
       )}
 
-      {(data.state === 'INSTRUCCIONES_EMITIDAS' || data.state === 'COMPLETADA') && (
+      {data.state === 'DISTRIBUCION_EN_PROCESO' && (
+        <div className="qlc-card" style={{ maxWidth: 760 }}>
+          <span className="qlc-badge ok" style={{ fontSize: 13 }}>{t('clientCapitalIncrease.readyToDistribute')}</span>
+          <p style={{ fontSize: 13, color: 'var(--qlc-muted)', marginTop: 12 }}>{t('clientCapitalIncrease.distributeCopy')}</p>
+          <div style={{ display: 'flex', gap: 20, fontSize: 13, marginBottom: 16, flexWrap: 'wrap' }}>
+            <span>{t('clientCapitalIncrease.available')}: <strong>{requestedAmount}</strong> USDT</span>
+            <span>{t('clientCapitalIncrease.distributed')}: <strong>{distributedTotal}</strong> USDT</span>
+            <span style={{ color: pending === 0 ? 'var(--qlc-ok)' : 'var(--qlc-gold)' }}>
+              {t('clientCapitalIncrease.pending')}: <strong>{pending}</strong> USDT
+            </span>
+          </div>
+          <div className="qlc-table-wrap">
+            <table className="qlc-table">
+              <thead>
+                <tr>
+                  <th>{t('clientCapitalIncrease.subaccount')}</th>
+                  <th>{t('clientCapitalIncrease.operatorUser')}</th>
+                  <th>{t('clientCapitalIncrease.amount')}</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {subaccounts.map((s) => {
+                  const selected = selectedIds.has(s.id);
+                  const wouldExceed = !selected && distributedTotal + BLOCK_SIZE > requestedAmount;
+                  return (
+                    <tr key={s.id}>
+                      <td>{t('clientSubaccounts.subaccountLabel')} #{s.slotIndex}</td>
+                      <td>{s.identifier || t('clientSubaccounts.unassignedIdentifier')}</td>
+                      <td>{selected ? `${BLOCK_SIZE} USDT` : '—'}</td>
+                      <td>
+                        <button
+                          className={`qlc-btn ${selected ? 'ghost' : 'primary'}`}
+                          disabled={togglingId === s.id || (wouldExceed && !selected)}
+                          onClick={() => toggleSubaccount(s.id, selected)}
+                        >
+                          {selected ? t('clientCapitalIncrease.deselect') : t('clientCapitalIncrease.select')}
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          <button
+            className="qlc-btn primary"
+            style={{ marginTop: 14 }}
+            disabled={pending !== 0 || submitting}
+            onClick={() => setConfirmFinish(true)}
+          >
+            {t('clientCapitalIncrease.confirmDistribution')}
+          </button>
+        </div>
+      )}
+
+      {data.state === 'COMPLETADA' && (
         <div className="qlc-card" style={{ maxWidth: 720 }}>
-          <span className={`qlc-badge ${data.state === 'COMPLETADA' ? 'ok' : 'warn'}`} style={{ fontSize: 13 }}>
-            {data.state === 'COMPLETADA' ? t('clientCapitalIncrease.completed') : t('clientCapitalIncrease.instructionsReady')}
-          </span>
+          <span className="qlc-badge ok" style={{ fontSize: 13 }}>{t('clientCapitalIncrease.completed')}</span>
           <h3 style={{ marginTop: 14 }}>{t('clientCapitalIncrease.distributionInstructions')}</h3>
           <div className="qlc-table-wrap">
             <table className="qlc-table">
@@ -154,17 +238,8 @@ export default function CapitalIncreasePage() {
             </table>
           </div>
           <p style={{ fontSize: 13, marginTop: 10 }}>
-            <strong>{t('clientCapitalIncrease.totalDistributed')}:</strong> {totalDistributed} USDT
+            <strong>{t('clientCapitalIncrease.totalDistributed')}:</strong> {distributedTotal} USDT
           </p>
-          {data.state === 'INSTRUCCIONES_EMITIDAS' ? (
-            <button className="qlc-btn primary" style={{ marginTop: 10 }} onClick={markRead} disabled={submitting}>
-              {submitting ? t('common.saving') : t('clientCapitalIncrease.markAsRead')}
-            </button>
-          ) : (
-            <p style={{ fontSize: 12, color: 'var(--qlc-muted2)', marginTop: 10 }}>
-              {t('clientCapitalIncrease.readAt')}: {formatCdmxDate(data.request.readAt)}
-            </p>
-          )}
         </div>
       )}
 
@@ -175,6 +250,16 @@ export default function CapitalIncreasePage() {
           confirmLabel={t('clientCapitalIncrease.reject')}
           onClose={() => setConfirmReject(false)}
           onConfirm={reject}
+        />
+      )}
+      {confirmFinish && (
+        <ConfirmModal
+          title={t('clientCapitalIncrease.confirmDistributionTitle')}
+          message={t('clientCapitalIncrease.confirmDistributionMessage')}
+          confirmLabel={t('clientCapitalIncrease.confirmDistribution')}
+          danger={false}
+          onClose={() => setConfirmFinish(false)}
+          onConfirm={confirmDistribution}
         />
       )}
     </div>

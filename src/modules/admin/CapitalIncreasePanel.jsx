@@ -12,19 +12,19 @@ const REQUEST_STATUS_CLASS = {
   COMPLETADA: 'ok',
 };
 
-// CORRECCIÓN 7 — Invitación para aumento de saldo operativo. Panel
-// administrativo: crear invitaciones y construir/publicar la distribución
-// de capital de una solicitud aceptada. El cliente NUNCA tiene acceso a
-// estas acciones (ver frontend/src/modules/client/CapitalIncreasePage.jsx).
-export default function CapitalIncreasePanel({ clientId, subaccounts }) {
+// CORRECCIÓN 7/8 — Invitación para aumento de saldo operativo. El admin
+// crea la invitación y, una vez que el cliente acepta, solo AUTORIZA la
+// solicitud — la distribución entre subcuentas la realiza siempre el
+// CLIENTE desde su propio panel (ver client/CapitalIncreasePage.jsx). El
+// admin nunca escribe montos por subcuenta.
+export default function CapitalIncreasePanel({ clientId }) {
   const { t, language } = useLanguage();
   const [state, setState] = useState(null);
-  const [form, setForm] = useState({ currentBalance: '', maxAmount: '', validityDays: '10' });
+  const [form, setForm] = useState({ currentBalance: '', maxAmount: '', validityDays: '10', message: '' });
   const [creating, setCreating] = useState(false);
+  const [authorizing, setAuthorizing] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-  const [itemForm, setItemForm] = useState({ apiSubaccountId: '', amount: '' });
-  const [savingItem, setSavingItem] = useState(false);
 
   const load = () => api.get(`/admin/clients/${clientId}/capital-increase`).then(({ data }) => setState(data));
   useEffect(() => {
@@ -45,7 +45,7 @@ export default function CapitalIncreasePanel({ clientId, subaccounts }) {
     try {
       await api.post(`/admin/clients/${clientId}/capital-increase/invitations`, form);
       flash(t('adminCapitalIncrease.invitationCreated'));
-      setForm({ currentBalance: '', maxAmount: '', validityDays: '10' });
+      setForm({ currentBalance: '', maxAmount: '', validityDays: '10', message: '' });
       load();
     } catch (err) {
       setError(translateBackendMessage(err.message, language));
@@ -56,50 +56,24 @@ export default function CapitalIncreasePanel({ clientId, subaccounts }) {
 
   const activeInvitation = state.invitations[0];
   const activeRequest = activeInvitation?.request;
-  const distribution = activeRequest?.distribution;
-  const showBuilder = activeRequest && !distribution?.publishedAt && activeRequest.status !== 'COMPLETADA';
 
-  const startDistribution = async () => {
-    await api.post(`/admin/capital-increase/requests/${activeRequest.id}/distribution`);
-    load();
-  };
-
-  const saveItem = async (e) => {
-    e.preventDefault();
-    setSavingItem(true);
+  const authorizeRequest = async () => {
+    setAuthorizing(true);
     setError('');
     try {
-      await api.post(`/admin/capital-increase/distributions/${distribution.id}/items`, {
-        apiSubaccountId: itemForm.apiSubaccountId,
-        amount: Number(itemForm.amount),
-      });
-      setItemForm({ apiSubaccountId: '', amount: '' });
+      await api.post(`/admin/capital-increase/requests/${activeRequest.id}/authorize`);
+      flash(t('adminCapitalIncrease.authorizedOk'));
       load();
     } catch (err) {
       setError(translateBackendMessage(err.message, language));
     } finally {
-      setSavingItem(false);
+      setAuthorizing(false);
     }
   };
 
-  const removeItem = async (itemId) => {
-    await api.delete(`/admin/capital-increase/items/${itemId}`);
-    load();
-  };
-
-  const publish = async () => {
-    try {
-      await api.post(`/admin/capital-increase/distributions/${distribution.id}/publish`);
-      flash(t('adminCapitalIncrease.publishedOk'));
-      load();
-    } catch (err) {
-      setError(translateBackendMessage(err.message, language));
-    }
-  };
-
+  const distribution = activeRequest?.distribution;
   const distributedTotal = (distribution?.items || []).reduce((sum, i) => sum + Number(i.amount), 0);
   const requestedAmount = activeRequest ? Number(activeRequest.requestedAmount) : 0;
-  const pending = requestedAmount - distributedTotal;
 
   return (
     <div className="qlc-card" style={{ marginBottom: 20 }}>
@@ -119,86 +93,33 @@ export default function CapitalIncreasePanel({ clientId, subaccounts }) {
                 <span className={`qlc-badge ${INVITATION_STATUS_CLASS[inv.status] || 'muted'}`}>{inv.status}</span>
               </div>
               {inv.request && (
-                <div style={{ fontSize: 12, color: 'var(--qlc-muted)', display: 'flex', justifyContent: 'space-between' }}>
+                <div style={{ fontSize: 12, color: 'var(--qlc-muted)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span>{t('adminCapitalIncrease.requestedAmount')}: {String(inv.request.requestedAmount)} USDT</span>
                   <span className={`qlc-badge ${REQUEST_STATUS_CLASS[inv.request.status] || 'muted'}`}>{inv.request.status}</span>
+                </div>
+              )}
+              {inv.request?.status === 'EN_PROCESO' && inv.id === activeInvitation.id && (
+                <button className="qlc-btn primary" style={{ marginTop: 6 }} disabled={authorizing} onClick={authorizeRequest}>
+                  {authorizing ? t('common.saving') : t('adminCapitalIncrease.authorize')}
+                </button>
+              )}
+              {inv.request?.status === 'DISTRIBUCION_EN_PROCESO' && (
+                <div style={{ fontSize: 12, color: 'var(--qlc-muted2)' }}>{t('adminCapitalIncrease.waitingClientDistribution')}</div>
+              )}
+              {distribution && distribution.items?.length > 0 && inv.id === activeInvitation.id && (
+                <div style={{ fontSize: 12, color: 'var(--qlc-muted)' }}>
+                  {t('adminCapitalIncrease.distributed')}: {distributedTotal} / {requestedAmount} USDT —{' '}
+                  {distribution.items.map((item, idx) => (
+                    <span key={item.id}>
+                      {idx > 0 && ', '}
+                      {item.apiSubaccount?.identifier || t('adminClientDetail.unassignedIdentifier')} ({String(item.amount)})
+                    </span>
+                  ))}
                 </div>
               )}
             </li>
           ))}
         </ul>
-      )}
-
-      {showBuilder && (
-        <div style={{ borderTop: '1px solid var(--qlc-line)', paddingTop: 14, marginBottom: 14 }}>
-          <h4 style={{ margin: '0 0 8px' }}>{t('adminCapitalIncrease.distributionBuilder')}</h4>
-          {!distribution ? (
-            <button className="qlc-btn primary" onClick={startDistribution}>
-              {t('adminCapitalIncrease.startDistribution')}
-            </button>
-          ) : (
-            <>
-              <div style={{ fontSize: 13, marginBottom: 10, display: 'flex', gap: 16 }}>
-                <span>{t('adminCapitalIncrease.requestedAmount')}: {requestedAmount} USDT</span>
-                <span>{t('adminCapitalIncrease.distributed')}: {distributedTotal} USDT</span>
-                <span style={{ color: pending === 0 ? 'var(--qlc-ok)' : 'var(--qlc-gold)' }}>
-                  {t('adminCapitalIncrease.pending')}: {pending} USDT
-                </span>
-              </div>
-              {distribution.items?.length > 0 && (
-                <ul className="qlc-plain-list" style={{ marginBottom: 10 }}>
-                  {distribution.items.map((item) => (
-                    <li key={item.id} style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span>{item.apiSubaccount?.identifier || t('adminClientDetail.unassignedIdentifier')} — {String(item.amount)} USDT</span>
-                      <button className="qlc-btn ghost" onClick={() => removeItem(item.id)}>{t('common.delete')}</button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-              <form onSubmit={saveItem} style={{ display: 'flex', gap: 8, alignItems: 'flex-end', flexWrap: 'wrap' }}>
-                <div>
-                  <label className="qlc-label">{t('adminCapitalIncrease.subaccount')}</label>
-                  <select
-                    className="qlc-select"
-                    value={itemForm.apiSubaccountId}
-                    onChange={(e) => setItemForm((f) => ({ ...f, apiSubaccountId: e.target.value }))}
-                    required
-                  >
-                    <option value="">—</option>
-                    {(subaccounts || []).map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.identifier || t('adminClientDetail.unassignedIdentifier')}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="qlc-label">{t('adminCapitalIncrease.amount')}</label>
-                  <input
-                    className="qlc-input"
-                    type="number"
-                    step="0.01"
-                    min="0.01"
-                    value={itemForm.amount}
-                    onChange={(e) => setItemForm((f) => ({ ...f, amount: e.target.value }))}
-                    required
-                  />
-                </div>
-                <button className="qlc-btn ghost" disabled={savingItem}>
-                  {savingItem ? t('common.saving') : t('adminCapitalIncrease.addItem')}
-                </button>
-              </form>
-              <button
-                className="qlc-btn primary"
-                style={{ marginTop: 12 }}
-                disabled={pending !== 0 || !distribution.items?.length}
-                onClick={publish}
-              >
-                {t('adminCapitalIncrease.publish')}
-              </button>
-            </>
-          )}
-        </div>
       )}
 
       {state.canCreateInvitation && (
@@ -218,6 +139,13 @@ export default function CapitalIncreasePanel({ clientId, subaccounts }) {
               <input className="qlc-input" type="number" value={form.validityDays} onChange={(e) => setForm((f) => ({ ...f, validityDays: e.target.value }))} required />
             </div>
           </div>
+          <label className="qlc-label">{t('adminCapitalIncrease.message')}</label>
+          <textarea
+            className="qlc-textarea"
+            rows={2}
+            value={form.message}
+            onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))}
+          />
           <button className="qlc-btn primary" style={{ marginTop: 12, width: '100%' }} disabled={creating}>
             {creating ? t('common.saving') : t('adminCapitalIncrease.sendInvitation')}
           </button>

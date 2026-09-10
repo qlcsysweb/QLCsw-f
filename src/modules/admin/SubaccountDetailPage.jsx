@@ -79,7 +79,7 @@ export default function AdminSubaccountDetailPage() {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
-  const [apiForm, setApiForm] = useState({ identifier: '', exchangeName: '', apiKey: '', apiSecret: '', apiPassphrase: '', status: 'PENDIENTE', requiredCapital: '' });
+  const [apiForm, setApiForm] = useState({ identifier: '', exchangeName: '', apiKey: '', apiSecret: '', apiPassphrase: '', status: 'PENDIENTE', requiredCapital: '', connectionReason: '' });
   const [contractUploading, setContractUploading] = useState(false);
   const [confirmResetSigned, setConfirmResetSigned] = useState(false);
   const [statementForm, setStatementForm] = useState({
@@ -145,9 +145,10 @@ export default function AdminSubaccountDetailPage() {
     if (apiForm.apiSecret) payload.apiSecret = apiForm.apiSecret;
     if (apiForm.apiPassphrase) payload.apiPassphrase = apiForm.apiPassphrase;
     if (apiForm.requiredCapital !== '') payload.requiredCapital = Number(apiForm.requiredCapital);
+    if (apiForm.connectionReason) payload.connectionReason = apiForm.connectionReason;
     try {
       await api.patch(`/admin/api-subaccounts/${id}`, payload);
-      setApiForm((f) => ({ ...f, identifier: '', apiKey: '', apiSecret: '', apiPassphrase: '' }));
+      setApiForm((f) => ({ ...f, identifier: '', apiKey: '', apiSecret: '', apiPassphrase: '', connectionReason: '' }));
       flash(t('adminClientDetail.apiConnectionUpdated'));
       load();
     } catch (err) {
@@ -293,12 +294,24 @@ export default function AdminSubaccountDetailPage() {
             <input className="qlc-input" value={apiForm.identifier} onChange={(e) => setApiForm((f) => ({ ...f, identifier: e.target.value }))} placeholder={subaccount.identifier || 'PCB-1-A-1'} />
             <label className="qlc-label">{t('adminClientDetail.requiredCapital')}</label>
             <input className="qlc-input" type="number" step="0.01" value={apiForm.requiredCapital} onChange={(e) => setApiForm((f) => ({ ...f, requiredCapital: e.target.value }))} placeholder="20" />
+            {subaccount.capitalDistributionItems?.length > 0 && (
+              <p style={{ fontSize: 12, color: 'var(--qlc-muted)' }}>
+                {t('adminClientDetail.capitalReceived')}: {subaccount.capitalDistributionItems.reduce((sum, i) => sum + Number(i.amount), 0)} USDT
+              </p>
+            )}
             <label className="qlc-label">{t('adminClientDetail.status')}</label>
             <select className="qlc-select" value={apiForm.status} onChange={(e) => setApiForm((f) => ({ ...f, status: e.target.value }))}>
               <option value="PENDIENTE">{t('adminClientDetail.apiStatusPending')}</option>
               <option value="CONECTADA">{t('adminClientDetail.apiStatusConnected')}</option>
               <option value="DESCONECTADA">{t('adminClientDetail.apiStatusDisconnected')}</option>
             </select>
+            <label className="qlc-label">{t('adminClientDetail.connectionReason')}</label>
+            <input
+              className="qlc-input"
+              value={apiForm.connectionReason}
+              onChange={(e) => setApiForm((f) => ({ ...f, connectionReason: e.target.value }))}
+              placeholder={t('adminClientDetail.connectionReasonPlaceholder')}
+            />
             <label className="qlc-label">API Key {subaccount.hasApiKey ? t('adminClientDetail.alreadyRegistered') : ''}</label>
             <input className="qlc-input" value={apiForm.apiKey} onChange={(e) => setApiForm((f) => ({ ...f, apiKey: e.target.value }))} placeholder={t('adminClientDetail.leaveBlank')} />
             <label className="qlc-label">Secret Key {subaccount.hasApiSecret ? t('adminClientDetail.alreadyRegistered') : ''}</label>
@@ -311,6 +324,23 @@ export default function AdminSubaccountDetailPage() {
           </form>
           {subaccount.clientReportedCapitalReady && (
             <p style={{ fontSize: 12, color: 'var(--qlc-ok)', marginTop: 10 }}>✓ {t('adminClientDetail.clientReportedCapital')}</p>
+          )}
+
+          {subaccount.connectionEvents?.length > 0 && (
+            <div style={{ marginTop: 16, borderTop: '1px solid var(--qlc-line)', paddingTop: 12 }}>
+              <h4 style={{ margin: '0 0 8px' }}>{t('adminClientDetail.connectionHistory')}</h4>
+              <ul className="qlc-plain-list">
+                {subaccount.connectionEvents.map((ev) => (
+                  <li key={ev.id} style={{ fontSize: 12, color: 'var(--qlc-muted)' }}>
+                    <span className={`qlc-badge ${ev.eventType === 'DISCONNECTED' ? 'danger' : 'ok'}`}>
+                      {t(`adminClientDetail.connectionEvent${ev.eventType}`)}
+                    </span>{' '}
+                    {formatCdmxDate(ev.occurredAt)}
+                    {ev.reason && ` — ${ev.reason}`}
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
         </div>
 

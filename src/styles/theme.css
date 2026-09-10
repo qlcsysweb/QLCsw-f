@@ -198,6 +198,81 @@ textarea {
   background: rgba(255, 255, 255, 0.02);
 }
 
+/* CORRECCIÓN 1/6/20/21 — contenido HTML estructurado de las Guías de Uso */
+.qlc-guide-content h3 {
+  margin: 22px 0 10px;
+  font-size: 16px;
+  color: var(--qlc-text);
+}
+.qlc-guide-content h3:first-child {
+  margin-top: 0;
+}
+.qlc-guide-content h4 {
+  margin: 16px 0 8px;
+  font-size: 14px;
+  color: var(--qlc-blue2);
+}
+.qlc-guide-content p {
+  color: var(--qlc-muted);
+  font-size: 13px;
+  line-height: 1.7;
+  margin: 0 0 10px;
+}
+.qlc-guide-content ul,
+.qlc-guide-content ol {
+  color: var(--qlc-muted);
+  font-size: 13px;
+  line-height: 1.7;
+  padding-left: 20px;
+  margin: 0 0 12px;
+}
+.qlc-guide-content strong {
+  color: var(--qlc-text);
+}
+.qlc-guide-content code {
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 12px;
+}
+.qlc-guide-content pre {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--qlc-line);
+  border-radius: 10px;
+  padding: 14px;
+  font-size: 12px;
+  color: var(--qlc-muted);
+  overflow-x: auto;
+}
+.qlc-guide-content table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  margin: 0 0 14px;
+}
+.qlc-guide-content th,
+.qlc-guide-content td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--qlc-line);
+  text-align: left;
+  color: var(--qlc-muted);
+}
+.qlc-guide-content th {
+  color: #91a1af;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.qlc-guide-notice {
+  border: 1px solid var(--qlc-warn-border);
+  background: rgba(200, 155, 60, 0.08);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 12px;
+  color: var(--qlc-warn);
+  margin: 0 0 14px;
+}
+
 .qlc-kicker {
   font-size: 11px;
   letter-spacing: 0.2em;

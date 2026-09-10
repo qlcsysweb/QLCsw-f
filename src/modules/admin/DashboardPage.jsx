@@ -54,9 +54,14 @@ export default function DashboardPage() {
           <div className="qlc-kicker">{t('adminDashboard.kicker')}</div>
           <h1 style={{ margin: 0 }}>{t('adminDashboard.title')}</h1>
         </div>
-        <button className="qlc-btn ghost" onClick={downloadGuide}>
-          {t('adminDashboard.downloadGuide')}
-        </button>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <Link className="qlc-btn ghost" to="/admin/guides">
+            {t('adminDashboard.readGuide')}
+          </Link>
+          <button className="qlc-btn ghost" onClick={downloadGuide}>
+            {t('adminDashboard.downloadGuide')}
+          </button>
+        </div>
       </div>
 
       <div className="qlc-stat-grid">

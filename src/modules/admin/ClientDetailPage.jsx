@@ -221,7 +221,7 @@ export default function ClientDetailPage() {
         )}
       </div>
 
-      <CapitalIncreasePanel clientId={id} subaccounts={subaccounts} />
+      <CapitalIncreasePanel clientId={id} />
 
       <div className="qlc-detail-grid">
         <div className="qlc-card">
