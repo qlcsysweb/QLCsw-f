@@ -1,22 +1,17 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
-import { ACCOUNT_STATUS, API_CONNECTION_STATUS, statusOf } from '../../utils/statusLabels';
+import { ACCOUNT_STATUS, statusOf } from '../../utils/statusLabels';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
-import { getLocalizedModel } from '../../i18n/bilingualContent';
 
+// CORRECCIÓN 5/6/17/18: el registro directo desde la web pública ya cubre
+// el alta de clientes; este modal queda como una vía administrativa
+// alterna (sin teléfono, sin username — solo nombre, apellidos, correo y
+// contraseña inicial).
 function CreateClientModal({ onClose, onCreated }) {
   const { t, language } = useLanguage();
-  const [form, setForm] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    username: '',
-    password: '',
-    modelKey: '',
-  });
+  const [form, setForm] = useState({ firstName: '', lastName: '', email: '', password: '' });
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -27,9 +22,7 @@ function CreateClientModal({ onClose, onCreated }) {
     setError('');
     setSaving(true);
     try {
-      const payload = { ...form };
-      if (!payload.modelKey) delete payload.modelKey;
-      await api.post('/admin/clients', payload);
+      await api.post('/admin/clients', form);
       onCreated();
     } catch (err) {
       setError(translateBackendMessage(err.message, language));
@@ -49,10 +42,6 @@ function CreateClientModal({ onClose, onCreated }) {
           <input className="qlc-input" value={form.lastName} onChange={update('lastName')} required />
           <label className="qlc-label">{t('adminClientsList.email')}</label>
           <input className="qlc-input" type="email" value={form.email} onChange={update('email')} required />
-          <label className="qlc-label">{t('adminClientsList.phone')}</label>
-          <input className="qlc-input" value={form.phone} onChange={update('phone')} />
-          <label className="qlc-label">{t('adminClientsList.username')}</label>
-          <input className="qlc-input" value={form.username} onChange={update('username')} required />
           <label className="qlc-label">{t('adminClientsList.initialPassword')}</label>
           <input
             className="qlc-input"
@@ -62,13 +51,6 @@ function CreateClientModal({ onClose, onCreated }) {
             required
             minLength={8}
           />
-          <label className="qlc-label">{t('adminClientsList.modelOptional')}</label>
-          <select className="qlc-select" value={form.modelKey} onChange={update('modelKey')}>
-            <option value="">{t('adminClientsList.unassigned')}</option>
-            <option value="FLEXIBLE">Flexible</option>
-            <option value="PERFORMANCE">Performance</option>
-            <option value="COMPOUND">Compound</option>
-          </select>
 
           {error && <div className="qlc-field-error">{error}</div>}
 
@@ -87,7 +69,7 @@ function CreateClientModal({ onClose, onCreated }) {
 }
 
 export default function ClientsListPage() {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   const [items, setItems] = useState([]);
   const [total, setTotal] = useState(0);
   const [search, setSearch] = useState('');
@@ -95,7 +77,6 @@ export default function ClientsListPage() {
   const [showCreate, setShowCreate] = useState(false);
 
   const accountStatusMap = ACCOUNT_STATUS(t);
-  const apiStatusMap = API_CONNECTION_STATUS(t);
 
   const load = () => {
     setLoading(true);
@@ -146,10 +127,8 @@ export default function ClientsListPage() {
             <thead>
               <tr>
                 <th>{t('adminClientsList.client')}</th>
-                <th>{t('adminClientsList.user')}</th>
                 <th>{t('adminClientsList.status')}</th>
-                <th>{t('adminClientsList.model')}</th>
-                <th>{t('adminClientsList.api')}</th>
+                <th>{t('adminClientsList.subaccounts')}</th>
                 <th>{t('adminClientsList.process')}</th>
                 <th></th>
               </tr>
@@ -157,35 +136,27 @@ export default function ClientsListPage() {
             <tbody>
               {items.map((c) => {
                 const accStatus = statusOf(accountStatusMap, c.status);
-                const apiStatus = apiStatusMap[c.apiConnection?.status] || apiStatusMap.PENDIENTE;
-                const summary = c.conditionsSummary || { confirmed: 0, total: 0, allConfirmed: false };
+                const summary = c.subaccountsSummary || { total: 0, activated: 0, readyToActivate: 0 };
                 return (
                   <tr key={c.id}>
                     <td>
                       {c.firstName} {c.lastName}
                       <div style={{ fontSize: 11, color: 'var(--qlc-muted2)' }}>{c.user?.email}</div>
                     </td>
-                    <td>{c.user?.username}</td>
                     <td>
                       <span className={`qlc-badge ${accStatus.className}`}>{accStatus.text}</span>
                     </td>
                     <td>
-                      {c.clientModel?.model
-                        ? getLocalizedModel(c.clientModel.model, language).name
-                        : t('adminClientsList.unassigned')}
+                      {summary.total} <span style={{ color: 'var(--qlc-muted2)' }}>({summary.activated} {t('adminClientsList.activatedShort')})</span>
                     </td>
                     <td>
-                      <span className={`qlc-badge ${apiStatus.className}`}>{apiStatus.text}</span>
-                    </td>
-                    <td>
-                      <span
-                        className={`qlc-badge ${summary.allConfirmed && !c.process?.isActivated ? 'ok' : 'muted'}`}
-                        title={summary.allConfirmed ? t('adminClientsList.readyToActivate') : ''}
-                      >
-                        {summary.allConfirmed && !c.process?.isActivated
-                          ? `✓ ${t('adminClientsList.readyToActivate')}`
-                          : `${summary.confirmed}/${summary.total}`}
-                      </span>
+                      {summary.readyToActivate > 0 ? (
+                        <span className="qlc-badge ok" title={t('adminClientsList.readyToActivate')}>
+                          ✓ {summary.readyToActivate} {t('adminClientsList.readyToActivate')}
+                        </span>
+                      ) : (
+                        <span className="qlc-badge muted">—</span>
+                      )}
                     </td>
                     <td>
                       <Link className="qlc-btn ghost" to={`/admin/clients/${c.id}`}>

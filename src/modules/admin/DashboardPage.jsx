@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
+import { formatCdmxDateTime } from '../../utils/cdmxTime';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 
@@ -37,10 +38,26 @@ export default function DashboardPage() {
   if (error) return <div className="qlc-empty">{error}</div>;
   if (!summary) return <div className="qlc-empty">{t('adminDashboard.loadingIndicators')}</div>;
 
+  const downloadGuide = async () => {
+    try {
+      const { data } = await api.get('/admin/guide');
+      window.open(data.url, '_blank', 'noopener');
+    } catch (err) {
+      setError(translateBackendMessage(err.message, language));
+    }
+  };
+
   return (
     <div>
-      <div className="qlc-kicker">{t('adminDashboard.kicker')}</div>
-      <h1 style={{ marginTop: 0 }}>{t('adminDashboard.title')}</h1>
+      <div className="qlc-page-header">
+        <div>
+          <div className="qlc-kicker">{t('adminDashboard.kicker')}</div>
+          <h1 style={{ margin: 0 }}>{t('adminDashboard.title')}</h1>
+        </div>
+        <button className="qlc-btn ghost" onClick={downloadGuide}>
+          {t('adminDashboard.downloadGuide')}
+        </button>
+      </div>
 
       <div className="qlc-stat-grid">
         <StatCard label={t('adminDashboard.totalClients')} value={summary.clients.total} to="/admin/clients" />
@@ -92,7 +109,7 @@ export default function DashboardPage() {
                     </td>
                     <td>{doc.category}</td>
                     <td>{doc.fileName}</td>
-                    <td>{new Date(doc.createdAt).toLocaleString()}</td>
+                    <td>{formatCdmxDateTime(doc.createdAt)}</td>
                   </tr>
                 ))}
               </tbody>

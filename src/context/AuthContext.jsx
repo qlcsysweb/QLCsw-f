@@ -22,8 +22,21 @@ export function AuthProvider({ children }) {
     refresh();
   }, [refresh]);
 
-  const login = async (username, password) => {
-    const { data } = await api.post('/auth/login', { username, password });
+  const login = async (email, password) => {
+    const { data } = await api.post('/auth/login', { email, password });
+    if (data.twoFactorRequired) return data;
+    setUser(data.user);
+    return data.user;
+  };
+
+  const loginWithTwoFactor = async (tempToken, code) => {
+    const { data } = await api.post('/auth/login/2fa', { tempToken, code });
+    setUser(data.user);
+    return data.user;
+  };
+
+  const register = async (payload) => {
+    const { data } = await api.post('/auth/register', payload);
     setUser(data.user);
     return data.user;
   };
@@ -34,7 +47,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, refresh }}>
+    <AuthContext.Provider value={{ user, loading, login, loginWithTwoFactor, register, logout, refresh }}>
       {children}
     </AuthContext.Provider>
   );

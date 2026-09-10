@@ -4,7 +4,7 @@ import SectionMedia from './SectionMedia';
 import { useLanguage } from '../../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../../i18n/backendMessages';
 
-const initialForm = { firstName: '', lastName: '', email: '', phone: '', message: '' };
+const initialForm = { firstName: '', lastName: '', email: '', message: '' };
 
 export default function ContactoSection({ text, media = () => [] }) {
   const { t, language } = useLanguage();
@@ -71,8 +71,6 @@ export default function ContactoSection({ text, media = () => [] }) {
               <input value={form.lastName} onChange={update('lastName')} />
               <label>{t('contact.email')}</label>
               <input type="email" value={form.email} onChange={update('email')} required />
-              <label>{t('contact.phone')}</label>
-              <input value={form.phone} onChange={update('phone')} />
               <label>{t('contact.message')}</label>
               <textarea rows={3} value={form.message} onChange={update('message')} />
 

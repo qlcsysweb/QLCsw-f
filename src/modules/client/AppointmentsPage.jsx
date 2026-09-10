@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import api from '../../services/api';
 import { APPOINTMENT_STATUS, statusOf } from '../../utils/statusLabels';
+import { formatCdmxDate } from '../../utils/cdmxTime';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 
@@ -47,6 +48,8 @@ export default function AppointmentsPage() {
     <div>
       <div className="qlc-kicker">{t('clientAppointments.kicker')}</div>
       <h1 style={{ marginTop: 0 }}>{t('clientAppointments.title')}</h1>
+
+      <p style={{ fontSize: 12, color: 'var(--qlc-muted2)', maxWidth: 640 }}>{t('cdmxNotice')}</p>
 
       <div className="qlc-detail-grid">
         <div className="qlc-card">
@@ -100,7 +103,7 @@ export default function AppointmentsPage() {
           <ul className="qlc-plain-list">
             {appointments.map((a) => (
               <li key={a.id}>
-                {new Date(a.requestedDate).toLocaleDateString()} · {a.requestedTime} —{' '}
+                {formatCdmxDate(a.requestedDate)} · {a.requestedTime} —{' '}
                 <span className={`qlc-badge ${statusOf(appointmentStatusMap, a.status).className}`}>
                   {statusOf(appointmentStatusMap, a.status).text}
                 </span>

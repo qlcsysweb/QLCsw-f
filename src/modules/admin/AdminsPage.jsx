@@ -8,7 +8,7 @@ export default function AdminsPage() {
   const { t, language } = useLanguage();
   const [admins, setAdmins] = useState([]);
   const [limit, setLimit] = useState(3);
-  const [form, setForm] = useState({ firstName: '', lastName: '', email: '', username: '', password: '' });
+  const [form, setForm] = useState({ firstName: '', lastName: '', email: '', password: '' });
   const [error, setError] = useState('');
   const [confirmDeactivate, setConfirmDeactivate] = useState(null);
 
@@ -26,7 +26,7 @@ export default function AdminsPage() {
     setError('');
     try {
       await api.post('/admin/admins', form);
-      setForm({ firstName: '', lastName: '', email: '', username: '', password: '' });
+      setForm({ firstName: '', lastName: '', email: '', password: '' });
       load();
     } catch (err) {
       setError(translateBackendMessage(err.message, language));
@@ -50,7 +50,7 @@ export default function AdminsPage() {
           <thead>
             <tr>
               <th>{t('adminAdmins.name')}</th>
-              <th>{t('adminAdmins.user')}</th>
+              <th>{t('adminAdmins.email')}</th>
               <th>{t('adminAdmins.lastLogin')}</th>
               <th>{t('adminAdmins.status')}</th>
               <th></th>
@@ -62,7 +62,7 @@ export default function AdminsPage() {
                 <td>
                   {a.profile?.firstName} {a.profile?.lastName}
                 </td>
-                <td>{a.username}</td>
+                <td>{a.email}</td>
                 <td>{a.lastLoginAt ? new Date(a.lastLoginAt).toLocaleString() : '—'}</td>
                 <td>
                   <span className={`qlc-badge ${a.isActive ? 'ok' : 'danger'}`}>
@@ -92,8 +92,6 @@ export default function AdminsPage() {
           <input className="qlc-input" value={form.lastName} onChange={(e) => setForm((f) => ({ ...f, lastName: e.target.value }))} required />
           <label className="qlc-label">{t('adminAdmins.email')}</label>
           <input className="qlc-input" type="email" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} required />
-          <label className="qlc-label">{t('adminAdmins.username')}</label>
-          <input className="qlc-input" value={form.username} onChange={(e) => setForm((f) => ({ ...f, username: e.target.value }))} required />
           <label className="qlc-label">{t('adminAdmins.password')}</label>
           <input className="qlc-input" type="password" value={form.password} onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))} required minLength={8} />
           {error && <div className="qlc-field-error">{error}</div>}

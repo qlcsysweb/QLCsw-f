@@ -1,0 +1,63 @@
+.qlc-scam-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2100;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(5, 7, 10, 0.82);
+  overflow-y: auto;
+}
+
+.qlc-scam-panel {
+  width: min(480px, 100%);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.01));
+  border: 1px solid rgba(200, 155, 60, 0.35);
+  border-radius: 24px;
+  box-shadow: 0 40px 120px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(200, 155, 60, 0.08);
+  padding: 36px 32px;
+  text-align: center;
+}
+
+.qlc-scam-title {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: #c89b3c;
+  margin-bottom: 18px;
+}
+
+.qlc-scam-body {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--qlc-muted, #9ca9b7);
+  margin: 0 0 14px;
+}
+
+.qlc-scam-tagline {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #f4f7fb;
+  margin-top: 18px;
+}
+
+.qlc-scam-brand {
+  font-size: 12px;
+  color: var(--qlc-muted2, #c7ccd2);
+  margin-top: 6px;
+  margin-bottom: 24px;
+}
+
+.qlc-scam-btn {
+  width: 100%;
+  padding: 14px;
+  font-size: 14px;
+}
+
+@media (max-width: 480px) {
+  .qlc-scam-panel {
+    padding: 28px 22px;
+    border-radius: 20px;
+  }
+}

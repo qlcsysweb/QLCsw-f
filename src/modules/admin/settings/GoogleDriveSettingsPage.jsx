@@ -104,6 +104,12 @@ export default function GoogleDriveSettingsPage() {
           </span>
         </div>
 
+        {config.isLockedByAnother && (
+          <div className="qlc-card" style={{ borderColor: 'var(--qlc-warn-border)', marginBottom: 20 }}>
+            <p style={{ margin: 0, fontSize: 13 }}>{t('adminDrive.lockedByAnotherNotice')}</p>
+          </div>
+        )}
+
         {!config.hasServiceAccountCreds && (
           <div className="qlc-card" style={{ borderColor: 'var(--qlc-warn-border)', marginBottom: 20 }}>
             <p style={{ margin: 0, fontSize: 13 }}>{t('adminDrive.noCredsNotice')}</p>
@@ -123,6 +129,7 @@ export default function GoogleDriveSettingsPage() {
             value={form.rootFolderName}
             onChange={(e) => setForm((f) => ({ ...f, rootFolderName: e.target.value }))}
             placeholder="QLC"
+            disabled={config.isLockedByAnother}
           />
 
           <label className="qlc-label">{t('adminDrive.folderIdLabel')}</label>
@@ -131,6 +138,7 @@ export default function GoogleDriveSettingsPage() {
             value={form.rootFolderId}
             onChange={(e) => setForm((f) => ({ ...f, rootFolderId: e.target.value }))}
             placeholder="Ej: 1AbCdEfGhIjKlMnOpQrStUvWxYz"
+            disabled={config.isLockedByAnother}
           />
           <p style={{ fontSize: 11, color: 'var(--qlc-muted2)', marginTop: 6 }}>
             {t('adminDrive.folderIdHint')}
@@ -143,7 +151,7 @@ export default function GoogleDriveSettingsPage() {
             <button type="button" className="qlc-btn ghost" onClick={testConnection} disabled={testing}>
               {testing ? t('adminDrive.testing') : t('adminDrive.testConnection')}
             </button>
-            <button className="qlc-btn primary" disabled={saving}>
+            <button className="qlc-btn primary" disabled={saving || config.isLockedByAnother}>
               {saving ? t('common.saving') : t('common.save')}
             </button>
           </div>
@@ -170,7 +178,7 @@ export default function GoogleDriveSettingsPage() {
           </p>
         )}
 
-        {config.isConnected && (
+        {config.isConnected && !config.isLockedByAnother && (
           <div className="qlc-form-actions" style={{ marginTop: 20, borderTop: '1px solid var(--qlc-line)', paddingTop: 16 }}>
             <button className="qlc-btn danger" onClick={() => setConfirmingDisconnect(true)}>
               {t('adminDrive.disconnect')}

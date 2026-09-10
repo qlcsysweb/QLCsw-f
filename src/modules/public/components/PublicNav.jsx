@@ -164,12 +164,14 @@ export default function PublicNav() {
         <div className="brand-area">
           <a className="brand" href="/" onClick={goHome}>
             <QlcLogo className="brand-mark" alt="QLC" />
-            <span className="brand-name">QLC</span>
           </a>
         </div>
 
         <div className="nav-links">
-          {SECTIONS.map((s) => (
+          {/* CORRECCIÓN 20: navbar reducido — "Modelo", "Cómo funciona" y
+              "Modelos de participación" ya no aparecen aquí (las páginas y
+              rutas siguen existiendo, solo se quitó el enlace del navbar). */}
+          {SECTIONS.filter((s) => !['modelo', 'como-funciona', 'modelos', 'el-problema'].includes(s.id)).map((s) => (
             <a
               key={s.id}
               href={s.path}
@@ -186,6 +188,9 @@ export default function PublicNav() {
           <a className="access-btn access-primary" href="#registro-form" onClick={goToRegistroForm}>
             {t('contact.submit')}
           </a>
+          <Link className="access-btn" to="/registro">
+            {t('nav.registro')}
+          </Link>
           <Link className="access-btn" to="/login">
             {t('nav.iniciarSesion')}
           </Link>

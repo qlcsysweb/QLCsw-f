@@ -51,7 +51,7 @@ export default function AdminLayout() {
           <div className="qlc-admin-user-name">
             {user?.profile?.firstName} {user?.profile?.lastName}
           </div>
-          <div className="qlc-admin-user-role">{user?.username}</div>
+          <div className="qlc-admin-user-role">{user?.email}</div>
           <LanguageSwitcherCompact />
           <button className="qlc-btn ghost" onClick={handleLogout}>
             {t('common.logout')}

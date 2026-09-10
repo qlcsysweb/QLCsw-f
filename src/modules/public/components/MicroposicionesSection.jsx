@@ -28,7 +28,10 @@ export default function MicroposicionesSection({ text, media = () => [] }) {
               )}
             </p>
           </div>
-          <div className="range">{text('microposiciones', 'range', '20–400 USDT')}</div>
+          <div>
+            <div className="kicker" style={{ marginBottom: 6 }}>{t('microposicionesSection.capitalLabel')}</div>
+            <div className="range">{text('microposiciones', 'range', '20–400 USDT')}</div>
+          </div>
         </div>
 
         <SectionMedia items={media('microposiciones')} />

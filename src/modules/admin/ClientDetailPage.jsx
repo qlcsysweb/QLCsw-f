@@ -2,109 +2,29 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import api, { API_BASE_URL } from '../../services/api';
 import ConfirmModal from '../../components/ConfirmModal';
-import { ACCOUNT_STATUS, PAYMENT_REPORT_STATUS, statusOf } from '../../utils/statusLabels';
+import { ACCOUNT_STATUS, API_CONNECTION_STATUS, statusOf } from '../../utils/statusLabels';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 import { getLocalizedModel } from '../../i18n/bilingualContent';
-
-function ConditionRow({ condition, onUpdate, t }) {
-  const [saving, setSaving] = useState(false);
-
-  const CONDITION_LABELS = {
-    CONTRACT: t('status.conditionType.CONTRACT'),
-    FUNDS: t('status.conditionType.FUNDS'),
-    PAYMENT: t('status.conditionType.PAYMENT'),
-    API: t('status.conditionType.API'),
-    ACTIVATION: t('status.conditionType.ACTIVATION'),
-  };
-  const CONDITION_STATUS_TEXT = {
-    CONFIRMED: t('status.condition.completed'),
-    REJECTED: t('status.condition.rejected'),
-    PENDING: t('status.condition.pending'),
-  };
-
-  const setStatus = async (status) => {
-    setSaving(true);
-    try {
-      await onUpdate(condition.type, status);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <div className="qlc-condition-row">
-      <span>{CONDITION_LABELS[condition.type] || condition.type}</span>
-      <span className={`qlc-badge ${condition.status === 'CONFIRMED' ? 'ok' : condition.status === 'REJECTED' ? 'danger' : 'warn'}`}>
-        {CONDITION_STATUS_TEXT[condition.status] || condition.status}
-      </span>
-      <div style={{ display: 'flex', gap: 6 }}>
-        <button className="qlc-btn ghost" disabled={saving} onClick={() => setStatus('CONFIRMED')}>
-          {t('adminClientDetail.confirm')}
-        </button>
-        <button className="qlc-btn ghost" disabled={saving} onClick={() => setStatus('REJECTED')}>
-          {t('adminClientDetail.reject')}
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function MaskedSecret({ label, value, t }) {
-  const [revealed, setRevealed] = useState(false);
-  const [copied, setCopied] = useState(false);
-  if (!value) return null;
-  const masked = '•'.repeat(Math.min(value.length, 24));
-
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(value);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    } catch {
-      // Clipboard puede fallar en contexto no seguro; no bloquea la vista.
-    }
-  };
-
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, marginBottom: 8 }}>
-      <span style={{ color: 'var(--qlc-muted)', minWidth: 80 }}>{label}:</span>
-      <code style={{ flex: 1, wordBreak: 'break-all', color: 'var(--qlc-text)' }}>{revealed ? value : masked}</code>
-      <button type="button" className="qlc-btn ghost" onClick={() => setRevealed((r) => !r)}>
-        {revealed ? t('adminClientDetail.hideSecret') : t('adminClientDetail.revealSecret')}
-      </button>
-      <button type="button" className="qlc-btn ghost" onClick={copy}>
-        {copied ? t('adminClientDetail.copied') : t('adminClientDetail.copy')}
-      </button>
-    </div>
-  );
-}
 
 export default function ClientDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { t, language } = useLanguage();
   const [client, setClient] = useState(null);
-  const [contract, setContract] = useState(null);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [uploadError, setUploadError] = useState('');
-  const [apiForm, setApiForm] = useState({ apiKey: '', apiSecret: '', status: 'PENDIENTE' });
   const [docForm, setDocForm] = useState({ category: 'identificacion', description: '' });
-  const [uploading, setUploading] = useState('');
+  const [uploading, setUploading] = useState(false);
   const [confirmDeactivate, setConfirmDeactivate] = useState(false);
   const [confirmDeleteDoc, setConfirmDeleteDoc] = useState(null);
-  const [confirmResetSigned, setConfirmResetSigned] = useState(false);
   const [confirmDeleteClient, setConfirmDeleteClient] = useState(false);
+  const [creatingSubaccount, setCreatingSubaccount] = useState(false);
+  const [newIdentifier, setNewIdentifier] = useState('');
 
   const accountStatusMap = ACCOUNT_STATUS(t);
-  const paymentReportStatusMap = PAYMENT_REPORT_STATUS(t);
-  const contractStatusText = {
-    PENDING: t('status.contract.pending'),
-    UPLOADED: t('status.contract.uploaded'),
-    RECEIVED_SIGNED: t('status.contract.receivedSigned'),
-    REJECTED: t('status.contract.rejected'),
-  };
+  const apiStatusMap = API_CONNECTION_STATUS(t);
   const CATEGORIES = [
     { value: 'identificacion', label: t('adminClientDetail.categoryId') },
     { value: 'comprobante_domicilio', label: t('adminClientDetail.categoryAddress') },
@@ -114,25 +34,14 @@ export default function ClientDetailPage() {
   const load = () => {
     api
       .get(`/admin/clients/${id}`)
-      .then(({ data }) => {
-        setClient(data.client);
-        setApiForm((f) => ({ ...f, status: data.client.apiConnection?.status || 'PENDIENTE' }));
-        setContract(data.client.contracts?.[0] || null);
-      })
+      .then(({ data }) => setClient(data.client))
       .catch((err) => setError(translateBackendMessage(err.message, language)));
   };
-
   useEffect(load, [id]);
 
   const flash = (msg) => {
     setMessage(msg);
     setTimeout(() => setMessage(''), 3000);
-  };
-
-  const updateCondition = async (type, status) => {
-    await api.patch(`/admin/clients/${id}/process/${type}`, { status });
-    flash(t('adminClientDetail.conditionUpdated'));
-    load();
   };
 
   const toggleActive = async (isActive) => {
@@ -141,62 +50,18 @@ export default function ClientDetailPage() {
     load();
   };
 
-  const activate = async () => {
-    try {
-      await api.post(`/admin/clients/${id}/activate`);
-      flash(t('adminClientDetail.clientActivatedOk'));
-      load();
-    } catch (err) {
-      setError(translateBackendMessage(err.message, language));
-    }
-  };
-
-  const saveApiConnection = async (e) => {
-    e.preventDefault();
-    const payload = { status: apiForm.status };
-    if (apiForm.apiKey) payload.apiKey = apiForm.apiKey;
-    if (apiForm.apiSecret) payload.apiSecret = apiForm.apiSecret;
-    await api.patch(`/admin/clients/${id}/api-connection`, payload);
-    setApiForm((f) => ({ ...f, apiKey: '', apiSecret: '' }));
-    flash(t('adminClientDetail.apiConnectionUpdated'));
-    load();
-  };
-
-  const uploadContract = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    setUploading('contract');
-    setUploadError('');
-    const fd = new FormData();
-    fd.append('file', file);
-    try {
-      await api.post(`/admin/clients/${id}/contracts`, fd, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      flash(t('adminClientDetail.contractUploaded'));
-      load();
-    } catch (err) {
-      setUploadError(translateBackendMessage(err.message, language));
-    } finally {
-      setUploading('');
-      e.target.value = '';
-    }
-  };
-
   const uploadDocument = async (e) => {
     e.preventDefault();
     const file = e.target.elements.docFile.files[0];
     if (!file) return;
-    setUploading('document');
+    setUploading(true);
     setUploadError('');
     const fd = new FormData();
     fd.append('file', file);
     fd.append('category', docForm.category);
     fd.append('description', docForm.description);
     try {
-      await api.post(`/admin/clients/${id}/documents`, fd, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      await api.post(`/admin/clients/${id}/documents`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
       flash(t('adminClientDetail.documentUploaded'));
       e.target.reset();
       setDocForm((f) => ({ ...f, description: '' }));
@@ -204,7 +69,7 @@ export default function ClientDetailPage() {
     } catch (err) {
       setUploadError(translateBackendMessage(err.message, language));
     } finally {
-      setUploading('');
+      setUploading(false);
     }
   };
 
@@ -214,14 +79,14 @@ export default function ClientDetailPage() {
     load();
   };
 
-  const confirmDeactivateAccount = async () => {
-    await toggleActive(false);
+  const toggleDocUnlock = async (doc) => {
+    await api.patch(`/admin/documents/${doc.id}/unlock`, { unlocked: !doc.clientEditUnlocked });
+    flash(doc.clientEditUnlocked ? t('adminClientDetail.documentLocked') : t('adminClientDetail.documentUnlocked'));
+    load();
   };
 
-  const resetSignedContract = async () => {
-    await api.post(`/admin/contracts/${contract.id}/reset-signed`);
-    flash(t('adminClientDetail.signedContractRemoved'));
-    load();
+  const confirmDeactivateAccount = async () => {
+    await toggleActive(false);
   };
 
   const deleteClientAccount = async () => {
@@ -229,11 +94,27 @@ export default function ClientDetailPage() {
     navigate('/admin/clients');
   };
 
+  const createSubaccount = async () => {
+    setCreatingSubaccount(true);
+    setError('');
+    try {
+      await api.post(`/admin/clients/${id}/api-subaccounts`, newIdentifier ? { identifier: newIdentifier } : {});
+      setNewIdentifier('');
+      flash(t('adminClientDetail.subaccountCreated'));
+      load();
+    } catch (err) {
+      setError(translateBackendMessage(err.message, language));
+    } finally {
+      setCreatingSubaccount(false);
+    }
+  };
+
   if (error) return <div className="qlc-empty">{error}</div>;
   if (!client) return <div className="qlc-empty">{t('adminClientDetail.loadingClient')}</div>;
 
   const clientAccStatus = statusOf(accountStatusMap, client.status);
-  const conditionsSummary = client.conditionsSummary || { total: 0, confirmed: 0, allConfirmed: false };
+  const subaccounts = client.apiSubaccounts || [];
+  const canAddSubaccount = subaccounts.length < 20;
 
   return (
     <div>
@@ -248,7 +129,7 @@ export default function ClientDetailPage() {
             {client.firstName} {client.lastName}
           </h1>
           <div style={{ color: 'var(--qlc-muted)', fontSize: 13 }}>
-            {client.user?.email} · @{client.user?.username}
+            <a href={`mailto:${client.user?.email}`}>{client.user?.email}</a>
           </div>
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
@@ -275,121 +156,67 @@ export default function ClientDetailPage() {
         </div>
       )}
 
-      <div className="qlc-detail-grid">
-        <div className="qlc-card">
-          <h3 style={{ marginTop: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            {t('adminClientDetail.activationProcess')}
-            <span className={`qlc-badge ${conditionsSummary.allConfirmed ? 'ok' : 'muted'}`}>
-              {conditionsSummary.confirmed}/{conditionsSummary.total}
+      <div className="qlc-card" style={{ marginBottom: 20 }}>
+        <h3 style={{ marginTop: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          {t('adminClientDetail.subaccounts')} ({subaccounts.length}/20)
+          {canAddSubaccount && (
+            <span style={{ display: 'flex', gap: 8 }}>
+              <input
+                className="qlc-input"
+                style={{ width: 160 }}
+                placeholder={t('adminClientDetail.identifierPlaceholder')}
+                value={newIdentifier}
+                onChange={(e) => setNewIdentifier(e.target.value)}
+              />
+              <button className="qlc-btn primary" disabled={creatingSubaccount} onClick={createSubaccount}>
+                {creatingSubaccount ? t('common.saving') : t('adminClientDetail.newSubaccount')}
+              </button>
             </span>
-          </h3>
-          {client.process?.conditions?.map((c) => (
-            <ConditionRow key={c.id} condition={c} onUpdate={updateCondition} t={t} />
-          ))}
-          <button
-            className="qlc-btn primary"
-            style={{ marginTop: 16, width: '100%' }}
-            onClick={activate}
-            disabled={client.process?.isActivated}
-          >
-            {client.process?.isActivated ? t('adminClientDetail.clientAlreadyActivated') : t('adminClientDetail.activateClient')}
-          </button>
-        </div>
-
-        <div className="qlc-card">
-          <h3 style={{ marginTop: 0 }}>{t('adminClientDetail.model')}</h3>
-          <p style={{ color: 'var(--qlc-muted)', fontSize: 13 }}>
-            {client.clientModel?.model
-              ? getLocalizedModel(client.clientModel.model, language).name
-              : t('adminClientDetail.noModelAssigned')}
-          </p>
-          <h3>
-            {t('adminClientDetail.apiConnection')} ({client.apiConnection?.exchangeName || 'Bitget'})
-          </h3>
-          {(client.apiConnection?.apiKey || client.apiConnection?.apiSecret) && (
-            <div style={{ borderBottom: '1px solid var(--qlc-line)', paddingBottom: 12, marginBottom: 12 }}>
-              <MaskedSecret label="API Key" value={client.apiConnection?.apiKey} t={t} />
-              <MaskedSecret label="API Secret" value={client.apiConnection?.apiSecret} t={t} />
-            </div>
           )}
-          <form onSubmit={saveApiConnection}>
-            <label className="qlc-label">{t('adminClientDetail.status')}</label>
-            <select
-              className="qlc-select"
-              value={apiForm.status}
-              onChange={(e) => setApiForm((f) => ({ ...f, status: e.target.value }))}
-            >
-              <option value="PENDIENTE">{t('adminClientDetail.apiStatusPending')}</option>
-              <option value="CONECTADA">{t('adminClientDetail.apiStatusConnected')}</option>
-              <option value="DESCONECTADA">{t('adminClientDetail.apiStatusDisconnected')}</option>
-            </select>
-            <label className="qlc-label">
-              API Key {client.apiConnection?.hasApiKey ? t('adminClientDetail.alreadyRegistered') : ''}
-            </label>
-            <input
-              className="qlc-input"
-              value={apiForm.apiKey}
-              onChange={(e) => setApiForm((f) => ({ ...f, apiKey: e.target.value }))}
-              placeholder={t('adminClientDetail.leaveBlank')}
-            />
-            <label className="qlc-label">
-              API Secret {client.apiConnection?.hasApiSecret ? t('adminClientDetail.alreadyRegistered') : ''}
-            </label>
-            <input
-              className="qlc-input"
-              type="password"
-              value={apiForm.apiSecret}
-              onChange={(e) => setApiForm((f) => ({ ...f, apiSecret: e.target.value }))}
-              placeholder={t('adminClientDetail.leaveBlank')}
-            />
-            <button className="qlc-btn primary" style={{ marginTop: 14, width: '100%' }}>
-              {t('adminClientDetail.saveApiConnection')}
-            </button>
-          </form>
-        </div>
+        </h3>
+        {subaccounts.length === 0 ? (
+          <div className="qlc-empty">{t('adminClientDetail.noSubaccounts')}</div>
+        ) : (
+          <table className="qlc-table">
+            <thead>
+              <tr>
+                <th>{t('adminClientDetail.identifier')}</th>
+                <th>{t('adminClientDetail.model')}</th>
+                <th>{t('adminClientDetail.api')}</th>
+                <th>{t('adminClientDetail.activationProcess')}</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {subaccounts.map((s) => {
+                const apiStatus = statusOf(apiStatusMap, s.status, 'PENDIENTE');
+                const cs = s.conditionsSummary || { confirmed: 0, total: 0, allConfirmed: false };
+                return (
+                  <tr key={s.id}>
+                    <td>{s.identifier || t('adminClientDetail.unassignedIdentifier')}</td>
+                    <td>{s.clientModel?.model ? getLocalizedModel(s.clientModel.model, language).name : t('adminClientDetail.noModelAssigned')}</td>
+                    <td>
+                      <span className={`qlc-badge ${apiStatus.className}`}>{apiStatus.text}</span>
+                    </td>
+                    <td>
+                      <span className={`qlc-badge ${cs.allConfirmed ? 'ok' : 'muted'}`}>
+                        {cs.confirmed}/{cs.total}
+                      </span>
+                    </td>
+                    <td>
+                      <Link className="qlc-btn ghost" to={`/admin/clients/${id}/api-subaccounts/${s.id}`}>
+                        {t('adminClientsList.view')}
+                      </Link>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+      </div>
 
-        <div className="qlc-card">
-          <h3 style={{ marginTop: 0 }}>{t('adminClientDetail.contract')}</h3>
-          <p style={{ fontSize: 13, color: 'var(--qlc-muted)' }}>
-            {t('adminClientDetail.status')}:{' '}
-            <span className="qlc-badge warn">{contractStatusText[contract?.status] || contractStatusText.PENDING}</span>
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <div>
-              <label className="qlc-label">{t('adminClientDetail.originalLabel')}</label>
-              <input type="file" className="qlc-input" accept=".pdf,image/*" onChange={uploadContract} disabled={uploading === 'contract'} />
-              {contract?.originalDriveFileId && (
-                <a
-                  href={`${API_BASE_URL}/admin/contracts/${contract.id}/download/original`}
-                  target="_blank"
-                  rel="noreferrer"
-                  style={{ fontSize: 12 }}
-                >
-                  {t('adminClientDetail.viewOriginal')}: {contract.originalFileName}
-                </a>
-              )}
-            </div>
-            {contract?.signedDriveFileId && (
-              <div>
-                <label className="qlc-label">{t('adminClientDetail.signedLabel')}</label>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
-                  <a
-                    href={`${API_BASE_URL}/admin/contracts/${contract.id}/download/signed`}
-                    target="_blank"
-                    rel="noreferrer"
-                    style={{ fontSize: 12 }}
-                  >
-                    {t('adminClientDetail.viewSigned')}: {contract.signedFileName}
-                  </a>
-                  <button className="qlc-btn ghost" onClick={() => setConfirmResetSigned(true)}>
-                    {t('adminClientDetail.deleteAllowResend')}
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
+      <div className="qlc-detail-grid">
         <div className="qlc-card">
           <h3 style={{ marginTop: 0 }}>
             {t('adminClientDetail.documents')} ({client.documents?.length || 0})
@@ -403,10 +230,20 @@ export default function ClientDetailPage() {
                       {d.fileName}
                     </a>{' '}
                     <span style={{ color: 'var(--qlc-muted2)' }}>({d.category})</span>
+                    {d.clientEditUnlocked && (
+                      <span className="qlc-badge warn" style={{ marginLeft: 6 }}>
+                        {t('adminClientDetail.unlockedForClient')}
+                      </span>
+                    )}
                   </span>
-                  <button className="qlc-btn ghost" onClick={() => setConfirmDeleteDoc(d)}>
-                    {t('adminClientDetail.delete')}
-                  </button>
+                  <span style={{ display: 'flex', gap: 6 }}>
+                    <button className="qlc-btn ghost" onClick={() => toggleDocUnlock(d)}>
+                      {d.clientEditUnlocked ? t('adminClientDetail.lockDocument') : t('adminClientDetail.unlockDocument')}
+                    </button>
+                    <button className="qlc-btn ghost" onClick={() => setConfirmDeleteDoc(d)}>
+                      {t('adminClientDetail.delete')}
+                    </button>
+                  </span>
                 </li>
               ))}
             </ul>
@@ -416,11 +253,7 @@ export default function ClientDetailPage() {
 
           <form onSubmit={uploadDocument} style={{ marginTop: 14, borderTop: '1px solid var(--qlc-line)', paddingTop: 14 }}>
             <label className="qlc-label">{t('adminClientDetail.category')}</label>
-            <select
-              className="qlc-select"
-              value={docForm.category}
-              onChange={(e) => setDocForm((f) => ({ ...f, category: e.target.value }))}
-            >
+            <select className="qlc-select" value={docForm.category} onChange={(e) => setDocForm((f) => ({ ...f, category: e.target.value }))}>
               {CATEGORIES.map((c) => (
                 <option key={c.value} value={c.value}>
                   {c.label}
@@ -428,45 +261,29 @@ export default function ClientDetailPage() {
               ))}
             </select>
             <label className="qlc-label">{t('adminClientDetail.description')}</label>
-            <input
-              className="qlc-input"
-              value={docForm.description}
-              onChange={(e) => setDocForm((f) => ({ ...f, description: e.target.value }))}
-            />
+            <input className="qlc-input" value={docForm.description} onChange={(e) => setDocForm((f) => ({ ...f, description: e.target.value }))} />
             <label className="qlc-label">{t('adminClientDetail.file')}</label>
             <input type="file" name="docFile" className="qlc-input" accept=".pdf,image/*" required />
-            <button className="qlc-btn primary" style={{ marginTop: 12, width: '100%' }} disabled={uploading === 'document'}>
-              {uploading === 'document' ? t('adminClientDetail.uploading') : t('adminClientDetail.uploadDocument')}
+            <button className="qlc-btn primary" style={{ marginTop: 12, width: '100%' }} disabled={uploading}>
+              {uploading ? t('adminClientDetail.uploading') : t('adminClientDetail.uploadDocument')}
             </button>
           </form>
         </div>
 
         <div className="qlc-card">
-          <h3 style={{ marginTop: 0 }}>
-            {t('adminClientDetail.reportedPayments')} ({client.paymentReports?.length || 0})
-          </h3>
-          {client.paymentReports?.length ? (
-            <ul className="qlc-plain-list">
-              {client.paymentReports.map((p) => {
-                const s = statusOf(paymentReportStatusMap, p.status, 'PENDING');
-                return (
-                  <li key={p.id}>
-                    {p.amount} {p.currency} — <span className={`qlc-badge ${s.className}`}>{s.text}</span>
-                    {p.proofDriveFileId && (
-                      <>
-                        {' '}
-                        ·{' '}
-                        <a href={`${API_BASE_URL}/admin/payment-reports/${p.id}/proof`} target="_blank" rel="noreferrer">
-                          {t('adminClientDetail.viewProof')}
-                        </a>
-                      </>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
+          <h3 style={{ marginTop: 0 }}>{t('adminClientDetail.wallet')}</h3>
+          {client.walletAddress ? (
+            <>
+              <p style={{ fontSize: 13 }}>
+                <strong>{t('clientWallet.network')}:</strong> {client.walletNetwork || '—'}
+              </p>
+              <p style={{ fontSize: 13, wordBreak: 'break-all' }}>
+                <strong>{t('clientWallet.address')}:</strong> {client.walletAddress}
+              </p>
+              {client.walletQrUrl && <img src={client.walletQrUrl} alt="QR wallet" style={{ width: 130, borderRadius: 10 }} />}
+            </>
           ) : (
-            <div className="qlc-empty">{t('adminClientDetail.noPaymentsReported')}</div>
+            <div className="qlc-empty">{t('adminClientDetail.noWallet')}</div>
           )}
         </div>
       </div>
@@ -478,17 +295,6 @@ export default function ClientDetailPage() {
           confirmLabel={t('adminClientDetail.deactivate')}
           onClose={() => setConfirmDeactivate(false)}
           onConfirm={confirmDeactivateAccount}
-        />
-      )}
-
-      {confirmResetSigned && (
-        <ConfirmModal
-          title={t('adminClientDetail.resetSignedTitle')}
-          message={t('adminClientDetail.resetSignedMessage')}
-          confirmLabel={t('adminClientDetail.delete')}
-          twoStep
-          onClose={() => setConfirmResetSigned(false)}
-          onConfirm={resetSignedContract}
         />
       )}
 

@@ -16,12 +16,9 @@ export default function ClientLayout() {
   const NAV_ITEMS = [
     { to: '/client', label: t('clientNav.dashboard'), end: true },
     { to: '/client/profile', label: t('clientNav.profile') },
-    { to: '/client/models', label: t('clientNav.models') },
-    { to: '/client/process', label: t('clientNav.process') },
-    { to: '/client/contract', label: t('clientNav.contract') },
+    { to: '/client/api-subaccounts', label: t('clientNav.subaccounts') },
     { to: '/client/documents', label: t('clientNav.documents') },
-    { to: '/client/api-connection', label: t('clientNav.apiConnection') },
-    { to: '/client/payments', label: t('clientNav.payments') },
+    { to: '/client/wallet', label: t('clientNav.wallet') },
     { to: '/client/support', label: t('clientNav.support') },
     { to: '/client/appointments', label: t('clientNav.appointments') },
   ];
@@ -66,7 +63,7 @@ export default function ClientLayout() {
         </nav>
         <div className="qlc-admin-user">
           <div className="qlc-admin-user-name">{user?.profile?.firstName}</div>
-          <div className="qlc-admin-user-role">{user?.username}</div>
+          <div className="qlc-admin-user-role">{user?.email}</div>
           <LanguageSwitcherCompact />
           <button className="qlc-btn ghost" onClick={handleLogout}>
             {t('common.logout')}

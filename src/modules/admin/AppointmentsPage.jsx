@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import api from '../../services/api';
 import ConfirmModal from '../../components/ConfirmModal';
 import { APPOINTMENT_STATUS, statusOf } from '../../utils/statusLabels';
+import { formatCdmxDate } from '../../utils/cdmxTime';
 import { useLanguage } from '../../i18n/LanguageContext';
 
 function AvailabilityEditor() {
@@ -119,6 +120,8 @@ export default function AppointmentsPage() {
       <div className="qlc-kicker">{t('adminAppointments.kicker')}</div>
       <h1 style={{ marginTop: 0 }}>{t('adminAppointments.title')}</h1>
 
+      <p style={{ fontSize: 12, color: 'var(--qlc-muted2)', maxWidth: 640 }}>{t('cdmxNotice')}</p>
+
       <AvailabilityEditor />
 
       <h3>{t('adminAppointments.requestsTitle')}</h3>
@@ -146,7 +149,7 @@ export default function AppointmentsPage() {
                         ? `${a.client.firstName} ${a.client.lastName}`
                         : `${a.prospect?.firstName || ''} ${a.prospect?.lastName || ''} ${t('adminAppointments.prospectTag')}`}
                     </td>
-                    <td>{new Date(a.requestedDate).toLocaleDateString()}</td>
+                    <td>{formatCdmxDate(a.requestedDate)}</td>
                     <td>{a.requestedTime}</td>
                     <td>
                       <span className={`qlc-badge ${s.className}`}>{s.text}</span>

@@ -35,6 +35,8 @@ function ModelEditModal({ model, onClose, onSaved }) {
         period: form.period,
         periodEn: form.periodEn || null,
         objective: form.objective,
+        detailsContent: form.detailsContent || null,
+        detailsContentEn: form.detailsContentEn || null,
         isActive: form.isActive,
       });
       onSaved();
@@ -95,6 +97,14 @@ function ModelEditModal({ model, onClose, onSaved }) {
         />
         <label className="qlc-label">{t('adminModels.objective')}</label>
         <input className="qlc-input" value={form.objective || ''} onChange={update('objective')} />
+        <BilingualField
+          label={t('adminModels.detailsContent')}
+          esValue={form.detailsContent}
+          enValue={form.detailsContentEn}
+          onEsChange={update('detailsContent')}
+          onEnChange={update('detailsContentEn')}
+          textarea
+        />
         <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 14, fontSize: 13 }}>
           <input type="checkbox" checked={form.isActive} onChange={update('isActive')} /> {t('adminModels.visibleOnPublicSite')}
         </label>
@@ -121,12 +131,71 @@ function ModelEditModal({ model, onClose, onSaved }) {
   );
 }
 
+// CORRECCIÓN 30 — QLC puede crear nuevos modelos sin límite artificial;
+// "key" es un identificador único de texto libre (slug), no un enum fijo.
+function NewModelModal({ onClose, onCreated }) {
+  const { t, language } = useLanguage();
+  const [form, setForm] = useState({ key: '', name: '', description: '' });
+  const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSaving(true);
+    try {
+      await api.post('/admin/models', form);
+      onCreated();
+    } catch (err) {
+      setError(translateBackendMessage(err.message, language));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Modal title={t('adminModels.newModelTitle')} onClose={onClose} width={480}>
+      <form onSubmit={submit}>
+        <label className="qlc-label">{t('adminModels.keyLabel')}</label>
+        <input
+          className="qlc-input"
+          value={form.key}
+          onChange={(e) => setForm((f) => ({ ...f, key: e.target.value }))}
+          placeholder="ej. flexible-plus"
+          required
+        />
+        <p style={{ fontSize: 11, color: 'var(--qlc-muted2)', marginTop: -4 }}>{t('adminModels.keyHint')}</p>
+        <label className="qlc-label">{t('adminModels.name')}</label>
+        <input className="qlc-input" value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} required />
+        <label className="qlc-label">{t('adminModels.description')}</label>
+        <textarea
+          className="qlc-textarea"
+          rows={3}
+          value={form.description}
+          onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+          required
+        />
+        {error && <div className="qlc-field-error">{error}</div>}
+        <div className="qlc-form-actions">
+          <button type="button" className="qlc-btn ghost" onClick={onClose}>
+            {t('common.cancel')}
+          </button>
+          <button className="qlc-btn primary" disabled={saving}>
+            {saving ? t('common.saving') : t('adminModels.createModel')}
+          </button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
 export default function ModelsPage() {
   const { t } = useLanguage();
   const [models, setModels] = useState([]);
   const [note, setNote] = useState('');
   const [noteEn, setNoteEn] = useState('');
   const [editingModel, setEditingModel] = useState(null);
+  const [creatingModel, setCreatingModel] = useState(false);
   const [message, setMessage] = useState('');
   const [savingNote, setSavingNote] = useState(false);
 
@@ -158,8 +227,15 @@ export default function ModelsPage() {
 
   return (
     <div>
-      <div className="qlc-kicker">{t('adminModels.kicker')}</div>
-      <h1 style={{ marginTop: 0 }}>{t('adminModels.title')}</h1>
+      <div className="qlc-page-header">
+        <div>
+          <div className="qlc-kicker">{t('adminModels.kicker')}</div>
+          <h1 style={{ margin: 0 }}>{t('adminModels.title')}</h1>
+        </div>
+        <button className="qlc-btn primary" onClick={() => setCreatingModel(true)}>
+          {t('adminModels.newModel')}
+        </button>
+      </div>
       <p style={{ color: 'var(--qlc-muted)', maxWidth: 640 }}>{t('adminModels.intro')}</p>
 
       {message && <div className="qlc-card" style={{ borderColor: 'var(--qlc-ok-border)', marginBottom: 16 }}>{message}</div>}
@@ -206,6 +282,17 @@ export default function ModelsPage() {
           onSaved={() => {
             setEditingModel(null);
             flash(t('adminModels.changesSaved'));
+            load();
+          }}
+        />
+      )}
+
+      {creatingModel && (
+        <NewModelModal
+          onClose={() => setCreatingModel(false)}
+          onCreated={() => {
+            setCreatingModel(false);
+            flash(t('adminModels.modelCreated'));
             load();
           }}
         />

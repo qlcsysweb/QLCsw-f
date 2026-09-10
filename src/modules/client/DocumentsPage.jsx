@@ -86,9 +86,15 @@ export default function DocumentsPage() {
                 </span>
                 <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <span className="qlc-badge ok">{t('clientDocuments.sent')}</span>
-                  <button className="qlc-btn ghost" onClick={() => setConfirmDelete(d)}>
-                    {t('clientDocuments.delete')}
-                  </button>
+                  {d.clientEditUnlocked ? (
+                    <button className="qlc-btn ghost" onClick={() => setConfirmDelete(d)}>
+                      {t('clientDocuments.delete')}
+                    </button>
+                  ) : (
+                    <span className="qlc-badge muted" title={t('clientDocuments.lockedNotice')}>
+                      {t('clientDocuments.locked')}
+                    </span>
+                  )}
                 </span>
               </li>
             ))}

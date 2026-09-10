@@ -4,15 +4,89 @@ import ConfirmModal from '../../components/ConfirmModal';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 
+// CORRECCIÓN 4 / REVERSIÓN B: el antiguo "PDF informativo" (adjunto
+// automático al correo de bienvenida de un prospecto) fue eliminado por
+// completo — no debe reintroducirse aquí ni en ningún otro lugar.
+//
+// CORRECCIÓN 27: en su lugar, esta página administra las DOS guías de uso
+// (ADMIN / CLIENTE) — los únicos PDFs almacenados en Cloudinary.
+function GuideCard({ role, settings, t, onUploaded, onDeleted }) {
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const { language } = useLanguage();
+
+  const urlKey = role === 'ADMIN' ? 'adminGuidePdfUrl' : 'clientGuidePdfUrl';
+  const nameKey = role === 'ADMIN' ? 'adminGuideFileName' : 'clientGuideFileName';
+  const fileName = settings[nameKey];
+
+  const upload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploading(true);
+    setError('');
+    const fd = new FormData();
+    fd.append('file', file);
+    try {
+      const { data } = await api.post(`/admin/platform-settings/guide/${role.toLowerCase()}`, fd, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      onUploaded(data.settings);
+    } catch (err) {
+      setError(translateBackendMessage(err.message, language));
+    } finally {
+      setUploading(false);
+      e.target.value = '';
+    }
+  };
+
+  const remove = async () => {
+    const { data } = await api.delete(`/admin/platform-settings/guide/${role.toLowerCase()}`);
+    onDeleted(data.settings);
+  };
+
+  return (
+    <div className="qlc-card">
+      <h3 style={{ marginTop: 0 }}>
+        {role === 'ADMIN' ? t('adminPlatformSettings.adminGuideTitle') : t('adminPlatformSettings.clientGuideTitle')}
+      </h3>
+      {error && <div className="qlc-field-error">{error}</div>}
+      {fileName ? (
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+          <span style={{ fontSize: 13 }}>{fileName}</span>
+          <button className="qlc-btn ghost" onClick={() => setConfirmDelete(true)}>
+            {t('common.delete')}
+          </button>
+        </div>
+      ) : (
+        <div className="qlc-empty" style={{ marginBottom: 14 }}>
+          {t('adminPlatformSettings.noGuide')}
+        </div>
+      )}
+      <label className="qlc-label">{fileName ? t('adminPlatformSettings.replaceGuide') : t('adminPlatformSettings.uploadGuide')}</label>
+      <input type="file" className="qlc-input" accept="application/pdf" onChange={upload} disabled={uploading} />
+      {uploading && <p style={{ fontSize: 12, color: 'var(--qlc-muted2)' }}>{t('adminPlatformSettings.uploading')}</p>}
+
+      {confirmDelete && (
+        <ConfirmModal
+          title={t('adminPlatformSettings.deleteGuideTitle')}
+          message={t('adminPlatformSettings.deleteGuideMessage')}
+          confirmLabel={t('common.delete')}
+          onClose={() => setConfirmDelete(false)}
+          onConfirm={remove}
+        />
+      )}
+    </div>
+  );
+}
+
 export default function PlatformSettingsPage() {
   const { t, language } = useLanguage();
   const [settings, setSettings] = useState(null);
   const [urlForm, setUrlForm] = useState('');
   const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-  const [confirmDeletePdf, setConfirmDeletePdf] = useState(false);
 
   const load = () =>
     api.get('/admin/platform-settings').then(({ data }) => {
@@ -45,33 +119,6 @@ export default function PlatformSettingsPage() {
     }
   };
 
-  const uploadPdf = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    setUploading(true);
-    setError('');
-    const fd = new FormData();
-    fd.append('file', file);
-    try {
-      const { data } = await api.post('/admin/platform-settings/info-pdf', fd, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      setSettings(data.settings);
-      flash(t('adminPlatformSettings.pdfUploaded'));
-    } catch (err) {
-      setError(translateBackendMessage(err.message, language));
-    } finally {
-      setUploading(false);
-      e.target.value = '';
-    }
-  };
-
-  const deletePdf = async () => {
-    const { data } = await api.delete('/admin/platform-settings/info-pdf');
-    setSettings(data.settings);
-    flash(t('adminPlatformSettings.pdfDeleted'));
-  };
-
   return (
     <div>
       <div className="qlc-kicker">{t('adminPlatformSettings.kicker')}</div>
@@ -98,38 +145,9 @@ export default function PlatformSettingsPage() {
           </button>
         </form>
 
-        <div className="qlc-card">
-          <h3 style={{ marginTop: 0 }}>{t('adminPlatformSettings.pdfTitle')}</h3>
-          <p style={{ fontSize: 12, color: 'var(--qlc-muted2)' }}>{t('adminPlatformSettings.pdfHint')}</p>
-          {settings.infoPdfFileName ? (
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-              <span style={{ fontSize: 13 }}>{settings.infoPdfFileName}</span>
-              <button className="qlc-btn ghost" onClick={() => setConfirmDeletePdf(true)}>
-                {t('common.delete')}
-              </button>
-            </div>
-          ) : (
-            <div className="qlc-empty" style={{ marginBottom: 14 }}>
-              {t('adminPlatformSettings.noPdf')}
-            </div>
-          )}
-          <label className="qlc-label">
-            {settings.infoPdfFileName ? t('adminPlatformSettings.replacePdf') : t('adminPlatformSettings.uploadPdf')}
-          </label>
-          <input type="file" className="qlc-input" accept="application/pdf" onChange={uploadPdf} disabled={uploading} />
-          {uploading && <p style={{ fontSize: 12, color: 'var(--qlc-muted2)' }}>{t('adminPlatformSettings.uploading')}</p>}
-        </div>
+        <GuideCard role="ADMIN" settings={settings} t={t} onUploaded={setSettings} onDeleted={setSettings} />
+        <GuideCard role="CLIENT" settings={settings} t={t} onUploaded={setSettings} onDeleted={setSettings} />
       </div>
-
-      {confirmDeletePdf && (
-        <ConfirmModal
-          title={t('adminPlatformSettings.deletePdfTitle')}
-          message={t('adminPlatformSettings.deletePdfMessage')}
-          confirmLabel={t('common.delete')}
-          onClose={() => setConfirmDeletePdf(false)}
-          onConfirm={deletePdf}
-        />
-      )}
     </div>
   );
 }

@@ -1,70 +1,40 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
+import { API_CONNECTION_STATUS, statusOf } from '../../utils/statusLabels';
+import { formatCdmxDate } from '../../utils/cdmxTime';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { getLocalizedModel } from '../../i18n/bilingualContent';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 
-function StatCard({ label, status, to }) {
-  const content = (
-    <>
-      <span className="qlc-stat-label">{label}</span>
-      <span className={`qlc-badge ${status.className}`} style={{ fontSize: 14, padding: '8px 12px' }}>
-        {status.text}
-      </span>
-    </>
-  );
-  if (to) {
-    return (
-      <Link className="qlc-card qlc-stat-card" to={to} style={{ display: 'flex', flexDirection: 'column' }}>
-        {content}
-      </Link>
-    );
-  }
-  return <div className="qlc-card qlc-stat-card">{content}</div>;
-}
+const ACCOUNT_STATUS_KEYS = {
+  ACTIVE: { text: 'active', className: 'ok', dot: '●' },
+  PENDING: { text: 'pending', className: 'warn', dot: '◌' },
+  REVIEW: { text: 'review', className: 'warn', dot: '!' },
+  INACTIVE: { text: 'inactive', className: 'danger', dot: '×' },
+};
+
+const CONTRACT_STATUS_KEYS = {
+  PENDING: { text: 'pending', className: 'warn', dot: '◌' },
+  UPLOADED: { text: 'uploaded', className: 'warn', dot: '!' },
+  RECEIVED_SIGNED: { text: 'receivedSigned', className: 'ok', dot: '✓' },
+  REJECTED: { text: 'rejected', className: 'danger', dot: '×' },
+};
+
+const APPOINTMENT_STATUS_KEYS = {
+  PENDING: { text: 'pending', className: 'warn', dot: '◌' },
+  AUTORIZADA: { text: 'authorized', className: 'ok', dot: '✓' },
+  RECHAZADA: { text: 'rejected', className: 'danger', dot: '×' },
+  COMPLETADA: { text: 'completed', className: 'ok', dot: '✓' },
+  CANCELADA: { text: 'cancelled', className: 'danger', dot: '×' },
+};
 
 export default function DashboardPage() {
   const { t, language } = useLanguage();
   const [dashboard, setDashboard] = useState(null);
   const [error, setError] = useState('');
 
-  const CONDITION_LABELS = {
-    CONTRACT: t('status.conditionType.CONTRACT'),
-    FUNDS: t('status.conditionType.FUNDS'),
-    PAYMENT: t('status.conditionType.PAYMENT'),
-    API: t('status.conditionType.API'),
-    ACTIVATION: t('status.conditionType.ACTIVATION'),
-  };
-  const CONDITION_STATUS = {
-    CONFIRMED: { text: `✓ ${t('status.condition.completed')}`, className: 'ok' },
-    REJECTED: { text: `× ${t('status.condition.rejected')}`, className: 'danger' },
-    PENDING: { text: `◌ ${t('status.condition.pending')}`, className: 'warn' },
-  };
-  const ACCOUNT_STATUS = {
-    ACTIVE: { text: `● ${t('status.account.active')}`, className: 'ok' },
-    PENDING: { text: `◌ ${t('status.account.pending')}`, className: 'warn' },
-    REVIEW: { text: `! ${t('status.account.review')}`, className: 'warn' },
-    INACTIVE: { text: `× ${t('status.account.inactive')}`, className: 'danger' },
-  };
-  const CONTRACT_STATUS = {
-    PENDING: { text: `◌ ${t('status.contract.pending')}`, className: 'warn' },
-    UPLOADED: { text: `! ${t('status.contract.uploaded')}`, className: 'warn' },
-    RECEIVED_SIGNED: { text: `✓ ${t('status.contract.receivedSigned')}`, className: 'ok' },
-    REJECTED: { text: `× ${t('status.contract.rejected')}`, className: 'danger' },
-  };
-  const API_STATUS = {
-    CONECTADA: { text: `● ${t('status.apiConnection.connected')}`, className: 'ok' },
-    DESCONECTADA: { text: `× ${t('status.apiConnection.disconnected')}`, className: 'danger' },
-    PENDIENTE: { text: `◌ ${t('status.apiConnection.pending')}`, className: 'warn' },
-  };
-  const APPOINTMENT_STATUS = {
-    PENDING: { text: `◌ ${t('status.appointment.pending')}`, className: 'warn' },
-    AUTORIZADA: { text: `✓ ${t('status.appointment.authorized')}`, className: 'ok' },
-    RECHAZADA: { text: `× ${t('status.appointment.rejected')}`, className: 'danger' },
-    COMPLETADA: { text: `✓ ${t('status.appointment.completed')}`, className: 'ok' },
-    CANCELADA: { text: `× ${t('status.appointment.cancelled')}`, className: 'danger' },
-  };
+  const apiStatusMap = API_CONNECTION_STATUS(t);
 
   useEffect(() => {
     api
@@ -76,12 +46,19 @@ export default function DashboardPage() {
   if (error) return <div className="qlc-empty">{error}</div>;
   if (!dashboard) return <div className="qlc-empty">{t('common.loading')}</div>;
 
-  const accountStatus = ACCOUNT_STATUS[dashboard.status] || ACCOUNT_STATUS.PENDING;
-  const contractStatus = CONTRACT_STATUS[dashboard.contractStatus] || CONTRACT_STATUS.PENDING;
-  const apiStatus = API_STATUS[dashboard.apiConnectionStatus] || API_STATUS.PENDIENTE;
+  const accountStatus = ACCOUNT_STATUS_KEYS[dashboard.status] || ACCOUNT_STATUS_KEYS.PENDING;
   const appointmentStatus = dashboard.nextAppointment
-    ? APPOINTMENT_STATUS[dashboard.nextAppointment.status] || APPOINTMENT_STATUS.PENDING
+    ? APPOINTMENT_STATUS_KEYS[dashboard.nextAppointment.status] || APPOINTMENT_STATUS_KEYS.PENDING
     : null;
+
+  const downloadGuide = async () => {
+    try {
+      const { data } = await api.get('/client/guide');
+      window.open(data.url, '_blank', 'noopener');
+    } catch (err) {
+      setError(translateBackendMessage(err.message, language));
+    }
+  };
 
   return (
     <div>
@@ -89,15 +66,16 @@ export default function DashboardPage() {
       <h1 style={{ marginTop: 0 }}>{t('clientDashboard.welcome').replace('{name}', dashboard.firstName)}</h1>
 
       <div className="qlc-stat-grid">
-        <StatCard label={t('clientDashboard.accountStatus')} status={accountStatus} />
         <div className="qlc-card qlc-stat-card">
-          <span className="qlc-stat-label">{t('clientDashboard.model')}</span>
-          <strong className="qlc-stat-value" style={{ fontSize: 20 }}>
-            {dashboard.model ? getLocalizedModel(dashboard.model, language).name : t('clientDashboard.unassigned')}
-          </strong>
+          <span className="qlc-stat-label">{t('clientDashboard.accountStatus')}</span>
+          <span className={`qlc-badge ${accountStatus.className}`} style={{ fontSize: 14, padding: '8px 12px' }}>
+            {accountStatus.dot} {t(`status.account.${accountStatus.text}`)}
+          </span>
         </div>
-        <StatCard label={t('clientDashboard.contract')} status={contractStatus} />
-        <StatCard label={t('clientDashboard.apiConnection')} status={apiStatus} to="/client/api-connection" />
+        <Link className="qlc-card qlc-stat-card" to="/client/api-subaccounts" style={{ display: 'flex', flexDirection: 'column' }}>
+          <span className="qlc-stat-label">{t('clientDashboard.subaccounts')}</span>
+          <strong className="qlc-stat-value">{dashboard.subaccounts.length}</strong>
+        </Link>
         <div className="qlc-card qlc-stat-card">
           <span className="qlc-stat-label">{t('clientDashboard.unreadNotifications')}</span>
           <strong className="qlc-stat-value">{dashboard.unreadNotifications}</strong>
@@ -105,20 +83,35 @@ export default function DashboardPage() {
       </div>
 
       <div className="qlc-card" style={{ marginTop: 24 }}>
-        <h3 style={{ marginTop: 0 }}>{t('clientDashboard.activationProcess')}</h3>
-        {dashboard.process?.conditions?.map((c) => {
-          const s = CONDITION_STATUS[c.status] || CONDITION_STATUS.PENDING;
-          return (
-            <div key={c.id} className="qlc-condition-row" style={{ gridTemplateColumns: '1fr auto' }}>
-              <span>{CONDITION_LABELS[c.type] || c.type}</span>
-              <span className={`qlc-badge ${s.className}`}>{s.text}</span>
-            </div>
-          );
-        })}
-        {dashboard.process?.isActivated && (
-          <div style={{ marginTop: 12, color: 'var(--qlc-ok)', fontSize: 13 }}>
-            {t('clientDashboard.accountFullyActivated')}
-          </div>
+        <h3 style={{ marginTop: 0 }}>{t('clientDashboard.subaccounts')}</h3>
+        {dashboard.subaccounts.length === 0 ? (
+          <div className="qlc-empty">{t('clientSubaccounts.none')}</div>
+        ) : (
+          <ul className="qlc-plain-list">
+            {dashboard.subaccounts.map((s) => {
+              const apiStatus = statusOf(apiStatusMap, s.apiStatus, 'PENDIENTE');
+              const contractStatus = CONTRACT_STATUS_KEYS[s.contractStatus] || CONTRACT_STATUS_KEYS.PENDING;
+              return (
+                <li key={s.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span>
+                    <strong>{s.identifier || t('clientSubaccounts.unassignedIdentifier')}</strong>{' '}
+                    <span style={{ color: 'var(--qlc-muted2)' }}>
+                      {s.model ? getLocalizedModel(s.model, language).name : t('clientSubaccounts.noModel')}
+                    </span>
+                  </span>
+                  <span style={{ display: 'flex', gap: 8 }}>
+                    <span className={`qlc-badge ${apiStatus.className}`}>{apiStatus.text}</span>
+                    <span className={`qlc-badge ${contractStatus.className}`}>
+                      {contractStatus.dot} {t(`status.contract.${contractStatus.text}`)}
+                    </span>
+                    <Link className="qlc-btn ghost" to={`/client/api-subaccounts/${s.id}`}>
+                      {t('adminClientsList.view')}
+                    </Link>
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
         )}
       </div>
 
@@ -126,23 +119,25 @@ export default function DashboardPage() {
         <div className="qlc-card" style={{ marginTop: 16 }}>
           <h3 style={{ marginTop: 0 }}>{t('clientDashboard.nextAppointment')}</h3>
           <p style={{ fontSize: 13, color: 'var(--qlc-muted)' }}>
-            {new Date(dashboard.nextAppointment.requestedDate).toLocaleDateString()} ·{' '}
+            {formatCdmxDate(dashboard.nextAppointment.requestedDate)} ·{' '}
             {dashboard.nextAppointment.requestedTime} —{' '}
-            <span className={`qlc-badge ${appointmentStatus.className}`}>{appointmentStatus.text}</span>
+            <span className={`qlc-badge ${appointmentStatus.className}`}>
+              {appointmentStatus.dot} {t(`status.appointment.${appointmentStatus.text}`)}
+            </span>
           </p>
         </div>
       )}
 
       <div style={{ display: 'flex', gap: 10, marginTop: 20, flexWrap: 'wrap' }}>
-        <Link className="qlc-btn primary" to="/client/contract">
-          {t('clientDashboard.viewContract')}
-        </Link>
-        <Link className="qlc-btn ghost" to="/client/payments">
-          {t('clientDashboard.reportPayment')}
+        <Link className="qlc-btn primary" to="/client/api-subaccounts">
+          {t('clientDashboard.viewSubaccounts')}
         </Link>
         <Link className="qlc-btn ghost" to="/client/support">
           {t('clientDashboard.support')}
         </Link>
+        <button className="qlc-btn ghost" onClick={downloadGuide}>
+          {t('clientDashboard.downloadGuide')}
+        </button>
       </div>
     </div>
   );

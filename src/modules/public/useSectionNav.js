@@ -9,6 +9,7 @@ export const SECTIONS = [
   { id: 'como-funciona', path: '/como-funciona', labelKey: 'nav.comoFunciona' },
   { id: 'tecnologia', path: '/tecnologia', labelKey: 'nav.tecnologia' },
   { id: 'microposiciones', path: '/microposiciones', labelKey: 'nav.microposiciones' },
+  { id: 'el-problema', path: '/el-problema', labelKey: 'nav.elProblema' },
   { id: 'modelos', path: '/modelos', labelKey: 'nav.modelos' },
   { id: 'resultados', path: '/resultados', labelKey: 'nav.resultados' },
   { id: 'seguridad', path: '/seguridad', labelKey: 'nav.seguridad' },
