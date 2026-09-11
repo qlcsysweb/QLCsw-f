@@ -81,6 +81,8 @@ export default function AdminSubaccountDetailPage() {
   const [secrets, setSecrets] = useState(null);
   const [payments, setPayments] = useState([]);
   const [statements, setStatements] = useState([]);
+  // CORREGIR.xlsx CLIENTE 13 — reportes de distribución de capital, revisados por el admin.
+  const [distributionReports, setDistributionReports] = useState([]);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
@@ -115,6 +117,9 @@ export default function AdminSubaccountDetailPage() {
     api.get(`/admin/api-subaccounts/${id}/secrets`).then(({ data }) => setSecrets(data.secrets));
     api.get('/admin/payment-reports', { params: { apiSubaccountId: id } }).then(({ data }) => setPayments(data.reports));
     api.get(`/admin/api-subaccounts/${id}/statements`).then(({ data }) => setStatements(data.statements));
+    api
+      .get('/admin/capital-distribution-reports', { params: { apiSubaccountId: id } })
+      .then(({ data }) => setDistributionReports(data.reports));
   };
   useEffect(load, [id]);
 
@@ -187,6 +192,12 @@ export default function AdminSubaccountDetailPage() {
 
   const reviewPayment = async (reportId, status) => {
     await api.patch(`/admin/payment-reports/${reportId}`, { status });
+    flash(t('adminClientDetail.paymentReviewed'));
+    load();
+  };
+
+  const reviewDistribution = async (reportId, status) => {
+    await api.patch(`/admin/capital-distribution-reports/${reportId}`, { status });
     flash(t('adminClientDetail.paymentReviewed'));
     load();
   };
@@ -415,6 +426,35 @@ export default function AdminSubaccountDetailPage() {
             </ul>
           ) : (
             <div className="qlc-empty">{t('adminClientDetail.noPaymentsReported')}</div>
+          )}
+        </div>
+
+        <div className="qlc-card">
+          <h3 style={{ marginTop: 0 }}>
+            {t('adminClientDetail.distributionReports')} ({distributionReports.length})
+          </h3>
+          {distributionReports.length ? (
+            <ul className="qlc-plain-list">
+              {distributionReports.map((r) => {
+                const s = statusOf(paymentStatusMap, r.status, 'PENDING');
+                return (
+                  <li key={r.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span>
+                      {r.amount} USDT — <span className={`qlc-badge ${s.className}`}>{s.text}</span>
+                      {r.note && <span style={{ color: 'var(--qlc-muted2)' }}> · {r.note}</span>}
+                    </span>
+                    {r.status !== 'APROBADO' && (
+                      <span style={{ display: 'flex', gap: 4 }}>
+                        <button className="qlc-btn ghost" onClick={() => reviewDistribution(r.id, 'APROBADO')}>{t('adminClientDetail.confirm')}</button>
+                        <button className="qlc-btn ghost" onClick={() => reviewDistribution(r.id, 'RECHAZADO')}>{t('adminClientDetail.reject')}</button>
+                      </span>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <div className="qlc-empty">{t('adminClientDetail.noDistributionReports')}</div>
           )}
         </div>
 

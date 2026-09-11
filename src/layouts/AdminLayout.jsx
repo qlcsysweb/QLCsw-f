@@ -15,6 +15,8 @@ export default function AdminLayout() {
     { to: '/admin/clients', label: t('adminNav.clients') },
     { to: '/admin/cms', label: t('adminNav.content') },
     { to: '/admin/guides', label: t('adminNav.guides') },
+    { to: '/admin/statements', label: t('adminNav.statements') },
+    { to: '/admin/contracts', label: t('adminNav.contracts') },
     { to: '/admin/payments', label: t('adminNav.payments') },
     { to: '/admin/appointments', label: t('adminNav.appointments') },
     { to: '/admin/support', label: t('adminNav.support') },
@@ -22,6 +24,8 @@ export default function AdminLayout() {
     { to: '/admin/admins', label: t('adminNav.admins') },
     { to: '/admin/settings/drive', label: t('adminNav.driveSettings') },
     { to: '/admin/settings/platform', label: t('adminNav.platformSettings') },
+    { to: '/admin/settings/security', label: t('adminNav.securitySettings') },
+    { to: '/admin/settings/process-steps', label: t('adminNav.processStepsSettings') },
   ];
 
   const handleLogout = async () => {

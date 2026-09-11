@@ -32,6 +32,7 @@ const APPOINTMENT_STATUS_KEYS = {
 export default function DashboardPage() {
   const { t, language } = useLanguage();
   const [dashboard, setDashboard] = useState(null);
+  const [processSteps, setProcessSteps] = useState([]);
   const [error, setError] = useState('');
 
   const apiStatusMap = API_CONNECTION_STATUS(t);
@@ -41,6 +42,12 @@ export default function DashboardPage() {
       .get('/client/dashboard')
       .then(({ data }) => setDashboard(data.dashboard))
       .catch((err) => setError(translateBackendMessage(err.message, language)));
+    // CORREGIR.xlsx CLIENTE 07 — "Tu proceso paso a paso" ahora es
+    // administrable desde el panel (CMS), el cliente solo lo consulta.
+    api
+      .get('/client/process-steps')
+      .then(({ data }) => setProcessSteps(data.steps))
+      .catch(() => {});
   }, []);
 
   if (error) return <div className="qlc-empty">{error}</div>;
@@ -84,26 +91,17 @@ export default function DashboardPage() {
       <div className="qlc-card" style={{ marginBottom: 20 }}>
         <h3 style={{ marginTop: 0, marginBottom: 12 }}>{t('clientDashboard.flowTitle')}</h3>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
-          {[
-            'flowRegister',
-            'flowMainAccount',
-            'flowNationality',
-            'flowWallet',
-            'flowModel',
-            'flowContract',
-            'flowApi',
-            'flowCapital',
-            'flowDistribution',
-            'flowStatements',
-            'flowPayments',
-          ].map((key, idx, arr) => (
-            <span key={key} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span className="qlc-badge muted" style={{ whiteSpace: 'nowrap' }}>
-                {idx + 1}. {t(`clientDashboard.${key}`)}
+          {processSteps.map((step, idx, arr) => {
+            const title = language === 'en' && step.titleEn ? step.titleEn : step.titleEs;
+            return (
+              <span key={step.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span className="qlc-badge muted" style={{ whiteSpace: 'nowrap' }}>
+                  {step.stepNumber}. {title}
+                </span>
+                {idx < arr.length - 1 && <span style={{ color: 'var(--qlc-muted2)' }}>→</span>}
               </span>
-              {idx < arr.length - 1 && <span style={{ color: 'var(--qlc-muted2)' }}>→</span>}
-            </span>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -116,7 +114,7 @@ export default function DashboardPage() {
         </div>
         <Link className="qlc-card qlc-stat-card" to="/client/api-subaccounts" style={{ display: 'flex', flexDirection: 'column' }}>
           <span className="qlc-stat-label">{t('clientDashboard.subaccounts')}</span>
-          <strong className="qlc-stat-value">{dashboard.subaccounts.length}</strong>
+          <strong className="qlc-stat-value">{dashboard.subaccounts.filter((s) => !s.isPrincipal).length}</strong>
         </Link>
         <div className="qlc-card qlc-stat-card">
           <span className="qlc-stat-label">{t('clientDashboard.unreadNotifications')}</span>
@@ -136,7 +134,7 @@ export default function DashboardPage() {
               return (
                 <li key={s.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span>
-                    <strong>{s.identifier || t('clientSubaccounts.unassignedIdentifier')}</strong>{' '}
+                    <strong>{s.isPrincipal ? t('clientSubaccounts.principalLabel') : (s.identifier || t('clientSubaccounts.unassignedIdentifier'))}</strong>{' '}
                     <span style={{ color: 'var(--qlc-muted2)' }}>
                       {s.model ? getLocalizedModel(s.model, language).name : t('clientSubaccounts.noModel')}
                     </span>

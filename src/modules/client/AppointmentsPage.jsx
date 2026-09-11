@@ -9,7 +9,8 @@ export default function AppointmentsPage() {
   const { t, language } = useLanguage();
   const [availability, setAvailability] = useState([]);
   const [appointments, setAppointments] = useState([]);
-  const [form, setForm] = useState({ requestedDate: '', requestedTime: '', notes: '' });
+  const [cases, setCases] = useState([]);
+  const [form, setForm] = useState({ caseNumber: '', requestedDate: '', requestedTime: '', notes: '' });
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
@@ -27,6 +28,9 @@ export default function AppointmentsPage() {
   const load = () => {
     api.get('/client/availability').then(({ data }) => setAvailability(data.slots));
     api.get('/client/appointments').then(({ data }) => setAppointments(data.appointments));
+    // CORREGIR.xlsx CLIENTE 02 — la cita exige un número de caso ya
+    // generado previamente (ver Soporte → Nuevo caso).
+    api.get('/client/support-cases').then(({ data }) => setCases(data.cases));
   };
   useEffect(load, []);
 
@@ -37,7 +41,7 @@ export default function AppointmentsPage() {
       await api.post('/client/appointments', form);
       setMessage(t('clientAppointments.requestSent'));
       setTimeout(() => setMessage(''), 3000);
-      setForm({ requestedDate: '', requestedTime: '', notes: '' });
+      setForm({ caseNumber: '', requestedDate: '', requestedTime: '', notes: '' });
       load();
     } catch (err) {
       setError(translateBackendMessage(err.message, language));
@@ -69,6 +73,24 @@ export default function AppointmentsPage() {
 
         <form className="qlc-card" onSubmit={submit}>
           <h3 style={{ marginTop: 0 }}>{t('clientAppointments.requestTitle')}</h3>
+          <label className="qlc-label">{t('clientAppointments.caseNumber')}</label>
+          {cases.length === 0 ? (
+            <p style={{ fontSize: 12, color: 'var(--qlc-muted2)' }}>{t('clientAppointments.noCasesYet')}</p>
+          ) : (
+            <select
+              className="qlc-select"
+              value={form.caseNumber}
+              onChange={(e) => setForm((f) => ({ ...f, caseNumber: e.target.value }))}
+              required
+            >
+              <option value="">{t('clientAppointments.selectCase')}</option>
+              {cases.map((c) => (
+                <option key={c.id} value={c.caseNumber}>
+                  #{c.caseNumber} — {c.subject}
+                </option>
+              ))}
+            </select>
+          )}
           <label className="qlc-label">{t('clientAppointments.date')}</label>
           <input
             type="date"
@@ -90,7 +112,9 @@ export default function AppointmentsPage() {
           {error && <div className="qlc-field-error">{error}</div>}
           <div className="qlc-form-actions">
             {message && <span style={{ color: 'var(--qlc-ok)', fontSize: 12 }}>{message}</span>}
-            <button className="qlc-btn primary">{t('clientAppointments.request')}</button>
+            <button className="qlc-btn primary" disabled={cases.length === 0}>
+              {t('clientAppointments.request')}
+            </button>
           </div>
         </form>
       </div>

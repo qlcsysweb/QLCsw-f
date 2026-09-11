@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import api, { API_BASE_URL } from '../../services/api';
 import ConfirmModal from '../../components/ConfirmModal';
+import Modal from '../../components/Modal';
 import { ACCOUNT_STATUS, API_CONNECTION_STATUS, statusOf } from '../../utils/statusLabels';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
@@ -22,8 +23,18 @@ export default function ClientDetailPage() {
   const [confirmDeactivate, setConfirmDeactivate] = useState(false);
   const [confirmDeleteDoc, setConfirmDeleteDoc] = useState(null);
   const [confirmDeleteClient, setConfirmDeleteClient] = useState(false);
+  const [deleteSecurityPassword, setDeleteSecurityPassword] = useState('');
+  const [deleteError, setDeleteError] = useState('');
+  const [deleting, setDeleting] = useState(false);
   const [creatingSubaccount, setCreatingSubaccount] = useState(false);
   const [newIdentifier, setNewIdentifier] = useState('');
+  const [walletCopied, setWalletCopied] = useState(false);
+  // CORREGIR.xlsx ADMIN 14 — mensajería manual admin→cliente.
+  const [messages, setMessages] = useState([]);
+  const [messageForm, setMessageForm] = useState({ title: '', message: '' });
+  const [sendingMessage, setSendingMessage] = useState(false);
+  // CORREGIR.xlsx ADMIN 07 — organización Año/Periodo/Mes de documentos.
+  const [orgDraft, setOrgDraft] = useState({});
 
   const accountStatusMap = ACCOUNT_STATUS(t);
   const apiStatusMap = API_CONNECTION_STATUS(t);
@@ -37,8 +48,34 @@ export default function ClientDetailPage() {
       .get(`/admin/clients/${id}`)
       .then(({ data }) => setClient(data.client))
       .catch((err) => setError(translateBackendMessage(err.message, language)));
+    api.get(`/admin/clients/${id}/messages`).then(({ data }) => setMessages(data.messages));
   };
   useEffect(load, [id]);
+
+  const sendMessage = async (e) => {
+    e.preventDefault();
+    setSendingMessage(true);
+    try {
+      await api.post(`/admin/clients/${id}/messages`, messageForm);
+      setMessageForm({ title: '', message: '' });
+      flash(t('adminMessages.sentOk'));
+      load();
+    } catch (err) {
+      setError(translateBackendMessage(err.message, language));
+    } finally {
+      setSendingMessage(false);
+    }
+  };
+
+  const saveDocOrganization = async (doc) => {
+    const draft = orgDraft[doc.id] || {};
+    await api.patch(`/admin/documents/${doc.id}/organize`, {
+      year: draft.year ?? doc.year ?? null,
+      month: draft.month ?? doc.month ?? null,
+      periodLabel: draft.periodLabel ?? doc.periodLabel ?? null,
+    });
+    load();
+  };
 
   const flash = (msg) => {
     setMessage(msg);
@@ -90,9 +127,26 @@ export default function ClientDetailPage() {
     await toggleActive(false);
   };
 
+  // CORREGIR.xlsx ADMIN 06: la eliminación exige la contraseña de
+  // seguridad exclusiva (solo el administrador general puede tenerla) —
+  // validada siempre en backend, nunca solo aquí.
   const deleteClientAccount = async () => {
-    await api.delete(`/admin/clients/${id}`);
-    navigate('/admin/clients');
+    setDeleting(true);
+    setDeleteError('');
+    try {
+      await api.delete(`/admin/clients/${id}`, { data: { securityPassword: deleteSecurityPassword } });
+      navigate('/admin/clients');
+    } catch (err) {
+      setDeleteError(translateBackendMessage(err.message, language));
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const copyWalletValue = (value) => {
+    navigator.clipboard?.writeText(value || '');
+    setWalletCopied(true);
+    setTimeout(() => setWalletCopied(false), 2000);
   };
 
   const createSubaccount = async () => {
@@ -115,7 +169,9 @@ export default function ClientDetailPage() {
 
   const clientAccStatus = statusOf(accountStatusMap, client.status);
   const subaccounts = client.apiSubaccounts || [];
-  const canAddSubaccount = subaccounts.length < 20;
+  // La cuenta PRINCIPAL (isPrincipal) nunca cuenta contra el máximo de 20.
+  const numberedSubaccounts = subaccounts.filter((s) => !s.isPrincipal);
+  const canAddSubaccount = numberedSubaccounts.length < 20;
 
   return (
     <div>
@@ -164,7 +220,7 @@ export default function ClientDetailPage() {
 
       <div className="qlc-card" style={{ marginBottom: 20 }}>
         <h3 style={{ marginTop: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          {t('adminClientDetail.subaccounts')} ({subaccounts.length}/20)
+          {t('adminClientDetail.subaccounts')} ({numberedSubaccounts.length}/20)
           {canAddSubaccount && (
             <span style={{ display: 'flex', gap: 8 }}>
               <input
@@ -199,7 +255,7 @@ export default function ClientDetailPage() {
                 const cs = s.conditionsSummary || { confirmed: 0, total: 0, allConfirmed: false };
                 return (
                   <tr key={s.id}>
-                    <td>{s.identifier || t('adminClientDetail.unassignedIdentifier')}</td>
+                    <td>{s.isPrincipal ? t('clientSubaccounts.principalLabel') : (s.identifier || t('adminClientDetail.unassignedIdentifier'))}</td>
                     <td>{s.clientModel?.model ? getLocalizedModel(s.clientModel.model, language).name : t('adminClientDetail.noModelAssigned')}</td>
                     <td>
                       <span className={`qlc-badge ${apiStatus.className}`}>{apiStatus.text}</span>
@@ -232,29 +288,65 @@ export default function ClientDetailPage() {
           </h3>
           {client.documents?.length ? (
             <ul className="qlc-plain-list">
-              {client.documents.map((d) => (
-                <li key={d.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span>
-                    <a href={`${API_BASE_URL}/admin/documents/${d.id}/download`} target="_blank" rel="noreferrer">
-                      {d.fileName}
-                    </a>{' '}
-                    <span style={{ color: 'var(--qlc-muted2)' }}>({d.category})</span>
-                    {d.clientEditUnlocked && (
-                      <span className="qlc-badge warn" style={{ marginLeft: 6 }}>
-                        {t('adminClientDetail.unlockedForClient')}
+              {client.documents.map((d) => {
+                const draft = orgDraft[d.id] || {};
+                return (
+                  <li key={d.id} style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '8px 0', borderBottom: '1px solid var(--qlc-line)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span>
+                        <a href={`${API_BASE_URL}/admin/documents/${d.id}/download`} target="_blank" rel="noreferrer">
+                          {d.fileName}
+                        </a>{' '}
+                        <span style={{ color: 'var(--qlc-muted2)' }}>({d.category})</span>
+                        {d.clientEditUnlocked && (
+                          <span className="qlc-badge warn" style={{ marginLeft: 6 }}>
+                            {t('adminClientDetail.unlockedForClient')}
+                          </span>
+                        )}
                       </span>
-                    )}
-                  </span>
-                  <span style={{ display: 'flex', gap: 6 }}>
-                    <button className="qlc-btn ghost" onClick={() => toggleDocUnlock(d)}>
-                      {d.clientEditUnlocked ? t('adminClientDetail.lockDocument') : t('adminClientDetail.unlockDocument')}
-                    </button>
-                    <button className="qlc-btn ghost" onClick={() => setConfirmDeleteDoc(d)}>
-                      {t('adminClientDetail.delete')}
-                    </button>
-                  </span>
-                </li>
-              ))}
+                      <span style={{ display: 'flex', gap: 6 }}>
+                        <button className="qlc-btn ghost" onClick={() => toggleDocUnlock(d)}>
+                          {d.clientEditUnlocked ? t('adminClientDetail.lockDocument') : t('adminClientDetail.unlockDocument')}
+                        </button>
+                        <button className="qlc-btn ghost" onClick={() => setConfirmDeleteDoc(d)}>
+                          {t('adminClientDetail.delete')}
+                        </button>
+                      </span>
+                    </div>
+                    {/* CORREGIR.xlsx ADMIN 07 — organización Año/Periodo/Mes tipo Drive */}
+                    <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                      <input
+                        className="qlc-input"
+                        style={{ width: 90 }}
+                        type="number"
+                        placeholder={t('adminClientDetail.docYear')}
+                        defaultValue={d.year || ''}
+                        onChange={(e) => setOrgDraft((v) => ({ ...v, [d.id]: { ...v[d.id], year: e.target.value ? Number(e.target.value) : null } }))}
+                      />
+                      <input
+                        className="qlc-input"
+                        style={{ width: 140 }}
+                        placeholder={t('adminClientDetail.docPeriod')}
+                        defaultValue={d.periodLabel || ''}
+                        onChange={(e) => setOrgDraft((v) => ({ ...v, [d.id]: { ...v[d.id], periodLabel: e.target.value || null } }))}
+                      />
+                      <input
+                        className="qlc-input"
+                        style={{ width: 70 }}
+                        type="number"
+                        min={1}
+                        max={12}
+                        placeholder={t('adminClientDetail.docMonth')}
+                        defaultValue={d.month || ''}
+                        onChange={(e) => setOrgDraft((v) => ({ ...v, [d.id]: { ...v[d.id], month: e.target.value ? Number(e.target.value) : null } }))}
+                      />
+                      <button className="qlc-btn ghost" onClick={() => saveDocOrganization(d)}>
+                        {t('common.save')}
+                      </button>
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
           ) : (
             <div className="qlc-empty">{t('adminClientDetail.noDocuments')}</div>
@@ -281,18 +373,66 @@ export default function ClientDetailPage() {
 
         <div className="qlc-card">
           <h3 style={{ marginTop: 0 }}>{t('adminClientDetail.wallet')}</h3>
-          {client.walletAddress ? (
-            <>
-              <p style={{ fontSize: 13 }}>
-                <strong>{t('clientWallet.network')}:</strong> {client.walletNetwork || '—'}
-              </p>
-              <p style={{ fontSize: 13, wordBreak: 'break-all' }}>
-                <strong>{t('clientWallet.address')}:</strong> {client.walletAddress}
-              </p>
-              {client.walletQrUrl && <img src={client.walletQrUrl} alt="QR wallet" style={{ width: 130, borderRadius: 10 }} />}
-            </>
-          ) : (
-            <div className="qlc-empty">{t('adminClientDetail.noWallet')}</div>
+          {/* CORREGIR.xlsx ADMIN 10 — WALLET/RED/COPIAR siempre visibles,
+              incluso sin dato registrado todavía. */}
+          <p style={{ fontSize: 13, display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+            <span>
+              <strong>{t('clientWallet.network')}:</strong> {client.walletNetwork || t('adminClientDetail.noWalletDataShort')}
+            </span>
+          </p>
+          <p style={{ fontSize: 13, wordBreak: 'break-all', display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'flex-start' }}>
+            <span>
+              <strong>{t('clientWallet.address')}:</strong> {client.walletAddress || t('adminClientDetail.noWalletDataShort')}
+            </span>
+            <button
+              className="qlc-btn ghost"
+              style={{ flexShrink: 0 }}
+              disabled={!client.walletAddress}
+              onClick={() => copyWalletValue(client.walletAddress)}
+            >
+              {walletCopied ? t('clientPayments.walletCopied') : t('clientPayments.copyWallet')}
+            </button>
+          </p>
+          {client.walletQrUrl && <img src={client.walletQrUrl} alt="QR wallet" style={{ width: 130, borderRadius: 10 }} />}
+          {!client.walletAddress && <div className="qlc-empty">{t('adminClientDetail.noWallet')}</div>}
+        </div>
+
+        {/* CORREGIR.xlsx ADMIN 14 — mensajería manual admin→cliente. */}
+        <div className="qlc-card">
+          <h3 style={{ marginTop: 0 }}>{t('adminMessages.title')}</h3>
+          <form onSubmit={sendMessage}>
+            <label className="qlc-label">{t('adminMessages.subject')}</label>
+            <input
+              className="qlc-input"
+              value={messageForm.title}
+              onChange={(e) => setMessageForm((f) => ({ ...f, title: e.target.value }))}
+              required
+            />
+            <label className="qlc-label">{t('adminMessages.content')}</label>
+            <textarea
+              className="qlc-textarea"
+              rows={3}
+              value={messageForm.message}
+              onChange={(e) => setMessageForm((f) => ({ ...f, message: e.target.value }))}
+              required
+            />
+            <button className="qlc-btn primary" style={{ marginTop: 10 }} disabled={sendingMessage}>
+              {sendingMessage ? t('common.sending') : t('adminMessages.send')}
+            </button>
+          </form>
+
+          {messages.length > 0 && (
+            <div style={{ marginTop: 14, borderTop: '1px solid var(--qlc-line)', paddingTop: 12 }}>
+              <div style={{ fontSize: 12, color: 'var(--qlc-muted)', marginBottom: 6 }}>{t('adminMessages.history')}</div>
+              <ul className="qlc-plain-list">
+                {messages.map((m) => (
+                  <li key={m.id} style={{ fontSize: 12, marginBottom: 8 }}>
+                    <strong>{m.title}</strong> — {new Date(m.createdAt).toLocaleString()}
+                    <div style={{ color: 'var(--qlc-muted2)' }}>{m.message}</div>
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
         </div>
       </div>
@@ -319,14 +459,45 @@ export default function ClientDetailPage() {
       )}
 
       {confirmDeleteClient && (
-        <ConfirmModal
+        <Modal
           title={t('adminClientDetail.deleteClientTitle')}
-          message={t('adminClientDetail.deleteClientMessage').replace('{name}', `${client.firstName} ${client.lastName}`)}
-          confirmLabel={t('adminClientDetail.deleteClient')}
-          twoStep
-          onClose={() => setConfirmDeleteClient(false)}
-          onConfirm={deleteClientAccount}
-        />
+          onClose={() => {
+            setConfirmDeleteClient(false);
+            setDeleteSecurityPassword('');
+            setDeleteError('');
+          }}
+          width={440}
+        >
+          <p style={{ color: 'var(--qlc-muted)', fontSize: 14, lineHeight: 1.6, marginTop: 0 }}>
+            {t('adminClientDetail.deleteClientMessage').replace('{name}', `${client.firstName} ${client.lastName}`)}
+          </p>
+          <p style={{ color: 'var(--qlc-gold)', fontSize: 13, fontWeight: 600 }}>{t('modals.cannotBeUndone')}</p>
+          <label className="qlc-label">{t('adminClientDetail.securityPasswordLabel')}</label>
+          <input
+            className="qlc-input"
+            type="password"
+            value={deleteSecurityPassword}
+            onChange={(e) => setDeleteSecurityPassword(e.target.value)}
+            autoFocus
+          />
+          {deleteError && <div className="qlc-field-error">{deleteError}</div>}
+          <div className="qlc-form-actions">
+            <button
+              className="qlc-btn ghost"
+              onClick={() => {
+                setConfirmDeleteClient(false);
+                setDeleteSecurityPassword('');
+                setDeleteError('');
+              }}
+              disabled={deleting}
+            >
+              {t('modals.cancel')}
+            </button>
+            <button className="qlc-btn danger" onClick={deleteClientAccount} disabled={deleting || !deleteSecurityPassword}>
+              {deleting ? t('modals.processing') : t('adminClientDetail.deleteClient')}
+            </button>
+          </div>
+        </Modal>
       )}
     </div>
   );

@@ -133,6 +133,7 @@ export default function AppointmentsPage() {
             <thead>
               <tr>
                 <th>{t('adminAppointments.requester')}</th>
+                <th>{t('clientAppointments.caseNumber')}</th>
                 <th>{t('adminAppointments.date')}</th>
                 <th>{t('adminAppointments.time')}</th>
                 <th>{t('adminAppointments.status')}</th>
@@ -149,6 +150,7 @@ export default function AppointmentsPage() {
                         ? `${a.client.firstName} ${a.client.lastName}`
                         : `${a.prospect?.firstName || ''} ${a.prospect?.lastName || ''} ${t('adminAppointments.prospectTag')}`}
                     </td>
+                    <td>{a.supportCase ? `#${a.supportCase.caseNumber}` : '—'}</td>
                     <td>{formatCdmxDate(a.requestedDate)}</td>
                     <td>{a.requestedTime}</td>
                     <td>

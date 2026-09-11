@@ -19,8 +19,12 @@ import ProspectsPage from './modules/admin/ProspectsPage';
 import AdminsPage from './modules/admin/AdminsPage';
 import CmsPage from './modules/admin/cms/CmsPage';
 import GoogleDriveSettingsPage from './modules/admin/settings/GoogleDriveSettingsPage';
+import SecuritySettingsPage from './modules/admin/settings/SecuritySettingsPage';
 import PlatformSettingsPage from './modules/admin/PlatformSettingsPage';
 import AdminGuidesPage from './modules/admin/GuidesPage';
+import StatementsArchivePage from './modules/admin/StatementsArchivePage';
+import ContractsInboxPage from './modules/admin/ContractsInboxPage';
+import ProcessStepsPage from './modules/admin/ProcessStepsPage';
 
 import ClientLayout from './layouts/ClientLayout';
 import ClientDashboardPage from './modules/client/DashboardPage';
@@ -68,11 +72,15 @@ function AppRoutes() {
               <Route path="guides" element={<AdminGuidesPage />} />
               <Route path="settings/drive" element={<GoogleDriveSettingsPage />} />
               <Route path="settings/platform" element={<PlatformSettingsPage />} />
+              <Route path="settings/security" element={<SecuritySettingsPage />} />
+              <Route path="settings/process-steps" element={<ProcessStepsPage />} />
               <Route path="payments" element={<AdminPaymentsPage />} />
               <Route path="appointments" element={<AdminAppointmentsPage />} />
               <Route path="support" element={<AdminSupportPage />} />
               <Route path="prospects" element={<ProspectsPage />} />
               <Route path="admins" element={<AdminsPage />} />
+              <Route path="statements" element={<StatementsArchivePage />} />
+              <Route path="contracts" element={<ContractsInboxPage />} />
             </Route>
           </Route>
 

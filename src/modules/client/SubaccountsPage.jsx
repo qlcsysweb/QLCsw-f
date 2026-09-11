@@ -34,9 +34,16 @@ export default function SubaccountsPage() {
             const status = statusOf(apiStatusMap, s.status, 'PENDIENTE');
             const model = s.clientModel?.model ? getLocalizedModel(s.clientModel.model, language) : null;
             return (
-              <Link key={s.id} to={`/client/api-subaccounts/${s.id}`} className="qlc-card" style={{ display: 'block' }}>
+              <Link
+                key={s.id}
+                to={`/client/api-subaccounts/${s.id}`}
+                className="qlc-card"
+                style={{ display: 'block', ...(s.isPrincipal ? { borderColor: 'var(--qlc-gold)' } : {}) }}
+              >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <h3 style={{ margin: 0 }}>{t('clientSubaccounts.subaccountLabel')} #{s.slotIndex}</h3>
+                  <h3 style={{ margin: 0 }}>
+                    {s.isPrincipal ? t('clientSubaccounts.principalLabel') : `${t('clientSubaccounts.subaccountLabel')} #${s.slotIndex}`}
+                  </h3>
                   <span className={`qlc-badge ${status.className}`}>{status.text}</span>
                 </div>
                 <p style={{ color: 'var(--qlc-muted)', fontSize: 12, marginTop: 4, marginBottom: 4 }}>

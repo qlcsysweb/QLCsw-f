@@ -64,6 +64,10 @@ export default function SubaccountDetailPage() {
   const [statements, setStatements] = useState([]);
   const [paymentConfig, setPaymentConfig] = useState(null);
   const [walletCopied, setWalletCopied] = useState(false);
+  // CORREGIR.xlsx CLIENTE 13 — reporte real de distribución de capital.
+  const [distributionReports, setDistributionReports] = useState([]);
+  const [distributionForm, setDistributionForm] = useState({ amount: '', note: '' });
+  const [reportingDistribution, setReportingDistribution] = useState(false);
 
   const apiStatusMap = API_CONNECTION_STATUS(t);
   const paymentStatusMap = PAYMENT_REPORT_STATUS(t);
@@ -82,6 +86,9 @@ export default function SubaccountDetailPage() {
     api.get(`/client/api-subaccounts/${id}/payment-reports`).then(({ data }) => setPayments(data.reports));
     api.get(`/client/api-subaccounts/${id}/statements`).then(({ data }) => setStatements(data.statements));
     api.get('/client/payment-config').then(({ data }) => setPaymentConfig(data.config));
+    api
+      .get(`/client/api-subaccounts/${id}/capital-distribution-reports`)
+      .then(({ data }) => setDistributionReports(data.reports));
   };
   useEffect(load, [id]);
 
@@ -166,13 +173,27 @@ export default function SubaccountDetailPage() {
     }
   };
 
-  const reportCapitalReady = async () => {
+  // CORREGIR.xlsx CLIENTE 13 — reporte real de distribución de capital
+  // ("YA DISTRIBUÍ MI CAPITAL"), con el mismo patrón que el reporte de
+  // pago: monto + nota, revisado por QLC (nunca auto-aprobado). El sistema
+  // JAMÁS se conecta al exchange para validar el saldo.
+  const submitDistributionReport = async (e) => {
+    e.preventDefault();
+    if (!distributionForm.amount) return;
+    setReportingDistribution(true);
+    setError('');
     try {
-      await api.post(`/client/api-subaccounts/${id}/report-capital-ready`);
+      await api.post(`/client/api-subaccounts/${id}/capital-distribution-reports`, {
+        amount: distributionForm.amount,
+        note: distributionForm.note || undefined,
+      });
       flash(t('clientApiConnection.capitalReportedOk'));
+      setDistributionForm({ amount: '', note: '' });
       load();
     } catch (err) {
       setError(translateBackendMessage(err.message, language));
+    } finally {
+      setReportingDistribution(false);
     }
   };
 
@@ -353,13 +374,56 @@ export default function SubaccountDetailPage() {
               {subaccount.capitalDistributionItems.reduce((sum, i) => sum + Number(i.amount), 0)} USDT
             </p>
           )}
-          {subaccount.requiredCapital != null && !subaccount.clientReportedCapitalReady && (
-            <button className="qlc-btn primary" style={{ width: '100%', marginBottom: 12 }} onClick={reportCapitalReady}>
-              {t('clientApiConnection.reportCapitalReady')}
-            </button>
-          )}
           {subaccount.clientReportedCapitalReady && (
             <p style={{ fontSize: 12, color: 'var(--qlc-ok)' }}>✓ {t('clientApiConnection.capitalReported')}</p>
+          )}
+
+          {subaccount.requiredCapital != null && (
+            <form
+              onSubmit={submitDistributionReport}
+              style={{ marginTop: 12, marginBottom: 16, borderTop: '1px solid var(--qlc-line)', paddingTop: 12 }}
+            >
+              <h4 style={{ margin: '0 0 8px' }}>{t('clientApiConnection.reportDistributionTitle')}</h4>
+              <label className="qlc-label">{t('clientPayments.amount')}</label>
+              <input
+                className="qlc-input"
+                type="number"
+                step="0.01"
+                value={distributionForm.amount}
+                onChange={(e) => setDistributionForm((f) => ({ ...f, amount: e.target.value }))}
+                required
+              />
+              <label className="qlc-label">{t('clientApiConnection.distributionNote')}</label>
+              <input
+                className="qlc-input"
+                value={distributionForm.note}
+                onChange={(e) => setDistributionForm((f) => ({ ...f, note: e.target.value }))}
+              />
+              <button className="qlc-btn primary" style={{ marginTop: 10, width: '100%' }} disabled={reportingDistribution}>
+                {reportingDistribution ? t('common.sending') : t('clientApiConnection.reportCapitalReady')}
+              </button>
+
+              {distributionReports.length > 0 && (
+                <div style={{ marginTop: 12 }}>
+                  <div style={{ fontSize: 12, color: 'var(--qlc-muted)', marginBottom: 6 }}>
+                    {t('clientApiConnection.distributionHistory')}
+                  </div>
+                  <ul className="qlc-plain-list">
+                    {distributionReports.map((r) => {
+                      const st = statusOf(paymentStatusMap, r.status);
+                      return (
+                        <li key={r.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
+                          <span>
+                            {r.amount} USDT — {new Date(r.reportedAt).toLocaleDateString()}
+                          </span>
+                          <span className={`qlc-badge ${st.className}`}>{st.text}</span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              )}
+            </form>
           )}
           <form onSubmit={saveApi}>
             <label className="qlc-label">{t('clientApiConnection.exchange')}</label>

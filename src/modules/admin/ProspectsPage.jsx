@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import api from '../../services/api';
 import { PROSPECT_STATUS, statusOf } from '../../utils/statusLabels';
 import { useLanguage } from '../../i18n/LanguageContext';
+import ConfirmModal from '../../components/ConfirmModal';
 
 function CopyEmailButton({ email, t }) {
   const [copied, setCopied] = useState(false);
@@ -23,7 +24,7 @@ function CopyEmailButton({ email, t }) {
   );
 }
 
-function ProspectRow({ p, onUpdateStatus, t, prospectStatusMap }) {
+function ProspectRow({ p, onUpdateStatus, onDelete, t, prospectStatusMap }) {
   const status = statusOf(prospectStatusMap, p.status, 'NUEVO');
   return (
     <tr>
@@ -48,6 +49,11 @@ function ProspectRow({ p, onUpdateStatus, t, prospectStatusMap }) {
             <option value="CONVERTIDO">{t('adminProspects.statusConverted')}</option>
             <option value="DESCARTADO">{t('adminProspects.statusDiscarded')}</option>
           </select>
+          {p.status === 'DESCARTADO' && (
+            <button type="button" className="qlc-btn ghost" onClick={() => onDelete(p)}>
+              {t('adminProspects.delete')}
+            </button>
+          )}
         </div>
       </td>
     </tr>
@@ -58,6 +64,7 @@ export default function ProspectsPage() {
   const { t } = useLanguage();
   const [prospects, setProspects] = useState([]);
   const [counts, setCounts] = useState({ total: 0, registered: 0, unregistered: 0 });
+  const [confirmDelete, setConfirmDelete] = useState(null);
 
   const prospectStatusMap = PROSPECT_STATUS(t);
 
@@ -73,6 +80,13 @@ export default function ProspectsPage() {
 
   const updateStatus = async (id, status) => {
     await api.patch(`/admin/prospects/${id}`, { status });
+    load();
+  };
+
+  // CORREGIR.xlsx ADMIN 05 — borrado manual (además de la limpieza
+  // automática a los 5 días de DESCARTADO).
+  const deleteProspect = async (prospect) => {
+    await api.delete(`/admin/prospects/${prospect.id}`);
     load();
   };
 
@@ -119,7 +133,7 @@ export default function ProspectsPage() {
               </thead>
               <tbody>
                 {unregistered.map((p) => (
-                  <ProspectRow key={p.id} p={p} onUpdateStatus={updateStatus} t={t} prospectStatusMap={prospectStatusMap} />
+                  <ProspectRow key={p.id} p={p} onUpdateStatus={updateStatus} onDelete={setConfirmDelete} t={t} prospectStatusMap={prospectStatusMap} />
                 ))}
               </tbody>
             </table>
@@ -146,13 +160,26 @@ export default function ProspectsPage() {
               </thead>
               <tbody>
                 {registered.map((p) => (
-                  <ProspectRow key={p.id} p={p} onUpdateStatus={updateStatus} t={t} prospectStatusMap={prospectStatusMap} />
+                  <ProspectRow key={p.id} p={p} onUpdateStatus={updateStatus} onDelete={setConfirmDelete} t={t} prospectStatusMap={prospectStatusMap} />
                 ))}
               </tbody>
             </table>
           </div>
         )}
       </section>
+
+      {confirmDelete && (
+        <ConfirmModal
+          title={t('adminProspects.deleteTitle')}
+          message={t('adminProspects.deleteMessage').replace(
+            '{name}',
+            `${confirmDelete.firstName} ${confirmDelete.lastName || ''}`
+          )}
+          confirmLabel={t('adminProspects.delete')}
+          onClose={() => setConfirmDelete(null)}
+          onConfirm={() => deleteProspect(confirmDelete)}
+        />
+      )}
     </div>
   );
 }
