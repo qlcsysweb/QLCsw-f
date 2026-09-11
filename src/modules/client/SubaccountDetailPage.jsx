@@ -92,6 +92,16 @@ export default function SubaccountDetailPage() {
   };
   useEffect(load, [id]);
 
+  // Actualización sin refresh manual: si administración marca la
+  // transferencia como recibida, el cliente lo ve sin recargar la página.
+  // Reutiliza el mismo patrón de polling ya usado en el chat de soporte
+  // (ChatPanel, SupportPage.jsx) — sin agregar WebSockets ni infraestructura nueva.
+  useEffect(() => {
+    const interval = setInterval(load, 8000);
+    return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
+
   const flash = (msg) => {
     setMessage(msg);
     setTimeout(() => setMessage(''), 4000);
@@ -103,6 +113,11 @@ export default function SubaccountDetailPage() {
   const models = modelsRaw.map((m) => getLocalizedModel(m, language));
   const hasModel = Boolean(subaccount.clientModel);
   const modelConfirmed = Boolean(subaccount.clientModel?.confirmedAt);
+  // Transferencia de garantía — la más reciente sin ligar a un estado de
+  // cuenta (esas son comisiones, un flujo distinto). `payments` ya viene
+  // ordenado por fecha descendente desde el backend.
+  const latestGuaranteeReport = payments.find((p) => !p.statementId) || null;
+  const guaranteeReceived = latestGuaranteeReport?.status === 'APROBADO';
 
   const selectModel = async (modelId) => {
     setSelecting(true);
@@ -476,22 +491,49 @@ export default function SubaccountDetailPage() {
 
         <div className="qlc-card">
           <h3 style={{ marginTop: 0 }}>{t('clientPayments.reportPaymentTitle')}</h3>
-          {subaccount.requiredCapital != null && (
-            <p style={{ fontSize: 12, color: 'var(--qlc-muted2)', marginTop: -6, marginBottom: 12 }}>
-              {t('clientPayments.guaranteeHint').replace('{minimum}', (Number(subaccount.requiredCapital) * 0.1).toFixed(2))}
+
+          {/* Estado de transferencia — claramente diferenciado: sin reportar /
+              reportada (en revisión) / recibida. QLC solo administra este
+              estado de confirmación, nunca procesa la transferencia. */}
+          <div
+            className={`qlc-badge ${guaranteeReceived ? 'ok' : latestGuaranteeReport ? 'warn' : 'muted'}`}
+            style={{ display: 'block', width: 'fit-content', marginBottom: 12, fontSize: 13, padding: '8px 12px' }}
+          >
+            {guaranteeReceived
+              ? `✓ ${t('clientPayments.transferReceived')}`
+              : latestGuaranteeReport
+                ? `◌ ${t('clientPayments.transferReported')}`
+                : t('clientPayments.transferPendingReport')}
+          </div>
+          {latestGuaranteeReport && !guaranteeReceived && (
+            <p style={{ fontSize: 12, color: 'var(--qlc-muted)', marginTop: -6, marginBottom: 12 }}>
+              {t('clientPayments.transferReportedHint')}
             </p>
           )}
-          <form onSubmit={submitPayment}>
-            <label className="qlc-label">{t('clientPayments.amount')}</label>
-            <input className="qlc-input" type="number" step="0.01" value={paymentForm.amount} onChange={(e) => setPaymentForm((f) => ({ ...f, amount: e.target.value }))} required />
-            <label className="qlc-label">{t('clientPayments.reference')}</label>
-            <input className="qlc-input" value={paymentForm.reference} onChange={(e) => setPaymentForm((f) => ({ ...f, reference: e.target.value }))} placeholder={t('clientPayments.referencePlaceholder')} />
-            <label className="qlc-label">{t('clientPayments.proof')}</label>
-            <input type="file" name="proofFile" className="qlc-input" accept=".pdf,image/*" />
-            <button className="qlc-btn primary" style={{ marginTop: 12, width: '100%' }} disabled={reportingPayment}>
-              {reportingPayment ? t('clientPayments.sending') : t('clientPayments.reportPayment')}
-            </button>
-          </form>
+
+          {guaranteeReceived ? (
+            <p style={{ fontSize: 13, color: 'var(--qlc-muted)' }}>{t('clientPayments.transferReceivedHint')}</p>
+          ) : (
+            <>
+              {subaccount.requiredCapital != null && (
+                <p style={{ fontSize: 12, color: 'var(--qlc-muted2)', marginTop: -6, marginBottom: 12 }}>
+                  {t('clientPayments.guaranteeHint').replace('{minimum}', (Number(subaccount.requiredCapital) * 0.1).toFixed(2))}
+                </p>
+              )}
+              <form onSubmit={submitPayment}>
+                <label className="qlc-label">{t('clientPayments.amount')}</label>
+                <input className="qlc-input" type="number" step="0.01" value={paymentForm.amount} onChange={(e) => setPaymentForm((f) => ({ ...f, amount: e.target.value }))} required />
+                <label className="qlc-label">{t('clientPayments.reference')}</label>
+                <input className="qlc-input" value={paymentForm.reference} onChange={(e) => setPaymentForm((f) => ({ ...f, reference: e.target.value }))} placeholder={t('clientPayments.referencePlaceholder')} />
+                <label className="qlc-label">{t('clientPayments.proof')}</label>
+                <input type="file" name="proofFile" className="qlc-input" accept=".pdf,image/*" />
+                <button className="qlc-btn primary" style={{ marginTop: 12, width: '100%' }} disabled={reportingPayment}>
+                  {reportingPayment ? t('clientPayments.sending') : t('clientPayments.reportPayment')}
+                </button>
+              </form>
+            </>
+          )}
+
           {payments.length > 0 && (
             <ul className="qlc-plain-list" style={{ marginTop: 14 }}>
               {payments.map((p) => (

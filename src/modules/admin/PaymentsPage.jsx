@@ -34,6 +34,17 @@ export default function PaymentsPage() {
     load();
   }, []);
 
+  // Actualización sin refresh manual: si un cliente reporta una
+  // transferencia en cualquier subcuenta, este listado global la refleja
+  // sin recargar. Poll acotado solo a los reportes (no toca el formulario
+  // de configuración en edición). Mismo patrón ya usado en el chat de soporte.
+  useEffect(() => {
+    const interval = setInterval(() => {
+      api.get('/admin/payment-reports').then(({ data }) => setReports(data.reports));
+    }, 8000);
+    return () => clearInterval(interval);
+  }, []);
+
   const saveConfig = async () => {
     await api.put('/admin/payment-config', form);
     setConfirmSave(false);

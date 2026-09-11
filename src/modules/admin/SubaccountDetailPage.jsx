@@ -123,6 +123,18 @@ export default function AdminSubaccountDetailPage() {
   };
   useEffect(load, [id]);
 
+  // Actualización sin refresh manual: si el cliente reporta una
+  // transferencia, administración lo ve sin recargar la página. Poll
+  // acotado solo a los reportes de pago (no re-ejecuta el load() completo)
+  // para no pisar edición en curso en los formularios de esta página.
+  // Mismo patrón de polling ya usado en el chat de soporte (ChatPanel).
+  useEffect(() => {
+    const interval = setInterval(() => {
+      api.get('/admin/payment-reports', { params: { apiSubaccountId: id } }).then(({ data }) => setPayments(data.reports));
+    }, 8000);
+    return () => clearInterval(interval);
+  }, [id]);
+
   const flash = (msg) => {
     setMessage(msg);
     setTimeout(() => setMessage(''), 3000);
@@ -257,6 +269,10 @@ export default function AdminSubaccountDetailPage() {
 
   const status = statusOf(apiStatusMap, subaccount.status, 'PENDIENTE');
   const conditionsSummary = subaccount.conditionsSummary || { total: 0, confirmed: 0, allConfirmed: false };
+  // Transferencia de garantía — la más reciente sin ligar a un estado de
+  // cuenta (esas son comisiones, un flujo distinto). `payments` ya viene
+  // ordenado por fecha descendente desde el backend.
+  const latestGuaranteeReport = payments.find((p) => !p.statementId) || null;
 
   return (
     <div>
@@ -400,6 +416,32 @@ export default function AdminSubaccountDetailPage() {
           <h3 style={{ marginTop: 0 }}>
             {t('adminClientDetail.reportedPayments')} ({payments.length})
           </h3>
+
+          {/* Estado de transferencia de garantía, claramente diferenciado
+              de "recibido" — administración solo confirma que ya fue
+              recibida, nunca procesa la transferencia. */}
+          {latestGuaranteeReport && latestGuaranteeReport.status !== 'APROBADO' && (
+            <div
+              className="qlc-card"
+              style={{ borderColor: 'var(--qlc-warn-border)', marginBottom: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}
+            >
+              <div>
+                <strong>{t('adminClientDetail.transferReported')}</strong>
+                <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--qlc-muted)' }}>
+                  {t('adminClientDetail.transferReportedDesc')}
+                </p>
+              </div>
+              <button className="qlc-btn primary" onClick={() => reviewPayment(latestGuaranteeReport.id, 'APROBADO')}>
+                {t('adminClientDetail.transferMarkReceived')}
+              </button>
+            </div>
+          )}
+          {latestGuaranteeReport?.status === 'APROBADO' && (
+            <div className="qlc-badge ok" style={{ display: 'block', width: 'fit-content', marginBottom: 14, fontSize: 13, padding: '8px 12px' }}>
+              ✓ {t('adminClientDetail.transferReceived')}
+            </div>
+          )}
+
           {payments.length ? (
             <ul className="qlc-plain-list">
               {payments.map((p) => {
