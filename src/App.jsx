@@ -34,6 +34,7 @@ import ClientAppointmentsPage from './modules/client/AppointmentsPage';
 import ClientNotificationsPage from './modules/client/NotificationsPage';
 import ClientCapitalIncreasePage from './modules/client/CapitalIncreasePage';
 import ClientGuidesPage from './modules/client/GuidesPage';
+import ClientCapitalRescuePage from './modules/client/CapitalRescuePage';
 
 function AppRoutes() {
   const { hasChosenLanguage } = useLanguage();
@@ -85,6 +86,7 @@ function AppRoutes() {
               <Route path="guides" element={<ClientGuidesPage />} />
               <Route path="wallet" element={<ClientWalletPage />} />
               <Route path="capital-increase" element={<ClientCapitalIncreasePage />} />
+              <Route path="capital-rescue" element={<ClientCapitalRescuePage />} />
               <Route path="support" element={<ClientSupportPage />} />
               <Route path="appointments" element={<ClientAppointmentsPage />} />
               <Route path="notifications" element={<ClientNotificationsPage />} />

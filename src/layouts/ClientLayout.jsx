@@ -21,6 +21,7 @@ export default function ClientLayout() {
     { to: '/client/guides', label: t('clientNav.guides') },
     { to: '/client/wallet', label: t('clientNav.wallet') },
     { to: '/client/capital-increase', label: t('clientNav.capitalIncrease') },
+    { to: '/client/capital-rescue', label: t('clientNav.capitalRescue') },
     { to: '/client/support', label: t('clientNav.support') },
     { to: '/client/appointments', label: t('clientNav.appointments') },
   ];

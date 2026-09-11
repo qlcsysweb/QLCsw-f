@@ -19,6 +19,35 @@
   text-align: center;
 }
 
+.qlc-scam-notice-kicker {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #ff9292;
+  margin-bottom: 10px;
+}
+
+.qlc-scam-notice-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #f4f7fb;
+  margin-bottom: 14px;
+}
+
+.qlc-scam-notice-body {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--qlc-muted, #9ca9b7);
+  margin: 0 0 10px;
+  text-align: left;
+}
+
+.qlc-scam-divider {
+  height: 1px;
+  background: rgba(200, 155, 60, 0.25);
+  margin: 20px 0 18px;
+}
+
 .qlc-scam-title {
   font-size: 20px;
   font-weight: 800;

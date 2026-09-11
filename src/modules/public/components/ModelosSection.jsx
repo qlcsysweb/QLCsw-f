@@ -1,4 +1,5 @@
 import SectionMedia from './SectionMedia';
+import ModelComparisonTable from '../../../components/ModelComparisonTable';
 import { useLanguage } from '../../../i18n/LanguageContext';
 
 export default function ModelosSection({ models, text, media = () => [] }) {
@@ -37,6 +38,9 @@ export default function ModelosSection({ models, text, media = () => [] }) {
             </div>
           ))}
         </div>
+
+        <h3 style={{ marginTop: 50, marginBottom: 16 }}>{t('modelComparison.sectionTitle')}</h3>
+        <ModelComparisonTable />
 
         <p className="note">
           {text(

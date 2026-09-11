@@ -7,7 +7,12 @@ import { translateBackendMessage } from '../../../i18n/backendMessages';
 export default function GoogleDriveSettingsPage() {
   const { t, language } = useLanguage();
   const [config, setConfig] = useState(null);
-  const [form, setForm] = useState({ rootFolderId: '', rootFolderName: '' });
+  const [form, setForm] = useState({
+    rootFolderId: '',
+    rootFolderName: '',
+    serviceAccountEmail: '',
+    serviceAccountPrivateKey: '',
+  });
   const [testResult, setTestResult] = useState(null);
   const [testing, setTesting] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -25,10 +30,11 @@ export default function GoogleDriveSettingsPage() {
   const load = () =>
     api.get('/admin/drive-config').then(({ data }) => {
       setConfig(data.config);
-      setForm({
+      setForm((f) => ({
+        ...f,
         rootFolderId: data.config.rootFolderId || '',
         rootFolderName: data.config.rootFolderName || 'QLC',
-      });
+      }));
     });
   useEffect(() => {
     load();
@@ -46,12 +52,16 @@ export default function GoogleDriveSettingsPage() {
     setSaving(true);
     setError('');
     try {
-      const { data } = await api.put('/admin/drive-config', {
+      const payload = {
         rootFolderId: form.rootFolderId,
         rootFolderName: form.rootFolderName,
         isEnabled: true,
-      });
+      };
+      if (form.serviceAccountEmail) payload.serviceAccountEmail = form.serviceAccountEmail;
+      if (form.serviceAccountPrivateKey) payload.serviceAccountPrivateKey = form.serviceAccountPrivateKey;
+      const { data } = await api.put('/admin/drive-config', payload);
       setConfig(data.config);
+      setForm((f) => ({ ...f, serviceAccountEmail: '', serviceAccountPrivateKey: '' }));
       flash(t('adminDrive.saved'));
     } catch (err) {
       setError(translateBackendMessage(err.message, language));
@@ -119,10 +129,34 @@ export default function GoogleDriveSettingsPage() {
         {config.hasServiceAccountCreds && (
           <p style={{ fontSize: 12, color: 'var(--qlc-muted2)', marginTop: -10, marginBottom: 20 }}>
             {t('adminDrive.technicalAccountConfigured')}: {config.serviceAccountEmailMasked}
+            {' · '}
+            {config.hasOwnCredentials ? t('adminDrive.credsSourcePanel') : t('adminDrive.credsSourceEnv')}
           </p>
         )}
 
         <form onSubmit={save}>
+          <h3 style={{ fontSize: 14, marginTop: 0 }}>{t('adminDrive.credentialsTitle')}</h3>
+          <p style={{ fontSize: 12, color: 'var(--qlc-muted2)', marginTop: -6 }}>{t('adminDrive.credentialsHint')}</p>
+          <label className="qlc-label">{t('adminDrive.serviceAccountEmailLabel')}</label>
+          <input
+            className="qlc-input"
+            type="email"
+            value={form.serviceAccountEmail}
+            onChange={(e) => setForm((f) => ({ ...f, serviceAccountEmail: e.target.value }))}
+            placeholder={config.serviceAccountEmailMasked || 'nombre@proyecto.iam.gserviceaccount.com'}
+            disabled={config.isLockedByAnother}
+          />
+          <label className="qlc-label">{t('adminDrive.privateKeyLabel')}</label>
+          <textarea
+            className="qlc-textarea"
+            rows={4}
+            value={form.serviceAccountPrivateKey}
+            onChange={(e) => setForm((f) => ({ ...f, serviceAccountPrivateKey: e.target.value }))}
+            placeholder={config.hasOwnCredentials ? '•••••••••••••••••••••••••• (configurada)' : '-----BEGIN PRIVATE KEY-----\n...'}
+            disabled={config.isLockedByAnother}
+          />
+          <p style={{ fontSize: 11, color: 'var(--qlc-muted2)', marginTop: -4, marginBottom: 14 }}>{t('adminDrive.privateKeyHint')}</p>
+
           <label className="qlc-label">{t('adminDrive.folderNameLabel')}</label>
           <input
             className="qlc-input"

@@ -7,6 +7,7 @@ import { formatCdmxDate } from '../../utils/cdmxTime';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 import { getLocalizedModel } from '../../i18n/bilingualContent';
+import ModelComparisonTable from '../../components/ModelComparisonTable';
 
 function ModelDetailsModal({ model, onClose, onSelect, selecting, t }) {
   return (
@@ -38,7 +39,7 @@ function ModelDetailsModal({ model, onClose, onSelect, selecting, t }) {
           {t('common.cancel')}
         </button>
         <button className="qlc-btn primary" disabled={selecting} onClick={onSelect}>
-          {selecting ? t('common.saving') : t('clientModels.selectConfirm')}
+          {selecting ? t('common.saving') : t('clientModels.selectConfirm').replace('{model}', model.name)}
         </button>
       </div>
     </Modal>
@@ -230,7 +231,7 @@ export default function SubaccountDetailPage() {
         <div className="qlc-card" style={{ marginBottom: 16 }}>
           <h3 style={{ marginTop: 0 }}>{t('clientProcess.title')}</h3>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10 }}>
-            {['WALLET', 'CONTRACT', 'FUNDS', 'PAYMENT', 'API', 'ACTIVATION'].map((type) => {
+            {['WALLET', 'CONTRACT', 'PAYMENT', 'FUNDS', 'API', 'ACTIVATION'].map((type) => {
               const condition = subaccount.process.conditions.find((c) => c.type === type);
               const cStatus = condition?.status || 'PENDING';
               const info =
@@ -257,30 +258,51 @@ export default function SubaccountDetailPage() {
 
       <div className="qlc-detail-grid">
         <div className="qlc-card">
-          <h3 style={{ marginTop: 0 }}>{t('clientModels.title')}</h3>
+          <h3 style={{ marginTop: 0, marginBottom: 4 }}>{t('clientModels.title')}</h3>
+          {!hasModel && (
+            <p style={{ color: 'var(--qlc-muted)', fontSize: 13, marginBottom: 16 }}>{t('clientModels.subtitle')}</p>
+          )}
           {hasModel ? (
             <>
+              {!modelConfirmed && (
+                <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--qlc-blue2)', marginBottom: 6 }}>
+                  {t('clientModels.selectedBanner').replace('{model}', getLocalizedModel(subaccount.clientModel.model, language).name)}
+                </p>
+              )}
+              {!modelConfirmed && (
+                <p style={{ fontSize: 12, color: 'var(--qlc-muted)', marginBottom: 12 }}>{t('clientModels.selectedIntro')}</p>
+              )}
               <p style={{ fontSize: 15, fontWeight: 600 }}>{getLocalizedModel(subaccount.clientModel.model, language).name}</p>
               <span className={`qlc-badge ${modelConfirmed ? 'ok' : 'warn'}`}>
                 {modelConfirmed ? t('clientModels.currentModel') : t('clientModels.pendingConfirm')}
               </span>
               {!modelConfirmed && (
-                <button className="qlc-btn primary" style={{ width: '100%', marginTop: 12 }} disabled={selecting} onClick={confirmModel}>
-                  {selecting ? t('common.saving') : t('clientModels.confirmSelection')}
-                </button>
+                <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                  <button className="qlc-btn ghost" style={{ flex: 1 }} onClick={() => setDetailsModel(getLocalizedModel(subaccount.clientModel.model, language))}>
+                    {t('clientModels.backToCompare')}
+                  </button>
+                  <button className="qlc-btn primary" style={{ flex: 1 }} disabled={selecting} onClick={confirmModel}>
+                    {selecting ? t('common.saving') : t('clientModels.confirmSelection')}
+                  </button>
+                </div>
               )}
             </>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {models.map((m) => (
-                <div key={m.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--qlc-line)', paddingBottom: 8 }}>
-                  <span>{m.name}</span>
-                  <button className="qlc-btn ghost" onClick={() => setDetailsModel(m)}>
-                    {t('clientModels.details')}
-                  </button>
-                </div>
-              ))}
-            </div>
+            <>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 18 }}>
+                {models.map((m) => (
+                  <div key={m.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--qlc-line)', paddingBottom: 8 }}>
+                    <span>{m.name}</span>
+                    <button className="qlc-btn ghost" onClick={() => setDetailsModel(m)}>
+                      {t('clientModels.details')}
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <h4 style={{ marginBottom: 10 }}>{t('clientModels.comparisonTitle')}</h4>
+              <ModelComparisonTable />
+              <p style={{ fontSize: 11, color: 'var(--qlc-muted2)', marginTop: 10 }}>{t('clientModels.disclaimer')}</p>
+            </>
           )}
         </div>
 
@@ -390,6 +412,11 @@ export default function SubaccountDetailPage() {
 
         <div className="qlc-card">
           <h3 style={{ marginTop: 0 }}>{t('clientPayments.reportPaymentTitle')}</h3>
+          {subaccount.requiredCapital != null && (
+            <p style={{ fontSize: 12, color: 'var(--qlc-muted2)', marginTop: -6, marginBottom: 12 }}>
+              {t('clientPayments.guaranteeHint').replace('{minimum}', (Number(subaccount.requiredCapital) * 0.1).toFixed(2))}
+            </p>
+          )}
           <form onSubmit={submitPayment}>
             <label className="qlc-label">{t('clientPayments.amount')}</label>
             <input className="qlc-input" type="number" step="0.01" value={paymentForm.amount} onChange={(e) => setPaymentForm((f) => ({ ...f, amount: e.target.value }))} required />

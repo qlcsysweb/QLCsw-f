@@ -168,10 +168,12 @@ export default function PublicNav() {
         </div>
 
         <div className="nav-links">
-          {/* CORRECCIÓN 20: navbar reducido — "Modelo", "Cómo funciona" y
-              "Modelos de participación" ya no aparecen aquí (las páginas y
-              rutas siguen existiendo, solo se quitó el enlace del navbar). */}
-          {SECTIONS.filter((s) => !['modelo', 'como-funciona', 'modelos', 'el-problema'].includes(s.id)).map((s) => (
+          {/* CORRECCIÓN 20/3: navbar reducido — "Modelo", "Cómo funciona" y
+              "Modelos de participación" NO aparecen aquí (las páginas y
+              rutas siguen existiendo, solo se quitó el enlace del navbar).
+              "El problema" SÍ debe aparecer, justo después de Microposiciones
+              (ver orden real en SECTIONS). */}
+          {SECTIONS.filter((s) => !['modelo', 'como-funciona', 'modelos'].includes(s.id)).map((s) => (
             <a
               key={s.id}
               href={s.path}

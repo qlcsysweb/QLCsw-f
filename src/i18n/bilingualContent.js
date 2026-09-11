@@ -38,6 +38,7 @@ export function getLocalizedModel(model, language) {
     description: pickBilingual(model.description, model.descriptionEn, language),
     conditions: pickBilingual(model.conditions, model.conditionsEn, language),
     period: pickBilingual(model.period, model.periodEn, language),
+    detailsContent: pickBilingual(model.detailsContent, model.detailsContentEn, language),
   };
 }
 

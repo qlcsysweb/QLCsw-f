@@ -9,6 +9,15 @@ export default function AntiScamModal({ onClose }) {
   return (
     <div className="qlc-scam-overlay" role="dialog" aria-modal="true" aria-label={t('antiScam.title')}>
       <div className="qlc-scam-panel" onClick={(e) => e.stopPropagation()}>
+        <div className="qlc-scam-notice-kicker">{t('antiScam.noticeKicker')}</div>
+        <div className="qlc-scam-notice-title">{t('antiScam.noticeTitle')}</div>
+        <p className="qlc-scam-notice-body">{t('antiScam.noticeBody1')}</p>
+        <p className="qlc-scam-notice-body">{t('antiScam.noticeBody2')}</p>
+        <p className="qlc-scam-notice-body">{t('antiScam.noticeBody3')}</p>
+        <p className="qlc-scam-notice-body">{t('antiScam.noticeBody4')}</p>
+
+        <div className="qlc-scam-divider" />
+
         <div className="qlc-scam-title">{t('antiScam.title')}</div>
         <p className="qlc-scam-body">{t('antiScam.body1')}</p>
         <p className="qlc-scam-body">{t('antiScam.body2')}</p>

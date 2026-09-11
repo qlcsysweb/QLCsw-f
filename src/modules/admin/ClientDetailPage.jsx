@@ -7,6 +7,7 @@ import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 import { getLocalizedModel } from '../../i18n/bilingualContent';
 import CapitalIncreasePanel from './CapitalIncreasePanel';
+import CapitalRescuePanel from './CapitalRescuePanel';
 
 export default function ClientDetailPage() {
   const { id } = useParams();
@@ -222,6 +223,7 @@ export default function ClientDetailPage() {
       </div>
 
       <CapitalIncreasePanel clientId={id} />
+      <CapitalRescuePanel clientId={id} subaccounts={subaccounts} />
 
       <div className="qlc-detail-grid">
         <div className="qlc-card">

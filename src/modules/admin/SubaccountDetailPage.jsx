@@ -8,6 +8,11 @@ import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 import { getLocalizedModel } from '../../i18n/bilingualContent';
 
+// CORRECCIÓN 6 — orden alineado al flujo real del cliente (ver
+// backend/src/utils/subaccountProvisioning.js). Los valores del enum no
+// cambiaron, solo el orden de presentación.
+const CONDITION_ORDER = ['WALLET', 'CONTRACT', 'PAYMENT', 'FUNDS', 'API', 'ACTIVATION'];
+
 function ConditionRow({ condition, onUpdate, t }) {
   const [saving, setSaving] = useState(false);
   const CONDITION_STATUS_TEXT = {
@@ -267,9 +272,11 @@ export default function AdminSubaccountDetailPage() {
               {conditionsSummary.confirmed}/{conditionsSummary.total}
             </span>
           </h3>
-          {subaccount.process?.conditions?.map((c) => (
-            <ConditionRow key={c.id} condition={c} onUpdate={updateCondition} t={t} />
-          ))}
+          {[...(subaccount.process?.conditions || [])]
+            .sort((a, b) => CONDITION_ORDER.indexOf(a.type) - CONDITION_ORDER.indexOf(b.type))
+            .map((c) => (
+              <ConditionRow key={c.id} condition={c} onUpdate={updateCondition} t={t} />
+            ))}
           <button className="qlc-btn primary" style={{ marginTop: 16, width: '100%' }} onClick={activate} disabled={subaccount.process?.isActivated}>
             {subaccount.process?.isActivated ? t('adminClientDetail.clientAlreadyActivated') : t('adminClientDetail.activateClient')}
           </button>
