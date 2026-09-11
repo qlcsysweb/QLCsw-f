@@ -25,6 +25,7 @@ import AdminGuidesPage from './modules/admin/GuidesPage';
 import StatementsArchivePage from './modules/admin/StatementsArchivePage';
 import ContractsInboxPage from './modules/admin/ContractsInboxPage';
 import ProcessStepsPage from './modules/admin/ProcessStepsPage';
+import AdminNotificationsPage from './modules/admin/NotificationsPage';
 
 import ClientLayout from './layouts/ClientLayout';
 import ClientDashboardPage from './modules/client/DashboardPage';
@@ -81,6 +82,7 @@ function AppRoutes() {
               <Route path="admins" element={<AdminsPage />} />
               <Route path="statements" element={<StatementsArchivePage />} />
               <Route path="contracts" element={<ContractsInboxPage />} />
+              <Route path="notifications" element={<AdminNotificationsPage />} />
             </Route>
           </Route>
 
