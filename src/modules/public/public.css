@@ -326,12 +326,20 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  /* flex-start (no center): el cliente pidió que el logo casi toque el
+     borde superior de la tarjeta — con "center" quedaba centrado dentro
+     del alto estirado por el grid, dejando un hueco grande arriba sin
+     importar el padding-top. */
+  justify-content: flex-start;
   /* Ajuste solicitado por el cliente: el logo debe conservar su tamaño
      (no encogerlo), así que el "cascarón" gris que lo encierra reduce su
      propio padding en pantallas de poca altura para seguir cabiendo sin
      scroll — ver .hero-logo/.hero-mini abajo, que ceden espacio primero. */
   padding: clamp(16px, 2.5vh, 50px);
+  /* El cliente pidió que el logo casi toque el borde superior, dejando
+     apenas ~0.3cm (~12px) de margen — se separa del resto del padding,
+     que sigue siendo mayor a los lados/abajo. */
+  padding-top: 12px;
   border: 1px solid var(--line);
   border-radius: 28px;
   background: linear-gradient(145deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.012));
@@ -339,18 +347,17 @@
 }
 .qlc-public .hero-logo {
   width: 100%;
-  /* Piso elevado de 200px a 260px: en pantallas bajas el logo ya no se
-     reduce tanto como antes — el espacio se recorta del resto del
-     hero-card (padding/hero-mini) en vez del logo. */
-  max-width: clamp(240px, 32vh, 380px);
-  margin: auto;
+  /* Logo más grande, a pedido del cliente: casi llena el ancho de la
+     tarjeta y casi toca la fila de mini-estadísticas de abajo. */
+  max-width: clamp(300px, 46vh, 460px);
+  margin: 0 auto;
 }
 .qlc-public .hero-logo .qlc-logo-media {
   mix-blend-mode: screen;
   opacity: 0.98;
 }
 .qlc-public .hero-mini {
-  margin-top: clamp(10px, 2vh, 30px);
+  margin-top: clamp(6px, 1vh, 16px);
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 10px;
