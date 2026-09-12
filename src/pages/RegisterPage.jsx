@@ -4,11 +4,17 @@ import { useAuth } from '../context/AuthContext';
 import QlcLogo from '../components/QlcLogo';
 import { useLanguage } from '../i18n/LanguageContext';
 import { translateBackendMessage } from '../i18n/backendMessages';
+import { PrivacyNoticeModal, TermsAndConditionsModal } from '../components/LegalAcceptanceModal';
 import './LoginPage.css';
 
 // CORRECCIÓN 5 — registro público directo: el visitante se convierte en
 // cliente de inmediato (no pasa por "prospecto"). Solo pide nombre,
 // apellidos, correo y contraseña — sin teléfono, sin username.
+//
+// El contrato ya NO forma parte del registro. Tras llenar el formulario, el
+// registro se completa en dos pantallas legales (mismo estilo que el aviso
+// anti-estafa): Aviso de Privacidad y luego Términos y Condiciones. Solo al
+// aceptar ambas se crea la cuenta — "form" -> "privacy" -> "terms".
 export default function RegisterPage() {
   const { register } = useAuth();
   const { t, language } = useLanguage();
@@ -16,22 +22,48 @@ export default function RegisterPage() {
   const [form, setForm] = useState({ firstName: '', lastName: '', email: '', password: '', nationality: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [stage, setStage] = useState('form');
 
   const update = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
 
-  const handleSubmit = async (e) => {
+  const handleContinue = (e) => {
     e.preventDefault();
+    setError('');
+    setStage('privacy');
+  };
+
+  const completeRegistration = async () => {
     setError('');
     setLoading(true);
     try {
-      await register(form);
+      await register({
+        ...form,
+        privacyAccepted: true,
+        termsAccepted: true,
+        apiAuthorizationAccepted: true,
+      });
       navigate('/client', { replace: true });
     } catch (err) {
       setError(translateBackendMessage(err.message, language));
+      setStage('form');
     } finally {
       setLoading(false);
     }
   };
+
+  if (stage === 'privacy') {
+    return <PrivacyNoticeModal onAccept={() => setStage('terms')} />;
+  }
+
+  if (stage === 'terms') {
+    return (
+      <TermsAndConditionsModal
+        onAccept={completeRegistration}
+        onBack={() => setStage('privacy')}
+        loading={loading}
+      />
+    );
+  }
 
   return (
     <div className="qlc-login-screen">
@@ -44,7 +76,7 @@ export default function RegisterPage() {
         <h1>{t('register.title')}</h1>
         <p className="qlc-login-sub">{t('register.subtitle')}</p>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleContinue}>
           <label className="qlc-label">{t('register.firstName')}</label>
           <input className="qlc-input" value={form.firstName} onChange={update('firstName')} required />
           <label className="qlc-label">{t('register.lastName')}</label>
@@ -65,8 +97,8 @@ export default function RegisterPage() {
 
           {error && <div className="qlc-login-error">{error}</div>}
 
-          <button className="qlc-btn primary qlc-login-submit" type="submit" disabled={loading}>
-            {loading ? t('register.submitting') : t('register.submit')}
+          <button className="qlc-btn primary qlc-login-submit" type="submit">
+            {t('register.continue')}
           </button>
 
           <p className="qlc-login-sub" style={{ marginTop: 18, marginBottom: 0 }}>

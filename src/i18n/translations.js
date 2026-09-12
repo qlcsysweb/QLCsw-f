@@ -221,6 +221,7 @@ const es = {
     dashboard: 'Dashboard',
     clients: 'Clientes',
     content: 'Contenido del sitio',
+    trackRecord: 'Track Record',
     guides: 'Guías de Uso',
     payments: 'Pagos',
     appointments: 'Citas',
@@ -656,6 +657,8 @@ const es = {
     file: 'Archivo',
     uploading: 'Subiendo…',
     uploadDocument: 'Subir documento',
+    viewDocument: 'Ver / Descargar',
+    uploadNewDocument: '+ Subir nuevo documento',
     reportedPayments: 'Pagos reportados',
     noPaymentsReported: 'Sin pagos reportados.',
     transferReported: 'Transferencia reportada',
@@ -1598,10 +1601,80 @@ const es = {
     nationality: 'Nacionalidad',
     email: 'Correo',
     password: 'Contraseña',
+    continue: 'Continuar',
     submit: 'Crear cuenta',
     submitting: 'Creando cuenta…',
     haveAccount: '¿Ya tienes cuenta?',
     signIn: 'Inicia sesión',
+  },
+
+  // El contrato ya no forma parte del registro: se sustituye por la
+  // aceptación electrónica del Aviso de Privacidad y los Términos y
+  // Condiciones. Texto legal tomado literalmente de los documentos
+  // proporcionados por QLC (Aviso de Privacidad / Términos y Condiciones
+  // del Servicio de Copytrading Privado) — no traducido ni al inglés, ya
+  // que son los documentos oficiales en español. Los placeholders entre
+  // corchetes ([CORREO], [DOMICILIO], [DOMINIO], [RAZÓN SOCIAL]) vienen así
+  // en el documento original y deben completarse por QLC, no por el sistema.
+  registerLegal: {
+    privacyTitle: 'Aviso de Privacidad',
+    privacyIntro:
+      'En QLC protegemos la información personal de nuestros usuarios y clientes. Consulta nuestro Aviso de Privacidad para conocer cómo recopilamos, utilizamos, protegemos y conservamos tus datos personales.',
+    privacyReadMore: 'Leer Aviso de Privacidad completo',
+    privacyCheckbox: 'He leído y conozco el Aviso de Privacidad de QLC.',
+    privacyFullText: [
+      'QLC — Quantum Liquidity Capital. Última actualización: 12/09/2026.',
+      '1. Responsable del tratamiento de datos personales. QUANTUM LIQUIDITY CAPITAL, S.A. DE C.V., en adelante "QLC", es responsable del tratamiento y protección de los datos personales proporcionados por los usuarios y clientes a través del sitio web, plataforma, aplicaciones, formularios y servicios de QLC. Este Aviso de Privacidad Global está destinado a usuarios y clientes ubicados fuera de los Estados Unidos de América. QLC podrá ofrecer sus servicios en diferentes jurisdicciones, siempre sujeto a la disponibilidad del servicio y a las leyes y regulaciones aplicables en cada país.',
+      '2. Alcance de este Aviso. Este Aviso de Privacidad se aplica a los datos personales que QLC recopile a través de: sitio web de QLC, plataforma de QLC, registro de usuarios, servicios de Copytrading Privado, vinculación de cuentas de Exchange mediante API, comunicaciones con clientes, estados de cuenta, soporte y atención al cliente, y cualquier otro servicio o interacción proporcionada por QLC. Este Aviso podrá complementarse con información específica cuando una determinada jurisdicción exija requisitos adicionales.',
+      '3. Información que podemos recopilar. Datos de identificación: nombre completo, fecha de nacimiento, nacionalidad, país de residencia, documento de identificación cuando sea necesario, información necesaria para verificar la identidad. Datos de contacto: correo electrónico, número telefónico, domicilio o país de residencia cuando resulte necesario. Datos relacionados con la cuenta: datos de acceso y registro de la plataforma, identificadores de cuenta, información relacionada con la cuenta del Exchange, información necesaria para la conexión mediante API. Datos relacionados con el servicio: operaciones ejecutadas, movimientos, resultados, capital destinado al servicio, estados de cuenta, historial de actividad dentro de la plataforma. Datos técnicos: dirección IP, tipo de dispositivo, sistema operativo, navegador, información técnica necesaria para seguridad, funcionamiento y prevención de usos indebidos. QLC procurará recopilar únicamente la información necesaria para las finalidades descritas en este Aviso.',
+      '4. Información que QLC no solicita. QLC no solicita al cliente: claves privadas de wallets, frases semilla, contraseñas de wallets, claves de recuperación. Cuando el servicio requiera una conexión mediante API, esta deberá configurarse utilizando únicamente los permisos necesarios para la prestación del servicio y sin permisos de retiro de fondos, cuando así corresponda al modelo operativo.',
+      '5. Finalidades del tratamiento. QLC podrá utilizar los datos personales para: crear y administrar la cuenta del usuario; identificar y verificar al cliente; proporcionar los servicios contratados; gestionar la vinculación de cuentas; gestionar conexiones API; ejecutar las operaciones autorizadas dentro del servicio; registrar operaciones y actividad; generar estados de cuenta; proporcionar soporte y atención al cliente; comunicarse con el cliente respecto del servicio; detectar y prevenir usos indebidos, fraude o incidentes de seguridad; mantener la seguridad de la plataforma; cumplir obligaciones legales y regulatorias; atender requerimientos de autoridades competentes; defender los derechos e intereses legales de QLC.',
+      '6. Comunicaciones comerciales. Cuando resulte legalmente permitido, QLC podrá utilizar los datos de contacto para enviar información relacionada con nuevos servicios, actualizaciones, funcionalidades e información comercial de QLC. El usuario podrá solicitar dejar de recibir comunicaciones comerciales en cualquier momento mediante los mecanismos proporcionados por QLC.',
+      '7. Base jurídica del tratamiento. QLC tratará los datos personales de acuerdo con la legislación aplicable en el país de residencia del usuario. Dependiendo de la jurisdicción y de la finalidad, el tratamiento podrá basarse, entre otros fundamentos, en: el consentimiento del titular; la ejecución de un servicio solicitado por el cliente; el cumplimiento de obligaciones legales; intereses legítimos de QLC, cuando sean legalmente aplicables; la protección de derechos, seguridad y prevención del fraude.',
+      '8. Transferencias y proveedores. Para proporcionar sus servicios, QLC podrá utilizar proveedores tecnológicos, servicios de infraestructura, seguridad, comunicaciones, almacenamiento y otros proveedores necesarios para el funcionamiento de la plataforma. Cuando sea necesario compartir información con terceros, QLC procurará limitar la información transferida a aquella necesaria para la finalidad correspondiente y aplicará las medidas de protección exigidas por la legislación aplicable. Cuando una transferencia internacional de datos requiera mecanismos adicionales de protección, QLC procurará utilizar los mecanismos legalmente reconocidos en la jurisdicción correspondiente.',
+      '9. Conservación de la información. QLC conservará los datos personales durante el tiempo necesario para prestar los servicios, mantener los registros correspondientes, cumplir obligaciones legales, resolver controversias, prevenir fraude y usos indebidos, y ejercer o defender derechos legales. Cuando la información deje de ser necesaria, será eliminada, anonimizada o bloqueada de acuerdo con la legislación aplicable.',
+      '10. Seguridad de la información. QLC implementará medidas técnicas, administrativas y organizativas razonables para proteger los datos personales contra acceso no autorizado, pérdida, alteración, destrucción, divulgación no autorizada y uso indebido. El nivel de seguridad aplicado podrá variar dependiendo de la naturaleza de la información y de los riesgos asociados al tratamiento.',
+      '11. Derechos de los usuarios. Dependiendo del país de residencia y de la legislación aplicable, el titular podrá tener derechos relacionados con sus datos personales, incluyendo: acceso, rectificación, eliminación o cancelación, oposición, limitación del tratamiento, portabilidad, revocación del consentimiento, retiro del consentimiento para determinadas finalidades, y derecho a presentar reclamaciones ante la autoridad competente. Los derechos disponibles y las condiciones para ejercerlos dependerán de la legislación aplicable en la jurisdicción correspondiente.',
+      '12. Ejercicio de derechos. Para ejercer sus derechos o realizar una consulta relacionada con la privacidad, el titular podrá contactar a QLC mediante el correo de privacidad: [CORREO]. La solicitud deberá proporcionar información suficiente para verificar la identidad del solicitante y atender adecuadamente la petición. QLC responderá dentro de los plazos establecidos por la legislación aplicable.',
+      '13. Cookies y tecnologías similares. El sitio web y las plataformas de QLC podrán utilizar cookies y tecnologías similares para mantener sesiones, mejorar la seguridad, recordar determinadas preferencias, analizar el funcionamiento de la plataforma y mejorar la experiencia del usuario. El usuario podrá administrar determinadas cookies mediante las configuraciones de su navegador o mediante las herramientas proporcionadas por QLC.',
+      '14. Menores de edad. Los servicios de QLC están destinados a personas que tengan capacidad legal para contratar y utilizar los servicios correspondientes. QLC no busca recopilar deliberadamente información personal de menores de edad cuando dicha recopilación esté prohibida por la legislación aplicable. Si QLC detecta que ha recopilado información de un menor en circunstancias en las que dicha recopilación no está permitida, podrá tomar medidas para eliminarla.',
+      '15. Cambios al Aviso de Privacidad. QLC podrá actualizar este Aviso de Privacidad cuando sea necesario debido a cambios en los servicios, la plataforma, las prácticas de tratamiento de datos, la legislación aplicable o los requisitos regulatorios. La versión vigente estará disponible en el sitio web de QLC. Cuando la legislación aplicable requiera una comunicación o consentimiento adicional debido a un cambio sustancial, QLC realizará las acciones correspondientes.',
+      '16. Legislación aplicable según la jurisdicción. QLC reconoce que los derechos y obligaciones relacionados con la protección de datos pueden variar entre países. Por ello, este Aviso de Privacidad Global deberá interpretarse conjuntamente con las disposiciones obligatorias de protección de datos aplicables en el país de residencia del titular. Cuando una legislación local otorgue derechos adicionales o establezca requisitos específicos que no estén expresamente contemplados en este Aviso, prevalecerán las disposiciones obligatorias de dicha legislación.',
+      '17. Exclusión territorial. Este Aviso de Privacidad Global está destinado a usuarios y clientes fuera de los Estados Unidos de América. QLC no ofrece mediante este Aviso una declaración de cumplimiento específica de las leyes estatales o federales de privacidad de los Estados Unidos. El acceso a los servicios estará sujeto además a las restricciones territoriales y regulatorias que QLC determine para cada jurisdicción.',
+      '18. Contacto. QLC — Quantum Liquidity Capital. Responsable: [RAZÓN SOCIAL]. Domicilio: [DOMICILIO]. Correo de privacidad: [CORREO]. Sitio web: [DOMINIO].',
+    ],
+
+    termsTitle: 'Términos y Condiciones del Servicio de Copytrading',
+    termsIntro:
+      'Antes de finalizar tu registro, consulta y acepta los Términos y Condiciones del Servicio de Copytrading Privado de QLC.',
+    termsReadMore: 'Leer Términos y Condiciones completos',
+    termsCheckbox: 'He leído y acepto los Términos y Condiciones del Servicio de Copytrading de QLC.',
+    apiCheckbox:
+      'Autorizo a QLC a ejecutar operaciones en mi cuenta de Bitget mediante API, exclusivamente con los permisos autorizados y sin facultad para retirar fondos.',
+    termsAcceptButton: 'ACEPTAR Y CONTINUAR',
+    readLess: 'Mostrar menos',
+    termsFullText: [
+      'TÉRMINOS Y CONDICIONES DEL SERVICIO DE COPYTRADING PRIVADO QLC. Última actualización: 12/09/2026.',
+      '1. Aceptación de los Términos. Al registrarse en la plataforma QLC y seleccionar la casilla "He leído y acepto los Términos y Condiciones del Servicio de Copytrading de QLC", el cliente declara haber leído, comprendido y aceptado íntegramente estos Términos y Condiciones. La aceptación electrónica constituye la autorización del cliente para contratar y utilizar el servicio conforme a las condiciones aquí establecidas.',
+      '2. Naturaleza del servicio. QLC proporciona un servicio de Copytrading Privado, mediante el cual el cliente puede vincular su cuenta de trading para permitir la ejecución de operaciones conforme a la estrategia operativa seleccionada. El servicio se presta bajo un esquema no custodial. El capital del cliente permanece en su propia cuenta de trading y QLC no recibe, mantiene ni administra directamente los fondos del cliente.',
+      '3. Custodia de los fondos. El cliente conserva en todo momento la titularidad y custodia de sus fondos depositados en su cuenta de Bitget. QLC no solicita ni requiere permisos de retiro de fondos. La conexión mediante API deberá configurarse únicamente con los permisos necesarios para la ejecución de operaciones. QLC no podrá retirar fondos de la cuenta del cliente.',
+      '4. Autorización mediante API. Para utilizar el servicio, el cliente deberá proporcionar o configurar las credenciales API necesarias para conectar su cuenta con la plataforma QLC. El cliente autoriza a QLC a utilizar dicha conexión exclusivamente para las funciones autorizadas por el cliente. El cliente será responsable de mantener bajo su control las credenciales y configuraciones de seguridad de su cuenta.',
+      '5. Ejecución de operaciones. El cliente entiende y acepta que las operaciones ejecutadas mediante el servicio pueden experimentar diferencias respecto de la operación de referencia debido a movimientos del mercado, liquidez disponible, volatilidad, deslizamiento, diferencias de precio, latencia, condiciones de mercado, limitaciones técnicas del Exchange, interrupciones de conexión y diferencias en la ejecución entre cuentas. Por estas razones, QLC no garantiza que todas las cuentas obtengan exactamente el mismo precio de entrada, salida o resultado de la cuenta de referencia.',
+      '6. Riesgo de mercado. El cliente reconoce que el trading de activos digitales conlleva un riesgo elevado y que puede producir pérdidas parciales o totales del capital destinado a la operativa. Los resultados históricos o anteriores no constituyen garantía de resultados futuros. El cliente declara comprender que las condiciones del mercado pueden cambiar y afectar el comportamiento de la estrategia.',
+      '7. Capital del cliente. El cliente será responsable de determinar el capital que desea destinar al servicio y de mantener los fondos necesarios en su cuenta de trading. QLC no será responsable de decisiones de depósito, retiro o transferencia realizadas directamente por el cliente.',
+      '8. Garantía de participación. Cuando el modelo de participación correspondiente establezca una garantía mínima, el cliente deberá cubrir el importe establecido antes de la activación de su participación. La garantía y su funcionamiento serán los establecidos en la información correspondiente al modelo de participación seleccionado por el cliente. La existencia de una garantía dentro del modelo no debe interpretarse como una garantía de que el mercado no generará pérdidas ni como una promesa de rentabilidad futura.',
+      '9. Activación del servicio. Una vez que el cliente haya completado su registro, haya aceptado estos Términos y Condiciones, haya configurado correctamente su conexión API, haya cumplido los requisitos correspondientes al modelo de participación, y haya completado las acciones necesarias para la activación, QLC podrá verificar la información y proceder a activar el servicio.',
+      '10. Estado de cuenta. Una vez activado el servicio, el cliente podrá consultar la información correspondiente a su participación mediante el estado de cuenta proporcionado por QLC. El estado de cuenta podrá incluir, entre otros datos: capital destinado, operaciones realizadas, resultados, movimientos, periodo de participación, garantía correspondiente, pagos realizados e información acumulada del periodo.',
+      '11. Resultados y rentabilidad. Cualquier objetivo, referencia o resultado mostrado en la plataforma deberá entenderse como información correspondiente al modelo o estrategia y no como una promesa de rentabilidad futura, salvo que expresamente se establezca una obligación jurídicamente válida y permitida por la legislación aplicable. QLC no garantiza que el comportamiento futuro de la estrategia sea igual al comportamiento histórico.',
+      '12. Responsabilidad del cliente. El cliente es responsable de: proporcionar información verdadera y actualizada; mantener segura su cuenta de Bitget; configurar correctamente sus APIs; no compartir sus credenciales con terceros; mantener los fondos necesarios para su operativa; revisar periódicamente su estado de cuenta; informar cualquier irregularidad detectada; cumplir las obligaciones fiscales y legales que le correspondan.',
+      '13. Responsabilidad de QLC. QLC se compromete a proporcionar el servicio conforme a las características publicadas y a utilizar la conexión API únicamente dentro de los permisos autorizados. QLC no será responsable de pérdidas ocasionadas por acontecimientos fuera de su control razonable, incluyendo fallos del Exchange, interrupciones de servicios, movimientos extraordinarios del mercado, problemas de liquidez, errores de terceros o acontecimientos técnicos ajenos a QLC.',
+      '14. Suspensión o desconexión. QLC podrá suspender temporalmente la ejecución cuando resulte necesario por razones técnicas, de seguridad, mantenimiento, riesgo operativo o circunstancias extraordinarias. El cliente podrá solicitar la desconexión del servicio conforme al procedimiento establecido en la plataforma.',
+      '15. Modificaciones. QLC podrá actualizar estos Términos y Condiciones cuando resulte necesario. Las modificaciones serán publicadas en la plataforma y, cuando corresponda, se solicitará al cliente una nueva aceptación antes de continuar utilizando determinadas funcionalidades.',
+      '16. Información y comunicaciones. El cliente acepta recibir comunicaciones relacionadas con: funcionamiento del servicio, operaciones, estados de cuenta, incidencias, mantenimiento, modificaciones del servicio y actualizaciones de los Términos y Condiciones.',
+      '17. Privacidad y protección de información. QLC tratará los datos proporcionados por el cliente de conformidad con su Aviso de Privacidad y con la legislación aplicable. La información relacionada con las cuentas, APIs, operaciones y resultados del cliente será tratada únicamente para las finalidades correspondientes al servicio y aquellas obligaciones legales aplicables.',
+      '18. Declaración del cliente. Al aceptar estos Términos y Condiciones, el cliente declara que: comprende la naturaleza del servicio; comprende que existe riesgo de pérdida; mantiene el control y la custodia de sus fondos en el Exchange; autoriza la conexión API conforme a los permisos establecidos; comprende que QLC no tiene autorización para retirar fondos; ha proporcionado información verdadera; acepta utilizar el servicio bajo su propia responsabilidad y conforme a estos Términos.',
+      '19. Aceptación electrónica. Al marcar las casillas correspondientes y seleccionar "Aceptar y continuar", el cliente manifiesta expresamente su consentimiento respecto de estos Términos y Condiciones y de la autorización de conexión API. QLC conservará el registro electrónico de la aceptación, incluyendo la versión de los Términos aceptada y la fecha y hora correspondiente.',
+    ],
   },
 };
 
@@ -1813,6 +1886,7 @@ const en = {
     dashboard: 'Dashboard',
     clients: 'Clients',
     content: 'Site content',
+    trackRecord: 'Track Record',
     guides: 'Usage Guides',
     payments: 'Payments',
     appointments: 'Appointments',
@@ -2248,6 +2322,8 @@ const en = {
     file: 'File',
     uploading: 'Uploading…',
     uploadDocument: 'Upload document',
+    viewDocument: 'View / Download',
+    uploadNewDocument: '+ Upload new document',
     reportedPayments: 'Reported payments',
     noPaymentsReported: 'No payments reported.',
     transferReported: 'Transfer reported',
@@ -3184,10 +3260,35 @@ const en = {
     nationality: 'Nationality',
     email: 'Email',
     password: 'Password',
+    continue: 'Continue',
     submit: 'Create account',
     submitting: 'Creating account…',
     haveAccount: 'Already have an account?',
     signIn: 'Sign in',
+  },
+
+  // NOTE: the Privacy Notice and Terms & Conditions are official legal
+  // documents provided by QLC only in Spanish (the language of the
+  // contracting jurisdiction). We do not invent an English legal
+  // translation — the legal text and the officially specified checkbox/
+  // button wording are shown in Spanish for both languages; only the
+  // surrounding UI chrome (titles, "read more" links, back button) is
+  // localized to English.
+  registerLegal: {
+    privacyTitle: 'Privacy Notice',
+    privacyIntro: es.registerLegal.privacyIntro,
+    privacyReadMore: 'Read the full Privacy Notice',
+    privacyCheckbox: es.registerLegal.privacyCheckbox,
+    privacyFullText: es.registerLegal.privacyFullText,
+
+    termsTitle: 'Copytrading Service Terms and Conditions',
+    termsIntro: es.registerLegal.termsIntro,
+    termsReadMore: 'Read the full Terms and Conditions',
+    termsCheckbox: es.registerLegal.termsCheckbox,
+    apiCheckbox: es.registerLegal.apiCheckbox,
+    termsAcceptButton: es.registerLegal.termsAcceptButton,
+    readLess: 'Show less',
+    termsFullText: es.registerLegal.termsFullText,
   },
 };
 

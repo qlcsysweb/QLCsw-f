@@ -254,9 +254,9 @@
 .qlc-public .hero-grid {
   display: grid;
   grid-template-columns: 1fr 1.08fr;
-  gap: clamp(28px, 5vh, 56px);
+  gap: clamp(20px, 4vh, 56px);
   align-items: stretch;
-  padding: clamp(48px, 8vh, 95px) 0 clamp(36px, 6vh, 80px);
+  padding: clamp(32px, 6vh, 95px) 0 clamp(24px, 4vh, 80px);
 }
 .qlc-public .eyebrow {
   display: inline-flex;
@@ -327,7 +327,11 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: clamp(24px, 4vh, 50px);
+  /* Ajuste solicitado por el cliente: el logo debe conservar su tamaño
+     (no encogerlo), así que el "cascarón" gris que lo encierra reduce su
+     propio padding en pantallas de poca altura para seguir cabiendo sin
+     scroll — ver .hero-logo/.hero-mini abajo, que ceden espacio primero. */
+  padding: clamp(16px, 2.5vh, 50px);
   border: 1px solid var(--line);
   border-radius: 28px;
   background: linear-gradient(145deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.012));
@@ -335,7 +339,10 @@
 }
 .qlc-public .hero-logo {
   width: 100%;
-  max-width: clamp(200px, 30vh, 380px);
+  /* Piso elevado de 200px a 260px: en pantallas bajas el logo ya no se
+     reduce tanto como antes — el espacio se recorta del resto del
+     hero-card (padding/hero-mini) en vez del logo. */
+  max-width: clamp(240px, 32vh, 380px);
   margin: auto;
 }
 .qlc-public .hero-logo .qlc-logo-media {
@@ -343,17 +350,17 @@
   opacity: 0.98;
 }
 .qlc-public .hero-mini {
-  margin-top: clamp(16px, 3vh, 30px);
+  margin-top: clamp(10px, 2vh, 30px);
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 10px;
 }
 .qlc-public .hero-mini .mini {
-  padding: clamp(10px, 1.8vh, 15px) 12px;
+  padding: clamp(8px, 1.4vh, 15px) 12px;
   border: 1px solid var(--line);
   border-radius: 14px;
   background: rgba(8, 14, 21, 0.78);
-  min-height: clamp(62px, 9vh, 82px);
+  min-height: clamp(48px, 7vh, 82px);
 }
 .qlc-public .hero-mini .mini b {
   display: block;

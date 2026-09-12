@@ -18,6 +18,7 @@ import AdminSupportPage from './modules/admin/SupportPage';
 import ProspectsPage from './modules/admin/ProspectsPage';
 import AdminsPage from './modules/admin/AdminsPage';
 import CmsPage from './modules/admin/cms/CmsPage';
+import TrackRecordPage from './modules/admin/TrackRecordPage';
 import GoogleDriveSettingsPage from './modules/admin/settings/GoogleDriveSettingsPage';
 import SecuritySettingsPage from './modules/admin/settings/SecuritySettingsPage';
 import PlatformSettingsPage from './modules/admin/PlatformSettingsPage';
@@ -70,6 +71,7 @@ function AppRoutes() {
               <Route path="clients/:id" element={<ClientDetailPage />} />
               <Route path="clients/:clientId/api-subaccounts/:id" element={<AdminSubaccountDetailPage />} />
               <Route path="cms" element={<CmsPage />} />
+              <Route path="track-record" element={<TrackRecordPage />} />
               <Route path="guides" element={<AdminGuidesPage />} />
               <Route path="settings/drive" element={<GoogleDriveSettingsPage />} />
               <Route path="settings/platform" element={<PlatformSettingsPage />} />

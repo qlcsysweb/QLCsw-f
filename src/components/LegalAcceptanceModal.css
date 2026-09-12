@@ -1,0 +1,89 @@
+/* Reutiliza el mismo lenguaje visual del aviso anti-estafa (AntiScamModal):
+   overlay oscuro a pantalla completa + panel centrado con borde dorado.
+   Se agregan aquí solo las piezas nuevas que ese modal no necesitaba:
+   botón "leer más", bloque de texto legal desplegable y casillas. */
+
+.qlc-legal-panel {
+  width: min(560px, 100%);
+  max-height: 88vh;
+  overflow-y: auto;
+  text-align: left;
+}
+
+.qlc-legal-panel .qlc-scam-title {
+  text-align: center;
+}
+
+.qlc-legal-readmore {
+  display: inline-block;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 4px 0 16px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #c89b3c;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.qlc-legal-readmore:hover {
+  color: #e0b64a;
+}
+
+.qlc-legal-fulltext {
+  max-height: 320px;
+  overflow-y: auto;
+  padding: 14px 16px;
+  margin: 0 0 18px;
+  background: rgba(5, 7, 10, 0.4);
+  border: 1px solid rgba(200, 155, 60, 0.18);
+  border-radius: 14px;
+}
+
+.qlc-legal-fulltext p {
+  font-size: 12.5px;
+  line-height: 1.65;
+  color: var(--qlc-muted, #9ca9b7);
+  margin: 0 0 10px;
+}
+
+.qlc-legal-fulltext p:last-child {
+  margin-bottom: 0;
+}
+
+.qlc-legal-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  margin-bottom: 14px;
+}
+
+.qlc-legal-checkbox input[type='checkbox'] {
+  margin-top: 3px;
+  width: 17px;
+  height: 17px;
+  accent-color: #c89b3c;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.qlc-legal-checkbox span {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: #f4f7fb;
+}
+
+.qlc-legal-error {
+  font-size: 13px;
+  color: #ff9292;
+  margin-bottom: 14px;
+}
+
+@media (max-width: 480px) {
+  .qlc-legal-panel {
+    max-height: 92vh;
+  }
+}

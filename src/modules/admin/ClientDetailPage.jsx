@@ -20,6 +20,7 @@ export default function ClientDetailPage() {
   const [uploadError, setUploadError] = useState('');
   const [docForm, setDocForm] = useState({ category: 'identificacion', description: '' });
   const [uploading, setUploading] = useState(false);
+  const [showUploadForm, setShowUploadForm] = useState(false);
   const [confirmDeactivate, setConfirmDeactivate] = useState(false);
   const [confirmDeleteDoc, setConfirmDeleteDoc] = useState(null);
   const [confirmDeleteClient, setConfirmDeleteClient] = useState(false);
@@ -103,6 +104,7 @@ export default function ClientDetailPage() {
       flash(t('adminClientDetail.documentUploaded'));
       e.target.reset();
       setDocForm((f) => ({ ...f, description: '' }));
+      setShowUploadForm(false);
       load();
     } catch (err) {
       setUploadError(translateBackendMessage(err.message, language));
@@ -294,9 +296,7 @@ export default function ClientDetailPage() {
                   <li key={d.id} style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '8px 0', borderBottom: '1px solid var(--qlc-line)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span>
-                        <a href={`${API_BASE_URL}/admin/documents/${d.id}/download`} target="_blank" rel="noreferrer">
-                          {d.fileName}
-                        </a>{' '}
+                        <strong>{d.fileName}</strong>{' '}
                         <span style={{ color: 'var(--qlc-muted2)' }}>({d.category})</span>
                         {d.clientEditUnlocked && (
                           <span className="qlc-badge warn" style={{ marginLeft: 6 }}>
@@ -305,6 +305,14 @@ export default function ClientDetailPage() {
                         )}
                       </span>
                       <span style={{ display: 'flex', gap: 6 }}>
+                        <a
+                          className="qlc-btn primary"
+                          href={`${API_BASE_URL}/admin/documents/${d.id}/download`}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          {t('adminClientDetail.viewDocument')}
+                        </a>
                         <button className="qlc-btn ghost" onClick={() => toggleDocUnlock(d)}>
                           {d.clientEditUnlocked ? t('adminClientDetail.lockDocument') : t('adminClientDetail.unlockDocument')}
                         </button>
@@ -352,23 +360,43 @@ export default function ClientDetailPage() {
             <div className="qlc-empty">{t('adminClientDetail.noDocuments')}</div>
           )}
 
-          <form onSubmit={uploadDocument} style={{ marginTop: 14, borderTop: '1px solid var(--qlc-line)', paddingTop: 14 }}>
-            <label className="qlc-label">{t('adminClientDetail.category')}</label>
-            <select className="qlc-select" value={docForm.category} onChange={(e) => setDocForm((f) => ({ ...f, category: e.target.value }))}>
-              {CATEGORIES.map((c) => (
-                <option key={c.value} value={c.value}>
-                  {c.label}
-                </option>
-              ))}
-            </select>
-            <label className="qlc-label">{t('adminClientDetail.description')}</label>
-            <input className="qlc-input" value={docForm.description} onChange={(e) => setDocForm((f) => ({ ...f, description: e.target.value }))} />
-            <label className="qlc-label">{t('adminClientDetail.file')}</label>
-            <input type="file" name="docFile" className="qlc-input" accept=".pdf,image/*" required />
-            <button className="qlc-btn primary" style={{ marginTop: 12, width: '100%' }} disabled={uploading}>
-              {uploading ? t('adminClientDetail.uploading') : t('adminClientDetail.uploadDocument')}
+          {/* El admin no necesita volver a cargar un documento que ya
+              existe — su rol aquí es visualizar/imprimir. Subir uno nuevo
+              (identificación, u otra categoría) sigue disponible pero
+              queda detrás de este botón en vez de ser lo primero que se ve. */}
+          {showUploadForm ? (
+            <form onSubmit={uploadDocument} style={{ marginTop: 14, borderTop: '1px solid var(--qlc-line)', paddingTop: 14 }}>
+              <label className="qlc-label">{t('adminClientDetail.category')}</label>
+              <select className="qlc-select" value={docForm.category} onChange={(e) => setDocForm((f) => ({ ...f, category: e.target.value }))}>
+                {CATEGORIES.map((c) => (
+                  <option key={c.value} value={c.value}>
+                    {c.label}
+                  </option>
+                ))}
+              </select>
+              <label className="qlc-label">{t('adminClientDetail.description')}</label>
+              <input className="qlc-input" value={docForm.description} onChange={(e) => setDocForm((f) => ({ ...f, description: e.target.value }))} />
+              <label className="qlc-label">{t('adminClientDetail.file')}</label>
+              <input type="file" name="docFile" className="qlc-input" accept=".pdf,image/*" required />
+              <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                <button className="qlc-btn primary" style={{ flex: 1 }} disabled={uploading}>
+                  {uploading ? t('adminClientDetail.uploading') : t('adminClientDetail.uploadDocument')}
+                </button>
+                <button type="button" className="qlc-btn ghost" onClick={() => setShowUploadForm(false)}>
+                  {t('common.cancel')}
+                </button>
+              </div>
+            </form>
+          ) : (
+            <button
+              type="button"
+              className="qlc-btn ghost"
+              style={{ marginTop: 14, width: '100%' }}
+              onClick={() => setShowUploadForm(true)}
+            >
+              {t('adminClientDetail.uploadNewDocument')}
             </button>
-          </form>
+          )}
         </div>
 
         <div className="qlc-card">

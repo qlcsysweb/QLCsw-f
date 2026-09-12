@@ -29,6 +29,9 @@ const KNOWN_MESSAGES = {
     'Cannot activate: some process conditions have not been confirmed.',
   'Ya enviaste tu contrato firmado. Si necesitas reemplazarlo, contacta con QLC.':
     "You've already submitted your signed contract. Contact QLC if you need to replace it.",
+  'Debes aceptar el Aviso de Privacidad para continuar.': 'You must accept the Privacy Notice to continue.',
+  'Debes aceptar los Términos y Condiciones para continuar.': 'You must accept the Terms and Conditions to continue.',
+  'Debes autorizar la conexión API para continuar.': 'You must authorize the API connection to continue.',
   'Ya enviaste un documento en esta categoría. Si necesitas reemplazarlo, contacta con QLC.':
     "You've already submitted a document in this category. Contact QLC if you need to replace it.",
   'No pudimos conectar con Google Drive. Ve a Configuración → Google Drive en el panel administrativo.':
