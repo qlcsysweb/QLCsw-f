@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { SUPPORT_CASE_STATUS, CHAT_SESSION_STATUS, statusOf } from '../../utils/statusLabels';
@@ -125,6 +126,7 @@ function ChatPanel({ session, onClose }) {
 
 export default function SupportPage() {
   const { t } = useLanguage();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [cases, setCases] = useState([]);
   const [sessions, setSessions] = useState([]);
   const [form, setForm] = useState({ subject: '', message: '' });
@@ -138,6 +140,21 @@ export default function SupportPage() {
     api.get('/client/chat-sessions').then(({ data }) => setSessions(data.sessions));
   };
   useEffect(load, []);
+
+  // CORREGIR(2).xlsx CLIENTE 28 — "Entrar al chat" desde una cita autorizada
+  // llega aquí con ?chat=<sessionId>; abre ese chat automáticamente en
+  // cuanto la sesión esté disponible, sin que el cliente tenga que buscarla.
+  useEffect(() => {
+    const chatId = searchParams.get('chat');
+    if (!chatId || sessions.length === 0) return;
+    const target = sessions.find((s) => s.id === chatId);
+    if (target) {
+      setActiveChat(target);
+      searchParams.delete('chat');
+      setSearchParams(searchParams, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessions]);
 
   const createCase = async (e) => {
     e.preventDefault();

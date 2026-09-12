@@ -36,14 +36,6 @@ const STATUS_LABEL_KEYS = {
       PENDIENTE: 'status.apiConnection.pending',
     },
   },
-  contract_status_updated: {
-    status: {
-      PENDING: 'status.contract.pending',
-      UPLOADED: 'status.contract.uploaded',
-      RECEIVED_SIGNED: 'status.contract.receivedSigned',
-      REJECTED: 'status.contract.rejected',
-    },
-  },
   process_condition_updated: {
     status: {
       PENDING: 'status.condition.pending',
@@ -52,7 +44,6 @@ const STATUS_LABEL_KEYS = {
     },
     conditionType: {
       WALLET: 'status.conditionType.WALLET',
-      CONTRACT: 'status.conditionType.CONTRACT',
       FUNDS: 'status.conditionType.FUNDS',
       PAYMENT: 'status.conditionType.PAYMENT',
       API: 'status.conditionType.API',

@@ -8,6 +8,7 @@ import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 import { getLocalizedModel } from '../../i18n/bilingualContent';
 import ModelComparisonTable from '../../components/ModelComparisonTable';
+import CountdownTimer from '../../components/CountdownTimer';
 
 function ModelDetailsModal({ model, onClose, onSelect, selecting, t }) {
   return (
@@ -72,13 +73,6 @@ export default function SubaccountDetailPage() {
   const apiStatusMap = API_CONNECTION_STATUS(t);
   const paymentStatusMap = PAYMENT_REPORT_STATUS(t);
   const statementStatusMap = STATEMENT_STATUS(t);
-
-  const CONTRACT_STATUS_LABELS = {
-    PENDING: { text: `◌ ${t('status.contract.pending')}`, className: 'warn' },
-    UPLOADED: { text: `! ${t('status.contract.uploaded')}`, className: 'warn' },
-    RECEIVED_SIGNED: { text: `✓ ${t('status.contract.receivedSigned')}`, className: 'ok' },
-    REJECTED: { text: `× ${t('status.contract.rejected')}`, className: 'danger' },
-  };
 
   const load = () => {
     api.get(`/client/api-subaccounts/${id}`).then(({ data }) => setSubaccount(data.subaccount));
@@ -145,25 +139,6 @@ export default function SubaccountDetailPage() {
       setError(translateBackendMessage(err.message, language));
     } finally {
       setSelecting(false);
-    }
-  };
-
-  const uploadSignedContract = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    setError('');
-    const fd = new FormData();
-    fd.append('file', file);
-    try {
-      await api.post(`/client/api-subaccounts/${id}/contract/signed`, fd, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      flash(t('clientContract.sentOk'));
-      load();
-    } catch (err) {
-      setError(translateBackendMessage(err.message, language));
-    } finally {
-      e.target.value = '';
     }
   };
 
@@ -267,7 +242,7 @@ export default function SubaccountDetailPage() {
         <div className="qlc-card" style={{ marginBottom: 16 }}>
           <h3 style={{ marginTop: 0 }}>{t('clientProcess.title')}</h3>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10 }}>
-            {['WALLET', 'CONTRACT', 'PAYMENT', 'FUNDS', 'API', 'ACTIVATION'].map((type) => {
+            {['WALLET', 'PAYMENT', 'FUNDS', 'API', 'ACTIVATION'].map((type) => {
               const condition = subaccount.process.conditions.find((c) => c.type === type);
               const cStatus = condition?.status || 'PENDING';
               const info =
@@ -293,7 +268,11 @@ export default function SubaccountDetailPage() {
       )}
 
       <div className="qlc-detail-grid">
-        <div className="qlc-card">
+        {/* CORREGIR(2).xlsx CLIENTE 29 — "Tu contrato" ya no existe; esta
+            tarjeta ocupa ahora ese espacio (grid-column: 1 / -1, ver
+            theme.css) cuando muestra la tabla de comparación, para que no
+            quede apretada en una sola columna de ~320px. */}
+        <div className={`qlc-card${!hasModel ? ' qlc-card-span-all' : ''}`}>
           <h3 style={{ marginTop: 0, marginBottom: 4 }}>{t('clientModels.title')}</h3>
           {!hasModel && (
             <p style={{ color: 'var(--qlc-muted)', fontSize: 13, marginBottom: 16 }}>{t('clientModels.subtitle')}</p>
@@ -338,40 +317,6 @@ export default function SubaccountDetailPage() {
               <h4 style={{ marginBottom: 10 }}>{t('clientModels.comparisonTitle')}</h4>
               <ModelComparisonTable />
               <p style={{ fontSize: 11, color: 'var(--qlc-muted2)', marginTop: 10 }}>{t('clientModels.disclaimer')}</p>
-            </>
-          )}
-        </div>
-
-        <div className="qlc-card">
-          <h3 style={{ marginTop: 0 }}>{t('clientContract.title')}</h3>
-          {!subaccount.contract ? (
-            <div className="qlc-empty">{t('clientContract.noContract')}</div>
-          ) : (
-            <>
-              <p>
-                {t('clientContract.statusLabel')}:{' '}
-                <span className={`qlc-badge ${(CONTRACT_STATUS_LABELS[subaccount.contract.status] || CONTRACT_STATUS_LABELS.PENDING).className}`}>
-                  {(CONTRACT_STATUS_LABELS[subaccount.contract.status] || CONTRACT_STATUS_LABELS.PENDING).text}
-                </span>
-              </p>
-              {subaccount.contract.originalDriveFileId && (
-                <p>
-                  <a href={`${API_BASE_URL}/client/contract/${subaccount.contract.id}/download/original`} target="_blank" rel="noreferrer">
-                    {t('clientContract.downloadOriginal')}
-                  </a>
-                </p>
-              )}
-              {subaccount.contract.signedDriveFileId ? (
-                <div className="qlc-card" style={{ background: 'rgba(0,168,255,0.06)', borderColor: 'var(--qlc-ok-border)' }}>
-                  <p style={{ margin: 0, fontSize: 13 }}>{t('clientContract.lockedNotice')}</p>
-                </div>
-              ) : (
-                <div>
-                  <label className="qlc-label">{t('clientContract.uploadLabel')}</label>
-                  <p style={{ fontSize: 12, color: 'var(--qlc-muted2)', marginTop: -4 }}>{t('clientContract.uploadHint')}</p>
-                  <input type="file" className="qlc-input" accept=".pdf,image/*" onChange={uploadSignedContract} />
-                </div>
-              )}
             </>
           )}
         </div>
@@ -563,6 +508,12 @@ export default function SubaccountDetailPage() {
                       </span>
                       <span className={`qlc-badge ${stStatus.className}`}>{stStatus.text}</span>
                     </div>
+                    {!s.commissionPaid && s.commissionDueAt && (
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12 }}>
+                        <span style={{ color: 'var(--qlc-muted2)' }}>{t('clientSubaccountDetail.timeToPay')}</span>
+                        <CountdownTimer deadline={s.commissionDueAt} expiredLabel={t('clientSubaccountDetail.deadlineExpired')} />
+                      </div>
+                    )}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12 }}>
                       {s.pdfDriveFileId && (
                         <a href={`${API_BASE_URL}/client/statements/${s.id}/download`} target="_blank" rel="noreferrer">

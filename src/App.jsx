@@ -24,7 +24,6 @@ import SecuritySettingsPage from './modules/admin/settings/SecuritySettingsPage'
 import PlatformSettingsPage from './modules/admin/PlatformSettingsPage';
 import AdminGuidesPage from './modules/admin/GuidesPage';
 import StatementsArchivePage from './modules/admin/StatementsArchivePage';
-import ContractsInboxPage from './modules/admin/ContractsInboxPage';
 import ProcessStepsPage from './modules/admin/ProcessStepsPage';
 import AdminNotificationsPage from './modules/admin/NotificationsPage';
 
@@ -34,6 +33,7 @@ import ClientProfilePage from './modules/client/ProfilePage';
 import ClientSubaccountsPage from './modules/client/SubaccountsPage';
 import ClientSubaccountDetailPage from './modules/client/SubaccountDetailPage';
 import ClientDocumentsPage from './modules/client/DocumentsPage';
+import ClientStatementsPage from './modules/client/StatementsPage';
 import ClientWalletPage from './modules/client/WalletPage';
 import ClientSupportPage from './modules/client/SupportPage';
 import ClientAppointmentsPage from './modules/client/AppointmentsPage';
@@ -83,7 +83,6 @@ function AppRoutes() {
               <Route path="prospects" element={<ProspectsPage />} />
               <Route path="admins" element={<AdminsPage />} />
               <Route path="statements" element={<StatementsArchivePage />} />
-              <Route path="contracts" element={<ContractsInboxPage />} />
               <Route path="notifications" element={<AdminNotificationsPage />} />
             </Route>
           </Route>
@@ -95,6 +94,7 @@ function AppRoutes() {
               <Route path="api-subaccounts" element={<ClientSubaccountsPage />} />
               <Route path="api-subaccounts/:id" element={<ClientSubaccountDetailPage />} />
               <Route path="documents" element={<ClientDocumentsPage />} />
+              <Route path="statements" element={<ClientStatementsPage />} />
               <Route path="guides" element={<ClientGuidesPage />} />
               <Route path="wallet" element={<ClientWalletPage />} />
               <Route path="capital-increase" element={<ClientCapitalIncreasePage />} />

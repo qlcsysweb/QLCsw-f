@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import api from '../../services/api';
+import api, { API_BASE_URL } from '../../services/api';
 import ConfirmModal from '../../components/ConfirmModal';
 import ConfirmSaveModal from '../../components/ConfirmSaveModal';
 import { PAYMENT_REPORT_STATUS, statusOf } from '../../utils/statusLabels';
@@ -125,13 +125,27 @@ export default function PaymentsPage() {
                 <li key={r.id}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span>
-                      {r.client?.firstName} {r.client?.lastName} — {r.amount} {r.currency}
+                      {r.apiSubaccount?.client?.firstName} {r.apiSubaccount?.client?.lastName}
+                      {r.apiSubaccount?.identifier && <span style={{ color: 'var(--qlc-muted2)' }}> ({r.apiSubaccount.identifier})</span>}
+                      {' '}— {r.amount} {r.currency}
                     </span>
                     {(() => {
                       const s = statusOf(paymentReportStatusMap, r.status, 'PENDING');
                       return <span className={`qlc-badge ${s.className}`}>{s.text}</span>;
                     })()}
                   </div>
+                  {r.reference && (
+                    <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--qlc-muted2)' }}>
+                      {t('adminClientDetail.paymentReference')}: <code>{r.reference}</code>
+                    </p>
+                  )}
+                  {r.proofDriveFileId && (
+                    <p style={{ margin: '4px 0 0', fontSize: 12 }}>
+                      <a href={`${API_BASE_URL}/admin/payment-reports/${r.id}/proof`} target="_blank" rel="noreferrer">
+                        {t('adminClientDetail.viewProof')}
+                      </a>
+                    </p>
+                  )}
                   {['PENDING', 'EN_REVISION'].includes(r.status) && (
                     <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
                       <button className="qlc-btn ghost" onClick={() => review(r.id, 'APROBADO')}>
@@ -153,7 +167,7 @@ export default function PaymentsPage() {
         <ConfirmModal
           title={t('adminPayments.rejectTitle')}
           message={t('adminPayments.rejectMessage')
-            .replace('{name}', `${confirmReject.client?.firstName} ${confirmReject.client?.lastName}`)
+            .replace('{name}', `${confirmReject.apiSubaccount?.client?.firstName} ${confirmReject.apiSubaccount?.client?.lastName}`)
             .replace('{amount}', confirmReject.amount)
             .replace('{currency}', confirmReject.currency)}
           confirmLabel={t('adminPayments.reject')}

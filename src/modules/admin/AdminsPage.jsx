@@ -38,12 +38,24 @@ export default function AdminsPage() {
     load();
   };
 
+  const toggleGeneral = async (id, isGeneralAdmin) => {
+    setError('');
+    try {
+      await api.patch(`/admin/admins/${id}/general`, { isGeneralAdmin });
+      load();
+    } catch (err) {
+      setError(translateBackendMessage(err.message, language));
+    }
+  };
+
   return (
     <div>
       <div className="qlc-kicker">{t('adminAdmins.kicker')}</div>
       <h1 style={{ marginTop: 0 }}>
         {t('adminAdmins.title')} ({admins.length}/{limit})
       </h1>
+
+      {error && <div className="qlc-field-error" style={{ marginBottom: 12 }}>{error}</div>}
 
       <div className="qlc-table-wrap" style={{ marginBottom: 20 }}>
         <table className="qlc-table">
@@ -53,6 +65,7 @@ export default function AdminsPage() {
               <th>{t('adminAdmins.email')}</th>
               <th>{t('adminAdmins.lastLogin')}</th>
               <th>{t('adminAdmins.status')}</th>
+              <th>{t('adminAdmins.generalAdmin')}</th>
               <th></th>
             </tr>
           </thead>
@@ -68,6 +81,20 @@ export default function AdminsPage() {
                   <span className={`qlc-badge ${a.isActive ? 'ok' : 'danger'}`}>
                     {a.isActive ? t('adminAdmins.active') : t('adminAdmins.inactive')}
                   </span>
+                </td>
+                <td>
+                  {a.profile?.isGeneralAdmin ? (
+                    <span className="qlc-badge ok">{t('adminAdmins.generalAdminYes')}</span>
+                  ) : (
+                    <button className="qlc-btn ghost" onClick={() => toggleGeneral(a.id, true)}>
+                      {t('adminAdmins.makeGeneralAdmin')}
+                    </button>
+                  )}
+                  {a.profile?.isGeneralAdmin && (
+                    <button className="qlc-btn ghost" style={{ marginLeft: 6 }} onClick={() => toggleGeneral(a.id, false)}>
+                      {t('adminAdmins.removeGeneralAdmin')}
+                    </button>
+                  )}
                 </td>
                 <td>
                   <button

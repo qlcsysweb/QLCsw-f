@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import ConfirmModal from '../../components/ConfirmModal';
 import { APPOINTMENT_STATUS, statusOf } from '../../utils/statusLabels';
@@ -100,8 +101,10 @@ function AvailabilityEditor() {
 
 export default function AppointmentsPage() {
   const { t } = useLanguage();
+  const navigate = useNavigate();
   const [appointments, setAppointments] = useState([]);
   const [confirmReject, setConfirmReject] = useState(null);
+  const [openingChat, setOpeningChat] = useState(null);
 
   const appointmentStatusMap = APPOINTMENT_STATUS(t);
 
@@ -113,6 +116,18 @@ export default function AppointmentsPage() {
   const updateStatus = async (id, status) => {
     await api.patch(`/admin/appointments/${id}/status`, { status });
     load();
+  };
+
+  // CORREGIR(2).xlsx ADMIN 28 — desde una cita ya autorizada, entrar
+  // directamente al chat correspondiente sin buscarlo manualmente en Soporte.
+  const enterChat = async (id) => {
+    setOpeningChat(id);
+    try {
+      const { data } = await api.get(`/admin/appointments/${id}/chat-session`);
+      navigate(`/admin/support?chat=${data.session.id}`);
+    } finally {
+      setOpeningChat(null);
+    }
   };
 
   return (
@@ -134,6 +149,7 @@ export default function AppointmentsPage() {
               <tr>
                 <th>{t('adminAppointments.requester')}</th>
                 <th>{t('clientAppointments.caseNumber')}</th>
+                <th>{t('clientAppointments.account')}</th>
                 <th>{t('adminAppointments.date')}</th>
                 <th>{t('adminAppointments.time')}</th>
                 <th>{t('adminAppointments.status')}</th>
@@ -151,6 +167,13 @@ export default function AppointmentsPage() {
                         : `${a.prospect?.firstName || ''} ${a.prospect?.lastName || ''} ${t('adminAppointments.prospectTag')}`}
                     </td>
                     <td>{a.supportCase ? `#${a.supportCase.caseNumber}` : '—'}</td>
+                    <td>
+                      {a.apiSubaccount
+                        ? a.apiSubaccount.isPrincipal
+                          ? t('clientSubaccounts.principalLabel')
+                          : a.apiSubaccount.identifier
+                        : '—'}
+                    </td>
                     <td>{formatCdmxDate(a.requestedDate)}</td>
                     <td>{a.requestedTime}</td>
                     <td>
@@ -166,6 +189,11 @@ export default function AppointmentsPage() {
                             {t('adminAppointments.reject')}
                           </button>
                         </>
+                      )}
+                      {a.status === 'AUTORIZADA' && (
+                        <button className="qlc-btn ghost" disabled={openingChat === a.id} onClick={() => enterChat(a.id)}>
+                          {openingChat === a.id ? t('common.loading') : t('clientAppointments.enterChat')}
+                        </button>
                       )}
                     </td>
                   </tr>

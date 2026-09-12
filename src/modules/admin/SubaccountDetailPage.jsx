@@ -1,17 +1,17 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api, { API_BASE_URL } from '../../services/api';
-import ConfirmModal from '../../components/ConfirmModal';
 import { API_CONNECTION_STATUS, PAYMENT_REPORT_STATUS, STATEMENT_STATUS, statusOf } from '../../utils/statusLabels';
 import { formatCdmxDate } from '../../utils/cdmxTime';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 import { getLocalizedModel } from '../../i18n/bilingualContent';
+import CountdownTimer from '../../components/CountdownTimer';
 
 // CORRECCIÓN 6 — orden alineado al flujo real del cliente (ver
 // backend/src/utils/subaccountProvisioning.js). Los valores del enum no
 // cambiaron, solo el orden de presentación.
-const CONDITION_ORDER = ['WALLET', 'CONTRACT', 'PAYMENT', 'FUNDS', 'API', 'ACTIVATION'];
+const CONDITION_ORDER = ['WALLET', 'PAYMENT', 'FUNDS', 'API', 'ACTIVATION'];
 
 function ConditionRow({ condition, onUpdate, t }) {
   const [saving, setSaving] = useState(false);
@@ -87,8 +87,6 @@ export default function AdminSubaccountDetailPage() {
   const [error, setError] = useState('');
 
   const [apiForm, setApiForm] = useState({ identifier: '', exchangeName: '', apiKey: '', apiSecret: '', apiPassphrase: '', status: 'PENDIENTE', requiredCapital: '', connectionReason: '' });
-  const [contractUploading, setContractUploading] = useState(false);
-  const [confirmResetSigned, setConfirmResetSigned] = useState(false);
   const [statementForm, setStatementForm] = useState({
     periodStart: '', periodEnd: '', startingBalance: '', endingBalance: '', resultAmount: '', resultPercentage: '', volatility: '', netResult: '', commission: '0', activityNotes: '', adminNotes: '',
   });
@@ -99,12 +97,6 @@ export default function AdminSubaccountDetailPage() {
   const apiStatusMap = API_CONNECTION_STATUS(t);
   const paymentStatusMap = PAYMENT_REPORT_STATUS(t);
   const statementStatusMap = STATEMENT_STATUS(t);
-  const CONTRACT_STATUS_LABELS = {
-    PENDING: { text: t('status.contract.pending'), className: 'warn' },
-    UPLOADED: { text: t('status.contract.uploaded'), className: 'warn' },
-    RECEIVED_SIGNED: { text: t('status.contract.receivedSigned'), className: 'ok' },
-    REJECTED: { text: t('status.contract.rejected'), className: 'danger' },
-  };
 
   const load = () => {
     api.get(`/admin/clients/${clientId}`).then(({ data }) => {
@@ -176,30 +168,6 @@ export default function AdminSubaccountDetailPage() {
     } catch (err) {
       setError(translateBackendMessage(err.message, language));
     }
-  };
-
-  const uploadContract = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    setContractUploading(true);
-    const fd = new FormData();
-    fd.append('file', file);
-    try {
-      await api.post(`/admin/api-subaccounts/${id}/contract`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
-      flash(t('adminClientDetail.contractUploaded'));
-      load();
-    } catch (err) {
-      setError(translateBackendMessage(err.message, language));
-    } finally {
-      setContractUploading(false);
-      e.target.value = '';
-    }
-  };
-
-  const resetSignedContract = async () => {
-    await api.post(`/admin/contracts/${subaccount.contract.id}/reset-signed`);
-    flash(t('adminClientDetail.signedContractRemoved'));
-    load();
   };
 
   const reviewPayment = async (reportId, status) => {
@@ -379,40 +347,6 @@ export default function AdminSubaccountDetailPage() {
         </div>
 
         <div className="qlc-card">
-          <h3 style={{ marginTop: 0 }}>{t('adminClientDetail.contract')}</h3>
-          <p style={{ fontSize: 13, color: 'var(--qlc-muted)' }}>
-            {t('adminClientDetail.status')}:{' '}
-            <span className={`qlc-badge ${(CONTRACT_STATUS_LABELS[subaccount.contract?.status] || CONTRACT_STATUS_LABELS.PENDING).className}`}>
-              {(CONTRACT_STATUS_LABELS[subaccount.contract?.status] || CONTRACT_STATUS_LABELS.PENDING).text}
-            </span>
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <div>
-              <label className="qlc-label">{t('adminClientDetail.originalLabel')}</label>
-              <input type="file" className="qlc-input" accept=".pdf,image/*" onChange={uploadContract} disabled={contractUploading} />
-              {subaccount.contract?.originalDriveFileId && (
-                <a href={`${API_BASE_URL}/admin/contracts/${subaccount.contract.id}/download/original`} target="_blank" rel="noreferrer" style={{ fontSize: 12 }}>
-                  {t('adminClientDetail.viewOriginal')}: {subaccount.contract.originalFileName}
-                </a>
-              )}
-            </div>
-            {subaccount.contract?.signedDriveFileId && (
-              <div>
-                <label className="qlc-label">{t('adminClientDetail.signedLabel')}</label>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
-                  <a href={`${API_BASE_URL}/admin/contracts/${subaccount.contract.id}/download/signed`} target="_blank" rel="noreferrer" style={{ fontSize: 12 }}>
-                    {t('adminClientDetail.viewSigned')}: {subaccount.contract.signedFileName}
-                  </a>
-                  <button className="qlc-btn ghost" onClick={() => setConfirmResetSigned(true)}>
-                    {t('adminClientDetail.deleteAllowResend')}
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="qlc-card">
           <h3 style={{ marginTop: 0 }}>
             {t('adminClientDetail.reportedPayments')} ({payments.length})
           </h3>
@@ -450,6 +384,11 @@ export default function AdminSubaccountDetailPage() {
                   <li key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span>
                       {p.amount} {p.currency} — <span className={`qlc-badge ${s.className}`}>{s.text}</span>
+                      {p.reference && (
+                        <span style={{ color: 'var(--qlc-muted2)' }}>
+                          {' '}· {t('adminClientDetail.paymentReference')}: <code>{p.reference}</code>
+                        </span>
+                      )}
                       {p.proofDriveFileId && (
                         <>
                           {' '}· <a href={`${API_BASE_URL}/admin/payment-reports/${p.id}/proof`} target="_blank" rel="noreferrer">{t('adminClientDetail.viewProof')}</a>
@@ -512,6 +451,12 @@ export default function AdminSubaccountDetailPage() {
                       <span>{formatCdmxDate(s.periodStart)} – {formatCdmxDate(s.periodEnd)} · {s.resultPercentage}%</span>
                       <span className={`qlc-badge ${stStatus.className}`}>{stStatus.text}</span>
                     </div>
+                    {!s.commissionPaid && s.commissionDueAt && (
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12 }}>
+                        <span style={{ color: 'var(--qlc-muted2)' }}>{t('clientSubaccountDetail.timeToPay')}</span>
+                        <CountdownTimer deadline={s.commissionDueAt} expiredLabel={t('clientSubaccountDetail.deadlineExpired')} />
+                      </div>
+                    )}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12 }}>
                       <span style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
                         {s.pdfDriveFileId && (
@@ -606,17 +551,6 @@ export default function AdminSubaccountDetailPage() {
           </form>
         </div>
       </div>
-
-      {confirmResetSigned && (
-        <ConfirmModal
-          title={t('adminClientDetail.resetSignedTitle')}
-          message={t('adminClientDetail.resetSignedMessage')}
-          confirmLabel={t('adminClientDetail.delete')}
-          twoStep
-          onClose={() => setConfirmResetSigned(false)}
-          onConfirm={resetSignedContract}
-        />
-      )}
     </div>
   );
 }

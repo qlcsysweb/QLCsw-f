@@ -395,6 +395,12 @@ textarea {
   gap: 18px;
   align-items: start;
 }
+/* Permite que una tarjeta (p.ej. la tabla de comparación de modelos) ocupe
+   todo el ancho del grid en vez de quedar apretada en una sola columna de
+   ~320px, donde una tabla con min-width no cabe sin scroll horizontal. */
+.qlc-card-span-all {
+  grid-column: 1 / -1;
+}
 
 .qlc-condition-row {
   display: grid;

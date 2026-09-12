@@ -27,8 +27,6 @@ const KNOWN_MESSAGES = {
   'La nueva contraseña debe tener al menos 8 caracteres': 'The new password must be at least 8 characters long',
   'No se puede activar: existen condiciones del proceso sin confirmar.':
     'Cannot activate: some process conditions have not been confirmed.',
-  'Ya enviaste tu contrato firmado. Si necesitas reemplazarlo, contacta con QLC.':
-    "You've already submitted your signed contract. Contact QLC if you need to replace it.",
   'Debes aceptar el Aviso de Privacidad para continuar.': 'You must accept the Privacy Notice to continue.',
   'Debes aceptar los Términos y Condiciones para continuar.': 'You must accept the Terms and Conditions to continue.',
   'Debes autorizar la conexión API para continuar.': 'You must authorize the API connection to continue.',
@@ -42,7 +40,6 @@ const KNOWN_MESSAGES = {
   // --- Recursos no encontrados (404) ---
   'Cita no encontrada': 'Appointment not found',
   'Cliente no encontrado': 'Client not found',
-  'Contrato no encontrado': 'Contract not found',
   'Perfil de cliente no encontrado': 'Client profile not found',
   'Conexión API no encontrada': 'API connection not found',
   'Usuario no encontrado': 'User not found',
@@ -54,7 +51,6 @@ const KNOWN_MESSAGES = {
   'Este recurso multimedia ya no existe': 'This media resource no longer exists',
   'Proceso no encontrado': 'Process not found',
   'Documento no encontrado': 'Document not found',
-  'Todavía no existe un contrato para firmar': 'There is no contract to sign yet',
   'Prospecto no encontrado': 'Prospect not found',
   'Caso no encontrado': 'Case not found',
   'Modelo no encontrado': 'Model not found',
@@ -72,8 +68,6 @@ const KNOWN_MESSAGES = {
   'Modelo seleccionado no válido': 'Selected model is not valid',
   'Modelo no válido': 'Invalid model',
   'No puedes desactivar tu propia cuenta.': 'You cannot deactivate your own account.',
-  'Este contrato todavía no tiene un archivo firmado que eliminar.':
-    'This contract does not have a signed file to delete yet.',
 
   // --- Conflictos (409) ---
   'Ya existe un usuario con ese email': 'A user with that email already exists',

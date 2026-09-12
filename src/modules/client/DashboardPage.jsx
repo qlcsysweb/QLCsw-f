@@ -14,13 +14,6 @@ const ACCOUNT_STATUS_KEYS = {
   INACTIVE: { text: 'inactive', className: 'danger', dot: '×' },
 };
 
-const CONTRACT_STATUS_KEYS = {
-  PENDING: { text: 'pending', className: 'warn', dot: '◌' },
-  UPLOADED: { text: 'uploaded', className: 'warn', dot: '!' },
-  RECEIVED_SIGNED: { text: 'receivedSigned', className: 'ok', dot: '✓' },
-  REJECTED: { text: 'rejected', className: 'danger', dot: '×' },
-};
-
 const APPOINTMENT_STATUS_KEYS = {
   PENDING: { text: 'pending', className: 'warn', dot: '◌' },
   AUTORIZADA: { text: 'authorized', className: 'ok', dot: '✓' },
@@ -130,7 +123,6 @@ export default function DashboardPage() {
           <ul className="qlc-plain-list">
             {dashboard.subaccounts.map((s) => {
               const apiStatus = statusOf(apiStatusMap, s.apiStatus, 'PENDIENTE');
-              const contractStatus = CONTRACT_STATUS_KEYS[s.contractStatus] || CONTRACT_STATUS_KEYS.PENDING;
               return (
                 <li key={s.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span>
@@ -141,9 +133,6 @@ export default function DashboardPage() {
                   </span>
                   <span style={{ display: 'flex', gap: 8 }}>
                     <span className={`qlc-badge ${apiStatus.className}`}>{apiStatus.text}</span>
-                    <span className={`qlc-badge ${contractStatus.className}`}>
-                      {contractStatus.dot} {t(`status.contract.${contractStatus.text}`)}
-                    </span>
                     <Link className="qlc-btn ghost" to={`/client/api-subaccounts/${s.id}`}>
                       {t('adminClientsList.view')}
                     </Link>

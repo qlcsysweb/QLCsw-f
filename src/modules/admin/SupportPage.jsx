@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { SUPPORT_CASE_STATUS, CHAT_SESSION_STATUS, statusOf } from '../../utils/statusLabels';
@@ -133,6 +134,7 @@ function ChatPanel({ session, onClose }) {
 
 export default function SupportPage() {
   const { t } = useLanguage();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [cases, setCases] = useState([]);
   const [sessions, setSessions] = useState([]);
   const [activeChat, setActiveChat] = useState(null);
@@ -147,6 +149,20 @@ export default function SupportPage() {
   useEffect(() => {
     load();
   }, []);
+
+  // CORREGIR(2).xlsx ADMIN 28 — "Entrar al chat" desde una cita autorizada
+  // llega aquí con ?chat=<sessionId>; se abre automáticamente.
+  useEffect(() => {
+    const chatId = searchParams.get('chat');
+    if (!chatId || sessions.length === 0) return;
+    const target = sessions.find((s) => s.id === chatId);
+    if (target) {
+      setActiveChat(target);
+      searchParams.delete('chat');
+      setSearchParams(searchParams, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessions]);
 
   const updateStatus = async (id, status) => {
     await api.patch(`/admin/support-cases/${id}`, { status });
