@@ -336,10 +336,10 @@
      (no encogerlo), así que el "cascarón" gris que lo encierra reduce su
      propio padding en pantallas de poca altura para seguir cabiendo sin
      scroll — ver .hero-logo/.hero-mini abajo, que ceden espacio primero. */
-  padding: clamp(16px, 2.5vh, 50px);
+  padding: clamp(14px, 2vh, 40px);
   /* Un poco más relajado que antes (12px): el logo debe quedar cerca del
      borde superior pero sin quedar pegado — "un poco más abajo". */
-  padding-top: 22px;
+  padding-top: 18px;
   border: 1px solid var(--line);
   border-radius: 28px;
   background: linear-gradient(145deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.012));
@@ -347,8 +347,9 @@
 }
 .qlc-public .hero-logo {
   width: 100%;
-  /* Logo un poco más grande todavía, a pedido del cliente. */
-  max-width: clamp(320px, 48vh, 480px);
+  /* Logo notablemente más grande, a pedido del cliente — debe llenar casi
+     todo el ancho de la tarjeta, como en su referencia fotográfica. */
+  max-width: clamp(340px, 54vh, 520px);
   margin: 0 auto;
 }
 .qlc-public .hero-logo .qlc-logo-media {
@@ -356,17 +357,17 @@
   opacity: 0.98;
 }
 .qlc-public .hero-mini {
-  margin-top: clamp(6px, 1vh, 16px);
+  margin-top: clamp(6px, 0.8vh, 14px);
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 10px;
 }
 .qlc-public .hero-mini .mini {
-  padding: clamp(8px, 1.4vh, 15px) 12px;
+  padding: clamp(7px, 1.1vh, 15px) 12px;
   border: 1px solid var(--line);
   border-radius: 14px;
   background: rgba(8, 14, 21, 0.78);
-  min-height: clamp(48px, 7vh, 82px);
+  min-height: clamp(44px, 6vh, 82px);
 }
 .qlc-public .hero-mini .mini b {
   display: block;
