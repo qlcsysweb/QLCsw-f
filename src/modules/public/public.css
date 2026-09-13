@@ -397,6 +397,18 @@
    escritorio, >900px de alto) y el modo responsive de celular quedan
    fuera de este bloque y conservan su propio comportamiento. */
 @media (min-width: 1024px) and (max-width: 1600px) and (max-height: 900px) {
+  .qlc-public .hero {
+    /* "start" (no "center"): con center, .hero-grid quedaba centrado
+       dentro de la altura fija de 720px de .hero, y todo el espacio
+       sobrante se repartía MITAD ARRIBA/MITAD ABAJO — eso diluía el
+       margen fijo de 26px hasta ~55px en las laptops más altas del
+       rango (900px). Con "start" + min-height:auto, la altura de .hero
+       la define exclusivamente el propio contenido, así que el margen
+       superior queda IGUAL (26px) sin importar la altura exacta de la
+       pantalla dentro del rango 700–900px. */
+    align-content: start;
+    min-height: auto;
+  }
   .qlc-public .hero-grid {
     padding: 26px 0 22px;
     gap: 26px;
@@ -409,7 +421,8 @@
     max-width: 400px;
   }
   .qlc-public .hero-mini {
-    margin-top: 22px;
+    /* Más abajo todavía, a pedido explícito del cliente. */
+    margin-top: 34px;
   }
   .qlc-public .hero-mini .mini {
     padding: 10px 12px;
