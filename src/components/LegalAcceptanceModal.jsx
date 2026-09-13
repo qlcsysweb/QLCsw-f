@@ -41,7 +41,7 @@ export function PrivacyNoticeModal({ onAccept }) {
 
         <button
           type="button"
-          className="btn primary qlc-scam-btn"
+          className="qlc-btn primary qlc-scam-btn"
           disabled={!checked}
           onClick={() => onAccept()}
         >
@@ -89,7 +89,7 @@ export function TermsAndConditionsModal({ onAccept, onBack, loading }) {
 
         <button
           type="button"
-          className="btn primary qlc-scam-btn"
+          className="qlc-btn primary qlc-scam-btn"
           disabled={!canContinue || loading}
           onClick={() => onAccept()}
         >

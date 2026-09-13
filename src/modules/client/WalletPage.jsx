@@ -13,6 +13,7 @@ export default function WalletPage() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [copiedField, setCopiedField] = useState(null);
 
   const load = () =>
     api.get('/client/wallet').then(({ data }) => {
@@ -24,6 +25,17 @@ export default function WalletPage() {
   }, []);
 
   if (!wallet) return <div className="qlc-empty">{t('common.loading')}</div>;
+
+  const copyField = async (field, value) => {
+    if (!value) return;
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopiedField(field);
+      setTimeout(() => setCopiedField((f) => (f === field ? null : f)), 2500);
+    } catch {
+      // Clipboard API unavailable — no-op, el usuario puede seleccionar el texto manualmente.
+    }
+  };
 
   const submit = async (e) => {
     e.preventDefault();
@@ -52,19 +64,41 @@ export default function WalletPage() {
           {message && <div style={{ color: 'var(--qlc-ok)', fontSize: 12, marginBottom: 10 }}>{message}</div>}
           {error && <div className="qlc-field-error">{error}</div>}
           <label className="qlc-label">{t('clientWallet.address')}</label>
-          <input
-            className="qlc-input"
-            value={form.walletAddress}
-            onChange={(e) => setForm((f) => ({ ...f, walletAddress: e.target.value }))}
-            placeholder={t('clientWallet.addressPlaceholder')}
-          />
+          <div style={{ display: 'flex', gap: 8 }}>
+            <input
+              className="qlc-input"
+              value={form.walletAddress}
+              onChange={(e) => setForm((f) => ({ ...f, walletAddress: e.target.value }))}
+              placeholder={t('clientWallet.addressPlaceholder')}
+            />
+            <button
+              type="button"
+              className="qlc-btn ghost"
+              style={{ flexShrink: 0 }}
+              disabled={!form.walletAddress}
+              onClick={() => copyField('address', form.walletAddress)}
+            >
+              {copiedField === 'address' ? t('common.copied') : t('common.copy')}
+            </button>
+          </div>
           <label className="qlc-label">{t('clientWallet.network')}</label>
-          <input
-            className="qlc-input"
-            value={form.walletNetwork}
-            onChange={(e) => setForm((f) => ({ ...f, walletNetwork: e.target.value }))}
-            placeholder="TRC20, ERC20, BEP20…"
-          />
+          <div style={{ display: 'flex', gap: 8 }}>
+            <input
+              className="qlc-input"
+              value={form.walletNetwork}
+              onChange={(e) => setForm((f) => ({ ...f, walletNetwork: e.target.value }))}
+              placeholder="TRC20, ERC20, BEP20…"
+            />
+            <button
+              type="button"
+              className="qlc-btn ghost"
+              style={{ flexShrink: 0 }}
+              disabled={!form.walletNetwork}
+              onClick={() => copyField('network', form.walletNetwork)}
+            >
+              {copiedField === 'network' ? t('common.copied') : t('common.copy')}
+            </button>
+          </div>
           <button className="qlc-btn primary" style={{ marginTop: 14, width: '100%' }} disabled={saving}>
             {saving ? t('common.saving') : t('common.save')}
           </button>

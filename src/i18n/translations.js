@@ -60,6 +60,8 @@ const es = {
     unpublished: '— No publicado',
     genericError: 'Ocurrió un error. Intenta nuevamente.',
     unexpectedError: 'Ocurrió un problema inesperado. Intenta nuevamente en unos segundos.',
+    copy: 'Copiar',
+    copied: '¡Copiado!',
   },
 
   welcome: {
@@ -661,7 +663,7 @@ const es = {
     transferMarkReceived: 'Ya está recibido',
     transferReceived: 'Transferencia recibida',
     viewProof: 'Ver comprobante',
-    paymentReference: 'Hash / referencia de transacción',
+    paymentReference: 'HASH DE TRANSACCIÓN',
     deactivateTitle: '¿Desactivar cuenta?',
     deactivateMessage: '{name} no podrá iniciar sesión en el portal hasta que reactives su cuenta.',
     deleteDocTitle: '¿Eliminar documento?',
@@ -919,6 +921,7 @@ const es = {
     subaccount: 'Subcuenta/API',
     period: 'Periodo',
     download: 'Descargar PDF',
+    print: 'Imprimir',
     archive: 'Archivar',
     unarchive: 'Desarchivar',
     payment: 'Pago',
@@ -1688,6 +1691,8 @@ const en = {
     unpublished: '— Unpublished',
     genericError: 'Something went wrong. Please try again.',
     unexpectedError: 'An unexpected problem occurred. Please try again in a few seconds.',
+    copy: 'Copy',
+    copied: 'Copied!',
   },
 
   welcome: {
@@ -2289,7 +2294,7 @@ const en = {
     transferMarkReceived: 'Mark as received',
     transferReceived: 'Transfer received',
     viewProof: 'View proof',
-    paymentReference: 'Transaction hash / reference',
+    paymentReference: 'TRANSACTION HASH',
     deactivateTitle: 'Deactivate account?',
     deactivateMessage: "{name} won't be able to sign in to the portal until you reactivate their account.",
     deleteDocTitle: 'Delete document?',
@@ -2547,6 +2552,7 @@ const en = {
     subaccount: 'Subaccount/API',
     period: 'Period',
     download: 'Download PDF',
+    print: 'Print',
     archive: 'Archive',
     unarchive: 'Unarchive',
     payment: 'Payment',

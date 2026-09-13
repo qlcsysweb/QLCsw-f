@@ -32,6 +32,25 @@ export default function StatementsArchivePage() {
     load();
   };
 
+  // El PDF se sirve "inline" (ver statementController.downloadStatementFile),
+  // así que abrirlo en una pestaña nueva ya deja disponible el botón de
+  // imprimir del visor nativo del navegador. Intentamos además disparar el
+  // diálogo de impresión automáticamente cuando el navegador lo permite;
+  // si no (por ejemplo por ser un origen distinto), el usuario igual puede
+  // imprimir manualmente desde esa pestaña.
+  const printStatement = (statement) => {
+    const win = window.open(`${API_BASE_URL}/admin/statements/${statement.id}/download`, '_blank');
+    if (win) {
+      win.onload = () => {
+        try {
+          win.print();
+        } catch {
+          // El usuario puede imprimir manualmente desde el visor del navegador.
+        }
+      };
+    }
+  };
+
   // CORREGIR(2).xlsx ADMIN 06 — organización por año (derivada de
   // periodStart, sin depender de un campo nuevo en la base de datos) para
   // poder navegar el archivo completo sin que sea una sola lista plana.
@@ -118,9 +137,14 @@ export default function StatementsArchivePage() {
                       </td>
                       <td style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                         {s.pdfDriveFileId && (
-                          <a className="qlc-btn ghost" href={`${API_BASE_URL}/admin/statements/${s.id}/download`} target="_blank" rel="noreferrer">
-                            {t('adminStatementsArchive.download')}
-                          </a>
+                          <>
+                            <a className="qlc-btn ghost" href={`${API_BASE_URL}/admin/statements/${s.id}/download`} target="_blank" rel="noreferrer">
+                              {t('adminStatementsArchive.download')}
+                            </a>
+                            <button type="button" className="qlc-btn ghost" onClick={() => printStatement(s)}>
+                              {t('adminStatementsArchive.print')}
+                            </button>
+                          </>
                         )}
                         <button className="qlc-btn ghost" onClick={() => toggleArchived(s)}>
                           {s.archived ? t('adminStatementsArchive.unarchive') : t('adminStatementsArchive.archive')}
