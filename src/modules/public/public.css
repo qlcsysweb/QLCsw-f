@@ -255,12 +255,11 @@
   display: grid;
   grid-template-columns: 1fr 1.08fr;
   gap: clamp(20px, 3.5vh, 56px);
-  /* "start" (no "stretch"): con stretch, la tarjeta del logo se estiraba a
-     la altura de la columna de texto (que varía según cuántas líneas hace
-     el título), dejando un hueco gris vacío enorme debajo de las
-     mini-tarjetas cuando el texto era más alto que el contenido del logo.
-     Con "start" la tarjeta mide lo que su propio contenido necesita. */
-  align-items: start;
+  /* "stretch": a pedido del cliente, la tarjeta del logo debe alargarse
+     hasta quedar al ras (misma altura) que la columna de texto de la
+     izquierda — con el logo ya más grande, ese espacio extra debajo de
+     las mini-tarjetas se ve proporcionado, no como un hueco vacío. */
+  align-items: stretch;
   padding: clamp(32px, 5.5vh, 95px) 0 clamp(24px, 3.5vh, 80px);
 }
 .qlc-public .eyebrow {
