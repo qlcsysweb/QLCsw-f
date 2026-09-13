@@ -421,10 +421,12 @@
     max-width: 400px;
   }
   .qlc-public .hero-mini {
-    /* A pedido del cliente: el borde inferior de las tarjetas negras debe
-       quedar a la misma altura que el botón "Ver modelos de
-       participación" de la columna izquierda. */
-    margin-top: 99px;
+    /* A pedido del cliente: separación fija y compacta respecto al logo —
+       NO se estira para alcanzar el botón "Ver modelos de participación";
+       eso hacía ver la card gris demasiado alargada. El alto total de la
+       card lo sigue definiendo align-items:stretch (columna izquierda), así
+       que este valor solo reubica las mini-cards dentro de esa altura. */
+    margin-top: 34px;
   }
   .qlc-public .hero-mini .mini {
     padding: 10px 12px;
