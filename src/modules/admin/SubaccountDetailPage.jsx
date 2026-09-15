@@ -47,7 +47,10 @@ function ConditionRow({ condition, onUpdate, t }) {
 }
 
 function MaskedSecret({ label, value, t }) {
-  const [revealed, setRevealed] = useState(false);
+  // Visible por defecto: el admin debe poder ver la credencial real de
+  // inmediato al abrir la subcuenta, sin depender de que note el botón
+  // "Ver". Sigue pudiendo ocultarla con "Ocultar" si comparte pantalla.
+  const [revealed, setRevealed] = useState(true);
   const [copied, setCopied] = useState(false);
   if (!value) return null;
   const masked = '•'.repeat(Math.min(value.length, 24));
@@ -85,6 +88,7 @@ export default function AdminSubaccountDetailPage() {
   const [distributionReports, setDistributionReports] = useState([]);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [copiedHashId, setCopiedHashId] = useState(null);
 
   const [apiForm, setApiForm] = useState({ identifier: '', exchangeName: '', apiKey: '', apiSecret: '', apiPassphrase: '', status: 'PENDIENTE', requiredCapital: '', connectionReason: '' });
   const [statementForm, setStatementForm] = useState({
@@ -167,6 +171,16 @@ export default function AdminSubaccountDetailPage() {
       load();
     } catch (err) {
       setError(translateBackendMessage(err.message, language));
+    }
+  };
+
+  const copyHash = async (reportId, hash) => {
+    try {
+      await navigator.clipboard.writeText(hash);
+      setCopiedHashId(reportId);
+      setTimeout(() => setCopiedHashId((id) => (id === reportId ? null : id)), 2000);
+    } catch {
+      // Clipboard puede fallar en contexto no seguro; no bloquea la vista.
     }
   };
 
@@ -381,25 +395,33 @@ export default function AdminSubaccountDetailPage() {
               {payments.map((p) => {
                 const s = statusOf(paymentStatusMap, p.status, 'PENDING');
                 return (
-                  <li key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span>
-                      {p.amount} {p.currency} — <span className={`qlc-badge ${s.className}`}>{s.text}</span>
-                      {p.reference && (
-                        <span style={{ color: 'var(--qlc-muted2)' }}>
-                          {' '}· {t('adminClientDetail.paymentReference')}: <code>{p.reference}</code>
+                  <li key={p.id} style={{ display: 'flex', flexDirection: 'column', gap: 4, paddingBottom: 10 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span>
+                        {p.amount} {p.currency} — <span className={`qlc-badge ${s.className}`}>{s.text}</span>
+                      </span>
+                      {p.status !== 'APROBADO' && (
+                        <span style={{ display: 'flex', gap: 4 }}>
+                          <button className="qlc-btn ghost" onClick={() => reviewPayment(p.id, 'APROBADO')}>{t('adminClientDetail.confirm')}</button>
+                          <button className="qlc-btn ghost" onClick={() => reviewPayment(p.id, 'RECHAZADO')}>{t('adminClientDetail.reject')}</button>
                         </span>
                       )}
-                      {p.proofDriveFileId && (
-                        <>
-                          {' '}· <a href={`${API_BASE_URL}/admin/payment-reports/${p.id}/proof`} target="_blank" rel="noreferrer">{t('adminClientDetail.viewProof')}</a>
-                        </>
-                      )}
+                    </div>
+                    <span style={{ fontSize: 12, color: 'var(--qlc-muted2)' }}>
+                      {formatCdmxDate(p.reportedAt)}
                     </span>
-                    {p.status !== 'APROBADO' && (
-                      <span style={{ display: 'flex', gap: 4 }}>
-                        <button className="qlc-btn ghost" onClick={() => reviewPayment(p.id, 'APROBADO')}>{t('adminClientDetail.confirm')}</button>
-                        <button className="qlc-btn ghost" onClick={() => reviewPayment(p.id, 'RECHAZADO')}>{t('adminClientDetail.reject')}</button>
+                    {p.reference && (
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--qlc-muted2)', fontSize: 12 }}>
+                        {t('adminClientDetail.paymentReference')}: <code style={{ wordBreak: 'break-all' }}>{p.reference}</code>
+                        <button type="button" className="qlc-btn ghost" style={{ flexShrink: 0 }} onClick={() => copyHash(p.id, p.reference)}>
+                          {copiedHashId === p.id ? t('common.copied') : t('common.copy')}
+                        </button>
                       </span>
+                    )}
+                    {p.proofDriveFileId && (
+                      <a style={{ fontSize: 12 }} href={`${API_BASE_URL}/admin/payment-reports/${p.id}/proof`} target="_blank" rel="noreferrer">
+                        {t('adminClientDetail.viewProof')}
+                      </a>
                     )}
                   </li>
                 );

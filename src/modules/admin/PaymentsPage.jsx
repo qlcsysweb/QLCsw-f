@@ -3,6 +3,7 @@ import api, { API_BASE_URL } from '../../services/api';
 import ConfirmModal from '../../components/ConfirmModal';
 import ConfirmSaveModal from '../../components/ConfirmSaveModal';
 import { PAYMENT_REPORT_STATUS, statusOf } from '../../utils/statusLabels';
+import { formatCdmxDate } from '../../utils/cdmxTime';
 import { useLanguage } from '../../i18n/LanguageContext';
 
 const emptyForm = { network: '', walletAddress: '', paymentLink: '', instructions: '' };
@@ -15,6 +16,7 @@ export default function PaymentsPage() {
   const [message, setMessage] = useState('');
   const [confirmReject, setConfirmReject] = useState(null);
   const [confirmSave, setConfirmSave] = useState(false);
+  const [copiedHashId, setCopiedHashId] = useState(null);
 
   const paymentReportStatusMap = PAYMENT_REPORT_STATUS(t);
 
@@ -65,6 +67,16 @@ export default function PaymentsPage() {
   const review = async (id, status) => {
     await api.patch(`/admin/payment-reports/${id}`, { status });
     load();
+  };
+
+  const copyHash = async (id, hash) => {
+    try {
+      await navigator.clipboard.writeText(hash);
+      setCopiedHashId(id);
+      setTimeout(() => setCopiedHashId((cur) => (cur === id ? null : cur)), 2000);
+    } catch {
+      // Clipboard puede fallar en contexto no seguro; no bloquea la vista.
+    }
   };
 
   return (
@@ -134,9 +146,15 @@ export default function PaymentsPage() {
                       return <span className={`qlc-badge ${s.className}`}>{s.text}</span>;
                     })()}
                   </div>
+                  <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--qlc-muted2)' }}>
+                    {formatCdmxDate(r.reportedAt)}
+                  </p>
                   {r.reference && (
-                    <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--qlc-muted2)' }}>
-                      {t('adminClientDetail.paymentReference')}: <code>{r.reference}</code>
+                    <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--qlc-muted2)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                      {t('adminClientDetail.paymentReference')}: <code style={{ wordBreak: 'break-all' }}>{r.reference}</code>
+                      <button type="button" className="qlc-btn ghost" style={{ flexShrink: 0 }} onClick={() => copyHash(r.id, r.reference)}>
+                        {copiedHashId === r.id ? t('common.copied') : t('common.copy')}
+                      </button>
                     </p>
                   )}
                   {r.proofDriveFileId && (

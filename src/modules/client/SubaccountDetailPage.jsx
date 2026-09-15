@@ -338,53 +338,59 @@ export default function SubaccountDetailPage() {
             <p style={{ fontSize: 12, color: 'var(--qlc-ok)' }}>✓ {t('clientApiConnection.capitalReported')}</p>
           )}
 
-          {subaccount.requiredCapital != null && (
-            <form
-              onSubmit={submitDistributionReport}
-              style={{ marginTop: 12, marginBottom: 16, borderTop: '1px solid var(--qlc-line)', paddingTop: 12 }}
-            >
-              <h4 style={{ margin: '0 0 8px' }}>{t('clientApiConnection.reportDistributionTitle')}</h4>
-              <label className="qlc-label">{t('clientPayments.amount')}</label>
-              <input
-                className="qlc-input"
-                type="number"
-                step="0.01"
-                value={distributionForm.amount}
-                onChange={(e) => setDistributionForm((f) => ({ ...f, amount: e.target.value }))}
-                required
-              />
-              <label className="qlc-label">{t('clientApiConnection.distributionNote')}</label>
-              <input
-                className="qlc-input"
-                value={distributionForm.note}
-                onChange={(e) => setDistributionForm((f) => ({ ...f, note: e.target.value }))}
-              />
-              <button className="qlc-btn primary" style={{ marginTop: 10, width: '100%' }} disabled={reportingDistribution}>
-                {reportingDistribution ? t('common.sending') : t('clientApiConnection.reportCapitalReady')}
-              </button>
+          {/* CORRECCIÓN — antes este formulario dependía de que el admin ya
+              hubiera configurado "capital operativo requerido"
+              (requiredCapital != null); mientras esa condición no se cumplía
+              (el caso normal antes de que un admin la fije manualmente), el
+              cliente jamás veía dónde reportar su distribución de capital.
+              Ahora el reporte siempre está disponible, igual que "reportar
+              pago" — el dato de capital requerido arriba sigue siendo
+              opcional/informativo. */}
+          <form
+            onSubmit={submitDistributionReport}
+            style={{ marginTop: 12, marginBottom: 16, borderTop: '1px solid var(--qlc-line)', paddingTop: 12 }}
+          >
+            <h4 style={{ margin: '0 0 8px' }}>{t('clientApiConnection.reportDistributionTitle')}</h4>
+            <label className="qlc-label">{t('clientPayments.amount')}</label>
+            <input
+              className="qlc-input"
+              type="number"
+              step="0.01"
+              value={distributionForm.amount}
+              onChange={(e) => setDistributionForm((f) => ({ ...f, amount: e.target.value }))}
+              required
+            />
+            <label className="qlc-label">{t('clientApiConnection.distributionNote')}</label>
+            <input
+              className="qlc-input"
+              value={distributionForm.note}
+              onChange={(e) => setDistributionForm((f) => ({ ...f, note: e.target.value }))}
+            />
+            <button className="qlc-btn primary" style={{ marginTop: 10, width: '100%' }} disabled={reportingDistribution}>
+              {reportingDistribution ? t('common.sending') : t('clientApiConnection.reportCapitalReady')}
+            </button>
 
-              {distributionReports.length > 0 && (
-                <div style={{ marginTop: 12 }}>
-                  <div style={{ fontSize: 12, color: 'var(--qlc-muted)', marginBottom: 6 }}>
-                    {t('clientApiConnection.distributionHistory')}
-                  </div>
-                  <ul className="qlc-plain-list">
-                    {distributionReports.map((r) => {
-                      const st = statusOf(paymentStatusMap, r.status);
-                      return (
-                        <li key={r.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
-                          <span>
-                            {r.amount} USDT — {new Date(r.reportedAt).toLocaleDateString()}
-                          </span>
-                          <span className={`qlc-badge ${st.className}`}>{st.text}</span>
-                        </li>
-                      );
-                    })}
-                  </ul>
+            {distributionReports.length > 0 && (
+              <div style={{ marginTop: 12 }}>
+                <div style={{ fontSize: 12, color: 'var(--qlc-muted)', marginBottom: 6 }}>
+                  {t('clientApiConnection.distributionHistory')}
                 </div>
-              )}
-            </form>
-          )}
+                <ul className="qlc-plain-list">
+                  {distributionReports.map((r) => {
+                    const st = statusOf(paymentStatusMap, r.status);
+                    return (
+                      <li key={r.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
+                        <span>
+                          {r.amount} USDT — {new Date(r.reportedAt).toLocaleDateString()}
+                        </span>
+                        <span className={`qlc-badge ${st.className}`}>{st.text}</span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
+          </form>
           <form onSubmit={saveApi}>
             <label className="qlc-label">{t('clientApiConnection.exchange')}</label>
             <input className="qlc-input" value={apiForm.exchangeName} onChange={(e) => setApiForm((f) => ({ ...f, exchangeName: e.target.value }))} placeholder={subaccount.exchangeName || 'Bitget'} />
