@@ -46,14 +46,13 @@ function ConditionRow({ condition, onUpdate, t }) {
   );
 }
 
-function MaskedSecret({ label, value, t }) {
-  // Visible por defecto: el admin debe poder ver la credencial real de
-  // inmediato al abrir la subcuenta, sin depender de que note el botón
-  // "Ver". Sigue pudiendo ocultarla con "Ocultar" si comparte pantalla.
-  const [revealed, setRevealed] = useState(true);
+// Dentro del sistema (usuario ya autenticado) no se oculta información
+// operativa: el valor siempre se muestra completo, con su botón Copiar al
+// lado. La protección real vive en el backend (rutas por rol/pertenencia),
+// no en máscaras visuales.
+function SecretField({ label, value, t }) {
   const [copied, setCopied] = useState(false);
   if (!value) return null;
-  const masked = '•'.repeat(Math.min(value.length, 24));
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(value);
@@ -66,12 +65,9 @@ function MaskedSecret({ label, value, t }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, marginBottom: 8 }}>
       <span style={{ color: 'var(--qlc-muted)', minWidth: 80 }}>{label}:</span>
-      <code style={{ flex: 1, wordBreak: 'break-all', color: 'var(--qlc-text)' }}>{revealed ? value : masked}</code>
-      <button type="button" className="qlc-btn ghost" onClick={() => setRevealed((r) => !r)}>
-        {revealed ? t('adminClientDetail.hideSecret') : t('adminClientDetail.revealSecret')}
-      </button>
+      <code style={{ flex: 1, wordBreak: 'break-all', color: 'var(--qlc-text)' }}>{value}</code>
       <button type="button" className="qlc-btn ghost" onClick={copy}>
-        {copied ? t('adminClientDetail.copied') : t('adminClientDetail.copy')}
+        {copied ? t('common.copied') : t('common.copy')}
       </button>
     </div>
   );
@@ -300,9 +296,9 @@ export default function AdminSubaccountDetailPage() {
           <h3>{t('adminClientDetail.apiConnection')} ({subaccount.exchangeName || 'Bitget'})</h3>
           {secrets && (secrets.apiKey || secrets.apiSecret || secrets.apiPassphrase) && (
             <div style={{ borderBottom: '1px solid var(--qlc-line)', paddingBottom: 12, marginBottom: 12 }}>
-              <MaskedSecret label="API Key" value={secrets.apiKey} t={t} />
-              <MaskedSecret label="Secret Key" value={secrets.apiSecret} t={t} />
-              <MaskedSecret label="Passphrase" value={secrets.apiPassphrase} t={t} />
+              <SecretField label="API Key" value={secrets.apiKey} t={t} />
+              <SecretField label="Secret Key" value={secrets.apiSecret} t={t} />
+              <SecretField label="Passphrase" value={secrets.apiPassphrase} t={t} />
             </div>
           )}
           <form onSubmit={saveApi}>
@@ -331,9 +327,9 @@ export default function AdminSubaccountDetailPage() {
             <label className="qlc-label">API Key {subaccount.hasApiKey ? t('adminClientDetail.alreadyRegistered') : ''}</label>
             <input className="qlc-input" value={apiForm.apiKey} onChange={(e) => setApiForm((f) => ({ ...f, apiKey: e.target.value }))} placeholder={t('adminClientDetail.leaveBlank')} />
             <label className="qlc-label">Secret Key {subaccount.hasApiSecret ? t('adminClientDetail.alreadyRegistered') : ''}</label>
-            <input className="qlc-input" type="password" value={apiForm.apiSecret} onChange={(e) => setApiForm((f) => ({ ...f, apiSecret: e.target.value }))} placeholder={t('adminClientDetail.leaveBlank')} />
+            <input className="qlc-input" value={apiForm.apiSecret} onChange={(e) => setApiForm((f) => ({ ...f, apiSecret: e.target.value }))} placeholder={t('adminClientDetail.leaveBlank')} />
             <label className="qlc-label">Passphrase {subaccount.hasApiPassphrase ? t('adminClientDetail.alreadyRegistered') : ''}</label>
-            <input className="qlc-input" type="password" value={apiForm.apiPassphrase} onChange={(e) => setApiForm((f) => ({ ...f, apiPassphrase: e.target.value }))} placeholder={t('adminClientDetail.leaveBlank')} />
+            <input className="qlc-input" value={apiForm.apiPassphrase} onChange={(e) => setApiForm((f) => ({ ...f, apiPassphrase: e.target.value }))} placeholder={t('adminClientDetail.leaveBlank')} />
             <button className="qlc-btn primary" style={{ marginTop: 14, width: '100%' }}>
               {t('adminClientDetail.saveApiConnection')}
             </button>

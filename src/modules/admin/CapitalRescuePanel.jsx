@@ -28,6 +28,18 @@ export default function CapitalRescuePanel({ clientId, subaccounts }) {
   const [remunerationForm, setRemunerationForm] = useState({ remunerationAmount: '', remunerationWallet: '', remunerationTxHash: '' });
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [copiedField, setCopiedField] = useState(null);
+
+  const copyField = async (field, value) => {
+    if (!value) return;
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopiedField(field);
+      setTimeout(() => setCopiedField((f) => (f === field ? null : f)), 2000);
+    } catch {
+      // Si el navegador bloquea el portapapeles no rompemos la vista.
+    }
+  };
   const [busy, setBusy] = useState(false);
 
   const load = () => api.get(`/admin/clients/${clientId}/capital-rescue`).then(({ data }) => setState(data));
@@ -301,6 +313,25 @@ export default function CapitalRescuePanel({ clientId, subaccounts }) {
             {busy ? t('common.saving') : t('adminRescue.finalizeOperation')}
           </button>
         </form>
+      )}
+
+      {participation?.status === 'FINALIZADA' && (
+        <div style={{ borderTop: '1px solid var(--qlc-line)', paddingTop: 14, marginBottom: 14, fontSize: 13 }}>
+          <h4 style={{ margin: '0 0 8px' }}>{t('adminRescue.registerRemuneration')}</h4>
+          <div>{t('adminRescue.remunerationAmount')}: {String(participation.remunerationAmount)} USDT</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginTop: 6 }}>
+            {t('adminRescue.remunerationWallet')}: <code style={{ wordBreak: 'break-all' }}>{participation.remunerationWallet}</code>
+            <button type="button" className="qlc-btn ghost" onClick={() => copyField('wallet', participation.remunerationWallet)}>
+              {copiedField === 'wallet' ? t('common.copied') : t('common.copy')}
+            </button>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginTop: 6 }}>
+            {t('adminRescue.remunerationTxHash')}: <code style={{ wordBreak: 'break-all' }}>{participation.remunerationTxHash}</code>
+            <button type="button" className="qlc-btn ghost" onClick={() => copyField('hash', participation.remunerationTxHash)}>
+              {copiedField === 'hash' ? t('common.copied') : t('common.copy')}
+            </button>
+          </div>
+        </div>
       )}
 
       {state.canCreateInvitation && (

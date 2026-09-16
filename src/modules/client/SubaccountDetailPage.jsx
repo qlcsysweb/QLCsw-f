@@ -64,7 +64,7 @@ export default function SubaccountDetailPage() {
   const [reportingPayment, setReportingPayment] = useState(false);
   const [statements, setStatements] = useState([]);
   const [paymentConfig, setPaymentConfig] = useState(null);
-  const [walletCopied, setWalletCopied] = useState(false);
+  const [copiedField, setCopiedField] = useState(null);
   // CORREGIR.xlsx CLIENTE 13 — reporte real de distribución de capital.
   const [distributionReports, setDistributionReports] = useState([]);
   const [distributionForm, setDistributionForm] = useState({ amount: '', note: '' });
@@ -187,11 +187,12 @@ export default function SubaccountDetailPage() {
     }
   };
 
-  const copyWallet = async (address) => {
+  const copyField = async (field, value) => {
+    if (!value) return;
     try {
-      await navigator.clipboard.writeText(address);
-      setWalletCopied(true);
-      setTimeout(() => setWalletCopied(false), 2000);
+      await navigator.clipboard.writeText(value);
+      setCopiedField(field);
+      setTimeout(() => setCopiedField((f) => (f === field ? null : f)), 2000);
     } catch {
       // Si el navegador bloquea el portapapeles no rompemos la vista.
     }
@@ -399,7 +400,7 @@ export default function SubaccountDetailPage() {
             <label className="qlc-label">Secret Key {subaccount.hasApiSecret ? t('clientApiConnection.alreadyRegistered') : ''}</label>
             <input className="qlc-input" value={apiForm.apiSecret} onChange={(e) => setApiForm((f) => ({ ...f, apiSecret: e.target.value }))} placeholder={t('clientApiConnection.leaveBlank')} />
             <label className="qlc-label">Passphrase {subaccount.hasApiPassphrase ? t('clientApiConnection.alreadyRegistered') : ''}</label>
-            <input className="qlc-input" type="password" value={apiForm.apiPassphrase} onChange={(e) => setApiForm((f) => ({ ...f, apiPassphrase: e.target.value }))} placeholder={t('clientApiConnection.leaveBlank')} />
+            <input className="qlc-input" value={apiForm.apiPassphrase} onChange={(e) => setApiForm((f) => ({ ...f, apiPassphrase: e.target.value }))} placeholder={t('clientApiConnection.leaveBlank')} />
             <button className="qlc-btn primary" style={{ marginTop: 12, width: '100%' }} disabled={savingApi}>
               {savingApi ? t('common.saving') : t('clientApiConnection.save')}
             </button>
@@ -431,9 +432,24 @@ export default function SubaccountDetailPage() {
               <p style={{ fontSize: 13 }}><strong>{t('clientPayments.currency')}:</strong> {paymentConfig.currency || 'USDT'}</p>
               {paymentConfig.network && <p style={{ fontSize: 13 }}><strong>{t('clientPayments.network')}:</strong> {paymentConfig.network}</p>}
               <p style={{ fontSize: 13, wordBreak: 'break-all' }}><strong>{t('clientPayments.wallet')}:</strong> {paymentConfig.walletAddress}</p>
-              <button type="button" className="qlc-btn ghost" onClick={() => copyWallet(paymentConfig.walletAddress)}>
-                {walletCopied ? t('clientPayments.walletCopied') : t('clientPayments.copyWallet')}
+              <button type="button" className="qlc-btn ghost" onClick={() => copyField('wallet', paymentConfig.walletAddress)}>
+                {copiedField === 'wallet' ? t('common.copied') : t('common.copy')}
               </button>
+              {paymentConfig.paymentLink && (
+                <div style={{ marginTop: 10 }}>
+                  <p style={{ fontSize: 13, wordBreak: 'break-all', marginBottom: 6 }}>
+                    <strong>{t('clientPayments.paymentLink')}:</strong> {paymentConfig.paymentLink}
+                  </p>
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    <button type="button" className="qlc-btn ghost" onClick={() => copyField('link', paymentConfig.paymentLink)}>
+                      {copiedField === 'link' ? t('common.copied') : t('common.copy')}
+                    </button>
+                    <a className="qlc-btn ghost" href={paymentConfig.paymentLink} target="_blank" rel="noreferrer">
+                      {t('clientPayments.openWalletLink')}
+                    </a>
+                  </div>
+                </div>
+              )}
             </>
           ) : (
             <div className="qlc-empty">{t('clientPayments.pendingConfig')}</div>
@@ -459,6 +475,14 @@ export default function SubaccountDetailPage() {
           {latestGuaranteeReport && !guaranteeReceived && (
             <p style={{ fontSize: 12, color: 'var(--qlc-muted)', marginTop: -6, marginBottom: 12 }}>
               {t('clientPayments.transferReportedHint')}
+            </p>
+          )}
+          {latestGuaranteeReport?.reference && (
+            <p style={{ fontSize: 12, color: 'var(--qlc-muted2)', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
+              {t('clientPayments.reference')}: <code style={{ wordBreak: 'break-all' }}>{latestGuaranteeReport.reference}</code>
+              <button type="button" className="qlc-btn ghost" onClick={() => copyField('hash', latestGuaranteeReport.reference)}>
+                {copiedField === 'hash' ? t('common.copied') : t('common.copy')}
+              </button>
             </p>
           )}
 

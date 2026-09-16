@@ -418,7 +418,7 @@ export default function ClientDetailPage() {
               disabled={!client.walletAddress}
               onClick={() => copyWalletValue(client.walletAddress)}
             >
-              {walletCopied ? t('clientPayments.walletCopied') : t('clientPayments.copyWallet')}
+              {walletCopied ? t('common.copied') : t('common.copy')}
             </button>
           </p>
           {client.walletQrUrl && <img src={client.walletQrUrl} alt="QR wallet" style={{ width: 130, borderRadius: 10 }} />}

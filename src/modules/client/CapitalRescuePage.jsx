@@ -19,6 +19,7 @@ export default function CapitalRescuePage() {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [now, setNow] = useState(Date.now());
+  const [copiedField, setCopiedField] = useState(null);
 
   const load = () => api.get('/client/capital-rescue').then(({ data }) => setData(data));
   useEffect(() => {
@@ -35,6 +36,17 @@ export default function CapitalRescuePage() {
   const flash = (msg) => {
     setMessage(msg);
     setTimeout(() => setMessage(''), 4000);
+  };
+
+  const copyField = async (field, value) => {
+    if (!value) return;
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopiedField(field);
+      setTimeout(() => setCopiedField((f) => (f === field ? null : f)), 2000);
+    } catch {
+      // Si el navegador bloquea el portapapeles no rompemos la vista.
+    }
   };
 
   const confirmParticipation = async (e) => {
@@ -231,8 +243,18 @@ export default function CapitalRescuePage() {
                 <div>{t('clientRescue.dailyRate')}: {dailyRate}%</div>
                 <div>{t('clientRescue.daysUsed')}: {daysUsed}</div>
                 <div>{t('clientRescue.accruedCompensation')}: {String(participation.remunerationAmount)} USDT</div>
-                <div>{t('clientRescue.paymentWallet')}: {participation.remunerationWallet}</div>
-                <div style={{ wordBreak: 'break-all' }}>{t('clientRescue.txHash')}: {participation.remunerationTxHash}</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                  {t('clientRescue.paymentWallet')}: <code style={{ wordBreak: 'break-all' }}>{participation.remunerationWallet}</code>
+                  <button type="button" className="qlc-btn ghost" onClick={() => copyField('wallet', participation.remunerationWallet)}>
+                    {copiedField === 'wallet' ? t('common.copied') : t('common.copy')}
+                  </button>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                  {t('clientRescue.txHash')}: <code style={{ wordBreak: 'break-all' }}>{participation.remunerationTxHash}</code>
+                  <button type="button" className="qlc-btn ghost" onClick={() => copyField('hash', participation.remunerationTxHash)}>
+                    {copiedField === 'hash' ? t('common.copied') : t('common.copy')}
+                  </button>
+                </div>
                 <div style={{ marginTop: 6 }}>
                   <span className="qlc-badge ok">{t('clientRescue.compensationPaid')}</span>
                 </div>
