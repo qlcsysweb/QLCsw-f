@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import api from '../services/api';
+import api, { setAuthToken } from '../services/api';
 
 const AuthContext = createContext(null);
 
@@ -25,25 +25,32 @@ export function AuthProvider({ children }) {
   const login = async (email, password) => {
     const { data } = await api.post('/auth/login', { email, password });
     if (data.twoFactorRequired) return data;
+    setAuthToken(data.token);
     setUser(data.user);
     return data.user;
   };
 
   const loginWithTwoFactor = async (tempToken, code) => {
     const { data } = await api.post('/auth/login/2fa', { tempToken, code });
+    setAuthToken(data.token);
     setUser(data.user);
     return data.user;
   };
 
   const register = async (payload) => {
     const { data } = await api.post('/auth/register', payload);
+    setAuthToken(data.token);
     setUser(data.user);
     return data.user;
   };
 
   const logout = async () => {
-    await api.post('/auth/logout');
-    setUser(null);
+    try {
+      await api.post('/auth/logout');
+    } finally {
+      setAuthToken(null);
+      setUser(null);
+    }
   };
 
   return (

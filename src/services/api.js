@@ -5,9 +5,44 @@ import axios from 'axios';
 // algo delante del frontend —como el proxy de `vite dev`— reenvía esa ruta).
 export const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
+// Frontend (Vercel) y backend (Render) viven en dominios distintos, así que
+// la cookie de sesión es de "terceros" desde el punto de vista del
+// navegador: Chrome, Safari y Firefox la bloquean por defecto (aunque el
+// backend la envíe con Secure/SameSite=None correctos), y el login parece
+// funcionar pero toda petición siguiente devuelve 401 "Sesión no
+// encontrada". Por eso el token también viaja en el cuerpo JSON de
+// login/registro y se reenvía a mano como header Authorization: Bearer —
+// eso nunca depende de la política de cookies del navegador. La cookie se
+// mantiene además como respaldo para cuando sí coincide el dominio.
+const TOKEN_STORAGE_KEY = 'qlc_auth_token';
+
+export function getAuthToken() {
+  try {
+    return localStorage.getItem(TOKEN_STORAGE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function setAuthToken(token) {
+  try {
+    if (token) localStorage.setItem(TOKEN_STORAGE_KEY, token);
+    else localStorage.removeItem(TOKEN_STORAGE_KEY);
+  } catch {
+    // localStorage puede no estar disponible (modo privado estricto); la
+    // sesión sigue intentando funcionar vía cookie en ese caso.
+  }
+}
+
 const api = axios.create({
   baseURL: API_BASE_URL,
   withCredentials: true,
+});
+
+api.interceptors.request.use((config) => {
+  const token = getAuthToken();
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
 });
 
 api.interceptors.response.use(
