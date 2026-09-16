@@ -209,18 +209,13 @@ export default function SubaccountDetailPage() {
     e.preventDefault();
     if (!paymentForm.amount) return;
     setReportingPayment(true);
-    const fd = new FormData();
-    fd.append('amount', paymentForm.amount);
-    if (paymentForm.reference) fd.append('reference', paymentForm.reference);
-    const file = e.target.elements.proofFile.files[0];
-    if (file) fd.append('file', file);
     try {
-      await api.post(`/client/api-subaccounts/${id}/payment-reports`, fd, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+      await api.post(`/client/api-subaccounts/${id}/payment-reports`, {
+        amount: paymentForm.amount,
+        reference: paymentForm.reference || undefined,
       });
       flash(t('clientPayments.reportedOk'));
       setPaymentForm({ amount: '', reference: '' });
-      e.target.reset();
       load();
     } catch (err) {
       setError(translateBackendMessage(err.message, language));
@@ -553,8 +548,6 @@ export default function SubaccountDetailPage() {
                 <input className="qlc-input" type="number" step="0.01" value={paymentForm.amount} onChange={(e) => setPaymentForm((f) => ({ ...f, amount: e.target.value }))} required />
                 <label className="qlc-label">{t('clientPayments.reference')}</label>
                 <input className="qlc-input" value={paymentForm.reference} onChange={(e) => setPaymentForm((f) => ({ ...f, reference: e.target.value }))} placeholder={t('clientPayments.referencePlaceholder')} />
-                <label className="qlc-label">{t('clientPayments.proof')}</label>
-                <input type="file" name="proofFile" className="qlc-input" accept=".pdf,image/*" />
                 <button className="qlc-btn primary" style={{ marginTop: 12, width: '100%' }} disabled={reportingPayment}>
                   {reportingPayment ? t('clientPayments.sending') : t('clientPayments.reportPayment')}
                 </button>
