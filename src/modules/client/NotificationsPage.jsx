@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import api from '../../services/api';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { resolveNotification } from '../../i18n/notificationMessages';
+import usePolling from '../../hooks/usePolling';
 
 export default function NotificationsPage() {
   const { t } = useLanguage();
@@ -11,6 +12,8 @@ export default function NotificationsPage() {
   useEffect(() => {
     load();
   }, []);
+  // Actualización sin refresh manual: nuevas notificaciones aparecen solas.
+  usePolling(load, 8000);
 
   const markRead = async (id) => {
     await api.patch(`/client/notifications/${id}/read`);

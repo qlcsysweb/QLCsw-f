@@ -5,6 +5,7 @@ import { API_CONNECTION_STATUS, statusOf } from '../../utils/statusLabels';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { getLocalizedModel } from '../../i18n/bilingualContent';
 import { translateBackendMessage } from '../../i18n/backendMessages';
+import usePolling from '../../hooks/usePolling';
 
 // CORRECCIÓN 11 — el cliente puede tener hasta 20 subcuentas/API, cada una
 // con su propio modelo, contrato, proceso, pagos y estados de cuenta. Esta
@@ -33,6 +34,9 @@ export default function SubaccountsPage() {
     });
   };
   useEffect(load, []);
+  // Actualización sin refresh manual: si un admin revela una subcuenta
+  // oculta, aparece sola en esta lista sin que el cliente tenga que recargar.
+  usePolling(load, 8000);
 
   const requestAdditional = async () => {
     setRequesting(true);

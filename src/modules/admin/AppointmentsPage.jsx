@@ -5,6 +5,7 @@ import ConfirmModal from '../../components/ConfirmModal';
 import { APPOINTMENT_STATUS, statusOf } from '../../utils/statusLabels';
 import { formatDateOnly } from '../../utils/cdmxTime';
 import { useLanguage } from '../../i18n/LanguageContext';
+import usePolling from '../../hooks/usePolling';
 
 function AvailabilityEditor() {
   const { t } = useLanguage();
@@ -112,6 +113,9 @@ export default function AppointmentsPage() {
   useEffect(() => {
     load();
   }, []);
+  // Actualización sin refresh manual: nuevas solicitudes de cita del
+  // cliente aparecen solas.
+  usePolling(load, 8000);
 
   const updateStatus = async (id, status) => {
     await api.patch(`/admin/appointments/${id}/status`, { status });

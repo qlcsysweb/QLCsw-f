@@ -5,6 +5,7 @@ import api from '../services/api';
 import QlcLogo from '../components/QlcLogo';
 import { useLanguage } from '../i18n/LanguageContext';
 import LanguageSwitcherCompact from '../i18n/LanguageSwitcherCompact';
+import usePolling from '../hooks/usePolling';
 import './AdminLayout.css';
 
 export default function ClientLayout() {
@@ -30,11 +31,16 @@ export default function ClientLayout() {
     { to: '/client/support', label: t('clientNav.support') },
   ];
 
-  useEffect(() => {
+  const loadUnread = () => {
     api.get('/client/notifications').then(({ data }) => {
       setUnread(data.notifications.filter((n) => !n.isRead).length);
     });
-  }, []);
+  };
+  useEffect(loadUnread, []);
+  // Actualización sin refresh manual: si el admin envía un mensaje o
+  // aprueba/rechaza algo, el badge de "Notificaciones" (visible en TODAS
+  // las páginas del cliente, porque vive en el layout) se actualiza solo.
+  usePolling(loadUnread, 8000);
 
   const handleLogout = async () => {
     await logout();

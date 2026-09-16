@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { SUPPORT_CASE_STATUS, CHAT_SESSION_STATUS, statusOf } from '../../utils/statusLabels';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
+import usePolling from '../../hooks/usePolling';
 
 function ChatPanel({ session, onClose }) {
   const { user } = useAuth();
@@ -149,6 +150,9 @@ export default function SupportPage() {
   useEffect(() => {
     load();
   }, []);
+  // Actualización sin refresh manual: casos/citas nuevos del cliente
+  // aparecen solos (el chat abierto ya se refresca aparte, cada 4s).
+  usePolling(load, 8000);
 
   // CORREGIR(2).xlsx ADMIN 28 — "Entrar al chat" desde una cita autorizada
   // llega aquí con ?chat=<sessionId>; se abre automáticamente.

@@ -4,6 +4,7 @@ import api from '../../services/api';
 import { ACCOUNT_STATUS, statusOf } from '../../utils/statusLabels';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
+import usePolling from '../../hooks/usePolling';
 
 // CORRECCIÓN 2 (bloque de 20) — "usuario" es una nomenclatura libre que
 // define QLC (ej. "QLC001"), independiente del correo (login real) y del
@@ -207,6 +208,18 @@ export default function ClientsListPage() {
     return () => clearTimeout(timeout);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search]);
+
+  // Actualización sin refresh manual: nuevos registros o cambios de estado
+  // aparecen solos, sin el parpadeo de "Cargando..." que sí tiene la
+  // búsqueda manual (esta variante nunca toca `loading`).
+  usePolling(() => {
+    api
+      .get('/admin/clients', { params: { search: search || undefined } })
+      .then(({ data }) => {
+        setItems(data.items);
+        setTotal(data.total);
+      });
+  }, 8000);
 
   return (
     <div>

@@ -6,6 +6,7 @@ import { formatCdmxDate } from '../../utils/cdmxTime';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { getLocalizedModel } from '../../i18n/bilingualContent';
 import { translateBackendMessage } from '../../i18n/backendMessages';
+import usePolling from '../../hooks/usePolling';
 
 const ACCOUNT_STATUS_KEYS = {
   ACTIVE: { text: 'active', className: 'ok', dot: '●' },
@@ -30,7 +31,7 @@ export default function DashboardPage() {
 
   const apiStatusMap = API_CONNECTION_STATUS(t);
 
-  useEffect(() => {
+  const load = () => {
     api
       .get('/client/dashboard')
       .then(({ data }) => setDashboard(data.dashboard))
@@ -41,7 +42,11 @@ export default function DashboardPage() {
       .get('/client/process-steps')
       .then(({ data }) => setProcessSteps(data.steps))
       .catch(() => {});
-  }, []);
+  };
+  useEffect(load, []);
+  // Actualización sin refresh manual: cambios que haga el admin (estado de
+  // cuenta, subcuentas, citas, notificaciones) aparecen solos.
+  usePolling(load, 8000);
 
   if (error) return <div className="qlc-empty">{error}</div>;
   if (!dashboard) return <div className="qlc-empty">{t('common.loading')}</div>;

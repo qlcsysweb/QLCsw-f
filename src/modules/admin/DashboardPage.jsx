@@ -4,6 +4,7 @@ import api from '../../services/api';
 import { formatCdmxDateTime } from '../../utils/cdmxTime';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
+import usePolling from '../../hooks/usePolling';
 
 function StatCard({ label, value, hint, to }) {
   const content = (
@@ -28,12 +29,16 @@ export default function DashboardPage() {
   const [summary, setSummary] = useState(null);
   const [error, setError] = useState('');
 
-  useEffect(() => {
+  const load = () => {
     api
       .get('/admin/dashboard')
       .then(({ data }) => setSummary(data.summary))
       .catch((err) => setError(translateBackendMessage(err.message, language)));
-  }, []);
+  };
+  useEffect(load, []);
+  // Actualización sin refresh manual: acciones del cliente (pagos, citas,
+  // solicitudes) mueven estas cifras solas, sin recargar la página.
+  usePolling(load, 8000);
 
   if (error) return <div className="qlc-empty">{error}</div>;
   if (!summary) return <div className="qlc-empty">{t('adminDashboard.loadingIndicators')}</div>;

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import api from '../../services/api';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { getLocalizedContentValue, getLocalizedModel, getLocalizedFaq, getLocalizedTrackRecord } from '../../i18n/bilingualContent';
+import usePolling from '../../hooks/usePolling';
 
 export default function usePublicData() {
   const { language } = useLanguage();
@@ -12,23 +13,28 @@ export default function usePublicData() {
   const [trackRecordRaw, setTrackRecord] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    Promise.all([
+  const load = (isInitial) => {
+    const req = Promise.all([
       api.get('/content'),
       api.get('/media'),
       api.get('/models'),
       api.get('/faq'),
       api.get('/track-record'),
-    ])
-      .then(([contentRes, mediaRes, modelsRes, faqRes, trackRes]) => {
-        setContent(contentRes.data.content);
-        setMediaState(mediaRes.data.media);
-        setModels(modelsRes.data.models);
-        setFaqs(faqRes.data.faqs);
-        setTrackRecord(trackRes.data.trackRecord);
-      })
-      .finally(() => setLoading(false));
-  }, []);
+    ]).then(([contentRes, mediaRes, modelsRes, faqRes, trackRes]) => {
+      setContent(contentRes.data.content);
+      setMediaState(mediaRes.data.media);
+      setModels(modelsRes.data.models);
+      setFaqs(faqRes.data.faqs);
+      setTrackRecord(trackRes.data.trackRecord);
+    });
+    if (isInitial) req.finally(() => setLoading(false));
+  };
+
+  useEffect(() => load(true), []);
+  // Actualización sin refresh manual: si un admin edita el CMS, el FAQ,
+  // los modelos o el track record, el sitio público lo refleja solo — sin
+  // recargar la página ni volver a mostrar el estado de carga inicial.
+  usePolling(() => load(false), 20000);
 
   // Cada texto CMS trae { value, valueEn }; se muestra solo el que corresponde
   // al idioma activo (nunca ambos a la vez).

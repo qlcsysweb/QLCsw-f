@@ -9,6 +9,7 @@ import { translateBackendMessage } from '../../i18n/backendMessages';
 import { getLocalizedModel } from '../../i18n/bilingualContent';
 import CapitalIncreasePanel from './CapitalIncreasePanel';
 import CapitalRescuePanel from './CapitalRescuePanel';
+import usePolling from '../../hooks/usePolling';
 
 // CORRECCIÓN 7 (bloque de 20) — fila reutilizable para no duplicar el JSX
 // entre subcuentas activas/principal e inactivas colapsadas.
@@ -92,6 +93,12 @@ export default function ClientDetailPage() {
     api.get(`/admin/clients/${id}/messages`).then(({ data }) => setMessages(data.messages));
   };
   useEffect(load, [id]);
+  // Actualización sin refresh manual: si el cliente solicita una subcuenta,
+  // reporta un pago, sube algo, etc., esta ficha lo refleja sola. Seguro
+  // porque `client`/`messages` no alimentan ningún formulario en edición
+  // (newIdentifier, messageForm, orgDraft, revealCapital, etc. son estado
+  // aparte que esto nunca sobreescribe).
+  usePolling(load, 8000);
 
   const sendMessage = async (e) => {
     e.preventDefault();

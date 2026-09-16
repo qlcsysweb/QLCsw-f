@@ -6,6 +6,7 @@ import { SUPPORT_CASE_STATUS, CHAT_SESSION_STATUS, APPOINTMENT_STATUS, statusOf 
 import { formatDateOnly } from '../../utils/cdmxTime';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
+import usePolling from '../../hooks/usePolling';
 
 // CORRECCIÓN 16 (bloque de 20) — Soporte y Citas unificados: el cliente ya
 // no navega entre dos módulos independientes. El flujo real es
@@ -169,6 +170,10 @@ export default function SupportPage() {
     api.get('/client/api-subaccounts').then(({ data }) => setSubaccounts(data.subaccounts));
   };
   useEffect(load, []);
+  // Actualización sin refresh manual: si el admin autoriza una cita o
+  // responde un caso, se refleja solo (el chat abierto ya se refresca
+  // aparte, cada 4s, en ChatPanel).
+  usePolling(load, 8000);
 
   // CORREGIR(2).xlsx CLIENTE 28 — "Entrar al chat" desde una cita autorizada
   // llega aquí con ?chat=<sessionId>; abre ese chat automáticamente en

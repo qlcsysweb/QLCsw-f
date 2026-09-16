@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import api from '../../services/api';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { resolveNotification } from '../../i18n/notificationMessages';
+import usePolling from '../../hooks/usePolling';
 
 /*
  * AUDITORÍA FINAL — Pendiente #1: el panel admin no tenía ninguna vista de
@@ -17,6 +18,8 @@ export default function NotificationsPage() {
   useEffect(() => {
     load();
   }, []);
+  // Actualización sin refresh manual: nuevas notificaciones aparecen solas.
+  usePolling(load, 8000);
 
   const markRead = async (id) => {
     await api.patch(`/admin/notifications/${id}/read`);
