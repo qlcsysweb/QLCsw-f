@@ -13,6 +13,10 @@ export default function ClientLayout() {
   const navigate = useNavigate();
   const [unread, setUnread] = useState(0);
 
+  // CORRECCIÓN 15 (bloque de 20) — Notificaciones va primero en el menú,
+  // antes de cualquier otra opción funcional (se renderiza aparte, ver
+  // abajo). CORRECCIÓN 16 — "Citas" ya no es un módulo independiente: se
+  // solicita desde dentro de un caso de Soporte.
   const NAV_ITEMS = [
     { to: '/client', label: t('clientNav.dashboard'), end: true },
     { to: '/client/profile', label: t('clientNav.profile') },
@@ -24,7 +28,6 @@ export default function ClientLayout() {
     { to: '/client/capital-increase', label: t('clientNav.capitalIncrease') },
     { to: '/client/capital-rescue', label: t('clientNav.capitalRescue') },
     { to: '/client/support', label: t('clientNav.support') },
-    { to: '/client/appointments', label: t('clientNav.appointments') },
   ];
 
   useEffect(() => {
@@ -46,6 +49,14 @@ export default function ClientLayout() {
           <span>{t('clientNav.brand')}</span>
         </div>
         <nav>
+          <NavLink
+            to="/client/notifications"
+            className={({ isActive }) => `qlc-admin-nav-link${isActive ? ' active' : ''}`}
+            style={{ display: 'flex', justifyContent: 'space-between' }}
+          >
+            {t('clientNav.notifications')}
+            {unread > 0 && <span className="qlc-badge warn">{unread}</span>}
+          </NavLink>
           {NAV_ITEMS.map((item) => (
             <NavLink
               key={item.to}
@@ -56,14 +67,6 @@ export default function ClientLayout() {
               {item.label}
             </NavLink>
           ))}
-          <NavLink
-            to="/client/notifications"
-            className={({ isActive }) => `qlc-admin-nav-link${isActive ? ' active' : ''}`}
-            style={{ display: 'flex', justifyContent: 'space-between' }}
-          >
-            {t('clientNav.notifications')}
-            {unread > 0 && <span className="qlc-badge warn">{unread}</span>}
-          </NavLink>
         </nav>
         <div className="qlc-admin-user">
           <div className="qlc-admin-user-name">{user?.profile?.firstName}</div>

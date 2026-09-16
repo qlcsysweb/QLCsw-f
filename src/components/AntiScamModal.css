@@ -84,9 +84,62 @@
   font-size: 14px;
 }
 
-@media (max-width: 480px) {
+/* CORRECCIÓN 4 (bloque de 20) — más compacto en laptops chicas (~1024px de
+   ancho o pantallas de poca altura) y tablets: mismo contenido, mismo
+   diseño QLC, solo con menos padding/tipografía para que todo el aviso
+   quepa sin desbordarse ni generar scroll horizontal. */
+@media (max-width: 1024px), (max-height: 760px) {
   .qlc-scam-panel {
-    padding: 28px 22px;
-    border-radius: 20px;
+    width: min(440px, 100%);
+    padding: 22px 20px;
+    border-radius: 18px;
+  }
+  .qlc-scam-notice-kicker {
+    font-size: 11px;
+    margin-bottom: 8px;
+  }
+  .qlc-scam-notice-title {
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+  .qlc-scam-notice-body {
+    font-size: 12.5px;
+    line-height: 1.55;
+    margin: 0 0 8px;
+  }
+  .qlc-scam-divider {
+    margin: 14px 0 12px;
+  }
+  .qlc-scam-title {
+    font-size: 17px;
+    margin-bottom: 12px;
+  }
+  .qlc-scam-body {
+    font-size: 12.5px;
+    line-height: 1.55;
+    margin: 0 0 10px;
+  }
+  .qlc-scam-tagline {
+    font-size: 12px;
+    margin-top: 12px;
+  }
+  .qlc-scam-brand {
+    font-size: 11px;
+    margin-top: 4px;
+    margin-bottom: 16px;
+  }
+  .qlc-scam-btn {
+    padding: 11px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .qlc-scam-overlay {
+    padding: 14px;
+  }
+  .qlc-scam-panel {
+    padding: 20px 16px;
+    border-radius: 16px;
   }
 }

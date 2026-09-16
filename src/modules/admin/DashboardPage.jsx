@@ -77,11 +77,14 @@ export default function DashboardPage() {
           to="/admin/clients"
         />
         <StatCard label={t('adminDashboard.newProspects')} value={summary.prospects.new} to="/admin/prospects" />
+        {/* CORRECCIÓN 13 (bloque de 20) — reemplaza la tarjeta de
+            "prospectos sin registro" por el conteo real de estados de
+            cuenta cuyo plazo de 72h ya venció (tiempo agotado). */}
         <StatCard
-          label={t('adminDashboard.unregisteredProspects')}
-          value={summary.prospects.unregistered}
-          hint={t('adminDashboard.unregisteredProspectsHint')}
-          to="/admin/prospects"
+          label={t('adminDashboard.expiredStatements')}
+          value={summary.expiredStatements}
+          hint={t('adminDashboard.expiredStatementsHint')}
+          to="/admin/statements"
         />
         <StatCard label={t('adminDashboard.pendingAppointments')} value={summary.appointments.pending} to="/admin/appointments" />
         <StatCard label={t('adminDashboard.pendingPayments')} value={summary.payments.pending} to="/admin/payments" />

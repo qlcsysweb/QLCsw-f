@@ -90,14 +90,17 @@ export default function StatementsArchivePage() {
           <table className="qlc-table">
             <thead>
               <tr>
+                <th>{t('adminStatementsArchive.username')}</th>
                 <th>{t('adminStatementsArchive.client')}</th>
                 <th>{t('adminStatementsArchive.subaccount')}</th>
                 <th>{t('adminStatementsArchive.period')}</th>
-                <th>{t('adminClientDetail.startingBalance')}</th>
-                <th>{t('adminClientDetail.endingBalance')}</th>
-                <th>{t('adminClientDetail.resultPercentage')}</th>
-                <th>{t('adminClientDetail.netResult')}</th>
-                <th>{t('adminClientDetail.commission')}</th>
+                <th>{t('adminStatementsArchive.generatedAt')}</th>
+                <th>{t('adminStatementsArchive.dueAt')}</th>
+                <th>{t('adminClientDetail.startingBalance')} (USDT)</th>
+                <th>{t('adminClientDetail.endingBalance')} (USDT)</th>
+                <th>{t('adminClientDetail.resultPercentage')} (%)</th>
+                <th>{t('adminClientDetail.netResult')} (USDT)</th>
+                <th>{t('adminClientDetail.commission')} (USDT)</th>
                 <th>{t('adminStatementsArchive.payment')}</th>
                 <th></th>
               </tr>
@@ -105,7 +108,7 @@ export default function StatementsArchivePage() {
             {years.map((year) => (
               <tbody key={year}>
                 <tr>
-                  <td colSpan={10} style={{ background: 'var(--qlc-line)', fontWeight: 700, fontSize: 12 }}>
+                  <td colSpan={13} style={{ background: 'var(--qlc-line)', fontWeight: 700, fontSize: 12 }}>
                     {year}
                   </td>
                 </tr>
@@ -113,6 +116,7 @@ export default function StatementsArchivePage() {
                   const paymentVigente = s.displayStatus !== 'PENDIENTE_DE_PAGO';
                   return (
                     <tr key={s.id}>
+                      <td>{s.apiSubaccount?.client?.username || '—'}</td>
                       <td>
                         {s.apiSubaccount?.client?.firstName} {s.apiSubaccount?.client?.lastName}
                       </td>
@@ -120,6 +124,8 @@ export default function StatementsArchivePage() {
                       <td>
                         {new Date(s.periodStart).toLocaleDateString()} – {new Date(s.periodEnd).toLocaleDateString()}
                       </td>
+                      <td>{new Date(s.createdAt).toLocaleDateString()}</td>
+                      <td>{s.commissionDueAt ? new Date(s.commissionDueAt).toLocaleString() : '—'}</td>
                       <td>{s.startingBalance}</td>
                       <td>{s.endingBalance}</td>
                       <td>{s.resultPercentage}%</td>

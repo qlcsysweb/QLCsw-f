@@ -260,10 +260,11 @@
      izquierda — con el logo ya más grande, ese espacio extra debajo de
      las mini-tarjetas se ve proporcionado, no como un hueco vacío. */
   align-items: stretch;
-  /* Margen superior reducido a pedido del cliente: apenas ~0.7cm (~26px)
-     entre el navbar y el primer contenido del hero, en vez del hueco
-     grande que había antes. */
-  padding: 26px 0 clamp(24px, 3.5vh, 80px);
+  /* CORRECCIÓN 5 (bloque de 20) — margen superior reducido al mínimo
+     solicitado (~0.1cm ≈ 4px) entre el navbar y el primer contenido del
+     hero. Solo se toca el padding-top: el bottom, el tamaño del hero, el
+     logo y la composición interna quedan exactamente igual. */
+  padding: 4px 0 clamp(24px, 3.5vh, 80px);
 }
 .qlc-public .eyebrow {
   display: inline-flex;
@@ -401,16 +402,18 @@
     /* "start" (no "center"): con center, .hero-grid quedaba centrado
        dentro de la altura fija de 720px de .hero, y todo el espacio
        sobrante se repartía MITAD ARRIBA/MITAD ABAJO — eso diluía el
-       margen fijo de 26px hasta ~55px en las laptops más altas del
-       rango (900px). Con "start" + min-height:auto, la altura de .hero
-       la define exclusivamente el propio contenido, así que el margen
-       superior queda IGUAL (26px) sin importar la altura exacta de la
-       pantalla dentro del rango 700–900px. */
+       margen fijo hasta el doble en las laptops más altas del rango
+       (900px). Con "start" + min-height:auto, la altura de .hero la
+       define exclusivamente el propio contenido, así que el margen
+       superior queda IGUAL sin importar la altura exacta de la pantalla
+       dentro del rango 700–900px. */
     align-content: start;
     min-height: auto;
   }
   .qlc-public .hero-grid {
-    padding: 26px 0 22px;
+    /* CORRECCIÓN 5 (bloque de 20) — top reducido a ~0.1cm (4px); el
+       bottom (22px) y el resto de la composición congelada no cambian. */
+    padding: 4px 0 22px;
     gap: 26px;
   }
   .qlc-public .hero-card {

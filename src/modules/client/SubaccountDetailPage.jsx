@@ -57,7 +57,7 @@ export default function SubaccountDetailPage() {
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
 
-  const [apiForm, setApiForm] = useState({ exchangeName: '', apiKey: '', apiSecret: '', apiPassphrase: '' });
+  const [apiForm, setApiForm] = useState({ exchangeName: '', apiKey: '', apiSecret: '', apiPassphrase: '', ipAddress: '' });
   const [savingApi, setSavingApi] = useState(false);
   const [payments, setPayments] = useState([]);
   const [paymentForm, setPaymentForm] = useState({ amount: '', reference: '' });
@@ -75,7 +75,10 @@ export default function SubaccountDetailPage() {
   const statementStatusMap = STATEMENT_STATUS(t);
 
   const load = () => {
-    api.get(`/client/api-subaccounts/${id}`).then(({ data }) => setSubaccount(data.subaccount));
+    api.get(`/client/api-subaccounts/${id}`).then(({ data }) => {
+      setSubaccount(data.subaccount);
+      setApiForm((f) => ({ ...f, ipAddress: data.subaccount.ipAddress || '' }));
+    });
     api.get('/client/models').then(({ data }) => setModelsRaw(data.models));
     api.get(`/client/api-subaccounts/${id}/payment-reports`).then(({ data }) => setPayments(data.reports));
     api.get(`/client/api-subaccounts/${id}/statements`).then(({ data }) => setStatements(data.statements));
@@ -152,8 +155,12 @@ export default function SubaccountDetailPage() {
       if (apiForm.apiKey) payload.apiKey = apiForm.apiKey;
       if (apiForm.apiSecret) payload.apiSecret = apiForm.apiSecret;
       if (apiForm.apiPassphrase) payload.apiPassphrase = apiForm.apiPassphrase;
+      // CORRECCIÓN 18 (bloque de 20) — el cliente solo puede declarar su IP
+      // cuando el admin ya la marcó como requerida; "ipRequired" en sí
+      // nunca lo puede cambiar el cliente.
+      if (subaccount.ipRequired && apiForm.ipAddress) payload.ipAddress = apiForm.ipAddress;
       await api.patch(`/client/api-subaccounts/${id}`, payload);
-      setApiForm({ exchangeName: '', apiKey: '', apiSecret: '', apiPassphrase: '' });
+      setApiForm((f) => ({ ...f, exchangeName: '', apiKey: '', apiSecret: '', apiPassphrase: '' }));
       flash(t('clientApiConnection.savedOk'));
       load();
     } catch (err) {
@@ -324,11 +331,17 @@ export default function SubaccountDetailPage() {
 
         <div className="qlc-card">
           <h3 style={{ marginTop: 0 }}>{t('clientApiConnection.statusTitle')}</h3>
-          {subaccount.requiredCapital != null && (
-            <p style={{ fontSize: 14 }}>
-              <strong>{t('clientApiConnection.requiredCapital')}:</strong> {subaccount.requiredCapital} USDT
-            </p>
-          )}
+          {/* CORRECCIÓN 14 (bloque de 20) — siempre debe verse un estado
+              claro, sea el valor fijo en USDT o el aviso de que todavía no
+              se ha configurado (nunca lo puede editar el cliente). */}
+          <p style={{ fontSize: 14 }}>
+            <strong>{t('clientApiConnection.requiredCapital')}:</strong>{' '}
+            {subaccount.requiredCapital != null ? (
+              `${subaccount.requiredCapital} USDT`
+            ) : (
+              <span style={{ color: 'var(--qlc-muted2)' }}>{t('clientApiConnection.requiredCapitalPending')}</span>
+            )}
+          </p>
           {subaccount.capitalDistributionItems?.length > 0 && (
             <p style={{ fontSize: 14 }}>
               <strong>{t('clientApiConnection.capitalReceived')}:</strong>{' '}
@@ -351,7 +364,14 @@ export default function SubaccountDetailPage() {
             onSubmit={submitDistributionReport}
             style={{ marginTop: 12, marginBottom: 16, borderTop: '1px solid var(--qlc-line)', paddingTop: 12 }}
           >
-            <h4 style={{ margin: '0 0 8px' }}>{t('clientApiConnection.reportDistributionTitle')}</h4>
+            <h4 style={{ margin: '0 0 4px' }}>{t('clientApiConnection.reportDistributionTitle')}</h4>
+            {/* CORRECCIÓN 17 (bloque de 20) — el capital requerido (fijo,
+                configurado por el admin) se repite aquí mismo, distinto del
+                monto que el cliente está a punto de reportar abajo. */}
+            <p style={{ fontSize: 12, color: 'var(--qlc-muted2)', marginTop: 0, marginBottom: 10 }}>
+              {t('clientApiConnection.requiredCapital')}:{' '}
+              {subaccount.requiredCapital != null ? `${subaccount.requiredCapital} USDT` : t('clientApiConnection.requiredCapitalPending')}
+            </p>
             <label className="qlc-label">{t('clientPayments.amount')}</label>
             <input
               className="qlc-input"
@@ -401,6 +421,40 @@ export default function SubaccountDetailPage() {
             <input className="qlc-input" value={apiForm.apiSecret} onChange={(e) => setApiForm((f) => ({ ...f, apiSecret: e.target.value }))} placeholder={t('clientApiConnection.leaveBlank')} />
             <label className="qlc-label">Passphrase {subaccount.hasApiPassphrase ? t('clientApiConnection.alreadyRegistered') : ''}</label>
             <input className="qlc-input" value={apiForm.apiPassphrase} onChange={(e) => setApiForm((f) => ({ ...f, apiPassphrase: e.target.value }))} placeholder={t('clientApiConnection.leaveBlank')} />
+
+            {/* CORRECCIÓN 18 (bloque de 20) — "IP requerida" la define
+                exclusivamente el admin; el cliente solo ve el estado y, si
+                aplica, declara su propia IP. */}
+            <label className="qlc-label">{t('clientApiConnection.ipRequired')}</label>
+            <p style={{ fontSize: 13, marginTop: 0 }}>
+              <span className={`qlc-badge ${subaccount.ipRequired ? 'warn' : 'muted'}`}>
+                {subaccount.ipRequired ? t('common.yes') : t('common.no')}
+              </span>
+            </p>
+            {subaccount.ipRequired && (
+              <>
+                <label className="qlc-label">IP</label>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <input
+                    className="qlc-input"
+                    value={apiForm.ipAddress}
+                    onChange={(e) => setApiForm((f) => ({ ...f, ipAddress: e.target.value }))}
+                    placeholder="203.0.113.10"
+                  />
+                  {subaccount.ipAddress && (
+                    <button
+                      type="button"
+                      className="qlc-btn ghost"
+                      style={{ flexShrink: 0 }}
+                      onClick={() => navigator.clipboard.writeText(subaccount.ipAddress).catch(() => {})}
+                    >
+                      {t('common.copy')}
+                    </button>
+                  )}
+                </div>
+              </>
+            )}
+
             <button className="qlc-btn primary" style={{ marginTop: 12, width: '100%' }} disabled={savingApi}>
               {savingApi ? t('common.saving') : t('clientApiConnection.save')}
             </button>

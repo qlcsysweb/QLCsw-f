@@ -10,6 +10,18 @@ export function formatCdmxDate(date) {
   );
 }
 
+// CORRECCIÓN 16 (bloque de 20) — para fechas-calendario PURAS (sin hora
+// real asociada, ej. Appointment.requestedDate, guardadas como medianoche
+// UTC de ese día): formatCdmxDate() las convertiría a CDMX y las movería un
+// día hacia atrás (medianoche UTC = 18:00 CDMX del día anterior). Esta
+// función formatea directo desde el string de fecha, sin pasar por
+// Date/zona horaria — úsala quando el valor es "un día", no "un instante".
+export function formatDateOnly(date) {
+  const iso = date instanceof Date ? date.toISOString() : String(date);
+  const [year, month, day] = iso.slice(0, 10).split('-');
+  return `${day}/${month}/${year}`;
+}
+
 export function formatCdmxDateTime(date) {
   return (
     new Intl.DateTimeFormat('es-MX', {

@@ -69,6 +69,14 @@ export default function PaymentsPage() {
     load();
   };
 
+  // CORRECCIÓN 10 (bloque de 20) — "Transferencia recibida" es un paso
+  // independiente de aprobar el pago: solo confirma que el admin identificó
+  // la transferencia. Nunca cambia el estado a APROBADO por sí sola.
+  const markReceived = async (id) => {
+    await api.patch(`/admin/payment-reports/${id}/transfer-received`);
+    load();
+  };
+
   const copyHash = async (id, hash) => {
     try {
       await navigator.clipboard.writeText(hash);
@@ -164,10 +172,27 @@ export default function PaymentsPage() {
                       </a>
                     </p>
                   )}
+                  {/* CORRECCIÓN 10 (bloque de 20) — flujo en dos pasos
+                      independientes: Transferencia recibida (solo
+                      confirma que se identificó) → Garantía reportada
+                      (recién aquí pasa a APROBADO). */}
+                  {r.transferReceivedAt ? (
+                    <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--qlc-ok)' }}>
+                      ✓ {t('adminPayments.transferReceivedOn')} {formatCdmxDate(r.transferReceivedAt)}
+                    </p>
+                  ) : (
+                    ['PENDING', 'EN_REVISION'].includes(r.status) && (
+                      <div style={{ marginTop: 6 }}>
+                        <button className="qlc-btn ghost" onClick={() => markReceived(r.id)}>
+                          {t('adminPayments.markTransferReceived')}
+                        </button>
+                      </div>
+                    )
+                  )}
                   {['PENDING', 'EN_REVISION'].includes(r.status) && (
                     <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
-                      <button className="qlc-btn ghost" onClick={() => review(r.id, 'APROBADO')}>
-                        {t('adminPayments.approve')}
+                      <button className="qlc-btn primary" onClick={() => review(r.id, 'APROBADO')}>
+                        {t('adminPayments.guaranteeReported')}
                       </button>
                       <button className="qlc-btn ghost" onClick={() => setConfirmReject(r)}>
                         {t('adminPayments.reject')}

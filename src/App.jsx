@@ -36,7 +36,6 @@ import ClientDocumentsPage from './modules/client/DocumentsPage';
 import ClientStatementsPage from './modules/client/StatementsPage';
 import ClientWalletPage from './modules/client/WalletPage';
 import ClientSupportPage from './modules/client/SupportPage';
-import ClientAppointmentsPage from './modules/client/AppointmentsPage';
 import ClientNotificationsPage from './modules/client/NotificationsPage';
 import ClientCapitalIncreasePage from './modules/client/CapitalIncreasePage';
 import ClientGuidesPage from './modules/client/GuidesPage';
@@ -99,8 +98,12 @@ function AppRoutes() {
               <Route path="wallet" element={<ClientWalletPage />} />
               <Route path="capital-increase" element={<ClientCapitalIncreasePage />} />
               <Route path="capital-rescue" element={<ClientCapitalRescuePage />} />
+              {/* CORRECCIÓN 16 (bloque de 20) — "Citas" ya no es una ruta
+                  independiente: se solicita desde dentro de un caso en
+                  Soporte. Se conserva el redirect por si queda algún enlace
+                  antiguo guardado. */}
               <Route path="support" element={<ClientSupportPage />} />
-              <Route path="appointments" element={<ClientAppointmentsPage />} />
+              <Route path="appointments" element={<Navigate to="/client/support" replace />} />
               <Route path="notifications" element={<ClientNotificationsPage />} />
             </Route>
           </Route>

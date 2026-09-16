@@ -1,10 +1,23 @@
 import { useEffect, useRef, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
-import { SUPPORT_CASE_STATUS, CHAT_SESSION_STATUS, statusOf } from '../../utils/statusLabels';
+import { SUPPORT_CASE_STATUS, CHAT_SESSION_STATUS, APPOINTMENT_STATUS, statusOf } from '../../utils/statusLabels';
+import { formatDateOnly } from '../../utils/cdmxTime';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
+
+// CORRECCIÓN 16 (bloque de 20) — Soporte y Citas unificados: el cliente ya
+// no navega entre dos módulos independientes. El flujo real es
+// CASO → CITA (desde ese mismo caso) → CHAT, todo en una sola pantalla.
+
+// Misma zona horaria/offset fijo que usa el backend (utils/appointmentSlots.js)
+// para calcular si la cita agendada ya llegó — CDMX no observa horario de
+// verano desde 2022, por eso el offset fijo "-06:00" es seguro aquí.
+function appointmentInstant(requestedDate, requestedTime) {
+  const dateOnly = String(requestedDate).slice(0, 10);
+  return new Date(`${dateOnly}T${requestedTime}:00-06:00`);
+}
 
 function ChatPanel({ session, onClose }) {
   const { user } = useAuth();
@@ -125,19 +138,35 @@ function ChatPanel({ session, onClose }) {
 }
 
 export default function SupportPage() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+
   const [cases, setCases] = useState([]);
   const [sessions, setSessions] = useState([]);
-  const [form, setForm] = useState({ subject: '', message: '' });
+  const [appointments, setAppointments] = useState([]);
+  const [subaccounts, setSubaccounts] = useState([]);
+  const [caseForm, setCaseForm] = useState({ subject: '', message: '' });
   const [activeChat, setActiveChat] = useState(null);
+  const [openingChat, setOpeningChat] = useState(null);
+
+  // Formulario de cita — se abre desde un caso específico.
+  const [schedulingCaseNumber, setSchedulingCaseNumber] = useState(null);
+  const [apptForm, setApptForm] = useState({ apiSubaccountId: '', requestedDate: '', requestedTime: '', notes: '' });
+  const [availableSlots, setAvailableSlots] = useState(null);
+  const [apptMessage, setApptMessage] = useState('');
+  const [apptError, setApptError] = useState('');
+  const [submittingAppt, setSubmittingAppt] = useState(false);
 
   const supportCaseStatusMap = SUPPORT_CASE_STATUS(t);
   const chatSessionStatusMap = CHAT_SESSION_STATUS(t);
+  const appointmentStatusMap = APPOINTMENT_STATUS(t);
 
   const load = () => {
     api.get('/client/support-cases').then(({ data }) => setCases(data.cases));
     api.get('/client/chat-sessions').then(({ data }) => setSessions(data.sessions));
+    api.get('/client/appointments').then(({ data }) => setAppointments(data.appointments));
+    api.get('/client/api-subaccounts').then(({ data }) => setSubaccounts(data.subaccounts));
   };
   useEffect(load, []);
 
@@ -156,18 +185,73 @@ export default function SupportPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessions]);
 
+  // Vuelve a cargar los horarios disponibles cada vez que cambia la fecha
+  // elegida — el servidor es la única fuente real (anticipación mínima,
+  // horarios ocupados, disponibilidad del admin).
+  useEffect(() => {
+    if (!apptForm.requestedDate) {
+      setAvailableSlots(null);
+      return;
+    }
+    api
+      .get('/client/appointments/available-slots', { params: { date: apptForm.requestedDate } })
+      .then(({ data }) => setAvailableSlots(data.slots));
+  }, [apptForm.requestedDate]);
+
   const createCase = async (e) => {
     e.preventDefault();
-    if (!form.subject || !form.message) return;
-    await api.post('/client/support-cases', form);
-    setForm({ subject: '', message: '' });
+    if (!caseForm.subject || !caseForm.message) return;
+    await api.post('/client/support-cases', caseForm);
+    setCaseForm({ subject: '', message: '' });
     load();
   };
+
+  const openScheduling = (caseNumber) => {
+    setSchedulingCaseNumber(caseNumber);
+    setApptForm({ apiSubaccountId: '', requestedDate: '', requestedTime: '', notes: '' });
+    setAvailableSlots(null);
+    setApptError('');
+  };
+
+  const submitAppointment = async (e) => {
+    e.preventDefault();
+    setApptError('');
+    setSubmittingAppt(true);
+    try {
+      await api.post('/client/appointments', { ...apptForm, caseNumber: schedulingCaseNumber });
+      setApptMessage(t('clientAppointments.requestSent'));
+      setTimeout(() => setApptMessage(''), 3000);
+      setSchedulingCaseNumber(null);
+      load();
+    } catch (err) {
+      setApptError(translateBackendMessage(err.message, language));
+    } finally {
+      setSubmittingAppt(false);
+    }
+  };
+
+  // CORREGIR(2).xlsx CLIENTE 28 — botón "Entrar al chat" para una cita ya
+  // autorizada: resuelve la sesión asociada y la abre directamente aquí.
+  const enterChat = async (appointmentId) => {
+    setOpeningChat(appointmentId);
+    setApptError('');
+    try {
+      const { data } = await api.get(`/client/appointments/${appointmentId}/chat-session`);
+      setActiveChat(data.session);
+    } catch (err) {
+      setApptError(translateBackendMessage(err.message, language));
+    } finally {
+      setOpeningChat(null);
+    }
+  };
+
+  const today = new Date().toISOString().slice(0, 10);
 
   return (
     <div>
       <div className="qlc-kicker">{t('clientSupport.kicker')}</div>
       <h1 style={{ marginTop: 0 }}>{t('clientSupport.title')}</h1>
+      <p style={{ fontSize: 12, color: 'var(--qlc-muted2)', maxWidth: 640 }}>{t('cdmxNotice')}</p>
 
       {sessions.filter((s) => s.status !== 'CLOSED').length > 0 && (
         <div className="qlc-card" style={{ marginBottom: 20 }}>
@@ -200,7 +284,7 @@ export default function SupportPage() {
           ) : (
             <ul className="qlc-plain-list">
               {cases.map((c) => (
-                <li key={c.id}>
+                <li key={c.id} style={{ paddingBottom: 10 }}>
                   <span style={{ color: 'var(--qlc-muted2)', fontSize: 12 }}>
                     {t('clientSupport.caseNumber')}#{c.caseNumber}
                   </span>{' '}
@@ -208,23 +292,138 @@ export default function SupportPage() {
                   <span className={`qlc-badge ${statusOf(supportCaseStatusMap, c.status).className}`}>
                     {statusOf(supportCaseStatusMap, c.status).text}
                   </span>
-                  <div style={{ color: 'var(--qlc-muted2)', fontSize: 12 }}>{c.message}</div>
+                  <div style={{ color: 'var(--qlc-muted2)', fontSize: 12, marginBottom: 6 }}>{c.message}</div>
+                  <button type="button" className="qlc-btn ghost" onClick={() => openScheduling(c.caseNumber)}>
+                    {t('clientAppointments.requestFromCase')}
+                  </button>
                 </li>
               ))}
             </ul>
           )}
         </div>
 
-        <form className="qlc-card" onSubmit={createCase}>
-          <h3 style={{ marginTop: 0 }}>{t('clientSupport.newCase')}</h3>
-          <label className="qlc-label">{t('clientSupport.subject')}</label>
-          <input className="qlc-input" value={form.subject} onChange={(e) => setForm((f) => ({ ...f, subject: e.target.value }))} required />
-          <label className="qlc-label">{t('clientSupport.message')}</label>
-          <textarea className="qlc-textarea" rows={4} value={form.message} onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))} required />
-          <div className="qlc-form-actions">
-            <button className="qlc-btn primary">{t('clientSupport.createCase')}</button>
-          </div>
-        </form>
+        {schedulingCaseNumber != null ? (
+          <form className="qlc-card" onSubmit={submitAppointment}>
+            <h3 style={{ marginTop: 0 }}>
+              {t('clientAppointments.requestTitle')} — #{schedulingCaseNumber}
+            </h3>
+            <label className="qlc-label">{t('clientAppointments.account')}</label>
+            {subaccounts.length === 0 ? (
+              <p style={{ fontSize: 12, color: 'var(--qlc-muted2)' }}>{t('clientAppointments.noAccountsYet')}</p>
+            ) : (
+              <select
+                className="qlc-select"
+                value={apptForm.apiSubaccountId}
+                onChange={(e) => setApptForm((f) => ({ ...f, apiSubaccountId: e.target.value }))}
+                required
+              >
+                <option value="">{t('clientAppointments.selectAccount')}</option>
+                {subaccounts.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.isPrincipal ? t('clientSubaccounts.principalLabel') : s.identifier || t('clientSubaccounts.unassignedIdentifier')}
+                  </option>
+                ))}
+              </select>
+            )}
+            <label className="qlc-label">{t('clientAppointments.date')}</label>
+            <input
+              type="date"
+              className="qlc-input"
+              min={today}
+              value={apptForm.requestedDate}
+              onChange={(e) => setApptForm((f) => ({ ...f, requestedDate: e.target.value, requestedTime: '' }))}
+              required
+            />
+            <label className="qlc-label">{t('clientAppointments.time')}</label>
+            {!apptForm.requestedDate ? (
+              <p style={{ fontSize: 12, color: 'var(--qlc-muted2)' }}>{t('clientAppointments.selectDateFirst')}</p>
+            ) : availableSlots === null ? (
+              <p style={{ fontSize: 12, color: 'var(--qlc-muted2)' }}>{t('common.loading')}</p>
+            ) : availableSlots.length === 0 ? (
+              <p style={{ fontSize: 12, color: 'var(--qlc-muted2)' }}>{t('clientAppointments.noSlotsForDate')}</p>
+            ) : (
+              <select
+                className="qlc-select"
+                value={apptForm.requestedTime}
+                onChange={(e) => setApptForm((f) => ({ ...f, requestedTime: e.target.value }))}
+                required
+              >
+                <option value="">{t('clientAppointments.selectTime')}</option>
+                {availableSlots.map((slot) => (
+                  <option key={slot} value={slot}>
+                    {slot}
+                  </option>
+                ))}
+              </select>
+            )}
+            <label className="qlc-label">{t('clientAppointments.notes')}</label>
+            <textarea className="qlc-textarea" rows={2} value={apptForm.notes} onChange={(e) => setApptForm((f) => ({ ...f, notes: e.target.value }))} />
+            {apptError && <div className="qlc-field-error">{apptError}</div>}
+            <div className="qlc-form-actions">
+              <button type="button" className="qlc-btn ghost" onClick={() => setSchedulingCaseNumber(null)}>
+                {t('common.cancel')}
+              </button>
+              <button className="qlc-btn primary" disabled={submittingAppt || !apptForm.requestedTime || subaccounts.length === 0}>
+                {submittingAppt ? t('common.sending') : t('clientAppointments.request')}
+              </button>
+            </div>
+          </form>
+        ) : (
+          <form className="qlc-card" onSubmit={createCase}>
+            <h3 style={{ marginTop: 0 }}>{t('clientSupport.newCase')}</h3>
+            <label className="qlc-label">{t('clientSupport.subject')}</label>
+            <input className="qlc-input" value={caseForm.subject} onChange={(e) => setCaseForm((f) => ({ ...f, subject: e.target.value }))} required />
+            <label className="qlc-label">{t('clientSupport.message')}</label>
+            <textarea className="qlc-textarea" rows={4} value={caseForm.message} onChange={(e) => setCaseForm((f) => ({ ...f, message: e.target.value }))} required />
+            <div className="qlc-form-actions">
+              <button className="qlc-btn primary">{t('clientSupport.createCase')}</button>
+            </div>
+          </form>
+        )}
+      </div>
+
+      <div className="qlc-card" style={{ marginTop: 20 }}>
+        <h3 style={{ marginTop: 0 }}>{t('clientAppointments.myAppointments')}</h3>
+        {apptMessage && <div style={{ color: 'var(--qlc-ok)', fontSize: 12, marginBottom: 10 }}>{apptMessage}</div>}
+        {appointments.length === 0 ? (
+          <div className="qlc-empty">{t('clientAppointments.noAppointments')}</div>
+        ) : (
+          <ul className="qlc-plain-list">
+            {appointments.map((a) => {
+              const instant = appointmentInstant(a.requestedDate, a.requestedTime);
+              const chatWindowOpen = a.status === 'AUTORIZADA' && Date.now() >= instant.getTime();
+              return (
+                <li key={a.id} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
+                    <span>
+                      {formatDateOnly(a.requestedDate)} · {a.requestedTime}
+                      {a.supportCase && <span style={{ color: 'var(--qlc-muted2)' }}> · #{a.supportCase.caseNumber}</span>}
+                      {a.apiSubaccount && (
+                        <span style={{ color: 'var(--qlc-muted2)' }}>
+                          {' '}· {a.apiSubaccount.isPrincipal ? t('clientSubaccounts.principalLabel') : a.apiSubaccount.identifier}
+                        </span>
+                      )}
+                    </span>
+                    <span className={`qlc-badge ${statusOf(appointmentStatusMap, a.status).className}`}>
+                      {statusOf(appointmentStatusMap, a.status).text}
+                    </span>
+                  </div>
+                  {a.status === 'AUTORIZADA' && (
+                    <button
+                      className={`qlc-btn ${chatWindowOpen ? 'primary' : 'ghost'}`}
+                      style={{ width: 'fit-content' }}
+                      disabled={openingChat === a.id || !chatWindowOpen}
+                      onClick={() => enterChat(a.id)}
+                      title={chatWindowOpen ? '' : t('clientAppointments.chatNotYetAvailable')}
+                    >
+                      {openingChat === a.id ? t('common.loading') : chatWindowOpen ? t('clientAppointments.enterChat') : t('clientAppointments.chatScheduledFor').replace('{time}', a.requestedTime)}
+                    </button>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        )}
       </div>
 
       {activeChat && <ChatPanel session={activeChat} onClose={() => { setActiveChat(null); load(); }} />}

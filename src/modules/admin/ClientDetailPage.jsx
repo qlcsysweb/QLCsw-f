@@ -10,6 +10,32 @@ import { getLocalizedModel } from '../../i18n/bilingualContent';
 import CapitalIncreasePanel from './CapitalIncreasePanel';
 import CapitalRescuePanel from './CapitalRescuePanel';
 
+// CORRECCIÓN 7 (bloque de 20) — fila reutilizable para no duplicar el JSX
+// entre subcuentas activas/principal e inactivas colapsadas.
+function SubaccountRow({ s, id, t, language, apiStatusMap }) {
+  const apiStatus = statusOf(apiStatusMap, s.status, 'PENDIENTE');
+  const cs = s.conditionsSummary || { confirmed: 0, total: 0, allConfirmed: false };
+  return (
+    <tr>
+      <td>{s.isPrincipal ? t('clientSubaccounts.principalLabel') : (s.identifier || t('adminClientDetail.unassignedIdentifier'))}</td>
+      <td>{s.clientModel?.model ? getLocalizedModel(s.clientModel.model, language).name : t('adminClientDetail.noModelAssigned')}</td>
+      <td>
+        <span className={`qlc-badge ${apiStatus.className}`}>{apiStatus.text}</span>
+      </td>
+      <td>
+        <span className={`qlc-badge ${cs.allConfirmed ? 'ok' : 'muted'}`}>
+          {cs.confirmed}/{cs.total}
+        </span>
+      </td>
+      <td>
+        <Link className="qlc-btn ghost" to={`/admin/clients/${id}/api-subaccounts/${s.id}`}>
+          {t('adminClientsList.view')}
+        </Link>
+      </td>
+    </tr>
+  );
+}
+
 export default function ClientDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -17,10 +43,6 @@ export default function ClientDetailPage() {
   const [client, setClient] = useState(null);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
-  const [uploadError, setUploadError] = useState('');
-  const [docForm, setDocForm] = useState({ category: 'identificacion', description: '' });
-  const [uploading, setUploading] = useState(false);
-  const [showUploadForm, setShowUploadForm] = useState(false);
   const [confirmDeactivate, setConfirmDeactivate] = useState(false);
   const [confirmDeleteDoc, setConfirmDeleteDoc] = useState(null);
   const [confirmDeleteClient, setConfirmDeleteClient] = useState(false);
@@ -29,7 +51,8 @@ export default function ClientDetailPage() {
   const [deleting, setDeleting] = useState(false);
   const [creatingSubaccount, setCreatingSubaccount] = useState(false);
   const [newIdentifier, setNewIdentifier] = useState('');
-  const [walletCopied, setWalletCopied] = useState(false);
+  const [copiedWalletField, setCopiedWalletField] = useState(null);
+  const [showInactiveSubaccounts, setShowInactiveSubaccounts] = useState(false);
   // CORREGIR.xlsx ADMIN 14 — mensajería manual admin→cliente.
   const [messages, setMessages] = useState([]);
   const [messageForm, setMessageForm] = useState({ title: '', message: '' });
@@ -39,11 +62,6 @@ export default function ClientDetailPage() {
 
   const accountStatusMap = ACCOUNT_STATUS(t);
   const apiStatusMap = API_CONNECTION_STATUS(t);
-  const CATEGORIES = [
-    { value: 'identificacion', label: t('adminClientDetail.categoryId') },
-    { value: 'otro', label: t('adminClientDetail.categoryOther') },
-  ];
-
   const load = () => {
     api
       .get(`/admin/clients/${id}`)
@@ -89,30 +107,6 @@ export default function ClientDetailPage() {
     load();
   };
 
-  const uploadDocument = async (e) => {
-    e.preventDefault();
-    const file = e.target.elements.docFile.files[0];
-    if (!file) return;
-    setUploading(true);
-    setUploadError('');
-    const fd = new FormData();
-    fd.append('file', file);
-    fd.append('category', docForm.category);
-    fd.append('description', docForm.description);
-    try {
-      await api.post(`/admin/clients/${id}/documents`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
-      flash(t('adminClientDetail.documentUploaded'));
-      e.target.reset();
-      setDocForm((f) => ({ ...f, description: '' }));
-      setShowUploadForm(false);
-      load();
-    } catch (err) {
-      setUploadError(translateBackendMessage(err.message, language));
-    } finally {
-      setUploading(false);
-    }
-  };
-
   const removeDocument = async (docId) => {
     await api.delete(`/admin/documents/${docId}`);
     flash(t('adminClientDetail.documentDeleted'));
@@ -145,10 +139,11 @@ export default function ClientDetailPage() {
     }
   };
 
-  const copyWalletValue = (value) => {
-    navigator.clipboard?.writeText(value || '');
-    setWalletCopied(true);
-    setTimeout(() => setWalletCopied(false), 2000);
+  const copyWalletValue = (field, value) => {
+    if (!value) return;
+    navigator.clipboard?.writeText(value);
+    setCopiedWalletField(field);
+    setTimeout(() => setCopiedWalletField((f) => (f === field ? null : f)), 2000);
   };
 
   const createSubaccount = async () => {
@@ -174,6 +169,14 @@ export default function ClientDetailPage() {
   // La cuenta PRINCIPAL (isPrincipal) nunca cuenta contra el máximo de 20.
   const numberedSubaccounts = subaccounts.filter((s) => !s.isPrincipal);
   const canAddSubaccount = numberedSubaccounts.length < 20;
+  // CORRECCIÓN 7 (bloque de 20) — por defecto solo se listan las
+  // subcuentas ACTIVAS (conectadas); las inactivas (desconectadas o
+  // todavía pendientes) quedan minimizadas detrás de un control para
+  // expandirlas. La PRINCIPAL siempre se muestra aparte, sin importar su
+  // estado. Nunca se elimina ni se cambia el estado de nada, solo la vista.
+  const principalSubaccount = subaccounts.find((s) => s.isPrincipal);
+  const activeSubaccounts = numberedSubaccounts.filter((s) => s.status === 'CONECTADA');
+  const inactiveSubaccounts = numberedSubaccounts.filter((s) => s.status !== 'CONECTADA');
 
   return (
     <div>
@@ -214,11 +217,6 @@ export default function ClientDetailPage() {
       </div>
 
       {message && <div className="qlc-card" style={{ borderColor: 'var(--qlc-ok-border)', marginBottom: 16 }}>{message}</div>}
-      {uploadError && (
-        <div className="qlc-card" style={{ borderColor: 'var(--qlc-danger-border)', marginBottom: 16 }}>
-          {uploadError}
-        </div>
-      )}
 
       <div className="qlc-card" style={{ marginBottom: 20 }}>
         <h3 style={{ marginTop: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -252,29 +250,24 @@ export default function ClientDetailPage() {
               </tr>
             </thead>
             <tbody>
-              {subaccounts.map((s) => {
-                const apiStatus = statusOf(apiStatusMap, s.status, 'PENDIENTE');
-                const cs = s.conditionsSummary || { confirmed: 0, total: 0, allConfirmed: false };
-                return (
-                  <tr key={s.id}>
-                    <td>{s.isPrincipal ? t('clientSubaccounts.principalLabel') : (s.identifier || t('adminClientDetail.unassignedIdentifier'))}</td>
-                    <td>{s.clientModel?.model ? getLocalizedModel(s.clientModel.model, language).name : t('adminClientDetail.noModelAssigned')}</td>
-                    <td>
-                      <span className={`qlc-badge ${apiStatus.className}`}>{apiStatus.text}</span>
-                    </td>
-                    <td>
-                      <span className={`qlc-badge ${cs.allConfirmed ? 'ok' : 'muted'}`}>
-                        {cs.confirmed}/{cs.total}
-                      </span>
-                    </td>
-                    <td>
-                      <Link className="qlc-btn ghost" to={`/admin/clients/${id}/api-subaccounts/${s.id}`}>
-                        {t('adminClientsList.view')}
-                      </Link>
+              {[principalSubaccount, ...activeSubaccounts].filter(Boolean).map((s) => (
+                <SubaccountRow key={s.id} s={s} id={id} t={t} language={language} apiStatusMap={apiStatusMap} />
+              ))}
+              {inactiveSubaccounts.length > 0 && (
+                <>
+                  <tr>
+                    <td colSpan={5}>
+                      <button type="button" className="qlc-btn ghost" onClick={() => setShowInactiveSubaccounts((v) => !v)}>
+                        {showInactiveSubaccounts ? '▾' : '▸'} {t('adminClientDetail.inactiveSubaccounts')} ({inactiveSubaccounts.length})
+                      </button>
                     </td>
                   </tr>
-                );
-              })}
+                  {showInactiveSubaccounts &&
+                    inactiveSubaccounts.map((s) => (
+                      <SubaccountRow key={s.id} s={s} id={id} t={t} language={language} apiStatusMap={apiStatusMap} />
+                    ))}
+                </>
+              )}
             </tbody>
           </table>
         )}
@@ -360,53 +353,36 @@ export default function ClientDetailPage() {
             <div className="qlc-empty">{t('adminClientDetail.noDocuments')}</div>
           )}
 
-          {/* El admin no necesita volver a cargar un documento que ya
-              existe — su rol aquí es visualizar/imprimir. Subir uno nuevo
-              (identificación, u otra categoría) sigue disponible pero
-              queda detrás de este botón en vez de ser lo primero que se ve. */}
-          {showUploadForm ? (
-            <form onSubmit={uploadDocument} style={{ marginTop: 14, borderTop: '1px solid var(--qlc-line)', paddingTop: 14 }}>
-              <label className="qlc-label">{t('adminClientDetail.category')}</label>
-              <select className="qlc-select" value={docForm.category} onChange={(e) => setDocForm((f) => ({ ...f, category: e.target.value }))}>
-                {CATEGORIES.map((c) => (
-                  <option key={c.value} value={c.value}>
-                    {c.label}
-                  </option>
-                ))}
-              </select>
-              <label className="qlc-label">{t('adminClientDetail.description')}</label>
-              <input className="qlc-input" value={docForm.description} onChange={(e) => setDocForm((f) => ({ ...f, description: e.target.value }))} />
-              <label className="qlc-label">{t('adminClientDetail.file')}</label>
-              <input type="file" name="docFile" className="qlc-input" accept=".pdf,image/*" required />
-              <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-                <button className="qlc-btn primary" style={{ flex: 1 }} disabled={uploading}>
-                  {uploading ? t('adminClientDetail.uploading') : t('adminClientDetail.uploadDocument')}
-                </button>
-                <button type="button" className="qlc-btn ghost" onClick={() => setShowUploadForm(false)}>
-                  {t('common.cancel')}
-                </button>
-              </div>
-            </form>
-          ) : (
-            <button
-              type="button"
-              className="qlc-btn ghost"
-              style={{ marginTop: 14, width: '100%' }}
-              onClick={() => setShowUploadForm(true)}
-            >
-              {t('adminClientDetail.uploadNewDocument')}
-            </button>
-          )}
+          {/* CORRECCIÓN 7 (bloque de 20) — el administrador ya NO puede
+              subir documentos desde la ficha del cliente: solo visualiza y
+              descarga. La carga de documentos sigue existiendo, pero es
+              exclusiva del cliente desde su propio panel. */}
         </div>
 
         <div className="qlc-card">
           <h3 style={{ marginTop: 0 }}>{t('adminClientDetail.wallet')}</h3>
-          {/* CORREGIR.xlsx ADMIN 10 — WALLET/RED/COPIAR siempre visibles,
-              incluso sin dato registrado todavía. */}
-          <p style={{ fontSize: 13, display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+          {/* CORRECCIÓN 9 (bloque de 20) — WALLET/RED/COPIAR siempre
+              visibles, incluso sin dato registrado todavía; estado
+              explícito Registrada/No registrada, nunca información
+              inventada (sin "liga" porque ese dato no existe para la
+              wallet personal del cliente). */}
+          <p style={{ fontSize: 13, marginBottom: 10 }}>
+            <span className={`qlc-badge ${client.walletAddress ? 'ok' : 'muted'}`}>
+              {client.walletAddress ? t('adminClientDetail.walletRegistered') : t('adminClientDetail.walletNotRegistered')}
+            </span>
+          </p>
+          <p style={{ fontSize: 13, display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'flex-start' }}>
             <span>
               <strong>{t('clientWallet.network')}:</strong> {client.walletNetwork || t('adminClientDetail.noWalletDataShort')}
             </span>
+            <button
+              className="qlc-btn ghost"
+              style={{ flexShrink: 0 }}
+              disabled={!client.walletNetwork}
+              onClick={() => copyWalletValue('network', client.walletNetwork)}
+            >
+              {copiedWalletField === 'network' ? t('common.copied') : t('common.copy')}
+            </button>
           </p>
           <p style={{ fontSize: 13, wordBreak: 'break-all', display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'flex-start' }}>
             <span>
@@ -416,13 +392,12 @@ export default function ClientDetailPage() {
               className="qlc-btn ghost"
               style={{ flexShrink: 0 }}
               disabled={!client.walletAddress}
-              onClick={() => copyWalletValue(client.walletAddress)}
+              onClick={() => copyWalletValue('address', client.walletAddress)}
             >
-              {walletCopied ? t('common.copied') : t('common.copy')}
+              {copiedWalletField === 'address' ? t('common.copied') : t('common.copy')}
             </button>
           </p>
           {client.walletQrUrl && <img src={client.walletQrUrl} alt="QR wallet" style={{ width: 130, borderRadius: 10 }} />}
-          {!client.walletAddress && <div className="qlc-empty">{t('adminClientDetail.noWallet')}</div>}
         </div>
 
         {/* CORREGIR.xlsx ADMIN 14 — mensajería manual admin→cliente. */}

@@ -12,7 +12,7 @@ export default function FaqSection({ faqs, media = () => [] }) {
           {faqs.map((f) => (
             <details key={f.id}>
               <summary>{f.question}</summary>
-              <p>{f.answer}</p>
+              <p style={{ whiteSpace: 'pre-line' }}>{f.answer}</p>
             </details>
           ))}
         </div>

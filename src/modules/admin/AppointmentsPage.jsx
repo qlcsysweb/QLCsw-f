@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import ConfirmModal from '../../components/ConfirmModal';
 import { APPOINTMENT_STATUS, statusOf } from '../../utils/statusLabels';
-import { formatCdmxDate } from '../../utils/cdmxTime';
+import { formatDateOnly } from '../../utils/cdmxTime';
 import { useLanguage } from '../../i18n/LanguageContext';
 
 function AvailabilityEditor() {
@@ -174,7 +174,7 @@ export default function AppointmentsPage() {
                           : a.apiSubaccount.identifier
                         : '—'}
                     </td>
-                    <td>{formatCdmxDate(a.requestedDate)}</td>
+                    <td>{formatDateOnly(a.requestedDate)}</td>
                     <td>{a.requestedTime}</td>
                     <td>
                       <span className={`qlc-badge ${s.className}`}>{s.text}</span>

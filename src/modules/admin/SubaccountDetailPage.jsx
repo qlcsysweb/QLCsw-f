@@ -86,7 +86,11 @@ export default function AdminSubaccountDetailPage() {
   const [error, setError] = useState('');
   const [copiedHashId, setCopiedHashId] = useState(null);
 
-  const [apiForm, setApiForm] = useState({ identifier: '', exchangeName: '', apiKey: '', apiSecret: '', apiPassphrase: '', status: 'PENDIENTE', requiredCapital: '', connectionReason: '' });
+  const [apiForm, setApiForm] = useState({ identifier: '', exchangeName: '', apiKey: '', apiSecret: '', apiPassphrase: '', status: 'PENDIENTE', requiredCapital: '', connectionReason: '', ipRequired: false, ipAddress: '' });
+  // CORRECCIÓN 6 (bloque de 20) — editar las credenciales API exige una
+  // segunda confirmación explícita antes de guardar: este estado guarda el
+  // resumen de lo que se va a cambiar mientras se espera esa confirmación.
+  const [pendingApiSave, setPendingApiSave] = useState(null);
   const [statementForm, setStatementForm] = useState({
     periodStart: '', periodEnd: '', startingBalance: '', endingBalance: '', resultAmount: '', resultPercentage: '', volatility: '', netResult: '', commission: '0', activityNotes: '', adminNotes: '',
   });
@@ -103,7 +107,13 @@ export default function AdminSubaccountDetailPage() {
       const found = data.client.apiSubaccounts.find((s) => s.id === id);
       setSubaccount(found);
       if (found) {
-        setApiForm((f) => ({ ...f, status: found.status, requiredCapital: found.requiredCapital ?? '' }));
+        setApiForm((f) => ({
+          ...f,
+          status: found.status,
+          requiredCapital: found.requiredCapital ?? '',
+          ipRequired: Boolean(found.ipRequired),
+          ipAddress: found.ipAddress || '',
+        }));
       }
     });
     api.get(`/admin/api-subaccounts/${id}/secrets`).then(({ data }) => setSecrets(data.secrets));
@@ -150,23 +160,38 @@ export default function AdminSubaccountDetailPage() {
     }
   };
 
-  const saveApi = async (e) => {
+  // CORRECCIÓN 6 (bloque de 20) — no guarda directamente: arma el payload y
+  // un resumen legible de los cambios, y espera la segunda confirmación del
+  // admin (ver pendingApiSave / confirmSaveApi) antes de llamar al backend.
+  const requestSaveApi = (e) => {
     e.preventDefault();
-    const payload = { status: apiForm.status };
-    if (apiForm.identifier) payload.identifier = apiForm.identifier;
-    if (apiForm.exchangeName) payload.exchangeName = apiForm.exchangeName;
-    if (apiForm.apiKey) payload.apiKey = apiForm.apiKey;
-    if (apiForm.apiSecret) payload.apiSecret = apiForm.apiSecret;
-    if (apiForm.apiPassphrase) payload.apiPassphrase = apiForm.apiPassphrase;
-    if (apiForm.requiredCapital !== '') payload.requiredCapital = Number(apiForm.requiredCapital);
-    if (apiForm.connectionReason) payload.connectionReason = apiForm.connectionReason;
+    const payload = { status: apiForm.status, ipRequired: apiForm.ipRequired };
+    const summary = [];
+    if (apiForm.identifier) { payload.identifier = apiForm.identifier; summary.push([t('adminClientDetail.identifier'), apiForm.identifier]); }
+    if (apiForm.exchangeName) { payload.exchangeName = apiForm.exchangeName; summary.push(['Exchange', apiForm.exchangeName]); }
+    if (apiForm.apiKey) { payload.apiKey = apiForm.apiKey; summary.push(['API Key', t('adminClientDetail.willChangeValue')]); }
+    if (apiForm.apiSecret) { payload.apiSecret = apiForm.apiSecret; summary.push(['Secret Key', t('adminClientDetail.willChangeValue')]); }
+    if (apiForm.apiPassphrase) { payload.apiPassphrase = apiForm.apiPassphrase; summary.push(['Passphrase', t('adminClientDetail.willChangeValue')]); }
+    if (apiForm.requiredCapital !== '') { payload.requiredCapital = Number(apiForm.requiredCapital); summary.push([t('adminClientDetail.requiredCapital'), `${apiForm.requiredCapital} USDT`]); }
+    if (apiForm.connectionReason) { payload.connectionReason = apiForm.connectionReason; summary.push([t('adminClientDetail.connectionReason'), apiForm.connectionReason]); }
+    payload.ipAddress = apiForm.ipRequired ? apiForm.ipAddress || null : null;
+    summary.push([t('adminClientDetail.ipRequired'), apiForm.ipRequired ? t('common.yes') : t('common.no')]);
+    if (apiForm.ipRequired && apiForm.ipAddress) summary.push(['IP', apiForm.ipAddress]);
+    summary.push([t('adminClientDetail.status'), apiForm.status]);
+    setPendingApiSave({ payload, summary });
+  };
+
+  const confirmSaveApi = async () => {
+    if (!pendingApiSave) return;
     try {
-      await api.patch(`/admin/api-subaccounts/${id}`, payload);
+      await api.patch(`/admin/api-subaccounts/${id}`, pendingApiSave.payload);
       setApiForm((f) => ({ ...f, identifier: '', apiKey: '', apiSecret: '', apiPassphrase: '', connectionReason: '' }));
+      setPendingApiSave(null);
       flash(t('adminClientDetail.apiConnectionUpdated'));
       load();
     } catch (err) {
       setError(translateBackendMessage(err.message, language));
+      setPendingApiSave(null);
     }
   };
 
@@ -183,6 +208,13 @@ export default function AdminSubaccountDetailPage() {
   const reviewPayment = async (reportId, status) => {
     await api.patch(`/admin/payment-reports/${reportId}`, { status });
     flash(t('adminClientDetail.paymentReviewed'));
+    load();
+  };
+
+  // CORRECCIÓN 10 (bloque de 20) — acción independiente de aprobar: solo
+  // confirma que se identificó la transferencia.
+  const markTransferReceived = async (reportId) => {
+    await api.patch(`/admin/payment-reports/${reportId}/transfer-received`);
     load();
   };
 
@@ -301,7 +333,7 @@ export default function AdminSubaccountDetailPage() {
               <SecretField label="Passphrase" value={secrets.apiPassphrase} t={t} />
             </div>
           )}
-          <form onSubmit={saveApi}>
+          <form onSubmit={requestSaveApi}>
             <label className="qlc-label">{t('adminClientDetail.identifier')}</label>
             <input className="qlc-input" value={apiForm.identifier} onChange={(e) => setApiForm((f) => ({ ...f, identifier: e.target.value }))} placeholder={subaccount.identifier || 'PCB-1-A-1'} />
             <label className="qlc-label">{t('adminClientDetail.requiredCapital')}</label>
@@ -330,6 +362,41 @@ export default function AdminSubaccountDetailPage() {
             <input className="qlc-input" value={apiForm.apiSecret} onChange={(e) => setApiForm((f) => ({ ...f, apiSecret: e.target.value }))} placeholder={t('adminClientDetail.leaveBlank')} />
             <label className="qlc-label">Passphrase {subaccount.hasApiPassphrase ? t('adminClientDetail.alreadyRegistered') : ''}</label>
             <input className="qlc-input" value={apiForm.apiPassphrase} onChange={(e) => setApiForm((f) => ({ ...f, apiPassphrase: e.target.value }))} placeholder={t('adminClientDetail.leaveBlank')} />
+
+            {/* CORRECCIÓN 6/18 (bloque de 20) — dato administrativo; nunca
+                se conecta ni valida contra el exchange. */}
+            <label className="qlc-label" style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12 }}>
+              <input
+                type="checkbox"
+                checked={apiForm.ipRequired}
+                onChange={(e) => setApiForm((f) => ({ ...f, ipRequired: e.target.checked }))}
+              />
+              {t('adminClientDetail.ipRequired')}
+            </label>
+            {apiForm.ipRequired && (
+              <>
+                <label className="qlc-label">IP</label>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <input
+                    className="qlc-input"
+                    value={apiForm.ipAddress}
+                    onChange={(e) => setApiForm((f) => ({ ...f, ipAddress: e.target.value }))}
+                    placeholder="203.0.113.10"
+                  />
+                  {subaccount.ipAddress && (
+                    <button
+                      type="button"
+                      className="qlc-btn ghost"
+                      style={{ flexShrink: 0 }}
+                      onClick={() => navigator.clipboard.writeText(subaccount.ipAddress).catch(() => {})}
+                    >
+                      {t('common.copy')}
+                    </button>
+                  )}
+                </div>
+              </>
+            )}
+
             <button className="qlc-btn primary" style={{ marginTop: 14, width: '100%' }}>
               {t('adminClientDetail.saveApiConnection')}
             </button>
@@ -361,10 +428,11 @@ export default function AdminSubaccountDetailPage() {
             {t('adminClientDetail.reportedPayments')} ({payments.length})
           </h3>
 
-          {/* Estado de transferencia de garantía, claramente diferenciado
-              de "recibido" — administración solo confirma que ya fue
-              recibida, nunca procesa la transferencia. */}
-          {latestGuaranteeReport && latestGuaranteeReport.status !== 'APROBADO' && (
+          {/* CORRECCIÓN 10 (bloque de 20) — dos acciones independientes:
+              "Transferencia recibida" solo confirma que se identificó la
+              transferencia (NUNCA aprueba); "Garantía reportada" es la
+              acción separada que sí mueve el pago a APROBADO. */}
+          {latestGuaranteeReport && latestGuaranteeReport.status !== 'APROBADO' && !latestGuaranteeReport.transferReceivedAt && (
             <div
               className="qlc-card"
               style={{ borderColor: 'var(--qlc-warn-border)', marginBottom: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}
@@ -375,14 +443,30 @@ export default function AdminSubaccountDetailPage() {
                   {t('adminClientDetail.transferReportedDesc')}
                 </p>
               </div>
-              <button className="qlc-btn primary" onClick={() => reviewPayment(latestGuaranteeReport.id, 'APROBADO')}>
+              <button className="qlc-btn primary" onClick={() => markTransferReceived(latestGuaranteeReport.id)}>
                 {t('adminClientDetail.transferMarkReceived')}
+              </button>
+            </div>
+          )}
+          {latestGuaranteeReport && latestGuaranteeReport.status !== 'APROBADO' && latestGuaranteeReport.transferReceivedAt && (
+            <div
+              className="qlc-card"
+              style={{ borderColor: 'var(--qlc-ok-border)', marginBottom: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}
+            >
+              <div>
+                <span className="qlc-badge ok">✓ {t('adminClientDetail.transferReceived')}</span>
+                <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--qlc-muted)' }}>
+                  {formatCdmxDate(latestGuaranteeReport.transferReceivedAt)}
+                </p>
+              </div>
+              <button className="qlc-btn primary" onClick={() => reviewPayment(latestGuaranteeReport.id, 'APROBADO')}>
+                {t('adminPayments.guaranteeReported')}
               </button>
             </div>
           )}
           {latestGuaranteeReport?.status === 'APROBADO' && (
             <div className="qlc-badge ok" style={{ display: 'block', width: 'fit-content', marginBottom: 14, fontSize: 13, padding: '8px 12px' }}>
-              ✓ {t('adminClientDetail.transferReceived')}
+              ✓ {t('adminPayments.guaranteeReported')}
             </div>
           )}
 
@@ -397,14 +481,20 @@ export default function AdminSubaccountDetailPage() {
                         {p.amount} {p.currency} — <span className={`qlc-badge ${s.className}`}>{s.text}</span>
                       </span>
                       {p.status !== 'APROBADO' && (
-                        <span style={{ display: 'flex', gap: 4 }}>
-                          <button className="qlc-btn ghost" onClick={() => reviewPayment(p.id, 'APROBADO')}>{t('adminClientDetail.confirm')}</button>
+                        <span style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                          {!p.transferReceivedAt && (
+                            <button className="qlc-btn ghost" onClick={() => markTransferReceived(p.id)}>{t('adminPayments.markTransferReceived')}</button>
+                          )}
+                          <button className="qlc-btn primary" onClick={() => reviewPayment(p.id, 'APROBADO')}>{t('adminPayments.guaranteeReported')}</button>
                           <button className="qlc-btn ghost" onClick={() => reviewPayment(p.id, 'RECHAZADO')}>{t('adminClientDetail.reject')}</button>
                         </span>
                       )}
                     </div>
                     <span style={{ fontSize: 12, color: 'var(--qlc-muted2)' }}>
                       {formatCdmxDate(p.reportedAt)}
+                      {p.transferReceivedAt && (
+                        <span style={{ color: 'var(--qlc-ok)' }}> · ✓ {t('adminClientDetail.transferReceived')} {formatCdmxDate(p.transferReceivedAt)}</span>
+                      )}
                     </span>
                     {p.reference && (
                       <span style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--qlc-muted2)', fontSize: 12 }}>
@@ -530,20 +620,23 @@ export default function AdminSubaccountDetailPage() {
                 <label className="qlc-label">{t('adminClientDetail.periodEnd')}</label>
                 <input className="qlc-input" type="date" value={statementForm.periodEnd} onChange={(e) => setStatementForm((f) => ({ ...f, periodEnd: e.target.value }))} required />
               </div>
+              {/* CORRECCIÓN 8 (bloque de 20) — USDT junto a cada importe
+                  monetario; nunca en el % de rendimiento ni en volatilidad
+                  (dato libre, no necesariamente monetario). */}
               <div>
-                <label className="qlc-label">{t('adminClientDetail.startingBalance')}</label>
+                <label className="qlc-label">{t('adminClientDetail.startingBalance')} (USDT)</label>
                 <input className="qlc-input" type="number" step="0.01" value={statementForm.startingBalance} onChange={(e) => setStatementForm((f) => ({ ...f, startingBalance: e.target.value }))} required />
               </div>
               <div>
-                <label className="qlc-label">{t('adminClientDetail.endingBalance')}</label>
+                <label className="qlc-label">{t('adminClientDetail.endingBalance')} (USDT)</label>
                 <input className="qlc-input" type="number" step="0.01" value={statementForm.endingBalance} onChange={(e) => setStatementForm((f) => ({ ...f, endingBalance: e.target.value }))} required />
               </div>
               <div>
-                <label className="qlc-label">{t('adminClientDetail.resultAmount')}</label>
+                <label className="qlc-label">{t('adminClientDetail.resultAmount')} (USDT)</label>
                 <input className="qlc-input" type="number" step="0.01" value={statementForm.resultAmount} onChange={(e) => setStatementForm((f) => ({ ...f, resultAmount: e.target.value }))} required />
               </div>
               <div>
-                <label className="qlc-label">{t('adminClientDetail.resultPercentage')}</label>
+                <label className="qlc-label">{t('adminClientDetail.resultPercentage')} (%)</label>
                 <input className="qlc-input" type="number" step="0.01" value={statementForm.resultPercentage} onChange={(e) => setStatementForm((f) => ({ ...f, resultPercentage: e.target.value }))} required />
               </div>
               <div>
@@ -551,11 +644,11 @@ export default function AdminSubaccountDetailPage() {
                 <input className="qlc-input" value={statementForm.volatility} onChange={(e) => setStatementForm((f) => ({ ...f, volatility: e.target.value }))} />
               </div>
               <div>
-                <label className="qlc-label">{t('adminClientDetail.netResult')}</label>
+                <label className="qlc-label">{t('adminClientDetail.netResult')} (USDT)</label>
                 <input className="qlc-input" type="number" step="0.01" value={statementForm.netResult} onChange={(e) => setStatementForm((f) => ({ ...f, netResult: e.target.value }))} />
               </div>
               <div>
-                <label className="qlc-label">{t('adminClientDetail.commission')}</label>
+                <label className="qlc-label">{t('adminClientDetail.commission')} (USDT)</label>
                 <input className="qlc-input" type="number" step="0.01" value={statementForm.commission} onChange={(e) => setStatementForm((f) => ({ ...f, commission: e.target.value }))} />
               </div>
             </div>
@@ -569,6 +662,29 @@ export default function AdminSubaccountDetailPage() {
           </form>
         </div>
       </div>
+
+      {pendingApiSave && (
+        <div className="qlc-modal-overlay">
+          <div className="qlc-modal-panel" onClick={(e) => e.stopPropagation()}>
+            <h2>{t('adminClientDetail.confirmApiChangesTitle')}</h2>
+            <ul className="qlc-plain-list" style={{ fontSize: 13, marginBottom: 16 }}>
+              {pendingApiSave.summary.map(([label, value]) => (
+                <li key={label}>
+                  <strong>{label}:</strong> {value}
+                </li>
+              ))}
+            </ul>
+            <div className="qlc-form-actions">
+              <button type="button" className="qlc-btn ghost" onClick={() => setPendingApiSave(null)}>
+                {t('common.cancel')}
+              </button>
+              <button type="button" className="qlc-btn primary" onClick={confirmSaveApi}>
+                {t('adminClientDetail.confirmAndSave')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
