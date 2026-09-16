@@ -67,7 +67,7 @@ export default function SubaccountDetailPage() {
   const [copiedField, setCopiedField] = useState(null);
   // CORREGIR.xlsx CLIENTE 13 — reporte real de distribución de capital.
   const [distributionReports, setDistributionReports] = useState([]);
-  const [distributionForm, setDistributionForm] = useState({ amount: '', note: '' });
+  const [distributionForm, setDistributionForm] = useState({ note: '' });
   const [reportingDistribution, setReportingDistribution] = useState(false);
 
   const apiStatusMap = API_CONNECTION_STATUS(t);
@@ -172,20 +172,20 @@ export default function SubaccountDetailPage() {
 
   // CORREGIR.xlsx CLIENTE 13 — reporte real de distribución de capital
   // ("YA DISTRIBUÍ MI CAPITAL"), con el mismo patrón que el reporte de
-  // pago: monto + nota, revisado por QLC (nunca auto-aprobado). El sistema
-  // JAMÁS se conecta al exchange para validar el saldo.
+  // pago: nota opcional, revisado por QLC (nunca auto-aprobado). El sistema
+  // JAMÁS se conecta al exchange para validar el saldo. El monto ya NO lo
+  // escribe el cliente — el backend lo toma directo de requiredCapital.
   const submitDistributionReport = async (e) => {
     e.preventDefault();
-    if (!distributionForm.amount) return;
+    if (subaccount.requiredCapital == null) return;
     setReportingDistribution(true);
     setError('');
     try {
       await api.post(`/client/api-subaccounts/${id}/capital-distribution-reports`, {
-        amount: distributionForm.amount,
         note: distributionForm.note || undefined,
       });
       flash(t('clientApiConnection.capitalReportedOk'));
-      setDistributionForm({ amount: '', note: '' });
+      setDistributionForm({ note: '' });
       load();
     } catch (err) {
       setError(translateBackendMessage(err.message, language));
@@ -352,22 +352,17 @@ export default function SubaccountDetailPage() {
             <p style={{ fontSize: 12, color: 'var(--qlc-ok)' }}>✓ {t('clientApiConnection.capitalReported')}</p>
           )}
 
-          {/* CORRECCIÓN — antes este formulario dependía de que el admin ya
-              hubiera configurado "capital operativo requerido"
-              (requiredCapital != null); mientras esa condición no se cumplía
-              (el caso normal antes de que un admin la fije manualmente), el
-              cliente jamás veía dónde reportar su distribución de capital.
-              Ahora el reporte siempre está disponible, igual que "reportar
-              pago" — el dato de capital requerido arriba sigue siendo
-              opcional/informativo. */}
+          {/* CORRECCIÓN (monto no editable por el cliente) — el monto ya no
+              lo escribe el cliente: siempre es el capital operativo
+              requerido que fijó el admin (requiredCapital). Mientras el
+              admin no lo configure, el reporte queda deshabilitado (antes
+              se permitía reportar cualquier monto aunque no hubiera
+              requiredCapital todavía — eso quedó revertido a propósito). */}
           <form
             onSubmit={submitDistributionReport}
             style={{ marginTop: 12, marginBottom: 16, borderTop: '1px solid var(--qlc-line)', paddingTop: 12 }}
           >
             <h4 style={{ margin: '0 0 4px' }}>{t('clientApiConnection.reportDistributionTitle')}</h4>
-            {/* CORRECCIÓN 17 (bloque de 20) — el capital requerido (fijo,
-                configurado por el admin) se repite aquí mismo, distinto del
-                monto que el cliente está a punto de reportar abajo. */}
             <p style={{ fontSize: 12, color: 'var(--qlc-muted2)', marginTop: 0, marginBottom: 10 }}>
               {t('clientApiConnection.requiredCapital')}:{' '}
               {subaccount.requiredCapital != null ? `${subaccount.requiredCapital} USDT` : t('clientApiConnection.requiredCapitalPending')}
@@ -375,11 +370,10 @@ export default function SubaccountDetailPage() {
             <label className="qlc-label">{t('clientPayments.amount')}</label>
             <input
               className="qlc-input"
-              type="number"
-              step="0.01"
-              value={distributionForm.amount}
-              onChange={(e) => setDistributionForm((f) => ({ ...f, amount: e.target.value }))}
-              required
+              value={subaccount.requiredCapital != null ? `${subaccount.requiredCapital} USDT` : t('clientApiConnection.requiredCapitalPending')}
+              disabled
+              readOnly
+              title={t('clientApiConnection.amountFixedByAdmin')}
             />
             <label className="qlc-label">{t('clientApiConnection.distributionNote')}</label>
             <input
@@ -387,7 +381,12 @@ export default function SubaccountDetailPage() {
               value={distributionForm.note}
               onChange={(e) => setDistributionForm((f) => ({ ...f, note: e.target.value }))}
             />
-            <button className="qlc-btn primary" style={{ marginTop: 10, width: '100%' }} disabled={reportingDistribution}>
+            <button
+              className="qlc-btn primary"
+              style={{ marginTop: 10, width: '100%' }}
+              disabled={reportingDistribution || subaccount.requiredCapital == null}
+              title={subaccount.requiredCapital == null ? t('clientApiConnection.requiredCapitalPending') : undefined}
+            >
               {reportingDistribution ? t('common.sending') : t('clientApiConnection.reportCapitalReady')}
             </button>
 

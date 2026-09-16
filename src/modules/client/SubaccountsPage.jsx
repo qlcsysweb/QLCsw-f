@@ -4,19 +4,50 @@ import api from '../../services/api';
 import { API_CONNECTION_STATUS, statusOf } from '../../utils/statusLabels';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { getLocalizedModel } from '../../i18n/bilingualContent';
+import { translateBackendMessage } from '../../i18n/backendMessages';
 
 // CORRECCIÓN 11 — el cliente puede tener hasta 20 subcuentas/API, cada una
 // con su propio modelo, contrato, proceso, pagos y estados de cuenta. Esta
 // página es el punto de entrada: cada subcuenta lleva a su propio detalle.
+//
+// CORRECCIÓN (subcuentas ocultas) — de esas 20, el cliente solo ve la
+// PRINCIPAL y las que un admin ya reveló; el resto queda oculto para no
+// abrumar con subcuentas que todavía no usa. Si quiere una más, la solicita
+// aquí y el equipo QLC la habilita manualmente.
 export default function SubaccountsPage() {
   const { t, language } = useLanguage();
   const [subaccounts, setSubaccounts] = useState(null);
+  const [hiddenCount, setHiddenCount] = useState(0);
+  const [requestPending, setRequestPending] = useState(false);
+  const [requesting, setRequesting] = useState(false);
+  const [requestError, setRequestError] = useState('');
+  const [requestOk, setRequestOk] = useState('');
 
   const apiStatusMap = API_CONNECTION_STATUS(t);
 
-  useEffect(() => {
-    api.get('/client/api-subaccounts').then(({ data }) => setSubaccounts(data.subaccounts));
-  }, []);
+  const load = () => {
+    api.get('/client/api-subaccounts').then(({ data }) => {
+      setSubaccounts(data.subaccounts);
+      setHiddenCount(data.hiddenCount || 0);
+      setRequestPending(Boolean(data.requestPending));
+    });
+  };
+  useEffect(load, []);
+
+  const requestAdditional = async () => {
+    setRequesting(true);
+    setRequestError('');
+    setRequestOk('');
+    try {
+      await api.post('/client/api-subaccounts/request-additional');
+      setRequestOk(t('clientSubaccounts.requestSentOk'));
+      load();
+    } catch (err) {
+      setRequestError(translateBackendMessage(err.message, language));
+    } finally {
+      setRequesting(false);
+    }
+  };
 
   if (!subaccounts) return <div className="qlc-empty">{t('common.loading')}</div>;
 
@@ -25,6 +56,19 @@ export default function SubaccountsPage() {
       <div className="qlc-kicker">{t('clientSubaccounts.kicker')}</div>
       <h1 style={{ marginTop: 0 }}>{t('clientSubaccounts.title')}</h1>
       <p style={{ color: 'var(--qlc-muted)', fontSize: 13, maxWidth: 640 }}>{t('clientSubaccounts.intro')}</p>
+
+      {hiddenCount > 0 && (
+        <div className="qlc-card" style={{ marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+          <p style={{ margin: 0, fontSize: 13, color: 'var(--qlc-muted)' }}>
+            {requestPending ? t('clientSubaccounts.requestPending') : t('clientSubaccounts.requestIntro')}
+          </p>
+          <button className="qlc-btn ghost" disabled={requesting || requestPending} onClick={requestAdditional}>
+            {requesting ? t('common.sending') : t('clientSubaccounts.requestAdditional')}
+          </button>
+        </div>
+      )}
+      {requestError && <p style={{ color: 'var(--qlc-danger)', fontSize: 13 }}>{requestError}</p>}
+      {requestOk && <p style={{ color: 'var(--qlc-ok)', fontSize: 13 }}>{requestOk}</p>}
 
       {subaccounts.length === 0 ? (
         <div className="qlc-empty">{t('clientSubaccounts.none')}</div>

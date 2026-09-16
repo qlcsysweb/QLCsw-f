@@ -12,12 +12,25 @@ import CapitalRescuePanel from './CapitalRescuePanel';
 
 // CORRECCIÓN 7 (bloque de 20) — fila reutilizable para no duplicar el JSX
 // entre subcuentas activas/principal e inactivas colapsadas.
-function SubaccountRow({ s, id, t, language, apiStatusMap }) {
+//
+// CORRECCIÓN (subcuentas ocultas) — una subcuenta numerada nace oculta para
+// el cliente (visibleToClient=false); aquí se ve el badge "Oculta" y el
+// botón para revelarla (onReveal), que pide el capital operativo requerido
+// en el mismo paso.
+function SubaccountRow({ s, id, t, language, apiStatusMap, onReveal }) {
   const apiStatus = statusOf(apiStatusMap, s.status, 'PENDIENTE');
   const cs = s.conditionsSummary || { confirmed: 0, total: 0, allConfirmed: false };
+  const hidden = !s.isPrincipal && !s.visibleToClient;
   return (
     <tr>
-      <td>{s.isPrincipal ? t('clientSubaccounts.principalLabel') : (s.identifier || t('adminClientDetail.unassignedIdentifier'))}</td>
+      <td>
+        {s.isPrincipal ? t('clientSubaccounts.principalLabel') : (s.identifier || t('adminClientDetail.unassignedIdentifier'))}
+        {hidden && (
+          <span className="qlc-badge muted" style={{ marginLeft: 6 }}>
+            {t('adminClientDetail.hiddenFromClient')}
+          </span>
+        )}
+      </td>
       <td>{s.clientModel?.model ? getLocalizedModel(s.clientModel.model, language).name : t('adminClientDetail.noModelAssigned')}</td>
       <td>
         <span className={`qlc-badge ${apiStatus.className}`}>{apiStatus.text}</span>
@@ -27,10 +40,15 @@ function SubaccountRow({ s, id, t, language, apiStatusMap }) {
           {cs.confirmed}/{cs.total}
         </span>
       </td>
-      <td>
+      <td style={{ display: 'flex', gap: 6 }}>
         <Link className="qlc-btn ghost" to={`/admin/clients/${id}/api-subaccounts/${s.id}`}>
           {t('adminClientsList.view')}
         </Link>
+        {hidden && (
+          <button type="button" className="qlc-btn ghost" onClick={() => onReveal(s)}>
+            {t('adminClientDetail.revealAction')}
+          </button>
+        )}
       </td>
     </tr>
   );
@@ -53,6 +71,10 @@ export default function ClientDetailPage() {
   const [newIdentifier, setNewIdentifier] = useState('');
   const [copiedWalletField, setCopiedWalletField] = useState(null);
   const [showInactiveSubaccounts, setShowInactiveSubaccounts] = useState(false);
+  const [revealTarget, setRevealTarget] = useState(null);
+  const [revealCapital, setRevealCapital] = useState('');
+  const [revealing, setRevealing] = useState(false);
+  const [revealError, setRevealError] = useState('');
   // CORREGIR.xlsx ADMIN 14 — mensajería manual admin→cliente.
   const [messages, setMessages] = useState([]);
   const [messageForm, setMessageForm] = useState({ title: '', message: '' });
@@ -146,6 +168,38 @@ export default function ClientDetailPage() {
     setTimeout(() => setCopiedWalletField((f) => (f === field ? null : f)), 2000);
   };
 
+  // CORRECCIÓN (subcuentas ocultas) — revelar exige capturar el capital
+  // operativo requerido en el mismo paso (si la subcuenta todavía no lo
+  // tenía), para que el cliente nunca vea "pendiente de configuración"
+  // justo cuando se le habilita.
+  const openReveal = (s) => {
+    setRevealTarget(s);
+    setRevealCapital(s.requiredCapital != null ? String(s.requiredCapital) : '');
+    setRevealError('');
+  };
+
+  const confirmReveal = async () => {
+    if (!revealCapital || Number(revealCapital) <= 0) {
+      setRevealError(t('adminClientDetail.revealCapitalRequired'));
+      return;
+    }
+    setRevealing(true);
+    setRevealError('');
+    try {
+      await api.patch(`/admin/api-subaccounts/${revealTarget.id}`, {
+        visibleToClient: true,
+        requiredCapital: Number(revealCapital),
+      });
+      setRevealTarget(null);
+      flash(t('adminClientDetail.subaccountRevealed'));
+      load();
+    } catch (err) {
+      setRevealError(translateBackendMessage(err.message, language));
+    } finally {
+      setRevealing(false);
+    }
+  };
+
   const createSubaccount = async () => {
     setCreatingSubaccount(true);
     setError('');
@@ -218,6 +272,12 @@ export default function ClientDetailPage() {
 
       {message && <div className="qlc-card" style={{ borderColor: 'var(--qlc-ok-border)', marginBottom: 16 }}>{message}</div>}
 
+      {client.subaccountRequestedAt && (
+        <div className="qlc-card" style={{ borderColor: 'var(--qlc-gold)', marginBottom: 16 }}>
+          {t('adminClientDetail.subaccountRequestBanner')} {new Date(client.subaccountRequestedAt).toLocaleString()}
+        </div>
+      )}
+
       <div className="qlc-card" style={{ marginBottom: 20 }}>
         <h3 style={{ marginTop: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           {t('adminClientDetail.subaccounts')} ({numberedSubaccounts.length}/20)
@@ -251,7 +311,7 @@ export default function ClientDetailPage() {
             </thead>
             <tbody>
               {[principalSubaccount, ...activeSubaccounts].filter(Boolean).map((s) => (
-                <SubaccountRow key={s.id} s={s} id={id} t={t} language={language} apiStatusMap={apiStatusMap} />
+                <SubaccountRow key={s.id} s={s} id={id} t={t} language={language} apiStatusMap={apiStatusMap} onReveal={openReveal} />
               ))}
               {inactiveSubaccounts.length > 0 && (
                 <>
@@ -264,7 +324,7 @@ export default function ClientDetailPage() {
                   </tr>
                   {showInactiveSubaccounts &&
                     inactiveSubaccounts.map((s) => (
-                      <SubaccountRow key={s.id} s={s} id={id} t={t} language={language} apiStatusMap={apiStatusMap} />
+                      <SubaccountRow key={s.id} s={s} id={id} t={t} language={language} apiStatusMap={apiStatusMap} onReveal={openReveal} />
                     ))}
                 </>
               )}
@@ -498,6 +558,35 @@ export default function ClientDetailPage() {
             </button>
             <button className="qlc-btn danger" onClick={deleteClientAccount} disabled={deleting || !deleteSecurityPassword}>
               {deleting ? t('modals.processing') : t('adminClientDetail.deleteClient')}
+            </button>
+          </div>
+        </Modal>
+      )}
+
+      {revealTarget && (
+        <Modal
+          title={t('adminClientDetail.revealTitle')}
+          subtitle={t('adminClientDetail.revealSubtitle')}
+          onClose={() => setRevealTarget(null)}
+          width={440}
+        >
+          <label className="qlc-label">{t('adminClientDetail.revealCapitalLabel')}</label>
+          <input
+            className="qlc-input"
+            type="number"
+            step="0.01"
+            min="0.01"
+            value={revealCapital}
+            onChange={(e) => setRevealCapital(e.target.value)}
+            autoFocus
+          />
+          {revealError && <div className="qlc-field-error">{revealError}</div>}
+          <div className="qlc-form-actions">
+            <button className="qlc-btn ghost" onClick={() => setRevealTarget(null)} disabled={revealing}>
+              {t('modals.cancel')}
+            </button>
+            <button className="qlc-btn primary" onClick={confirmReveal} disabled={revealing}>
+              {revealing ? t('modals.processing') : t('adminClientDetail.revealConfirm')}
             </button>
           </div>
         </Modal>
