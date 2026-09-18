@@ -82,6 +82,9 @@ export default function ClientDetailPage() {
   const [sendingMessage, setSendingMessage] = useState(false);
   // CORREGIR.xlsx ADMIN 07 — organización Año/Periodo/Mes de documentos.
   const [orgDraft, setOrgDraft] = useState({});
+  // AUDITORÍA QLC PARTE 1 — vista previa embebida (imagen ampliada / PDF
+  // con visor nativo) antes de imprimir, sin salir de la página.
+  const [previewDoc, setPreviewDoc] = useState(null);
 
   const accountStatusMap = ACCOUNT_STATUS(t);
   const apiStatusMap = API_CONNECTION_STATUS(t);
@@ -146,6 +149,25 @@ export default function ClientDetailPage() {
     await api.patch(`/admin/documents/${doc.id}/unlock`, { unlocked: !doc.clientEditUnlocked });
     flash(doc.clientEditUnlocked ? t('adminClientDetail.documentLocked') : t('adminClientDetail.documentUnlocked'));
     load();
+  };
+
+  // AUDITORÍA QLC PARTE 1 — el documento se sirve "inline" (ver
+  // documentController.downloadDocument), así que abrirlo en pestaña nueva
+  // ya deja disponible el visor nativo del navegador. Igual que en el
+  // archivo de Estados de Cuenta, intentamos además disparar el diálogo de
+  // impresión automáticamente; si el navegador lo bloquea, el admin puede
+  // imprimir manualmente desde esa misma pestaña.
+  const printDocument = (doc) => {
+    const win = window.open(`${API_BASE_URL}/admin/documents/${doc.id}/download`, '_blank');
+    if (win) {
+      win.onload = () => {
+        try {
+          win.print();
+        } catch {
+          // El admin puede imprimir manualmente desde el visor del navegador.
+        }
+      };
+    }
   };
 
   const confirmDeactivateAccount = async () => {
@@ -364,15 +386,21 @@ export default function ClientDetailPage() {
                           </span>
                         )}
                       </span>
-                      <span style={{ display: 'flex', gap: 6 }}>
+                      <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                        <button type="button" className="qlc-btn primary" onClick={() => setPreviewDoc(d)}>
+                          {t('adminClientDetail.previewDocument')}
+                        </button>
                         <a
-                          className="qlc-btn primary"
+                          className="qlc-btn ghost"
                           href={`${API_BASE_URL}/admin/documents/${d.id}/download`}
                           target="_blank"
                           rel="noreferrer"
                         >
                           {t('adminClientDetail.viewDocument')}
                         </a>
+                        <button className="qlc-btn ghost" onClick={() => printDocument(d)}>
+                          {t('adminClientDetail.printDocument')}
+                        </button>
                         <button className="qlc-btn ghost" onClick={() => toggleDocUnlock(d)}>
                           {d.clientEditUnlocked ? t('adminClientDetail.lockDocument') : t('adminClientDetail.unlockDocument')}
                         </button>
@@ -526,6 +554,40 @@ export default function ClientDetailPage() {
           onClose={() => setConfirmDeleteDoc(null)}
           onConfirm={() => removeDocument(confirmDeleteDoc.id)}
         />
+      )}
+
+      {previewDoc && (
+        <Modal title={previewDoc.fileName} subtitle={previewDoc.category} onClose={() => setPreviewDoc(null)} width={860}>
+          {previewDoc.mimeType?.startsWith('image/') ? (
+            <img
+              src={`${API_BASE_URL}/admin/documents/${previewDoc.id}/download`}
+              alt={previewDoc.fileName}
+              style={{ maxWidth: '100%', maxHeight: '70vh', display: 'block', margin: '0 auto', borderRadius: 8 }}
+            />
+          ) : previewDoc.mimeType === 'application/pdf' ? (
+            <iframe
+              id="qlc-doc-preview-frame"
+              title={previewDoc.fileName}
+              src={`${API_BASE_URL}/admin/documents/${previewDoc.id}/download`}
+              style={{ width: '100%', height: '70vh', border: '1px solid var(--qlc-line)', borderRadius: 8 }}
+            />
+          ) : (
+            <p style={{ fontSize: 13, color: 'var(--qlc-muted)' }}>{t('adminClientDetail.previewNotAvailable')}</p>
+          )}
+          <div className="qlc-form-actions">
+            <button type="button" className="qlc-btn ghost" onClick={() => printDocument(previewDoc)}>
+              {t('adminClientDetail.printDocument')}
+            </button>
+            <a
+              className="qlc-btn primary"
+              href={`${API_BASE_URL}/admin/documents/${previewDoc.id}/download`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              {t('adminClientDetail.viewDocument')}
+            </a>
+          </div>
+        </Modal>
       )}
 
       {confirmDeleteClient && (

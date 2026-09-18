@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
 import { ACCOUNT_STATUS, statusOf } from '../../utils/statusLabels';
@@ -181,6 +181,43 @@ function EditClientModal({ client, onClose, onSaved }) {
   );
 }
 
+// AUDITORÍA QLC PARTE 6 — progreso de UNA subcuenta/API: cuántas de sus 5
+// condiciones de activación (Wallet, Garantía, Capital, API, Activación) ya
+// están confirmadas. Mismo cálculo que usa el backend (summarizeConditions
+// en clientController.js), replicado aquí porque el listado ya trae el
+// detalle completo de cada subcuenta (conditions) y no hace falta pedirlo
+// de nuevo al servidor.
+function subaccountProgress(subaccount) {
+  const conditions = subaccount.process?.conditions || [];
+  const total = conditions.length || 5;
+  const confirmed = conditions.filter((c) => c.status === 'CONFIRMED').length;
+  return { confirmed, total };
+}
+
+// AUDITORÍA QLC PARTE 6 — representación visual del progreso (además del
+// texto "X/5"), para que no dependa solo de leer un número.
+function ProgressBar({ confirmed, total, width = 70 }) {
+  const pct = total > 0 ? Math.round((confirmed / total) * 100) : 0;
+  return (
+    <div
+      style={{ width, height: 6, borderRadius: 999, background: 'rgba(255,255,255,0.08)', overflow: 'hidden', display: 'inline-block', verticalAlign: 'middle' }}
+      role="progressbar"
+      aria-valuenow={confirmed}
+      aria-valuemin={0}
+      aria-valuemax={total}
+    >
+      <div
+        style={{
+          width: `${pct}%`,
+          height: '100%',
+          background: pct === 100 ? 'var(--qlc-ok)' : 'var(--qlc-blue2)',
+          transition: 'width 0.3s ease',
+        }}
+      />
+    </div>
+  );
+}
+
 export default function ClientsListPage() {
   const { t } = useLanguage();
   const [items, setItems] = useState([]);
@@ -189,8 +226,24 @@ export default function ClientsListPage() {
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
   const [editingClient, setEditingClient] = useState(null);
+  const [expandedClientId, setExpandedClientId] = useState(null);
+  const [showProgressHelp, setShowProgressHelp] = useState(false);
+  const [pendingRequests, setPendingRequests] = useState([]);
 
   const accountStatusMap = ACCOUNT_STATUS(t);
+
+  // AUDITORÍA QLC PARTE 9 — cola de solicitudes de subcuenta/API pendientes,
+  // visible en el mismo lugar donde el admin ya administra clientes.
+  const loadPendingRequests = () => {
+    api.get('/admin/subaccount-requests').then(({ data }) => setPendingRequests(data.requests));
+  };
+  useEffect(loadPendingRequests, []);
+  usePolling(loadPendingRequests, 8000);
+
+  const rejectSubaccountRequest = async (clientId) => {
+    await api.post(`/admin/clients/${clientId}/subaccount-request/reject`);
+    loadPendingRequests();
+  };
 
   const load = () => {
     setLoading(true);
@@ -235,6 +288,36 @@ export default function ClientsListPage() {
         </button>
       </div>
 
+      {pendingRequests.length > 0 && (
+        <div className="qlc-card" style={{ marginBottom: 18, borderColor: 'var(--qlc-warn-border)' }}>
+          <h3 style={{ marginTop: 0 }}>
+            {t('adminClientsList.pendingSubaccountRequests')} ({pendingRequests.length})
+          </h3>
+          <ul className="qlc-plain-list">
+            {pendingRequests.map((r) => (
+              <li key={r.clientId} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, paddingBottom: 8 }}>
+                <span style={{ fontSize: 13 }}>
+                  <strong>{r.username || '—'}</strong> — {r.firstName} {r.lastName}
+                  <span style={{ color: 'var(--qlc-muted2)' }}> ({r.email})</span>
+                  <div style={{ fontSize: 11, color: 'var(--qlc-muted2)' }}>
+                    {t('adminClientsList.requestedOn')} {new Date(r.requestedAt).toLocaleString()}
+                    {r.nextHiddenSubaccount && ` · ${t('adminClientsList.nextSubaccountSlot')} #${r.nextHiddenSubaccount.slotIndex}`}
+                  </div>
+                </span>
+                <span style={{ display: 'flex', gap: 6 }}>
+                  <Link className="qlc-btn primary" to={`/admin/clients/${r.clientId}`}>
+                    {t('adminClientsList.reviewAndApprove')}
+                  </Link>
+                  <button type="button" className="qlc-btn ghost" onClick={() => rejectSubaccountRequest(r.clientId)}>
+                    {t('adminPayments.reject')}
+                  </button>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       <input
         className="qlc-input"
         style={{ maxWidth: 320, marginBottom: 18 }}
@@ -252,11 +335,22 @@ export default function ClientsListPage() {
           <table className="qlc-table">
             <thead>
               <tr>
+                <th></th>
                 <th>{t('adminClientsList.username')}</th>
                 <th>{t('adminClientsList.client')}</th>
                 <th>{t('adminClientsList.status')}</th>
                 <th>{t('adminClientsList.subaccounts')}</th>
-                <th>{t('adminClientsList.process')}</th>
+                <th>
+                  {t('adminClientsList.process')}{' '}
+                  <button
+                    type="button"
+                    onClick={() => setShowProgressHelp(true)}
+                    title={t('adminClientsList.progressHelpTitle')}
+                    style={{ border: 'none', background: 'transparent', color: 'var(--qlc-muted2)', cursor: 'pointer', fontSize: 11 }}
+                  >
+                    ⓘ
+                  </button>
+                </th>
                 <th></th>
               </tr>
             </thead>
@@ -264,41 +358,116 @@ export default function ClientsListPage() {
               {items.map((c) => {
                 const accStatus = statusOf(accountStatusMap, c.status);
                 const summary = c.subaccountsSummary || { total: 0, activated: 0, readyToActivate: 0 };
+                const subaccounts = c.apiSubaccounts || [];
+                const isExpanded = expandedClientId === c.id;
+                // AUDITORÍA QLC PARTE 6 — progreso "global" mostrado en la
+                // fila principal: el de la cuenta PRINCIPAL (o la primera
+                // subcuenta disponible) — el desglose completo, subcuenta
+                // por subcuenta, aparece al desplegar la fila.
+                const principal = subaccounts.find((s) => s.isPrincipal) || subaccounts[0];
+                const principalProgress = principal ? subaccountProgress(principal) : null;
                 return (
-                  <tr key={c.id}>
-                    <td>{c.username || <span style={{ color: 'var(--qlc-muted2)' }}>—</span>}</td>
-                    <td>
-                      {c.firstName} {c.lastName}
-                      <div style={{ fontSize: 11, color: 'var(--qlc-muted2)' }}>{c.user?.email}</div>
-                    </td>
-                    <td>
-                      <span className={`qlc-badge ${accStatus.className}`}>{accStatus.text}</span>
-                    </td>
-                    <td>
-                      {summary.total} <span style={{ color: 'var(--qlc-muted2)' }}>({summary.activated} {t('adminClientsList.activatedShort')})</span>
-                    </td>
-                    <td>
-                      {summary.readyToActivate > 0 ? (
-                        <span className="qlc-badge ok" title={t('adminClientsList.readyToActivate')}>
-                          ✓ {summary.readyToActivate} {t('adminClientsList.readyToActivate')}
-                        </span>
-                      ) : (
-                        <span className="qlc-badge muted">—</span>
-                      )}
-                    </td>
-                    <td style={{ display: 'flex', gap: 6 }}>
-                      <button type="button" className="qlc-btn ghost" onClick={() => setEditingClient(c)}>
-                        {t('common.edit')}
-                      </button>
-                      <Link className="qlc-btn ghost" to={`/admin/clients/${c.id}`}>
-                        {t('adminClientsList.view')}
-                      </Link>
-                    </td>
-                  </tr>
+                  <Fragment key={c.id}>
+                    <tr>
+                      <td>
+                        {subaccounts.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => setExpandedClientId(isExpanded ? null : c.id)}
+                            title={t('adminClientsList.expandSubaccounts')}
+                            style={{ border: 'none', background: 'transparent', color: 'var(--qlc-blue2)', cursor: 'pointer', fontSize: 14 }}
+                          >
+                            {isExpanded ? '▾' : '▸'}
+                          </button>
+                        )}
+                      </td>
+                      <td>{c.username || <span style={{ color: 'var(--qlc-muted2)' }}>—</span>}</td>
+                      <td>
+                        {c.firstName} {c.lastName}
+                        <div style={{ fontSize: 11, color: 'var(--qlc-muted2)' }}>{c.user?.email}</div>
+                      </td>
+                      <td>
+                        <span className={`qlc-badge ${accStatus.className}`}>{accStatus.text}</span>
+                        {c.subaccountRequestedAt && (
+                          <div style={{ marginTop: 4 }}>
+                            <span className="qlc-badge warn" title={t('adminClientsList.subaccountRequestPending')}>
+                              ! {t('adminClientsList.subaccountRequestPending')}
+                            </span>
+                          </div>
+                        )}
+                      </td>
+                      <td>
+                        {summary.total} <span style={{ color: 'var(--qlc-muted2)' }}>({summary.activated} {t('adminClientsList.activatedShort')})</span>
+                      </td>
+                      <td>
+                        {principalProgress ? (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <span
+                              className={`qlc-badge ${principalProgress.confirmed === principalProgress.total ? 'ok' : 'warn'}`}
+                              title={t('adminClientsList.progressHelpTitle')}
+                            >
+                              {principalProgress.confirmed}/{principalProgress.total}
+                            </span>
+                            <ProgressBar confirmed={principalProgress.confirmed} total={principalProgress.total} />
+                          </div>
+                        ) : (
+                          <span className="qlc-badge muted">—</span>
+                        )}
+                      </td>
+                      <td style={{ display: 'flex', gap: 6 }}>
+                        <button type="button" className="qlc-btn ghost" onClick={() => setEditingClient(c)}>
+                          {t('common.edit')}
+                        </button>
+                        <Link className="qlc-btn ghost" to={`/admin/clients/${c.id}`}>
+                          {t('adminClientsList.view')}
+                        </Link>
+                      </td>
+                    </tr>
+                    {isExpanded && (
+                      <tr>
+                        <td></td>
+                        <td colSpan={6} style={{ background: 'rgba(255,255,255,0.02)' }}>
+                          <div style={{ padding: '6px 0', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                            {subaccounts.map((s) => {
+                              const progress = subaccountProgress(s);
+                              return (
+                                <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 12 }}>
+                                  <span style={{ minWidth: 110, color: 'var(--qlc-blue2)' }}>
+                                    {s.isPrincipal ? t('clientSubaccounts.principalLabel') : s.identifier || t('clientSubaccounts.unassignedIdentifier')}
+                                  </span>
+                                  <span className={`qlc-badge ${progress.confirmed === progress.total ? 'ok' : 'warn'}`}>
+                                    {progress.confirmed}/{progress.total}
+                                  </span>
+                                  <ProgressBar confirmed={progress.confirmed} total={progress.total} width={50} />
+                                  <span style={{ color: 'var(--qlc-muted2)' }}>
+                                    {s.process?.isActivated ? t('adminClientsList.subaccountActivated') : t('adminClientsList.subaccountNotActivated')}
+                                  </span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
                 );
               })}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {showProgressHelp && (
+        <div className="qlc-modal-overlay" onClick={() => setShowProgressHelp(false)}>
+          <div className="qlc-modal-panel" onClick={(e) => e.stopPropagation()}>
+            <h2 style={{ marginTop: 0 }}>{t('adminClientsList.progressHelpTitle')}</h2>
+            <p style={{ fontSize: 13, color: 'var(--qlc-muted)' }}>{t('adminClientsList.progressHelpBody')}</p>
+            <div className="qlc-form-actions">
+              <button className="qlc-btn primary" onClick={() => setShowProgressHelp(false)}>
+                {t('common.close')}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

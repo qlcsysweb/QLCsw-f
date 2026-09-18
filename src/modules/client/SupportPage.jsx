@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { SUPPORT_CASE_STATUS, CHAT_SESSION_STATUS, APPOINTMENT_STATUS, statusOf } from '../../utils/statusLabels';
-import { formatDateOnly } from '../../utils/cdmxTime';
+import { formatDateOnly, formatCdmxDateTime } from '../../utils/cdmxTime';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 import usePolling from '../../hooks/usePolling';
@@ -18,6 +18,73 @@ import usePolling from '../../hooks/usePolling';
 function appointmentInstant(requestedDate, requestedTime) {
   const dateOnly = String(requestedDate).slice(0, 10);
   return new Date(`${dateOnly}T${requestedTime}:00-06:00`);
+}
+
+// AUDITORÍA QLC PARTE 7 — mensajería interna del caso: distinta e
+// independiente del chat de 15 minutos (ChatPanel, más abajo). Aquí el
+// cliente puede escribir al equipo de QLC ANTES de que exista una cita,
+// para pedir información o dar seguimiento a su caso.
+function CaseMessagesThread({ caseNumber, caseId }) {
+  const { user } = useAuth();
+  const { t } = useLanguage();
+  const [messages, setMessages] = useState(null);
+  const [content, setContent] = useState('');
+  const [sending, setSending] = useState(false);
+
+  const refresh = () => api.get(`/client/support-cases/${caseId}/messages`).then(({ data }) => setMessages(data.messages));
+  useEffect(() => {
+    refresh();
+    const interval = setInterval(refresh, 6000);
+    return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [caseId]);
+
+  const send = async (e) => {
+    e.preventDefault();
+    if (!content.trim()) return;
+    setSending(true);
+    try {
+      await api.post(`/client/support-cases/${caseId}/messages`, { content });
+      setContent('');
+      refresh();
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <div style={{ marginTop: 8, borderTop: '1px solid var(--qlc-line)', paddingTop: 8 }}>
+      <div style={{ fontSize: 11, color: 'var(--qlc-muted2)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+        {t('clientSupport.caseMessagesTitle')}
+      </div>
+      <div style={{ maxHeight: 220, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 8 }}>
+        {messages === null ? (
+          <span style={{ fontSize: 12, color: 'var(--qlc-muted2)' }}>{t('common.loading')}</span>
+        ) : messages.length === 0 ? (
+          <span style={{ fontSize: 12, color: 'var(--qlc-muted2)' }}>{t('clientSupport.noCaseMessages')}</span>
+        ) : (
+          messages.map((m) => (
+            <div key={m.id} style={{ fontSize: 12 }}>
+              <strong>{m.senderUserId === user.id ? t('clientSupport.you') : 'QLC'}:</strong> {m.content}
+              <div style={{ fontSize: 10, color: 'var(--qlc-muted2)' }}>{formatCdmxDateTime(m.createdAt)}</div>
+            </div>
+          ))
+        )}
+      </div>
+      <form onSubmit={send} style={{ display: 'flex', gap: 6 }}>
+        <input
+          className="qlc-input"
+          style={{ fontSize: 12 }}
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          placeholder={t('clientSupport.caseMessagePlaceholder')}
+        />
+        <button className="qlc-btn primary" disabled={sending}>
+          {t('clientSupport.send')}
+        </button>
+      </form>
+    </div>
+  );
 }
 
 function ChatPanel({ session, onClose }) {
@@ -149,6 +216,7 @@ export default function SupportPage() {
   const [subaccounts, setSubaccounts] = useState([]);
   const [caseForm, setCaseForm] = useState({ subject: '', message: '' });
   const [activeChat, setActiveChat] = useState(null);
+  const [expandedCaseId, setExpandedCaseId] = useState(null);
   const [openingChat, setOpeningChat] = useState(null);
 
   // Formulario de cita — se abre desde un caso específico.
@@ -298,9 +366,15 @@ export default function SupportPage() {
                     {statusOf(supportCaseStatusMap, c.status).text}
                   </span>
                   <div style={{ color: 'var(--qlc-muted2)', fontSize: 12, marginBottom: 6 }}>{c.message}</div>
-                  <button type="button" className="qlc-btn ghost" onClick={() => openScheduling(c.caseNumber)}>
-                    {t('clientAppointments.requestFromCase')}
-                  </button>
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    <button type="button" className="qlc-btn ghost" onClick={() => openScheduling(c.caseNumber)}>
+                      {t('clientAppointments.requestFromCase')}
+                    </button>
+                    <button type="button" className="qlc-btn ghost" onClick={() => setExpandedCaseId(expandedCaseId === c.id ? null : c.id)}>
+                      {t('clientSupport.caseMessagesTitle')}
+                    </button>
+                  </div>
+                  {expandedCaseId === c.id && <CaseMessagesThread caseId={c.id} caseNumber={c.caseNumber} />}
                 </li>
               ))}
             </ul>
@@ -415,7 +489,7 @@ export default function SupportPage() {
                   </div>
                   {a.status === 'AUTORIZADA' && (
                     <button
-                      className={`qlc-btn ${chatWindowOpen ? 'primary' : 'ghost'}`}
+                      className={`qlc-btn ${chatWindowOpen ? 'primary' : 'danger'}`}
                       style={{ width: 'fit-content' }}
                       disabled={openingChat === a.id || !chatWindowOpen}
                       onClick={() => enterChat(a.id)}

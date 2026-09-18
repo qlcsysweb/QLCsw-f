@@ -22,6 +22,8 @@ export const APPOINTMENT_STATUS = (t) => ({
 export const PAYMENT_REPORT_STATUS = (t) => ({
   PENDING: { text: `◌ ${t('status.paymentReport.pending')}`, className: 'warn' },
   EN_REVISION: { text: `! ${t('status.paymentReport.inReview')}`, className: 'warn' },
+  // AUDITORÍA QLC PARTE 4 — paso intermedio, distinto de "Aprobado".
+  GARANTIA_REPORTADA: { text: `! ${t('status.paymentReport.guaranteeReported')}`, className: 'ok' },
   APROBADO: { text: `✓ ${t('status.paymentReport.approved')}`, className: 'ok' },
   RECHAZADO: { text: `× ${t('status.paymentReport.rejected')}`, className: 'danger' },
 });
@@ -44,14 +46,17 @@ export const API_CONNECTION_STATUS = (t) => ({
   PENDIENTE: { text: `◌ ${t('status.apiConnection.pending')}`, className: 'warn' },
 });
 
-// CORRECCIÓN 5: estado visible de un Estado de Cuenta — NO_DISPONIBLE se usa
-// para el estado vacío (todavía no hay estados de cuenta generados);
-// DISPONIBLE/PENDIENTE_DE_PAGO llegan calculados desde el backend
-// (displayStatus) a partir de commission/commissionPaid.
+// CORRECCIÓN 5 / AUDITORÍA QLC PARTE 10 — estado visible de un Estado de
+// Cuenta, calculado desde el backend (displayStatus) a partir de
+// commission/commissionPaid. NUNCA se usa la palabra "ACTIVA": "GENERADO"
+// (resaltado en azul, className 'ok') mientras está recién generado y
+// pendiente de pago; "PAGADO" (tono normal, sin resaltar) en cuanto el
+// admin marca el pago; "DISPONIBLE" cuando no aplica ninguna comisión.
 export const STATEMENT_STATUS = (t) => ({
   NO_DISPONIBLE: { text: `× ${t('status.statement.notAvailable')}`, className: 'muted' },
-  DISPONIBLE: { text: `✓ ${t('status.statement.available')}`, className: 'ok' },
-  PENDIENTE_DE_PAGO: { text: `! ${t('status.statement.pendingPayment')}`, className: 'warn' },
+  DISPONIBLE: { text: `✓ ${t('status.statement.available')}`, className: 'muted' },
+  GENERADO: { text: `● ${t('status.statement.generated')}`, className: 'ok' },
+  PAGADO: { text: `✓ ${t('status.statement.paid')}`, className: 'muted' },
 });
 
 export const PROSPECT_STATUS = (t) => ({

@@ -38,6 +38,7 @@ export default function AdminLayout() {
     { to: '/admin/prospects', label: t('adminNav.prospects') },
     { to: '/admin/admins', label: t('adminNav.admins') },
     { to: '/admin/settings/drive', label: t('adminNav.driveSettings') },
+    { to: '/admin/settings/email', label: t('adminNav.emailSettings') },
     { to: '/admin/settings/platform', label: t('adminNav.platformSettings') },
     { to: '/admin/settings/security', label: t('adminNav.securitySettings') },
     { to: '/admin/settings/process-steps', label: t('adminNav.processStepsSettings') },

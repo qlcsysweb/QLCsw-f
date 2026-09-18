@@ -20,6 +20,7 @@ import AdminsPage from './modules/admin/AdminsPage';
 import CmsPage from './modules/admin/cms/CmsPage';
 import TrackRecordPage from './modules/admin/TrackRecordPage';
 import GoogleDriveSettingsPage from './modules/admin/settings/GoogleDriveSettingsPage';
+import EmailSettingsPage from './modules/admin/settings/EmailSettingsPage';
 import SecuritySettingsPage from './modules/admin/settings/SecuritySettingsPage';
 import PlatformSettingsPage from './modules/admin/PlatformSettingsPage';
 import AdminGuidesPage from './modules/admin/GuidesPage';
@@ -73,6 +74,7 @@ function AppRoutes() {
               <Route path="track-record" element={<TrackRecordPage />} />
               <Route path="guides" element={<AdminGuidesPage />} />
               <Route path="settings/drive" element={<GoogleDriveSettingsPage />} />
+              <Route path="settings/email" element={<EmailSettingsPage />} />
               <Route path="settings/platform" element={<PlatformSettingsPage />} />
               <Route path="settings/security" element={<SecuritySettingsPage />} />
               <Route path="settings/process-steps" element={<ProcessStepsPage />} />

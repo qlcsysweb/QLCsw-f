@@ -17,6 +17,7 @@ export default function PaymentsPage() {
   const [confirmReject, setConfirmReject] = useState(null);
   const [confirmSave, setConfirmSave] = useState(false);
   const [copiedHashId, setCopiedHashId] = useState(null);
+  const [expandedProof, setExpandedProof] = useState(null);
 
   const paymentReportStatusMap = PAYMENT_REPORT_STATUS(t);
 
@@ -74,6 +75,13 @@ export default function PaymentsPage() {
   // la transferencia. Nunca cambia el estado a APROBADO por sí sola.
   const markReceived = async (id) => {
     await api.patch(`/admin/payment-reports/${id}/transfer-received`);
+    load();
+  };
+
+  // AUDITORÍA QLC PARTE 4 — "Garantía reportada" es un paso independiente y
+  // POSTERIOR: no aprueba el pago, solo habilita el botón final "Aprobar pago".
+  const markGuarantee = async (id) => {
+    await api.patch(`/admin/payment-reports/${id}/guarantee-reported`);
     load();
   };
 
@@ -166,16 +174,34 @@ export default function PaymentsPage() {
                     </p>
                   )}
                   {r.proofDriveFileId && (
-                    <p style={{ margin: '4px 0 0', fontSize: 12 }}>
-                      <a href={`${API_BASE_URL}/admin/payment-reports/${r.id}/proof`} target="_blank" rel="noreferrer">
-                        {t('adminClientDetail.viewProof')}
-                      </a>
-                    </p>
+                    <div style={{ margin: '6px 0 0' }}>
+                      {(r.proofMimeType || '').startsWith('image/') ? (
+                        <div>
+                          <img
+                            src={`${API_BASE_URL}/admin/payment-reports/${r.id}/proof`}
+                            alt={t('adminPayments.viewProofImage')}
+                            style={{ maxWidth: 160, maxHeight: 120, borderRadius: 8, border: '1px solid var(--qlc-line)', cursor: 'zoom-in', display: 'block' }}
+                            onClick={() => setExpandedProof(r)}
+                          />
+                          <button type="button" className="qlc-btn ghost" style={{ marginTop: 4, fontSize: 11, padding: '4px 8px' }} onClick={() => setExpandedProof(r)}>
+                            {t('adminPayments.expandImage')}
+                          </button>
+                        </div>
+                      ) : r.proofMimeType === 'application/pdf' ? (
+                        <button type="button" className="qlc-btn ghost" onClick={() => setExpandedProof(r)}>
+                          {t('adminClientDetail.viewProof')}
+                        </button>
+                      ) : (
+                        <a style={{ fontSize: 12 }} href={`${API_BASE_URL}/admin/payment-reports/${r.id}/proof`} target="_blank" rel="noreferrer">
+                          {t('adminClientDetail.viewProof')}
+                        </a>
+                      )}
+                    </div>
                   )}
-                  {/* CORRECCIÓN 10 (bloque de 20) — flujo en dos pasos
-                      independientes: Transferencia recibida (solo
-                      confirma que se identificó) → Garantía reportada
-                      (recién aquí pasa a APROBADO). */}
+                  {/* AUDITORÍA QLC PARTE 4 — flujo en TRES pasos independientes:
+                      Transferencia recibida → Garantía reportada → Aprobar pago.
+                      Cada botón solo confirma su propio paso; "Garantía reportada"
+                      YA NO aprueba el pago por sí sola. */}
                   {r.transferReceivedAt ? (
                     <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--qlc-ok)' }}>
                       ✓ {t('adminPayments.transferReceivedOn')} {formatCdmxDate(r.transferReceivedAt)}
@@ -189,11 +215,22 @@ export default function PaymentsPage() {
                       </div>
                     )
                   )}
-                  {['PENDING', 'EN_REVISION'].includes(r.status) && (
-                    <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
-                      <button className="qlc-btn primary" onClick={() => review(r.id, 'APROBADO')}>
-                        {t('adminPayments.guaranteeReported')}
-                      </button>
+                  {r.guaranteeReportedAt && (
+                    <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--qlc-ok)' }}>
+                      ✓ {t('adminPayments.guaranteeReportedOn')} {formatCdmxDate(r.guaranteeReportedAt)}
+                    </p>
+                  )}
+                  {!['APROBADO', 'RECHAZADO'].includes(r.status) && (
+                    <div style={{ display: 'flex', gap: 6, marginTop: 6, flexWrap: 'wrap' }}>
+                      {!r.guaranteeReportedAt ? (
+                        <button className="qlc-btn ghost" disabled={!r.transferReceivedAt} title={!r.transferReceivedAt ? t('adminPayments.markTransferReceived') : ''} onClick={() => markGuarantee(r.id)}>
+                          {t('adminPayments.guaranteeReported')}
+                        </button>
+                      ) : (
+                        <button className="qlc-btn primary" onClick={() => review(r.id, 'APROBADO')}>
+                          {t('adminPayments.approvePayment')}
+                        </button>
+                      )}
                       <button className="qlc-btn ghost" onClick={() => setConfirmReject(r)}>
                         {t('adminPayments.reject')}
                       </button>
@@ -217,6 +254,31 @@ export default function PaymentsPage() {
           onClose={() => setConfirmReject(null)}
           onConfirm={() => review(confirmReject.id, 'RECHAZADO')}
         />
+      )}
+
+      {expandedProof && (
+        <div className="qlc-modal-overlay" onClick={() => setExpandedProof(null)}>
+          <div className="qlc-modal-panel" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '90vw', textAlign: 'center' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
+              <button type="button" className="qlc-btn ghost" onClick={() => setExpandedProof(null)}>
+                {t('common.close')}
+              </button>
+            </div>
+            {expandedProof.proofMimeType === 'application/pdf' ? (
+              <iframe
+                title={t('adminPayments.viewProofImage')}
+                src={`${API_BASE_URL}/admin/payment-reports/${expandedProof.id}/proof`}
+                style={{ width: '80vw', maxWidth: 800, height: '75vh', border: '1px solid var(--qlc-line)', borderRadius: 10 }}
+              />
+            ) : (
+              <img
+                src={`${API_BASE_URL}/admin/payment-reports/${expandedProof.id}/proof`}
+                alt={t('adminPayments.viewProofImage')}
+                style={{ maxWidth: '100%', maxHeight: '75vh', borderRadius: 10 }}
+              />
+            )}
+          </div>
+        </div>
       )}
     </div>
   );
