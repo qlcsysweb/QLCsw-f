@@ -134,6 +134,11 @@ export default function AdminsPage() {
     }
   };
 
+  // Sin try/catch propio: el botón "Activar" la llama directamente (nunca
+  // falla con la nueva regla, que solo bloquea desactivar), y el flujo de
+  // "Desactivar" pasa por ConfirmModal, que ya captura el error y lo
+  // muestra DENTRO del modal sin cerrarlo — envolverla aquí también haría
+  // que el modal se cerrara igual aunque el backend rechace la acción.
   const toggleActive = async (id, isActive) => {
     await api.patch(`/admin/admins/${id}`, { isActive });
     load();

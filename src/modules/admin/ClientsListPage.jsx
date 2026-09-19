@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
+import ConfirmModal from '../../components/ConfirmModal';
 import { ACCOUNT_STATUS, statusOf } from '../../utils/statusLabels';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
@@ -229,6 +230,7 @@ export default function ClientsListPage() {
   const [expandedClientId, setExpandedClientId] = useState(null);
   const [showProgressHelp, setShowProgressHelp] = useState(false);
   const [pendingRequests, setPendingRequests] = useState([]);
+  const [confirmDeactivateClient, setConfirmDeactivateClient] = useState(null);
 
   const accountStatusMap = ACCOUNT_STATUS(t);
 
@@ -243,6 +245,11 @@ export default function ClientsListPage() {
   const rejectSubaccountRequest = async (clientId) => {
     await api.post(`/admin/clients/${clientId}/subaccount-request/reject`);
     loadPendingRequests();
+  };
+
+  const toggleClientActive = async (clientId, isActive) => {
+    await api.patch(`/admin/clients/${clientId}/active`, { isActive });
+    load();
   };
 
   const load = () => {
@@ -414,13 +421,22 @@ export default function ClientsListPage() {
                           <span className="qlc-badge muted">—</span>
                         )}
                       </td>
-                      <td style={{ display: 'flex', gap: 6 }}>
+                      <td style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                         <button type="button" className="qlc-btn ghost" onClick={() => setEditingClient(c)}>
                           {t('common.edit')}
                         </button>
                         <Link className="qlc-btn ghost" to={`/admin/clients/${c.id}`}>
                           {t('adminClientsList.view')}
                         </Link>
+                        {c.user?.isActive ? (
+                          <button type="button" className="qlc-btn ghost" onClick={() => setConfirmDeactivateClient(c)}>
+                            {t('adminClientDetail.deactivate')}
+                          </button>
+                        ) : (
+                          <button type="button" className="qlc-btn ghost" onClick={() => toggleClientActive(c.id, true)}>
+                            {t('adminClientDetail.activateAccount')}
+                          </button>
+                        )}
                       </td>
                     </tr>
                     {isExpanded && (
@@ -489,6 +505,19 @@ export default function ClientsListPage() {
             setEditingClient(null);
             load();
           }}
+        />
+      )}
+
+      {confirmDeactivateClient && (
+        <ConfirmModal
+          title={t('adminClientDetail.deactivateTitle')}
+          message={t('adminClientDetail.deactivateMessage').replace(
+            '{name}',
+            `${confirmDeactivateClient.firstName} ${confirmDeactivateClient.lastName}`
+          )}
+          confirmLabel={t('adminClientDetail.deactivate')}
+          onClose={() => setConfirmDeactivateClient(null)}
+          onConfirm={() => toggleClientActive(confirmDeactivateClient.id, false)}
         />
       )}
     </div>
