@@ -236,6 +236,20 @@ export default function SupportPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessions]);
 
+  // Acceso directo desde una notificación (nuevo caso / nuevo mensaje):
+  // llega aquí con ?case=<caseId> y expande ese caso automáticamente.
+  useEffect(() => {
+    const caseId = searchParams.get('case');
+    if (!caseId || cases.length === 0) return;
+    const target = cases.find((c) => c.id === caseId);
+    if (target) {
+      setExpandedCaseId(target.id);
+      searchParams.delete('case');
+      setSearchParams(searchParams, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cases]);
+
   const updateStatus = async (id, status) => {
     await api.patch(`/admin/support-cases/${id}`, { status });
     load();

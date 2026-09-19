@@ -258,6 +258,20 @@ export default function SupportPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessions]);
 
+  // Acceso directo desde una notificación (respuesta de QLC a tu caso):
+  // llega aquí con ?case=<caseId> y expande ese caso automáticamente.
+  useEffect(() => {
+    const caseId = searchParams.get('case');
+    if (!caseId || cases.length === 0) return;
+    const target = cases.find((c) => c.id === caseId);
+    if (target) {
+      setExpandedCaseId(target.id);
+      searchParams.delete('case');
+      setSearchParams(searchParams, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cases]);
+
   // Vuelve a cargar los horarios disponibles cada vez que cambia la fecha
   // elegida — el servidor es la única fuente real (anticipación mínima,
   // horarios ocupados, disponibilidad del admin).

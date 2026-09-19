@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../../services/api';
 import ConfirmModal from '../../components/ConfirmModal';
 import { APPOINTMENT_STATUS, statusOf } from '../../utils/statusLabels';
@@ -103,9 +103,11 @@ function AvailabilityEditor() {
 export default function AppointmentsPage() {
   const { t } = useLanguage();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [appointments, setAppointments] = useState([]);
   const [confirmReject, setConfirmReject] = useState(null);
   const [openingChat, setOpeningChat] = useState(null);
+  const [highlightId, setHighlightId] = useState(null);
 
   const appointmentStatusMap = APPOINTMENT_STATUS(t);
 
@@ -116,6 +118,20 @@ export default function AppointmentsPage() {
   // Actualización sin refresh manual: nuevas solicitudes de cita del
   // cliente aparecen solas.
   usePolling(load, 8000);
+
+  // Acceso directo desde una notificación: llega con ?appointmentId=<id>,
+  // resalta esa fila y limpia el marcador tras unos segundos.
+  useEffect(() => {
+    const id = searchParams.get('appointmentId');
+    if (!id || appointments.length === 0) return;
+    if (appointments.some((a) => a.id === id)) {
+      setHighlightId(id);
+      searchParams.delete('appointmentId');
+      setSearchParams(searchParams, { replace: true });
+      setTimeout(() => setHighlightId((cur) => (cur === id ? null : cur)), 4000);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [appointments]);
 
   const updateStatus = async (id, status) => {
     await api.patch(`/admin/appointments/${id}/status`, { status });
@@ -164,7 +180,7 @@ export default function AppointmentsPage() {
               {appointments.map((a) => {
                 const s = statusOf(appointmentStatusMap, a.status);
                 return (
-                  <tr key={a.id}>
+                  <tr key={a.id} style={highlightId === a.id ? { background: 'rgba(0, 168, 255, 0.12)' } : undefined}>
                     <td>
                       {a.client
                         ? `${a.client.firstName} ${a.client.lastName}`

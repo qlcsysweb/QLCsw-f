@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { resolveNotification } from '../../i18n/notificationMessages';
+import { resolveNotificationLink } from '../../i18n/notificationLinks';
 import usePolling from '../../hooks/usePolling';
 
 export default function NotificationsPage() {
   const { t } = useLanguage();
+  const navigate = useNavigate();
   const [notifications, setNotifications] = useState([]);
 
   const load = () => api.get('/client/notifications').then(({ data }) => setNotifications(data.notifications));
@@ -23,6 +26,18 @@ export default function NotificationsPage() {
   const markAllRead = async () => {
     await api.post('/client/notifications/read-all');
     load();
+  };
+
+  // Clic en una notificación = acceso directo a lo que la originó.
+  const openNotification = async (n) => {
+    if (!n.isRead) await markRead(n.id);
+    const link = resolveNotificationLink(n, 'CLIENT');
+    if (!link) return;
+    if (link.external) {
+      window.open(link.url, '_blank');
+    } else {
+      navigate(link.path);
+    }
   };
 
   return (
@@ -44,12 +59,17 @@ export default function NotificationsPage() {
       ) : (
         notifications.map((n) => {
           const { title, message } = resolveNotification(n, t);
+          const hasLink = Boolean(resolveNotificationLink(n, 'CLIENT'));
           return (
             <div
               key={n.id}
               className="qlc-card"
-              style={{ marginBottom: 10, opacity: n.isRead ? 0.6 : 1, cursor: n.isRead ? 'default' : 'pointer' }}
-              onClick={() => !n.isRead && markRead(n.id)}
+              style={{
+                marginBottom: 10,
+                opacity: n.isRead ? 0.6 : 1,
+                cursor: hasLink || !n.isRead ? 'pointer' : 'default',
+              }}
+              onClick={() => openNotification(n)}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <strong>{title}</strong>
