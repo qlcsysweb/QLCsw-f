@@ -6,6 +6,8 @@ import ProtectedRoute from './routes/ProtectedRoute';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import PublicHomePage from './modules/public/PublicHomePage';
+import PrivacyPolicyPage from './modules/public/PrivacyPolicyPage';
+import TermsOfServicePage from './modules/public/TermsOfServicePage';
 
 import AdminLayout from './layouts/AdminLayout';
 import DashboardPage from './modules/admin/DashboardPage';
@@ -61,6 +63,8 @@ function AppRoutes() {
           <Route path="/seguridad" element={<PublicHomePage />} />
           <Route path="/sobre-qlc" element={<PublicHomePage />} />
           <Route path="/faq" element={<PublicHomePage />} />
+          <Route path="/privacidad" element={<PrivacyPolicyPage />} />
+          <Route path="/terminos" element={<TermsOfServicePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/registro" element={<RegisterPage />} />
 

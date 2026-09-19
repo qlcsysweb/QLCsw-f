@@ -984,3 +984,26 @@
   object-fit: cover;
   max-height: 360px;
 }
+
+/* ---------- LEGAL (Privacidad / Términos) ---------- */
+.qlc-public .legal-content {
+  max-width: 780px;
+}
+.qlc-public .legal-content h3 {
+  font-size: 19px;
+  margin: 34px 0 10px;
+  letter-spacing: -0.01em;
+}
+.qlc-public .legal-content p,
+.qlc-public .legal-content li {
+  color: #aeb9c5;
+  font-size: 15px;
+  line-height: 1.7;
+}
+.qlc-public .legal-content ul {
+  margin: 0 0 16px;
+  padding-left: 20px;
+}
+.qlc-public .legal-content li {
+  margin-bottom: 6px;
+}

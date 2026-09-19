@@ -45,6 +45,10 @@ export default function PublicFooter({ text, media = () => [] }) {
           'Los activos digitales y el trading apalancado implican riesgos significativos. Los resultados históricos no garantizan resultados futuros. La información presentada es de carácter informativo y está sujeta a los términos y condiciones aplicables.'
         )}
       </div>
+      <div className="container disclaimer" style={{ marginTop: 6 }}>
+        <a href="/privacidad">Política de Privacidad</a> ·{' '}
+        <a href="/terminos">Términos y Condiciones</a>
+      </div>
     </footer>
   );
 }
