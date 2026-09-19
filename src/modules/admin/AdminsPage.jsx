@@ -109,7 +109,6 @@ function EditAdminModal({ admin, onClose, onSaved }) {
 export default function AdminsPage() {
   const { t, language } = useLanguage();
   const [admins, setAdmins] = useState([]);
-  const [limit, setLimit] = useState(3);
   const [form, setForm] = useState({ firstName: '', lastName: '', email: '', password: '' });
   const [error, setError] = useState('');
   const [confirmDeactivate, setConfirmDeactivate] = useState(null);
@@ -118,7 +117,6 @@ export default function AdminsPage() {
   const load = () =>
     api.get('/admin/admins').then(({ data }) => {
       setAdmins(data.admins);
-      setLimit(data.limit);
     });
   useEffect(() => {
     load();
@@ -155,7 +153,7 @@ export default function AdminsPage() {
     <div>
       <div className="qlc-kicker">{t('adminAdmins.kicker')}</div>
       <h1 style={{ marginTop: 0 }}>
-        {t('adminAdmins.title')} ({admins.length}/{limit})
+        {t('adminAdmins.title')} ({admins.length})
       </h1>
 
       {error && <div className="qlc-field-error" style={{ marginBottom: 12 }}>{error}</div>}
@@ -216,23 +214,21 @@ export default function AdminsPage() {
         </table>
       </div>
 
-      {admins.length < limit && (
-        <form className="qlc-card" style={{ maxWidth: 480 }} onSubmit={create}>
-          <h3 style={{ marginTop: 0 }}>{t('adminAdmins.newAdmin')}</h3>
-          <label className="qlc-label">{t('adminAdmins.firstName')}</label>
-          <input className="qlc-input" value={form.firstName} onChange={(e) => setForm((f) => ({ ...f, firstName: e.target.value }))} required />
-          <label className="qlc-label">{t('adminAdmins.lastName')}</label>
-          <input className="qlc-input" value={form.lastName} onChange={(e) => setForm((f) => ({ ...f, lastName: e.target.value }))} required />
-          <label className="qlc-label">{t('adminAdmins.email')}</label>
-          <input className="qlc-input" type="email" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} required />
-          <label className="qlc-label">{t('adminAdmins.password')}</label>
-          <input className="qlc-input" type="password" value={form.password} onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))} required minLength={8} />
-          {error && <div className="qlc-field-error">{error}</div>}
-          <div className="qlc-form-actions">
-            <button className="qlc-btn primary">{t('adminAdmins.createAdmin')}</button>
-          </div>
-        </form>
-      )}
+      <form className="qlc-card" style={{ maxWidth: 480 }} onSubmit={create}>
+        <h3 style={{ marginTop: 0 }}>{t('adminAdmins.newAdmin')}</h3>
+        <label className="qlc-label">{t('adminAdmins.firstName')}</label>
+        <input className="qlc-input" value={form.firstName} onChange={(e) => setForm((f) => ({ ...f, firstName: e.target.value }))} required />
+        <label className="qlc-label">{t('adminAdmins.lastName')}</label>
+        <input className="qlc-input" value={form.lastName} onChange={(e) => setForm((f) => ({ ...f, lastName: e.target.value }))} required />
+        <label className="qlc-label">{t('adminAdmins.email')}</label>
+        <input className="qlc-input" type="email" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} required />
+        <label className="qlc-label">{t('adminAdmins.password')}</label>
+        <input className="qlc-input" type="password" value={form.password} onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))} required minLength={8} />
+        {error && <div className="qlc-field-error">{error}</div>}
+        <div className="qlc-form-actions">
+          <button className="qlc-btn primary">{t('adminAdmins.createAdmin')}</button>
+        </div>
+      </form>
 
       {confirmDeactivate && (
         <ConfirmModal
