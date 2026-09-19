@@ -535,6 +535,11 @@ const es = {
     leaveBlankPassword: 'Dejar vacío para conservar la actual',
     confirmPassword: 'Confirmar nueva contraseña',
     passwordMismatch: 'Las contraseñas no coinciden.',
+    delete: 'Eliminar',
+    deleteTitle: '¿Eliminar administrador definitivamente?',
+    deleteMessage:
+      'Esta acción eliminará PERMANENTEMENTE a {name} de QLC. No se puede deshacer. Si tiene actividad registrada en el sistema (documentos, estados de cuenta, mensajes), la eliminación se rechazará para proteger ese historial — en ese caso déjalo desactivado.',
+    deleteMustDeactivateFirst: 'Primero debes desactivar a este administrador antes de poder eliminarlo.',
   },
 
   adminSupport: {
@@ -757,6 +762,8 @@ const es = {
     deleteClientTitle: '¿Eliminar cliente definitivamente?',
     deleteClientMessage:
       'Esta acción eliminará PERMANENTEMENTE a {name} de la base de datos de QLC: su cuenta, subcuentas/API, documentos, pagos, procesos, citas y casos de soporte. No se puede deshacer. Usa esta opción solo si el cliente debe borrarse por completo, no para dar de baja temporalmente (para eso usa "Desactivar"). Solo el administrador general puede completar esta acción, con la contraseña de seguridad configurada en Configuración → Seguridad.',
+    deleteClientPasswordPrompt: 'Escribe la contraseña de seguridad para confirmar la eliminación definitiva.',
+    deleteClientMustDeactivateFirst: 'Primero debes desactivar la cuenta antes de poder eliminarla.',
     securityPasswordLabel: 'Contraseña de seguridad',
     subaccounts: 'Subcuentas / API',
     identifier: 'Identificador',
@@ -1088,9 +1095,33 @@ const es = {
       title: 'Actualización de tu cita',
       message: 'Tu solicitud de cita fue: {status}',
     },
+    appointment_requested: {
+      title: 'Nueva solicitud de cita',
+      message: '{clientName} solicitó una cita para el {date} a las {time}.',
+    },
+    appointment_requested_self: {
+      title: 'Tu cita ha sido creada con éxito',
+      message: 'Tu solicitud de cita para el {date} a las {time} fue enviada y espera la respuesta de QLC.',
+    },
+    appointment_confirmed: {
+      title: 'Tu cita fue confirmada',
+      message: 'Tu cita fue confirmada para el {date} a las {time}. ¡No lo olvides!',
+    },
+    appointment_rejected: {
+      title: 'Tu cita fue rechazada',
+      message: 'Tu solicitud de cita fue rechazada.',
+    },
     document_resubmit: {
       title: 'Puedes volver a enviar tu documento',
       message: 'QLC eliminó tu documento de "{category}". Ya puedes subir uno nuevo.',
+    },
+    document_submitted: {
+      title: 'Documento entregado',
+      message: 'Recibimos tu documento de la categoría "{category}".',
+    },
+    document_submitted_admin: {
+      title: 'Documento subido por un cliente',
+      message: '{clientName} subió un documento de la categoría "{category}".',
     },
     api_connection_status_updated: {
       title: 'Actualización de tu conexión API',
@@ -1106,7 +1137,19 @@ const es = {
     },
     statement_generated: {
       title: 'Estado de cuenta generado',
-      message: 'Se generó tu estado de cuenta de {identifier}. Comisión: {commission} USDT — tienes {commissionDueHours} horas para reportar el pago.',
+      message: 'Se generó tu estado de cuenta de {identifier} correspondiente a {month}. Comisión: {commission} USDT — tienes {commissionDueHours} horas para reportar el pago.',
+    },
+    statement_sent_admin: {
+      title: 'Estado de cuenta enviado',
+      message: 'El estado de cuenta de {identifier} fue enviado con éxito a {clientName}.',
+    },
+    statement_deadline_warning: {
+      title: 'Tu pago de comisión está por vencer',
+      message: 'Quedan aproximadamente {hoursLeft} horas para reportar el pago de la comisión de tu conexión API {identifier}. Si el plazo vence sin pago, la conexión se desactivará automáticamente.',
+    },
+    statement_deadline_warning_admin: {
+      title: 'Comisión de un cliente está por vencer',
+      message: 'Quedan aproximadamente {hoursLeft} horas para que {clientName} ({identifier}) reporte el pago de su comisión, antes de que la conexión API se desactive automáticamente.',
     },
     statement_resent: {
       title: 'Estado de cuenta disponible',
@@ -1119,6 +1162,54 @@ const es = {
     process_activated: {
       title: 'Cuenta activada',
       message: 'Tu cuenta QLC ha sido activada.',
+    },
+    subaccount_deactivated: {
+      title: 'Cuenta desactivada',
+      message: 'Tu cuenta QLC ({identifier}) fue desactivada y vuelve a estar en revisión.',
+    },
+    wallet_saved: {
+      title: 'Wallet guardada',
+      message: 'Tu wallet personal fue {status} con éxito.',
+    },
+    case_created_self: {
+      title: 'Tu caso ha sido creado con éxito',
+      message: 'Tu caso #{caseNumber} fue registrado. QLC lo revisará pronto.',
+    },
+    chat_session_ended: {
+      title: 'Chat de 15 minutos finalizado',
+      message: 'La sesión de chat con {clientName} finalizó. Ya puedes descargar la conversación en PDF desde Soporte.',
+    },
+    new_prospect_admin: {
+      title: 'Nuevo prospecto',
+      message: '{prospectName} ({email}) solicitó información sobre QLC.',
+    },
+    new_client_registered_admin: {
+      title: 'Nuevo cliente registrado',
+      message: '{clientName} ({email}) se registró en QLC.',
+    },
+    new_admin_registered_admin: {
+      title: 'Nuevo administrador registrado',
+      message: '{adminName} ({email}) fue dado de alta como administrador.',
+    },
+    capital_invitation_accepted_admin: {
+      title: 'Cliente aceptó invitación de aumento de saldo',
+      message: '{clientName} aceptó la invitación y solicitó {amount} USDT de aumento de saldo operativo.',
+    },
+    capital_invitation_rejected_admin: {
+      title: 'Cliente rechazó invitación de aumento de saldo',
+      message: '{clientName} rechazó la invitación de aumento de saldo operativo.',
+    },
+    capital_distribution_confirmed_admin: {
+      title: 'Cliente confirmó distribución de saldo',
+      message: '{clientName} distribuyó {amount} USDT entre sus subcuentas/API.',
+    },
+    rescue_invitation_rejected_admin: {
+      title: 'Cliente rechazó invitación de capital temporal',
+      message: '{clientName} rechazó la invitación de capital temporal para rescate.',
+    },
+    rescue_participation_confirmed_admin: {
+      title: 'Cliente confirmó participación en capital temporal',
+      message: '{clientName} confirmó su participación con {amount} USDT de capital temporal para rescate.',
     },
     capital_invitation_created: {
       title: 'Invitación para aumento de saldo operativo',
@@ -1139,6 +1230,10 @@ const es = {
     capital_invitation_rejected: {
       title: 'Invitación rechazada',
       message: 'Rechazaste la invitación para aumento de saldo operativo.',
+    },
+    capital_distribution_confirmed: {
+      title: 'Distribución de saldo confirmada',
+      message: 'Distribuiste {amount} USDT entre tus subcuentas/API correctamente.',
     },
     capital_instructions_read: {
       title: 'Instrucciones marcadas como leídas',
@@ -2298,6 +2393,11 @@ const en = {
     leaveBlankPassword: 'Leave blank to keep the current one',
     confirmPassword: 'Confirm new password',
     passwordMismatch: 'Passwords do not match.',
+    delete: 'Delete',
+    deleteTitle: 'Permanently delete this administrator?',
+    deleteMessage:
+      "This will PERMANENTLY delete {name} from QLC. This cannot be undone. If they have activity recorded in the system (documents, statements, messages), the deletion will be rejected to protect that history — in that case, leave them deactivated instead.",
+    deleteMustDeactivateFirst: 'You must deactivate this administrator before you can delete them.',
   },
 
   adminSupport: {
@@ -2520,6 +2620,8 @@ const en = {
     deleteClientTitle: 'Permanently delete this client?',
     deleteClientMessage:
       'This will PERMANENTLY delete {name} from the QLC database: their account, subaccounts/API, documents, payments, processes, appointments and support cases. This cannot be undone. Use this only when the client must be fully erased, not for a temporary suspension (use "Deactivate" for that). Only the general administrator can complete this action, with the security password set in Settings → Security.',
+    deleteClientPasswordPrompt: 'Enter the security password to confirm the permanent deletion.',
+    deleteClientMustDeactivateFirst: 'You must deactivate the account before you can delete it.',
     securityPasswordLabel: 'Security password',
     subaccounts: 'Subaccounts / API',
     identifier: 'Identifier',
@@ -2846,9 +2948,33 @@ const en = {
       title: 'Update on your appointment',
       message: 'Your appointment request was: {status}',
     },
+    appointment_requested: {
+      title: 'New appointment request',
+      message: '{clientName} requested an appointment for {date} at {time}.',
+    },
+    appointment_requested_self: {
+      title: 'Your appointment has been created',
+      message: 'Your appointment request for {date} at {time} was sent and is awaiting QLC\'s response.',
+    },
+    appointment_confirmed: {
+      title: 'Your appointment was confirmed',
+      message: 'Your appointment was confirmed for {date} at {time}. Don\'t forget!',
+    },
+    appointment_rejected: {
+      title: 'Your appointment was rejected',
+      message: 'Your appointment request was rejected.',
+    },
     document_resubmit: {
       title: 'You can resubmit your document',
       message: 'QLC removed your document from "{category}". You can now upload a new one.',
+    },
+    document_submitted: {
+      title: 'Document submitted',
+      message: 'We received your document for the "{category}" category.',
+    },
+    document_submitted_admin: {
+      title: 'Document uploaded by a client',
+      message: '{clientName} uploaded a document for the "{category}" category.',
     },
     api_connection_status_updated: {
       title: 'Update on your API connection',
@@ -2864,7 +2990,19 @@ const en = {
     },
     statement_generated: {
       title: 'Statement generated',
-      message: 'Your statement for {identifier} was generated. Commission: {commission} USDT — you have {commissionDueHours} hours to report the payment.',
+      message: 'Your statement for {identifier} for {month} was generated. Commission: {commission} USDT — you have {commissionDueHours} hours to report the payment.',
+    },
+    statement_sent_admin: {
+      title: 'Statement sent',
+      message: 'The statement for {identifier} was successfully sent to {clientName}.',
+    },
+    statement_deadline_warning: {
+      title: 'Your commission payment is about to expire',
+      message: 'About {hoursLeft} hours left to report the commission payment for your API connection {identifier}. If the deadline passes without payment, the connection will be automatically disconnected.',
+    },
+    statement_deadline_warning_admin: {
+      title: 'A client\'s commission is about to expire',
+      message: 'About {hoursLeft} hours left for {clientName} ({identifier}) to report their commission payment, before the API connection is automatically disconnected.',
     },
     statement_resent: {
       title: 'Statement available',
@@ -2877,6 +3015,54 @@ const en = {
     process_activated: {
       title: 'Account activated',
       message: 'Your QLC account has been activated.',
+    },
+    subaccount_deactivated: {
+      title: 'Account deactivated',
+      message: 'Your QLC account ({identifier}) was deactivated and is under review again.',
+    },
+    wallet_saved: {
+      title: 'Wallet saved',
+      message: 'Your personal wallet was successfully {status}.',
+    },
+    case_created_self: {
+      title: 'Your case has been created',
+      message: 'Your case #{caseNumber} was registered. QLC will review it soon.',
+    },
+    chat_session_ended: {
+      title: '15-minute chat finished',
+      message: 'The chat session with {clientName} finished. You can now download the conversation as a PDF from Support.',
+    },
+    new_prospect_admin: {
+      title: 'New prospect',
+      message: '{prospectName} ({email}) requested information about QLC.',
+    },
+    new_client_registered_admin: {
+      title: 'New client registered',
+      message: '{clientName} ({email}) registered on QLC.',
+    },
+    new_admin_registered_admin: {
+      title: 'New administrator registered',
+      message: '{adminName} ({email}) was registered as an administrator.',
+    },
+    capital_invitation_accepted_admin: {
+      title: 'Client accepted balance increase invitation',
+      message: '{clientName} accepted the invitation and requested {amount} USDT in operating balance increase.',
+    },
+    capital_invitation_rejected_admin: {
+      title: 'Client rejected balance increase invitation',
+      message: '{clientName} rejected the operating balance increase invitation.',
+    },
+    capital_distribution_confirmed_admin: {
+      title: 'Client confirmed balance distribution',
+      message: '{clientName} distributed {amount} USDT across their subaccounts/API.',
+    },
+    rescue_invitation_rejected_admin: {
+      title: 'Client rejected temporary capital invitation',
+      message: '{clientName} rejected the temporary rescue capital invitation.',
+    },
+    rescue_participation_confirmed_admin: {
+      title: 'Client confirmed temporary capital participation',
+      message: '{clientName} confirmed their participation with {amount} USDT of temporary rescue capital.',
     },
     capital_invitation_created: {
       title: 'Operating balance increase invitation',
@@ -2897,6 +3083,10 @@ const en = {
     capital_invitation_rejected: {
       title: 'Invitation rejected',
       message: 'You rejected the operating balance increase invitation.',
+    },
+    capital_distribution_confirmed: {
+      title: 'Balance distribution confirmed',
+      message: 'You distributed {amount} USDT across your subaccounts/API successfully.',
     },
     capital_instructions_read: {
       title: 'Instructions marked as read',

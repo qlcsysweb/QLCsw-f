@@ -56,6 +56,18 @@ const STATUS_LABEL_KEYS = {
       otro: 'clientDocuments.categoryOther',
     },
   },
+  document_submitted: {
+    category: {
+      identificacion: 'clientDocuments.categoryId',
+      otro: 'clientDocuments.categoryOther',
+    },
+  },
+  document_submitted_admin: {
+    category: {
+      identificacion: 'clientDocuments.categoryId',
+      otro: 'clientDocuments.categoryOther',
+    },
+  },
 };
 
 function interpolate(template, templateKey, params, t) {

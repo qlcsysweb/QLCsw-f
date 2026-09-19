@@ -64,6 +64,7 @@ export default function ClientDetailPage() {
   const [message, setMessage] = useState('');
   const [confirmDeactivate, setConfirmDeactivate] = useState(false);
   const [confirmDeleteDoc, setConfirmDeleteDoc] = useState(null);
+  const [confirmDeleteWarn, setConfirmDeleteWarn] = useState(false);
   const [confirmDeleteClient, setConfirmDeleteClient] = useState(false);
   const [deleteSecurityPassword, setDeleteSecurityPassword] = useState('');
   const [deleteError, setDeleteError] = useState('');
@@ -293,7 +294,12 @@ export default function ClientDetailPage() {
               {t('adminClientDetail.activateAccount')}
             </button>
           )}
-          <button className="qlc-btn danger" onClick={() => setConfirmDeleteClient(true)}>
+          <button
+            className="qlc-btn danger"
+            onClick={() => setConfirmDeleteWarn(true)}
+            disabled={client.user?.isActive}
+            title={client.user?.isActive ? t('adminClientDetail.deleteClientMustDeactivateFirst') : undefined}
+          >
             {t('adminClientDetail.deleteClient')}
           </button>
         </div>
@@ -590,6 +596,24 @@ export default function ClientDetailPage() {
         </Modal>
       )}
 
+      {/* Confirmación 1 de 2: advertencia completa de lo que se va a borrar,
+          sin la contraseña todavía — igual patrón que AdminsPage/ConfirmModal
+          twoStep, pero en dos pasos separados porque el paso 2 real (abajo)
+          necesita además la contraseña de seguridad del administrador
+          general. */}
+      {confirmDeleteWarn && (
+        <ConfirmModal
+          title={t('adminClientDetail.deleteClientTitle')}
+          message={t('adminClientDetail.deleteClientMessage').replace('{name}', `${client.firstName} ${client.lastName}`)}
+          confirmLabel={t('adminClientDetail.deleteClient')}
+          onClose={() => setConfirmDeleteWarn(false)}
+          onConfirm={() => {
+            setConfirmDeleteWarn(false);
+            setConfirmDeleteClient(true);
+          }}
+        />
+      )}
+
       {confirmDeleteClient && (
         <Modal
           title={t('adminClientDetail.deleteClientTitle')}
@@ -601,7 +625,7 @@ export default function ClientDetailPage() {
           width={440}
         >
           <p style={{ color: 'var(--qlc-muted)', fontSize: 14, lineHeight: 1.6, marginTop: 0 }}>
-            {t('adminClientDetail.deleteClientMessage').replace('{name}', `${client.firstName} ${client.lastName}`)}
+            {t('adminClientDetail.deleteClientPasswordPrompt')}
           </p>
           <p style={{ color: 'var(--qlc-gold)', fontSize: 13, fontWeight: 600 }}>{t('modals.cannotBeUndone')}</p>
           <label className="qlc-label">{t('adminClientDetail.securityPasswordLabel')}</label>

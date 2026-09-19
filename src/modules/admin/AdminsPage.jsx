@@ -112,6 +112,7 @@ export default function AdminsPage() {
   const [form, setForm] = useState({ firstName: '', lastName: '', email: '', password: '' });
   const [error, setError] = useState('');
   const [confirmDeactivate, setConfirmDeactivate] = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState(null);
   const [editingAdmin, setEditingAdmin] = useState(null);
 
   const load = () =>
@@ -141,6 +142,15 @@ export default function AdminsPage() {
   // que el modal se cerrara igual aunque el backend rechace la acción.
   const toggleActive = async (id, isActive) => {
     await api.patch(`/admin/admins/${id}`, { isActive });
+    load();
+  };
+
+  // Sin try/catch propio, igual que toggleActive: pasa por ConfirmModal
+  // (twoStep), que ya captura y muestra el error dentro del modal — por
+  // ejemplo cuando el backend rechaza borrar un admin con actividad
+  // registrada (documentos, estados de cuenta, mensajes).
+  const deleteAdmin = async (id) => {
+    await api.delete(`/admin/admins/${id}`);
     load();
   };
 
@@ -212,6 +222,15 @@ export default function AdminsPage() {
                   >
                     {a.isActive ? t('adminAdmins.deactivate') : t('adminAdmins.activate')}
                   </button>
+                  <button
+                    type="button"
+                    className="qlc-btn danger"
+                    onClick={() => setConfirmDelete(a)}
+                    disabled={a.isActive}
+                    title={a.isActive ? t('adminAdmins.deleteMustDeactivateFirst') : undefined}
+                  >
+                    {t('adminAdmins.delete')}
+                  </button>
                 </td>
               </tr>
             ))}
@@ -245,6 +264,20 @@ export default function AdminsPage() {
           confirmLabel={t('adminAdmins.deactivate')}
           onClose={() => setConfirmDeactivate(null)}
           onConfirm={() => toggleActive(confirmDeactivate.id, false)}
+        />
+      )}
+
+      {confirmDelete && (
+        <ConfirmModal
+          title={t('adminAdmins.deleteTitle')}
+          message={t('adminAdmins.deleteMessage').replace(
+            '{name}',
+            `${confirmDelete.profile?.firstName} ${confirmDelete.profile?.lastName}`
+          )}
+          confirmLabel={t('adminAdmins.delete')}
+          twoStep
+          onClose={() => setConfirmDelete(null)}
+          onConfirm={() => deleteAdmin(confirmDelete.id)}
         />
       )}
 
