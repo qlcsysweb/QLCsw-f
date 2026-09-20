@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import api, { API_BASE_URL } from '../../services/api';
 import Modal from '../../components/Modal';
 import { API_CONNECTION_STATUS, PAYMENT_REPORT_STATUS, STATEMENT_STATUS, statusOf } from '../../utils/statusLabels';
@@ -9,6 +9,7 @@ import { translateBackendMessage } from '../../i18n/backendMessages';
 import { getLocalizedModel } from '../../i18n/bilingualContent';
 import ModelComparisonTable from '../../components/ModelComparisonTable';
 import CountdownTimer from '../../components/CountdownTimer';
+import usePolling from '../../hooks/usePolling';
 
 function ModelDetailsModal({ model, onClose, onSelect, selecting, t }) {
   return (
@@ -49,8 +50,13 @@ function ModelDetailsModal({ model, onClose, onSelect, selecting, t }) {
 
 export default function SubaccountDetailPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { t, language } = useLanguage();
   const [subaccount, setSubaccount] = useState(null);
+  // Cuando la subcuenta ya no está disponible (desactivada, borrada de la
+  // URL, o de otro cliente) guardamos por qué, y dejamos de sondear el
+  // backend — evita el bucle de 404 infinitos reportado en consola.
+  const [unavailable, setUnavailable] = useState(null);
   const [modelsRaw, setModelsRaw] = useState([]);
   const [detailsModel, setDetailsModel] = useState(null);
   const [selecting, setSelecting] = useState(false);
@@ -75,34 +81,69 @@ export default function SubaccountDetailPage() {
   const statementStatusMap = STATEMENT_STATUS(t);
 
   const load = () => {
-    api.get(`/client/api-subaccounts/${id}`).then(({ data }) => {
-      setSubaccount(data.subaccount);
-      setApiForm((f) => ({ ...f, ipAddress: data.subaccount.ipAddress || '' }));
-    });
-    api.get('/client/models').then(({ data }) => setModelsRaw(data.models));
-    api.get(`/client/api-subaccounts/${id}/payment-reports`).then(({ data }) => setPayments(data.reports));
-    api.get(`/client/api-subaccounts/${id}/statements`).then(({ data }) => setStatements(data.statements));
-    api.get('/client/payment-config').then(({ data }) => setPaymentConfig(data.config));
     api
-      .get(`/client/api-subaccounts/${id}/capital-distribution-reports`)
-      .then(({ data }) => setDistributionReports(data.reports));
+      .get(`/client/api-subaccounts/${id}`)
+      .then(({ data }) => {
+        setSubaccount(data.subaccount);
+        setApiForm((f) => ({ ...f, ipAddress: data.subaccount.ipAddress || '' }));
+        setUnavailable(null);
+        // Los datos dependientes de la subcuenta solo se piden si la
+        // subcuenta principal existe y sigue activa — evita repetir el
+        // patrón de 404 en cascada reportado (todos estos endpoints
+        // dependen del mismo :id, así que fallan igual si la subcuenta ya
+        // no está disponible).
+        api.get('/client/models').then(({ data }) => setModelsRaw(data.models)).catch(() => {});
+        api
+          .get(`/client/api-subaccounts/${id}/payment-reports`)
+          .then(({ data }) => setPayments(data.reports))
+          .catch(() => {});
+        api
+          .get(`/client/api-subaccounts/${id}/statements`)
+          .then(({ data }) => setStatements(data.statements))
+          .catch(() => {});
+        api.get('/client/payment-config').then(({ data }) => setPaymentConfig(data.config)).catch(() => {});
+        api
+          .get(`/client/api-subaccounts/${id}/capital-distribution-reports`)
+          .then(({ data }) => setDistributionReports(data.reports))
+          .catch(() => {});
+      })
+      .catch((err) => {
+        // 410 = existe y es del cliente, pero fue desactivada por
+        // administración (respuesta controlada del backend, ver
+        // apiSubaccountController.getMine). Cualquier otro código (404
+        // típicamente) significa que no existe o no es del cliente; nunca
+        // se distingue cuál de las dos cosas es, por protección IDOR.
+        const isDeactivated = err.status === 410 || err.details?.code === 'SUBACCOUNT_DEACTIVATED';
+        setUnavailable(
+          isDeactivated ? translateBackendMessage(err.message, language) : t('clientSubaccountDetail.unavailableGeneric')
+        );
+      });
   };
   useEffect(load, [id]);
 
   // Actualización sin refresh manual: si administración marca la
   // transferencia como recibida, el cliente lo ve sin recargar la página.
   // Reutiliza el mismo patrón de polling ya usado en el chat de soporte
-  // (ChatPanel, SupportPage.jsx) — sin agregar WebSockets ni infraestructura nueva.
-  useEffect(() => {
-    const interval = setInterval(load, 8000);
-    return () => clearInterval(interval);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+  // (ChatPanel, SupportPage.jsx) — sin agregar WebSockets ni infraestructura
+  // nueva. Se detiene solo (intervalMs=0) en cuanto la subcuenta deja de
+  // estar disponible, en vez de insistir cada 8s contra un 404/410.
+  usePolling(load, unavailable ? 0 : 8000);
 
   const flash = (msg) => {
     setMessage(msg);
     setTimeout(() => setMessage(''), 4000);
   };
+
+  if (unavailable) {
+    return (
+      <div className="qlc-empty" style={{ display: 'flex', flexDirection: 'column', gap: 16, alignItems: 'center' }}>
+        <p>{unavailable}</p>
+        <button className="qlc-btn primary" onClick={() => navigate('/client/api-subaccounts')}>
+          {t('clientSubaccountDetail.backToList')}
+        </button>
+      </div>
+    );
+  }
 
   if (!subaccount) return <div className="qlc-empty">{t('common.loading')}</div>;
 

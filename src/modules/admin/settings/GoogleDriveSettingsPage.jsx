@@ -94,8 +94,8 @@ export default function GoogleDriveSettingsPage() {
       if (form.googleClientSecret) payload.googleClientSecret = form.googleClientSecret;
       const { data } = await api.put('/admin/drive-config', payload);
       setConfig(data.config);
-      setForm((f) => ({ ...f, googleClientId: '', googleClientSecret: '' }));
-      flash(t('adminDrive.saved'));
+      setForm((f) => ({ ...f, rootFolderId: data.config.rootFolderId || '', googleClientId: '', googleClientSecret: '' }));
+      flash(translateBackendMessage(data.message, language));
     } catch (err) {
       setError(translateBackendMessage(err.message, language));
     } finally {
@@ -288,7 +288,7 @@ export default function GoogleDriveSettingsPage() {
             className="qlc-input"
             value={form.rootFolderId}
             onChange={(e) => setForm((f) => ({ ...f, rootFolderId: e.target.value }))}
-            placeholder="Ej: 1AbCdEfGhIjKlMnOpQrStUvWxYz"
+            placeholder="https://drive.google.com/drive/folders/TU_FOLDER_ID"
             disabled={config.isLockedByAnother}
           />
           <p style={{ fontSize: 11, color: 'var(--qlc-muted2)', marginTop: 6 }}>{t('adminDrive.folderIdHint')}</p>

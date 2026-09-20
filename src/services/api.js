@@ -49,7 +49,13 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     const message = error.response?.data?.message || 'Ocurrió un error. Intenta nuevamente.';
-    return Promise.reject(new Error(message));
+    const wrapped = new Error(message);
+    // Se exponen además de `.message` (ya usado en toda la app) para que
+    // quien lo necesite pueda diferenciar el tipo de error sin parsear texto
+    // — p. ej. 404 (no existe / no es tuyo) vs 410 (existe pero desactivada).
+    wrapped.status = error.response?.status;
+    wrapped.details = error.response?.data?.details;
+    return Promise.reject(wrapped);
   }
 );
 

@@ -421,8 +421,8 @@ const es = {
     oauthSuccessNotice: '✓ Cuenta de Google conectada correctamente.',
     folderSectionTitle: 'Carpeta raíz en Drive',
     folderNameLabel: 'Nombre de la carpeta principal',
-    folderIdLabel: 'Folder ID de Google Drive',
-    folderIdHint: 'Se obtiene de la URL de la carpeta en Google Drive, después de crearla en la cuenta ya conectada arriba (ver guía).',
+    folderIdLabel: 'Folder ID o URL de la carpeta en Google Drive',
+    folderIdHint: 'Puedes pegar el Folder ID solo, o la URL completa de la carpeta (ej: https://drive.google.com/drive/folders/TU_FOLDER_ID) — el sistema detecta el ID automáticamente y solo guarda el ID.',
     usingBootstrapFolder: ' Actualmente se está usando la carpeta configurada por infraestructura.',
     testing: 'Probando…',
     testConnection: 'Probar conexión',
@@ -1678,6 +1678,8 @@ const es = {
     noEvidence: 'Sin evidencia adjunta.',
     timeToPay: 'Tiempo para realizar el pago',
     deadlineExpired: 'Plazo vencido',
+    unavailableGeneric: 'Esta subcuenta ya no está disponible.',
+    backToList: '← Volver al listado de subcuentas',
   },
 
   clientWallet: {
@@ -2362,8 +2364,8 @@ const en = {
     oauthSuccessNotice: '✓ Google account connected successfully.',
     folderSectionTitle: 'Root folder in Drive',
     folderNameLabel: 'Main folder name',
-    folderIdLabel: 'Google Drive Folder ID',
-    folderIdHint: "Obtained from the folder's URL in Google Drive, after creating it in the account connected above (see guide).",
+    folderIdLabel: 'Folder ID or Google Drive folder URL',
+    folderIdHint: 'You can paste just the Folder ID, or the full folder URL (e.g. https://drive.google.com/drive/folders/YOUR_FOLDER_ID) — the system detects the ID automatically and only stores the ID.',
     usingBootstrapFolder: ' Currently using the folder configured by infrastructure.',
     testing: 'Testing…',
     testConnection: 'Test connection',
@@ -3614,6 +3616,8 @@ const en = {
     noEvidence: 'No evidence attached.',
     timeToPay: 'Time to make the payment',
     deadlineExpired: 'Deadline expired',
+    unavailableGeneric: 'This subaccount is no longer available.',
+    backToList: '← Back to the subaccounts list',
   },
 
   clientWallet: {
