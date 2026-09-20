@@ -21,11 +21,11 @@ const ADMIN_GENERAL_PATHS = {
   new_prospect_admin: '/admin/prospects',
 };
 
-// Estas SÍ traen apiSubaccountId en templateParams, pero ese destino ya no
-// existe/no es accesible (la subcuenta fue eliminada) — se revisan ANTES
+// Esta SÍ trae apiSubaccountId en templateParams, pero ese destino ya no es
+// accesible para el cliente (la subcuenta quedó INACTIVA) — se revisa ANTES
 // del atajo genérico "si trae apiSubaccountId, ir a su detalle" de abajo.
 const CLIENT_TEMPLATE_OVERRIDE_PATHS = {
-  subaccount_removed: '/client/api-subaccounts',
+  subaccount_deactivated: '/client/api-subaccounts',
 };
 
 const CLIENT_GENERAL_PATHS = {

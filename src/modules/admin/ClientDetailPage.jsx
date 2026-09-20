@@ -13,16 +13,19 @@ import usePolling from '../../hooks/usePolling';
 import CollapsibleSection from '../../components/CollapsibleSection';
 
 // CORRECCIÓN 7 (bloque de 20) — fila reutilizable para no duplicar el JSX
-// entre subcuentas activas/principal e inactivas colapsadas.
+// entre subcuentas activas/principal e inactivas.
 //
-// GESTIÓN DINÁMICA DE SUBCUENTAS — toda subcuenta activa (removedAt=null)
-// es, por definición, visible para el cliente; ya no existe el concepto de
-// "oculta". En su lugar, cada subcuenta numerada (nunca la PRINCIPAL) puede
-// eliminarse (onRemove) — eliminación lógica: deja de estar activa para el
-// cliente, pero su historial se conserva.
-function SubaccountRow({ s, id, t, language, apiStatusMap, onRemove }) {
+// GESTIÓN DINÁMICA DE SUBCUENTAS — las subcuentas funcionan por ESTADO
+// (ACTIVA/INACTIVA), nunca por eliminación: deactivatedAt=null es, por
+// definición, ACTIVA y visible para el cliente; con fecha es INACTIVA
+// (oculta para el cliente, pero su historial de estados de cuenta/pagos/
+// documentos se conserva íntegro). El admin puede alternar libremente entre
+// ambos estados (onDeactivate/onActivate) — nunca es un archivo de
+// "eliminadas", solo dos estados reversibles.
+function SubaccountRow({ s, id, t, language, apiStatusMap, onDeactivate, onActivate }) {
   const apiStatus = statusOf(apiStatusMap, s.status, 'PENDIENTE');
   const cs = s.conditionsSummary || { confirmed: 0, total: 0, allConfirmed: false };
+  const isInactive = Boolean(s.deactivatedAt);
   return (
     <tr>
       <td>{s.isPrincipal ? t('clientSubaccounts.principalLabel') : (s.identifier || t('adminClientDetail.unassignedIdentifier'))}</td>
@@ -35,15 +38,25 @@ function SubaccountRow({ s, id, t, language, apiStatusMap, onRemove }) {
           {cs.confirmed}/{cs.total}
         </span>
       </td>
+      <td>
+        <span className={`qlc-badge ${isInactive ? 'muted' : 'ok'}`}>
+          {isInactive ? t('adminClientDetail.statusInactive') : t('adminClientDetail.statusActive')}
+        </span>
+      </td>
       <td style={{ display: 'flex', gap: 6 }}>
         <Link className="qlc-btn ghost" to={`/admin/clients/${id}/api-subaccounts/${s.id}`}>
           {t('adminClientsList.view')}
         </Link>
-        {!s.isPrincipal && (
-          <button type="button" className="qlc-btn ghost" onClick={() => onRemove(s)}>
-            {t('adminClientDetail.removeSubaccount')}
-          </button>
-        )}
+        {!s.isPrincipal &&
+          (isInactive ? (
+            <button type="button" className="qlc-btn ghost" onClick={() => onActivate(s)}>
+              {t('adminClientDetail.activateSubaccount')}
+            </button>
+          ) : (
+            <button type="button" className="qlc-btn ghost" onClick={() => onDeactivate(s)}>
+              {t('adminClientDetail.deactivateSubaccount')}
+            </button>
+          ))}
       </td>
     </tr>
   );
@@ -66,16 +79,27 @@ export default function ClientDetailPage() {
   const [creatingSubaccount, setCreatingSubaccount] = useState(false);
   const [newIdentifier, setNewIdentifier] = useState('');
   const [copiedWalletField, setCopiedWalletField] = useState(null);
-  const [showInactiveSubaccounts, setShowInactiveSubaccounts] = useState(false);
-  const [removeTarget, setRemoveTarget] = useState(null);
+  // "Desconectadas" es el estado de la conexión API (CONECTADA/no) — un eje
+  // totalmente distinto de ACTIVA/INACTIVA (estado de la subcuenta misma).
+  const [showDisconnectedSubaccounts, setShowDisconnectedSubaccounts] = useState(false);
+  const [showInactiveStatusSubaccounts, setShowInactiveStatusSubaccounts] = useState(false);
+  const [deactivateTarget, setDeactivateTarget] = useState(null);
+  const [activateTarget, setActivateTarget] = useState(null);
   const [pendingRequests, setPendingRequests] = useState([]);
   const [approveCreateTarget, setApproveCreateTarget] = useState(null);
   const [approveIdentifier, setApproveIdentifier] = useState('');
   const [approveCapital, setApproveCapital] = useState('');
-  const [approveDeleteTarget, setApproveDeleteTarget] = useState(null);
+  const [approveDeactivateTarget, setApproveDeactivateTarget] = useState(null);
   const [rejectTarget, setRejectTarget] = useState(null);
   const [reviewNote, setReviewNote] = useState('');
   const [requestActionError, setRequestActionError] = useState('');
+  // NOMENCLATURA ÚNICA — se asigna UNA sola vez; sin este modal no existe
+  // ninguna otra forma de fijarla desde la interfaz, y una vez guardada no
+  // hay botón de editar en ningún lado.
+  const [showAssignUsername, setShowAssignUsername] = useState(false);
+  const [usernameDraft, setUsernameDraft] = useState('');
+  const [assigningUsername, setAssigningUsername] = useState(false);
+  const [usernameError, setUsernameError] = useState('');
   // CORREGIR.xlsx ADMIN 14 — mensajería manual admin→cliente.
   const [messages, setMessages] = useState([]);
   const [messageForm, setMessageForm] = useState({ title: '', message: '' });
@@ -184,8 +208,13 @@ export default function ClientDetailPage() {
     setDeleting(true);
     setDeleteError('');
     try {
-      await api.delete(`/admin/clients/${id}`, { data: { securityPassword: deleteSecurityPassword } });
-      navigate('/admin/clients');
+      const { data } = await api.delete(`/admin/clients/${id}`, { data: { securityPassword: deleteSecurityPassword } });
+      // El backend nunca afirma que la carpeta de Drive se borró si no se
+      // confirmó de verdad — se lleva ese estado real a la lista de
+      // clientes para que el admin lo vea, en vez de perderlo al navegar.
+      navigate('/admin/clients', {
+        state: { driveDeletionStatus: data.driveDeletionStatus, driveDeletionError: data.driveDeletionError },
+      });
     } catch (err) {
       setDeleteError(translateBackendMessage(err.message, language));
     } finally {
@@ -200,12 +229,18 @@ export default function ClientDetailPage() {
     setTimeout(() => setCopiedWalletField((f) => (f === field ? null : f)), 2000);
   };
 
-  // GESTIÓN DINÁMICA DE SUBCUENTAS — eliminación lógica desde el panel admin
-  // (sin pasar por una solicitud previa del cliente). Confirmación de dos
-  // pasos porque es una acción sensible, aunque nunca borra el historial.
-  const confirmRemoveSubaccount = async () => {
-    await api.post(`/admin/clients/${id}/api-subaccounts/${removeTarget.id}/remove`);
-    flash(t('adminClientDetail.subaccountRemoved'));
+  // GESTIÓN DINÁMICA DE SUBCUENTAS — cambio de estado (ACTIVA/INACTIVA)
+  // desde el panel admin (sin pasar por una solicitud previa del cliente).
+  // Reversible en cualquier momento; nunca borra el historial.
+  const confirmDeactivateSubaccount = async () => {
+    await api.post(`/admin/clients/${id}/api-subaccounts/${deactivateTarget.id}/deactivate`);
+    flash(t('adminClientDetail.subaccountDeactivated'));
+    load();
+  };
+
+  const confirmActivateSubaccount = async () => {
+    await api.post(`/admin/clients/${id}/api-subaccounts/${activateTarget.id}/activate`);
+    flash(t('adminClientDetail.subaccountActivated'));
     load();
   };
 
@@ -231,8 +266,8 @@ export default function ClientDetailPage() {
     }
   };
 
-  const confirmApproveDelete = async () => {
-    await api.post(`/admin/subaccount-requests/${approveDeleteTarget.id}/approve-delete`);
+  const confirmApproveDeactivate = async () => {
+    await api.post(`/admin/subaccount-requests/${approveDeactivateTarget.id}/approve-deactivate`);
     flash(t('adminClientDetail.requestApproved'));
     load();
   };
@@ -252,6 +287,26 @@ export default function ClientDetailPage() {
       load();
     } catch (err) {
       setRequestActionError(translateBackendMessage(err.message, language));
+    }
+  };
+
+  // NOMENCLATURA ÚNICA §7/§9 — solo se puede ASIGNAR cuando el cliente
+  // todavía no tiene una (el backend rechaza el resto de los casos). Nunca
+  // hay una forma de editarla después: ni este botón ni ningún otro
+  // aparecen una vez que client.username ya tiene un valor.
+  const confirmAssignUsername = async () => {
+    setAssigningUsername(true);
+    setUsernameError('');
+    try {
+      await api.post(`/admin/clients/${id}/assign-username`, { username: usernameDraft });
+      setShowAssignUsername(false);
+      setUsernameDraft('');
+      flash(t('adminClientDetail.usernameAssigned'));
+      load();
+    } catch (err) {
+      setUsernameError(translateBackendMessage(err.message, language));
+    } finally {
+      setAssigningUsername(false);
     }
   };
 
@@ -275,21 +330,22 @@ export default function ClientDetailPage() {
 
   const clientAccStatus = statusOf(accountStatusMap, client.status);
   const subaccounts = client.apiSubaccounts || [];
-  // GESTIÓN DINÁMICA DE SUBCUENTAS — `client.apiSubaccounts` trae TODO
-  // (incluidas las eliminadas, para que el admin conserve acceso a su
-  // historial); la vista principal solo debe considerar las activas.
-  const numberedSubaccounts = subaccounts.filter((s) => !s.isPrincipal && !s.removedAt);
-  const removedSubaccounts = subaccounts.filter((s) => !s.isPrincipal && s.removedAt);
-  // La cuenta PRINCIPAL (isPrincipal) nunca cuenta contra el máximo de 20.
-  const canAddSubaccount = numberedSubaccounts.length < 20;
-  // CORRECCIÓN 7 (bloque de 20) — por defecto solo se listan las
-  // subcuentas ACTIVAS (conectadas); las inactivas (desconectadas o
-  // todavía pendientes) quedan minimizadas detrás de un control para
-  // expandirlas. La PRINCIPAL siempre se muestra aparte, sin importar su
-  // estado. Nunca se elimina ni se cambia el estado de nada, solo la vista.
+  // GESTIÓN DINÁMICA DE SUBCUENTAS — `client.apiSubaccounts` trae TODAS
+  // (activas e inactivas) para que el admin conserve acceso completo. Las
+  // numeradas se separan por su ESTADO (deactivatedAt) — nunca por
+  // "eliminadas" — y solo las ACTIVAS cuentan contra el máximo de 20.
+  const numberedSubaccounts = subaccounts.filter((s) => !s.isPrincipal);
+  const activeNumberedSubaccounts = numberedSubaccounts.filter((s) => !s.deactivatedAt);
+  const inactiveStatusSubaccounts = numberedSubaccounts.filter((s) => s.deactivatedAt);
+  const canAddSubaccount = activeNumberedSubaccounts.length < 20;
+  // CORRECCIÓN 7 (bloque de 20) — dentro de las ACTIVAS, por defecto solo se
+  // listan las CONECTADAS; las desconectadas o todavía pendientes quedan
+  // minimizadas detrás de un control para expandirlas. Este eje (conexión
+  // API) es independiente del estado ACTIVA/INACTIVA de arriba. La
+  // PRINCIPAL siempre se muestra aparte, sin importar su estado.
   const principalSubaccount = subaccounts.find((s) => s.isPrincipal);
-  const activeSubaccounts = numberedSubaccounts.filter((s) => s.status === 'CONECTADA');
-  const inactiveSubaccounts = numberedSubaccounts.filter((s) => s.status !== 'CONECTADA');
+  const connectedSubaccounts = activeNumberedSubaccounts.filter((s) => s.status === 'CONECTADA');
+  const disconnectedSubaccounts = activeNumberedSubaccounts.filter((s) => s.status !== 'CONECTADA');
 
   return (
     <div>
@@ -305,6 +361,29 @@ export default function ClientDetailPage() {
           </h1>
           <div style={{ color: 'var(--qlc-muted)', fontSize: 13 }}>
             <a href={`mailto:${client.user?.email}`}>{client.user?.email}</a>
+          </div>
+          <div style={{ color: 'var(--qlc-muted)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }}>
+            {t('adminClientDetail.usernameLabel')}:{' '}
+            {client.username ? (
+              <>
+                <code>{client.username}</code>
+                <span className="qlc-badge muted" style={{ fontSize: 10 }} title={t('adminClientDetail.usernameLockedHint')}>
+                  🔒 {t('adminClientDetail.usernameLocked')}
+                </span>
+              </>
+            ) : (
+              <>
+                <span style={{ color: 'var(--qlc-warn)' }}>{t('adminClientDetail.usernamePending')}</span>
+                <button
+                  type="button"
+                  className="qlc-btn ghost"
+                  style={{ fontSize: 11, padding: '4px 8px' }}
+                  onClick={() => setShowAssignUsername(true)}
+                >
+                  {t('adminClientDetail.assignUsername')}
+                </button>
+              </>
+            )}
           </div>
           {client.nationality && (
             <div style={{ color: 'var(--qlc-muted)', fontSize: 13 }}>
@@ -345,7 +424,7 @@ export default function ClientDetailPage() {
             {pendingRequests.map((r) => (
               <li key={r.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, paddingBottom: 8 }}>
                 <span style={{ fontSize: 13 }}>
-                  {r.type === 'CREATE' ? t('clientSubaccounts.requestTypeCreate') : t('clientSubaccounts.requestTypeDelete')}
+                  {r.type === 'CREATE' ? t('clientSubaccounts.requestTypeCreate') : t('clientSubaccounts.requestTypeDeactivate')}
                   {r.apiSubaccount && ` — ${r.apiSubaccount.identifier || `#${r.apiSubaccount.slotIndex}`}`}
                   <div style={{ fontSize: 11, color: 'var(--qlc-muted2)' }}>
                     {new Date(r.requestedAt).toLocaleString()}
@@ -358,7 +437,7 @@ export default function ClientDetailPage() {
                       {t('adminClientDetail.approveAction')}
                     </button>
                   ) : (
-                    <button className="qlc-btn primary" onClick={() => setApproveDeleteTarget(r)}>
+                    <button className="qlc-btn primary" onClick={() => setApproveDeactivateTarget(r)}>
                       {t('adminClientDetail.approveAction')}
                     </button>
                   )}
@@ -374,10 +453,10 @@ export default function ClientDetailPage() {
 
       <CollapsibleSection
         className="qlc-collapsible-mb"
-        title={`${t('adminClientDetail.subaccounts')} (${numberedSubaccounts.length}/20)`}
+        title={`${t('adminClientDetail.subaccounts')} (${activeNumberedSubaccounts.length}/20)`}
         summary={
-          principalSubaccount || activeSubaccounts.length
-            ? `${activeSubaccounts.length + (principalSubaccount ? 1 : 0)} ${t('adminClientDetail.subaccounts')}`
+          principalSubaccount || activeNumberedSubaccounts.length
+            ? `${activeNumberedSubaccounts.length + (principalSubaccount ? 1 : 0)} ${t('adminClientDetail.subaccounts')}`
             : t('adminClientDetail.noSubaccounts')
         }
         badge={
@@ -407,25 +486,68 @@ export default function ClientDetailPage() {
                 <th>{t('adminClientDetail.model')}</th>
                 <th>{t('adminClientDetail.api')}</th>
                 <th>{t('adminClientDetail.activationProcess')}</th>
+                <th>{t('adminClientDetail.subaccountStatus')}</th>
                 <th></th>
               </tr>
             </thead>
             <tbody>
-              {[principalSubaccount, ...activeSubaccounts].filter(Boolean).map((s) => (
-                <SubaccountRow key={s.id} s={s} id={id} t={t} language={language} apiStatusMap={apiStatusMap} onRemove={setRemoveTarget} />
+              {[principalSubaccount, ...connectedSubaccounts].filter(Boolean).map((s) => (
+                <SubaccountRow
+                  key={s.id}
+                  s={s}
+                  id={id}
+                  t={t}
+                  language={language}
+                  apiStatusMap={apiStatusMap}
+                  onDeactivate={setDeactivateTarget}
+                  onActivate={setActivateTarget}
+                />
               ))}
-              {inactiveSubaccounts.length > 0 && (
+              {disconnectedSubaccounts.length > 0 && (
                 <>
                   <tr>
-                    <td colSpan={5}>
-                      <button type="button" className="qlc-btn ghost" onClick={() => setShowInactiveSubaccounts((v) => !v)}>
-                        {showInactiveSubaccounts ? '▾' : '▸'} {t('adminClientDetail.inactiveSubaccounts')} ({inactiveSubaccounts.length})
+                    <td colSpan={6}>
+                      <button type="button" className="qlc-btn ghost" onClick={() => setShowDisconnectedSubaccounts((v) => !v)}>
+                        {showDisconnectedSubaccounts ? '▾' : '▸'} {t('adminClientDetail.disconnectedSubaccounts')} ({disconnectedSubaccounts.length})
                       </button>
                     </td>
                   </tr>
-                  {showInactiveSubaccounts &&
-                    inactiveSubaccounts.map((s) => (
-                      <SubaccountRow key={s.id} s={s} id={id} t={t} language={language} apiStatusMap={apiStatusMap} onRemove={setRemoveTarget} />
+                  {showDisconnectedSubaccounts &&
+                    disconnectedSubaccounts.map((s) => (
+                      <SubaccountRow
+                        key={s.id}
+                        s={s}
+                        id={id}
+                        t={t}
+                        language={language}
+                        apiStatusMap={apiStatusMap}
+                        onDeactivate={setDeactivateTarget}
+                        onActivate={setActivateTarget}
+                      />
+                    ))}
+                </>
+              )}
+              {inactiveStatusSubaccounts.length > 0 && (
+                <>
+                  <tr>
+                    <td colSpan={6}>
+                      <button type="button" className="qlc-btn ghost" onClick={() => setShowInactiveStatusSubaccounts((v) => !v)}>
+                        {showInactiveStatusSubaccounts ? '▾' : '▸'} {t('adminClientDetail.inactiveStatusSubaccounts')} ({inactiveStatusSubaccounts.length})
+                      </button>
+                    </td>
+                  </tr>
+                  {showInactiveStatusSubaccounts &&
+                    inactiveStatusSubaccounts.map((s) => (
+                      <SubaccountRow
+                        key={s.id}
+                        s={s}
+                        id={id}
+                        t={t}
+                        language={language}
+                        apiStatusMap={apiStatusMap}
+                        onDeactivate={setDeactivateTarget}
+                        onActivate={setActivateTarget}
+                      />
                     ))}
                 </>
               )}
@@ -434,41 +556,8 @@ export default function ClientDetailPage() {
         )}
       </CollapsibleSection>
 
-      {removedSubaccounts.length > 0 && (
-        <CollapsibleSection
-          className="qlc-collapsible-mb"
-          title={t('adminClientDetail.removedSubaccountsTitle')}
-          summary={`${removedSubaccounts.length} ${t('adminClientDetail.removedSubaccountsTitle')}`}
-          defaultOpen={false}
-        >
-          <p style={{ color: 'var(--qlc-muted)', fontSize: 12, marginTop: 0 }}>{t('adminClientDetail.removedSubaccountsNotice')}</p>
-          <table className="qlc-table">
-            <thead>
-              <tr>
-                <th>{t('adminClientDetail.identifier')}</th>
-                <th>{t('adminClientDetail.removedAtLabel')}</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {removedSubaccounts.map((s) => (
-                <tr key={s.id}>
-                  <td>{s.identifier || `#${s.slotIndex}`}</td>
-                  <td>{new Date(s.removedAt).toLocaleString()}</td>
-                  <td>
-                    <Link className="qlc-btn ghost" to={`/admin/clients/${id}/api-subaccounts/${s.id}`}>
-                      {t('adminClientsList.view')}
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </CollapsibleSection>
-      )}
-
       <CapitalIncreasePanel clientId={id} />
-      <CapitalRescuePanel clientId={id} subaccounts={numberedSubaccounts} />
+      <CapitalRescuePanel clientId={id} subaccounts={activeNumberedSubaccounts} />
 
       <div className="qlc-detail-grid">
         <div className="qlc-card">
@@ -761,25 +850,68 @@ export default function ClientDetailPage() {
         </Modal>
       )}
 
-      {removeTarget && (
+      {showAssignUsername && (
+        <Modal
+          title={t('adminClientDetail.assignUsernameTitle')}
+          onClose={() => {
+            setShowAssignUsername(false);
+            setUsernameError('');
+          }}
+          width={440}
+        >
+          <p style={{ color: 'var(--qlc-muted)', fontSize: 13, lineHeight: 1.6, marginTop: 0 }}>
+            {t('adminClientDetail.assignUsernameNotice')}
+          </p>
+          <label className="qlc-label">{t('adminClientDetail.usernameLabel')}</label>
+          <input
+            className="qlc-input"
+            value={usernameDraft}
+            onChange={(e) => setUsernameDraft(e.target.value.slice(0, 30))}
+            maxLength={30}
+            autoFocus
+          />
+          <p style={{ fontSize: 11, color: 'var(--qlc-muted2)', marginTop: 4 }}>{usernameDraft.length}/30</p>
+          {usernameError && <div className="qlc-field-error">{usernameError}</div>}
+          <div className="qlc-form-actions">
+            <button className="qlc-btn ghost" onClick={() => setShowAssignUsername(false)} disabled={assigningUsername}>
+              {t('modals.cancel')}
+            </button>
+            <button className="qlc-btn primary" onClick={confirmAssignUsername} disabled={assigningUsername || !usernameDraft.trim()}>
+              {assigningUsername ? t('common.saving') : t('adminClientDetail.assignUsername')}
+            </button>
+          </div>
+        </Modal>
+      )}
+
+      {deactivateTarget && (
         <ConfirmModal
-          title={t('adminClientDetail.removeSubaccountTitle')}
-          message={`${t('adminClientDetail.removeSubaccountMessage')} ${t('adminClientDetail.removeSubaccountKeepsHistory')}`}
-          confirmLabel={t('adminClientDetail.removeSubaccount')}
-          twoStep
-          onClose={() => setRemoveTarget(null)}
-          onConfirm={confirmRemoveSubaccount}
+          title={t('adminClientDetail.deactivateSubaccountTitle')}
+          message={`${t('adminClientDetail.deactivateSubaccountMessage')} ${t('adminClientDetail.deactivateSubaccountKeepsHistory')}`}
+          confirmLabel={t('adminClientDetail.deactivateSubaccount')}
+          danger={false}
+          onClose={() => setDeactivateTarget(null)}
+          onConfirm={confirmDeactivateSubaccount}
         />
       )}
 
-      {approveDeleteTarget && (
+      {activateTarget && (
         <ConfirmModal
-          title={t('adminClientDetail.approveDeleteTitle')}
-          message={`${t('adminClientDetail.removeSubaccountMessage')} ${t('adminClientDetail.removeSubaccountKeepsHistory')}`}
+          title={t('adminClientDetail.activateSubaccountTitle')}
+          message={t('adminClientDetail.activateSubaccountMessage')}
+          confirmLabel={t('adminClientDetail.activateSubaccount')}
+          danger={false}
+          onClose={() => setActivateTarget(null)}
+          onConfirm={confirmActivateSubaccount}
+        />
+      )}
+
+      {approveDeactivateTarget && (
+        <ConfirmModal
+          title={t('adminClientDetail.approveDeactivateTitle')}
+          message={`${t('adminClientDetail.deactivateSubaccountMessage')} ${t('adminClientDetail.deactivateSubaccountKeepsHistory')}`}
           confirmLabel={t('adminClientDetail.approveAction')}
-          twoStep
-          onClose={() => setApproveDeleteTarget(null)}
-          onConfirm={confirmApproveDelete}
+          onClose={() => setApproveDeactivateTarget(null)}
+          onConfirm={confirmApproveDeactivate}
         />
       )}
 

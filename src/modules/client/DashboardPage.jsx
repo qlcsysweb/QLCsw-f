@@ -1,10 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
-import { API_CONNECTION_STATUS, statusOf } from '../../utils/statusLabels';
 import { formatCdmxDate } from '../../utils/cdmxTime';
 import { useLanguage } from '../../i18n/LanguageContext';
-import { getLocalizedModel } from '../../i18n/bilingualContent';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 import usePolling from '../../hooks/usePolling';
 
@@ -28,8 +26,6 @@ export default function DashboardPage() {
   const [dashboard, setDashboard] = useState(null);
   const [processSteps, setProcessSteps] = useState([]);
   const [error, setError] = useState('');
-
-  const apiStatusMap = API_CONNECTION_STATUS(t);
 
   const load = () => {
     api
@@ -118,35 +114,6 @@ export default function DashboardPage() {
           <span className="qlc-stat-label">{t('clientDashboard.unreadNotifications')}</span>
           <strong className="qlc-stat-value">{dashboard.unreadNotifications}</strong>
         </div>
-      </div>
-
-      <div className="qlc-card" style={{ marginTop: 24 }}>
-        <h3 style={{ marginTop: 0 }}>{t('clientDashboard.subaccounts')}</h3>
-        {dashboard.subaccounts.length === 0 ? (
-          <div className="qlc-empty">{t('clientSubaccounts.none')}</div>
-        ) : (
-          <ul className="qlc-plain-list">
-            {dashboard.subaccounts.map((s) => {
-              const apiStatus = statusOf(apiStatusMap, s.apiStatus, 'PENDIENTE');
-              return (
-                <li key={s.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span>
-                    <strong>{s.isPrincipal ? t('clientSubaccounts.principalLabel') : (s.identifier || t('clientSubaccounts.unassignedIdentifier'))}</strong>{' '}
-                    <span style={{ color: 'var(--qlc-muted2)' }}>
-                      {s.model ? getLocalizedModel(s.model, language).name : t('clientSubaccounts.noModel')}
-                    </span>
-                  </span>
-                  <span style={{ display: 'flex', gap: 8 }}>
-                    <span className={`qlc-badge ${apiStatus.className}`}>{apiStatus.text}</span>
-                    <Link className="qlc-btn ghost" to={`/client/api-subaccounts/${s.id}`}>
-                      {t('adminClientsList.view')}
-                    </Link>
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
-        )}
       </div>
 
       {dashboard.nextAppointment && (

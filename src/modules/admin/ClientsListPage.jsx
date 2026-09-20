@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import api from '../../services/api';
 import ConfirmModal from '../../components/ConfirmModal';
 import { ACCOUNT_STATUS, statusOf } from '../../utils/statusLabels';
@@ -7,9 +7,11 @@ import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 import usePolling from '../../hooks/usePolling';
 
-// CORRECCIÓN 2 (bloque de 20) — "usuario" es una nomenclatura libre que
-// define QLC (ej. "QLC001"), independiente del correo (login real) y del
-// nombre completo. Opcional: el admin puede dejarlo vacío.
+// NOMENCLATURA ÚNICA §7/§8 — "username" es la nomenclatura única que el
+// ADMIN asigna al registrar manualmente a un cliente: obligatoria, máximo
+// 30 caracteres, cualquier carácter, sin ejemplo sugerido (para no imponer
+// un formato) y NUNCA editable después de guardarse — este modal es la
+// única forma de fijarla en la creación; no hay forma de cambiarla luego.
 function CreateClientModal({ onClose, onCreated }) {
   const { t, language } = useLanguage();
   const [form, setForm] = useState({ username: '', firstName: '', lastName: '', email: '', password: '', nationality: '' });
@@ -23,7 +25,7 @@ function CreateClientModal({ onClose, onCreated }) {
     setError('');
     setSaving(true);
     try {
-      await api.post('/admin/clients', { ...form, username: form.username || undefined });
+      await api.post('/admin/clients', form);
       onCreated();
     } catch (err) {
       setError(translateBackendMessage(err.message, language));
@@ -38,7 +40,16 @@ function CreateClientModal({ onClose, onCreated }) {
         <h2>{t('adminClientsList.modalTitle')}</h2>
         <form onSubmit={submit}>
           <label className="qlc-label">{t('adminClientsList.username')}</label>
-          <input className="qlc-input" value={form.username} onChange={update('username')} placeholder={t('adminClientsList.usernamePlaceholder')} />
+          <input
+            className="qlc-input"
+            value={form.username}
+            onChange={(e) => update('username')({ target: { value: e.target.value.slice(0, 30) } })}
+            maxLength={30}
+            required
+          />
+          <p style={{ fontSize: 11, color: 'var(--qlc-muted2)', marginTop: -4, marginBottom: 10 }}>
+            {t('adminClientsList.usernameHint')} ({form.username.length}/30)
+          </p>
           <label className="qlc-label">{t('adminClientsList.firstName')}</label>
           <input className="qlc-input" value={form.firstName} onChange={update('firstName')} required />
           <label className="qlc-label">{t('adminClientsList.lastName')}</label>
@@ -76,12 +87,16 @@ function CreateClientModal({ onClose, onCreated }) {
 // CORRECCIÓN 2 (bloque de 20) — modal de edición: usuario, nombre completo,
 // correo y contraseña, todos independientes. La contraseña es opcional: si
 // se deja vacía, se conserva la actual. Pide confirmación antes de guardar
-// y valida correo/usuario duplicados (el backend es la fuente real de esa
+// y valida correo duplicado (el backend es la fuente real de esa
 // validación; aquí solo se muestra el error que devuelva).
+//
+// NOMENCLATURA ÚNICA §11 — "username" NO aparece en este modal a propósito:
+// una vez asignada, ni el cliente ni el admin pueden editarla (se asigna
+// una sola vez desde la ficha del cliente, con "Asignar nomenclatura", y
+// solo si todavía no tiene una).
 function EditClientModal({ client, onClose, onSaved }) {
   const { t, language } = useLanguage();
   const [form, setForm] = useState({
-    username: client.username || '',
     firstName: client.firstName || '',
     lastName: client.lastName || '',
     email: client.user?.email || '',
@@ -109,7 +124,6 @@ function EditClientModal({ client, onClose, onSaved }) {
     setError('');
     try {
       const payload = {
-        username: form.username || null,
         firstName: form.firstName,
         lastName: form.lastName,
         email: form.email,
@@ -131,8 +145,6 @@ function EditClientModal({ client, onClose, onSaved }) {
         <h2>{t('adminClientsList.editClient')}</h2>
         {!confirming ? (
           <form onSubmit={requestSave}>
-            <label className="qlc-label">{t('adminClientsList.username')}</label>
-            <input className="qlc-input" value={form.username} onChange={update('username')} placeholder={t('adminClientsList.usernamePlaceholder')} />
             <label className="qlc-label">{t('adminClientsList.firstName')}</label>
             <input className="qlc-input" value={form.firstName} onChange={update('firstName')} required />
             <label className="qlc-label">{t('adminClientsList.lastName')}</label>
@@ -161,7 +173,6 @@ function EditClientModal({ client, onClose, onSaved }) {
           <div>
             <p style={{ fontSize: 13, color: 'var(--qlc-muted)' }}>{t('adminClientsList.confirmChangesIntro')}</p>
             <ul className="qlc-plain-list" style={{ fontSize: 13, marginBottom: 16 }}>
-              <li>{t('adminClientsList.username')}: {form.username || '—'}</li>
               <li>{t('adminClientsList.firstName')} / {t('adminClientsList.lastName')}: {form.firstName} {form.lastName}</li>
               <li>{t('adminClientsList.email')}: {form.email}</li>
               <li>{t('adminClientsList.newPasswordOptional')}: {form.password ? t('adminClientsList.willChange') : t('adminClientsList.willKeep')}</li>
@@ -221,6 +232,7 @@ function ProgressBar({ confirmed, total, width = 70 }) {
 
 export default function ClientsListPage() {
   const { t } = useLanguage();
+  const location = useLocation();
   const [items, setItems] = useState([]);
   const [total, setTotal] = useState(0);
   const [search, setSearch] = useState('');
@@ -231,6 +243,10 @@ export default function ClientsListPage() {
   const [showProgressHelp, setShowProgressHelp] = useState(false);
   const [pendingRequests, setPendingRequests] = useState([]);
   const [confirmDeactivateClient, setConfirmDeactivateClient] = useState(null);
+  // Resultado real de la eliminación de la carpeta de Drive de un cliente
+  // que se acaba de borrar permanentemente (ver ClientDetailPage.jsx) —
+  // nunca se afirma que se borró si no se confirmó de verdad.
+  const driveDeletionResult = location.state?.driveDeletionStatus;
 
   const accountStatusMap = ACCOUNT_STATUS(t);
 
@@ -296,6 +312,19 @@ export default function ClientsListPage() {
         </button>
       </div>
 
+      {driveDeletionResult && (
+        <div
+          className="qlc-card"
+          style={{ marginBottom: 18, borderColor: driveDeletionResult === 'error' ? 'var(--qlc-danger-border)' : 'var(--qlc-ok-border)' }}
+        >
+          <p style={{ margin: 0, fontSize: 13 }}>
+            {t('adminClientsList.clientDeletedNotice')}{' '}
+            {t(`adminClientsList.driveDeletionStatus_${driveDeletionResult}`)}
+            {driveDeletionResult === 'error' && location.state?.driveDeletionError ? ` (${location.state.driveDeletionError})` : ''}
+          </p>
+        </div>
+      )}
+
       {pendingRequests.length > 0 && (
         <div className="qlc-card" style={{ marginBottom: 18, borderColor: 'var(--qlc-warn-border)' }}>
           <h3 style={{ marginTop: 0 }}>
@@ -308,7 +337,7 @@ export default function ClientsListPage() {
                   <strong>{r.client.username || '—'}</strong> — {r.client.firstName} {r.client.lastName}
                   <span style={{ color: 'var(--qlc-muted2)' }}> ({r.client.user?.email})</span>
                   <span className="qlc-badge" style={{ marginLeft: 8 }}>
-                    {r.type === 'CREATE' ? t('clientSubaccounts.requestTypeCreate') : t('clientSubaccounts.requestTypeDelete')}
+                    {r.type === 'CREATE' ? t('clientSubaccounts.requestTypeCreate') : t('clientSubaccounts.requestTypeDeactivate')}
                   </span>
                   <div style={{ fontSize: 11, color: 'var(--qlc-muted2)' }}>
                     {t('adminClientsList.requestedOn')} {new Date(r.requestedAt).toLocaleString()}

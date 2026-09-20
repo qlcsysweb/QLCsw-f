@@ -14,7 +14,8 @@ const REQUEST_STATUS_CLASS = { PENDING: 'warn', APPROVED: 'ok', REJECTED: 'dange
 // pre-creadas: solo su cuenta PRINCIPAL y las que realmente fueron
 // aprobadas por un admin. Para cualquier subcuenta adicional, o para dejar
 // de usar una, el cliente solicita y el admin decide — nunca crea ni
-// elimina directamente.
+// desactiva directamente. Una subcuenta desactivada NUNCA se elimina: solo
+// deja de aparecer aquí hasta que un admin la reactive.
 export default function SubaccountsPage() {
   const { t, language } = useLanguage();
   const [subaccounts, setSubaccounts] = useState(null);
@@ -27,10 +28,10 @@ export default function SubaccountsPage() {
   const [requesting, setRequesting] = useState(false);
   const [requestError, setRequestError] = useState('');
 
-  const [deleteTarget, setDeleteTarget] = useState(null);
-  const [deleteReason, setDeleteReason] = useState('');
-  const [deleting, setDeleting] = useState(false);
-  const [deleteError, setDeleteError] = useState('');
+  const [deactivateTarget, setDeactivateTarget] = useState(null);
+  const [deactivateReason, setDeactivateReason] = useState('');
+  const [deactivating, setDeactivating] = useState(false);
+  const [deactivateError, setDeactivateError] = useState('');
 
   const [showHistory, setShowHistory] = useState(false);
 
@@ -46,13 +47,13 @@ export default function SubaccountsPage() {
   };
   useEffect(load, []);
   // Actualización sin refresh manual: si un admin aprueba/rechaza una
-  // solicitud, o revela una subcuenta, aparece solo sin que el cliente
-  // tenga que recargar.
+  // solicitud, o activa/desactiva una subcuenta, aparece solo sin que el
+  // cliente tenga que recargar.
   usePolling(load, 8000);
 
   const pendingCreateRequest = requests.find((r) => r.type === 'CREATE' && r.status === 'PENDING');
-  const pendingDeleteBySubaccountId = new Set(
-    requests.filter((r) => r.type === 'DELETE' && r.status === 'PENDING').map((r) => r.apiSubaccountId)
+  const pendingDeactivateBySubaccountId = new Set(
+    requests.filter((r) => r.type === 'DEACTIVATE' && r.status === 'PENDING').map((r) => r.apiSubaccountId)
   );
   const reachedMax = activeCount >= maxSubaccounts;
 
@@ -71,18 +72,18 @@ export default function SubaccountsPage() {
     }
   };
 
-  const submitDeleteRequest = async () => {
-    setDeleting(true);
-    setDeleteError('');
+  const submitDeactivateRequest = async () => {
+    setDeactivating(true);
+    setDeactivateError('');
     try {
-      await api.post(`/client/api-subaccounts/${deleteTarget.id}/requests/delete`, { reason: deleteReason || undefined });
-      setDeleteTarget(null);
-      setDeleteReason('');
+      await api.post(`/client/api-subaccounts/${deactivateTarget.id}/requests/deactivate`, { reason: deactivateReason || undefined });
+      setDeactivateTarget(null);
+      setDeactivateReason('');
       load();
     } catch (err) {
-      setDeleteError(translateBackendMessage(err.message, language));
+      setDeactivateError(translateBackendMessage(err.message, language));
     } finally {
-      setDeleting(false);
+      setDeactivating(false);
     }
   };
 
@@ -125,7 +126,7 @@ export default function SubaccountsPage() {
           {subaccounts.map((s) => {
             const status = statusOf(apiStatusMap, s.status, 'PENDIENTE');
             const model = s.clientModel?.model ? getLocalizedModel(s.clientModel.model, language) : null;
-            const pendingDelete = pendingDeleteBySubaccountId.has(s.id);
+            const pendingDeactivate = pendingDeactivateBySubaccountId.has(s.id);
             return (
               <div key={s.id} className="qlc-card" style={s.isPrincipal ? { borderColor: 'var(--qlc-gold)' } : undefined}>
                 <Link to={`/client/api-subaccounts/${s.id}`} style={{ display: 'block', color: 'inherit', textDecoration: 'none' }}>
@@ -147,16 +148,16 @@ export default function SubaccountsPage() {
                 </Link>
                 {!s.isPrincipal && (
                   <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--qlc-line)' }}>
-                    {pendingDelete ? (
-                      <span className="qlc-badge warn">{t('clientSubaccounts.pendingDeleteNotice')}</span>
+                    {pendingDeactivate ? (
+                      <span className="qlc-badge warn">{t('clientSubaccounts.pendingDeactivateNotice')}</span>
                     ) : (
                       <button
                         type="button"
                         className="qlc-btn ghost"
                         style={{ fontSize: 12 }}
-                        onClick={() => setDeleteTarget(s)}
+                        onClick={() => setDeactivateTarget(s)}
                       >
-                        {t('clientSubaccounts.requestDeletion')}
+                        {t('clientSubaccounts.requestDeactivation')}
                       </button>
                     )}
                   </div>
@@ -182,7 +183,7 @@ export default function SubaccountsPage() {
               {requests.map((r) => (
                 <li key={r.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, paddingBottom: 8 }}>
                   <span style={{ fontSize: 13 }}>
-                    {r.type === 'CREATE' ? t('clientSubaccounts.requestTypeCreate') : t('clientSubaccounts.requestTypeDelete')}
+                    {r.type === 'CREATE' ? t('clientSubaccounts.requestTypeCreate') : t('clientSubaccounts.requestTypeDeactivate')}
                     {r.apiSubaccount && ` — ${r.apiSubaccount.identifier || `#${r.apiSubaccount.slotIndex}`}`}
                     <div style={{ fontSize: 11, color: 'var(--qlc-muted2)' }}>{new Date(r.requestedAt).toLocaleString()}</div>
                     {r.reviewNote && <div style={{ fontSize: 11, color: 'var(--qlc-muted2)' }}>{r.reviewNote}</div>}
@@ -229,35 +230,35 @@ export default function SubaccountsPage() {
         </Modal>
       )}
 
-      {deleteTarget && (
+      {deactivateTarget && (
         <Modal
-          title={t('clientSubaccounts.requestDeletion')}
-          subtitle={deleteTarget.identifier || `#${deleteTarget.slotIndex}`}
+          title={t('clientSubaccounts.requestDeactivation')}
+          subtitle={deactivateTarget.identifier || `#${deactivateTarget.slotIndex}`}
           onClose={() => {
-            setDeleteTarget(null);
-            setDeleteReason('');
-            setDeleteError('');
+            setDeactivateTarget(null);
+            setDeactivateReason('');
+            setDeactivateError('');
           }}
           width={440}
         >
           <p style={{ color: 'var(--qlc-muted)', fontSize: 13, lineHeight: 1.6, marginTop: 0 }}>
-            {t('clientSubaccounts.deleteRequestNotice')}
+            {t('clientSubaccounts.deactivateRequestNotice')}
           </p>
           <label className="qlc-label">{t('clientSubaccounts.reasonLabelOptional')}</label>
           <textarea
             className="qlc-textarea"
             rows={3}
-            value={deleteReason}
-            onChange={(e) => setDeleteReason(e.target.value)}
+            value={deactivateReason}
+            onChange={(e) => setDeactivateReason(e.target.value)}
             placeholder={t('clientSubaccounts.reasonPlaceholder')}
           />
-          {deleteError && <div className="qlc-field-error">{deleteError}</div>}
+          {deactivateError && <div className="qlc-field-error">{deactivateError}</div>}
           <div className="qlc-form-actions">
-            <button className="qlc-btn ghost" onClick={() => setDeleteTarget(null)} disabled={deleting}>
+            <button className="qlc-btn ghost" onClick={() => setDeactivateTarget(null)} disabled={deactivating}>
               {t('modals.cancel')}
             </button>
-            <button className="qlc-btn danger" onClick={submitDeleteRequest} disabled={deleting}>
-              {deleting ? t('common.sending') : t('clientSubaccounts.sendRequest')}
+            <button className="qlc-btn danger" onClick={submitDeactivateRequest} disabled={deactivating}>
+              {deactivating ? t('common.sending') : t('clientSubaccounts.sendRequest')}
             </button>
           </div>
         </Modal>
