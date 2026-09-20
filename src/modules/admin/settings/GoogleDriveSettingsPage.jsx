@@ -259,6 +259,7 @@ export default function GoogleDriveSettingsPage() {
               <p style={{ margin: '6px 0 0', fontSize: 12, color: 'var(--qlc-danger)' }}>{translateBackendMessage(config.connectionError, language)}</p>
             )}
             <p style={{ margin: '6px 0 0', fontSize: 11 }}>{t('adminDrive.oauthExpectedAccountNotice')}</p>
+            <p style={{ margin: '6px 0 0', fontSize: 11 }}>{t('adminDrive.oauthScopeNotice')}</p>
           </div>
 
           <div style={{ marginBottom: 18 }}>
