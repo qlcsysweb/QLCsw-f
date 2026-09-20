@@ -234,16 +234,17 @@ export default function ClientsListPage() {
 
   const accountStatusMap = ACCOUNT_STATUS(t);
 
-  // AUDITORÍA QLC PARTE 9 — cola de solicitudes de subcuenta/API pendientes,
-  // visible en el mismo lugar donde el admin ya administra clientes.
+  // GESTIÓN DINÁMICA DE SUBCUENTAS — cola de solicitudes de creación/
+  // eliminación pendientes, visible en el mismo lugar donde el admin ya
+  // administra clientes.
   const loadPendingRequests = () => {
-    api.get('/admin/subaccount-requests').then(({ data }) => setPendingRequests(data.requests));
+    api.get('/admin/subaccount-requests', { params: { status: 'PENDING' } }).then(({ data }) => setPendingRequests(data.requests));
   };
   useEffect(loadPendingRequests, []);
   usePolling(loadPendingRequests, 8000);
 
-  const rejectSubaccountRequest = async (clientId) => {
-    await api.post(`/admin/clients/${clientId}/subaccount-request/reject`);
+  const rejectSubaccountRequest = async (requestId) => {
+    await api.post(`/admin/subaccount-requests/${requestId}/reject`);
     loadPendingRequests();
   };
 
@@ -302,20 +303,24 @@ export default function ClientsListPage() {
           </h3>
           <ul className="qlc-plain-list">
             {pendingRequests.map((r) => (
-              <li key={r.clientId} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, paddingBottom: 8 }}>
+              <li key={r.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, paddingBottom: 8 }}>
                 <span style={{ fontSize: 13 }}>
-                  <strong>{r.username || '—'}</strong> — {r.firstName} {r.lastName}
-                  <span style={{ color: 'var(--qlc-muted2)' }}> ({r.email})</span>
+                  <strong>{r.client.username || '—'}</strong> — {r.client.firstName} {r.client.lastName}
+                  <span style={{ color: 'var(--qlc-muted2)' }}> ({r.client.user?.email})</span>
+                  <span className="qlc-badge" style={{ marginLeft: 8 }}>
+                    {r.type === 'CREATE' ? t('clientSubaccounts.requestTypeCreate') : t('clientSubaccounts.requestTypeDelete')}
+                  </span>
                   <div style={{ fontSize: 11, color: 'var(--qlc-muted2)' }}>
                     {t('adminClientsList.requestedOn')} {new Date(r.requestedAt).toLocaleString()}
-                    {r.nextHiddenSubaccount && ` · ${t('adminClientsList.nextSubaccountSlot')} #${r.nextHiddenSubaccount.slotIndex}`}
+                    {r.apiSubaccount && ` · ${r.apiSubaccount.identifier || `#${r.apiSubaccount.slotIndex}`}`}
+                    {r.reason && ` · ${r.reason}`}
                   </div>
                 </span>
                 <span style={{ display: 'flex', gap: 6 }}>
                   <Link className="qlc-btn primary" to={`/admin/clients/${r.clientId}`}>
                     {t('adminClientsList.reviewAndApprove')}
                   </Link>
-                  <button type="button" className="qlc-btn ghost" onClick={() => rejectSubaccountRequest(r.clientId)}>
+                  <button type="button" className="qlc-btn ghost" onClick={() => rejectSubaccountRequest(r.id)}>
                     {t('adminPayments.reject')}
                   </button>
                 </span>

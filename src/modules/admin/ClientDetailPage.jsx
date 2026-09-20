@@ -15,24 +15,17 @@ import CollapsibleSection from '../../components/CollapsibleSection';
 // CORRECCIÓN 7 (bloque de 20) — fila reutilizable para no duplicar el JSX
 // entre subcuentas activas/principal e inactivas colapsadas.
 //
-// CORRECCIÓN (subcuentas ocultas) — una subcuenta numerada nace oculta para
-// el cliente (visibleToClient=false); aquí se ve el badge "Oculta" y el
-// botón para revelarla (onReveal), que pide el capital operativo requerido
-// en el mismo paso.
-function SubaccountRow({ s, id, t, language, apiStatusMap, onReveal }) {
+// GESTIÓN DINÁMICA DE SUBCUENTAS — toda subcuenta activa (removedAt=null)
+// es, por definición, visible para el cliente; ya no existe el concepto de
+// "oculta". En su lugar, cada subcuenta numerada (nunca la PRINCIPAL) puede
+// eliminarse (onRemove) — eliminación lógica: deja de estar activa para el
+// cliente, pero su historial se conserva.
+function SubaccountRow({ s, id, t, language, apiStatusMap, onRemove }) {
   const apiStatus = statusOf(apiStatusMap, s.status, 'PENDIENTE');
   const cs = s.conditionsSummary || { confirmed: 0, total: 0, allConfirmed: false };
-  const hidden = !s.isPrincipal && !s.visibleToClient;
   return (
     <tr>
-      <td>
-        {s.isPrincipal ? t('clientSubaccounts.principalLabel') : (s.identifier || t('adminClientDetail.unassignedIdentifier'))}
-        {hidden && (
-          <span className="qlc-badge muted" style={{ marginLeft: 6 }}>
-            {t('adminClientDetail.hiddenFromClient')}
-          </span>
-        )}
-      </td>
+      <td>{s.isPrincipal ? t('clientSubaccounts.principalLabel') : (s.identifier || t('adminClientDetail.unassignedIdentifier'))}</td>
       <td>{s.clientModel?.model ? getLocalizedModel(s.clientModel.model, language).name : t('adminClientDetail.noModelAssigned')}</td>
       <td>
         <span className={`qlc-badge ${apiStatus.className}`}>{apiStatus.text}</span>
@@ -46,9 +39,9 @@ function SubaccountRow({ s, id, t, language, apiStatusMap, onReveal }) {
         <Link className="qlc-btn ghost" to={`/admin/clients/${id}/api-subaccounts/${s.id}`}>
           {t('adminClientsList.view')}
         </Link>
-        {hidden && (
-          <button type="button" className="qlc-btn ghost" onClick={() => onReveal(s)}>
-            {t('adminClientDetail.revealAction')}
+        {!s.isPrincipal && (
+          <button type="button" className="qlc-btn ghost" onClick={() => onRemove(s)}>
+            {t('adminClientDetail.removeSubaccount')}
           </button>
         )}
       </td>
@@ -74,10 +67,15 @@ export default function ClientDetailPage() {
   const [newIdentifier, setNewIdentifier] = useState('');
   const [copiedWalletField, setCopiedWalletField] = useState(null);
   const [showInactiveSubaccounts, setShowInactiveSubaccounts] = useState(false);
-  const [revealTarget, setRevealTarget] = useState(null);
-  const [revealCapital, setRevealCapital] = useState('');
-  const [revealing, setRevealing] = useState(false);
-  const [revealError, setRevealError] = useState('');
+  const [removeTarget, setRemoveTarget] = useState(null);
+  const [pendingRequests, setPendingRequests] = useState([]);
+  const [approveCreateTarget, setApproveCreateTarget] = useState(null);
+  const [approveIdentifier, setApproveIdentifier] = useState('');
+  const [approveCapital, setApproveCapital] = useState('');
+  const [approveDeleteTarget, setApproveDeleteTarget] = useState(null);
+  const [rejectTarget, setRejectTarget] = useState(null);
+  const [reviewNote, setReviewNote] = useState('');
+  const [requestActionError, setRequestActionError] = useState('');
   // CORREGIR.xlsx ADMIN 14 — mensajería manual admin→cliente.
   const [messages, setMessages] = useState([]);
   const [messageForm, setMessageForm] = useState({ title: '', message: '' });
@@ -96,12 +94,15 @@ export default function ClientDetailPage() {
       .then(({ data }) => setClient(data.client))
       .catch((err) => setError(translateBackendMessage(err.message, language)));
     api.get(`/admin/clients/${id}/messages`).then(({ data }) => setMessages(data.messages));
+    api
+      .get('/admin/subaccount-requests', { params: { status: 'PENDING' } })
+      .then(({ data }) => setPendingRequests(data.requests.filter((r) => r.clientId === id)));
   };
   useEffect(load, [id]);
   // Actualización sin refresh manual: si el cliente solicita una subcuenta,
   // reporta un pago, sube algo, etc., esta ficha lo refleja sola. Seguro
   // porque `client`/`messages` no alimentan ningún formulario en edición
-  // (newIdentifier, messageForm, orgDraft, revealCapital, etc. son estado
+  // (newIdentifier, messageForm, orgDraft, approveCapital, etc. son estado
   // aparte que esto nunca sobreescribe).
   usePolling(load, 8000);
 
@@ -199,35 +200,58 @@ export default function ClientDetailPage() {
     setTimeout(() => setCopiedWalletField((f) => (f === field ? null : f)), 2000);
   };
 
-  // CORRECCIÓN (subcuentas ocultas) — revelar exige capturar el capital
-  // operativo requerido en el mismo paso (si la subcuenta todavía no lo
-  // tenía), para que el cliente nunca vea "pendiente de configuración"
-  // justo cuando se le habilita.
-  const openReveal = (s) => {
-    setRevealTarget(s);
-    setRevealCapital(s.requiredCapital != null ? String(s.requiredCapital) : '');
-    setRevealError('');
+  // GESTIÓN DINÁMICA DE SUBCUENTAS — eliminación lógica desde el panel admin
+  // (sin pasar por una solicitud previa del cliente). Confirmación de dos
+  // pasos porque es una acción sensible, aunque nunca borra el historial.
+  const confirmRemoveSubaccount = async () => {
+    await api.post(`/admin/clients/${id}/api-subaccounts/${removeTarget.id}/remove`);
+    flash(t('adminClientDetail.subaccountRemoved'));
+    load();
   };
 
-  const confirmReveal = async () => {
-    if (!revealCapital || Number(revealCapital) <= 0) {
-      setRevealError(t('adminClientDetail.revealCapitalRequired'));
-      return;
-    }
-    setRevealing(true);
-    setRevealError('');
+  const openApproveCreate = (request) => {
+    setApproveCreateTarget(request);
+    setApproveIdentifier('');
+    setApproveCapital('');
+    setRequestActionError('');
+  };
+
+  const confirmApproveCreate = async () => {
+    setRequestActionError('');
     try {
-      await api.patch(`/admin/api-subaccounts/${revealTarget.id}`, {
-        visibleToClient: true,
-        requiredCapital: Number(revealCapital),
+      await api.post(`/admin/subaccount-requests/${approveCreateTarget.id}/approve-create`, {
+        ...(approveIdentifier ? { identifier: approveIdentifier } : {}),
+        ...(approveCapital ? { requiredCapital: Number(approveCapital) } : {}),
       });
-      setRevealTarget(null);
-      flash(t('adminClientDetail.subaccountRevealed'));
+      setApproveCreateTarget(null);
+      flash(t('adminClientDetail.requestApproved'));
       load();
     } catch (err) {
-      setRevealError(translateBackendMessage(err.message, language));
-    } finally {
-      setRevealing(false);
+      setRequestActionError(translateBackendMessage(err.message, language));
+    }
+  };
+
+  const confirmApproveDelete = async () => {
+    await api.post(`/admin/subaccount-requests/${approveDeleteTarget.id}/approve-delete`);
+    flash(t('adminClientDetail.requestApproved'));
+    load();
+  };
+
+  const openReject = (request) => {
+    setRejectTarget(request);
+    setReviewNote('');
+    setRequestActionError('');
+  };
+
+  const confirmReject = async () => {
+    setRequestActionError('');
+    try {
+      await api.post(`/admin/subaccount-requests/${rejectTarget.id}/reject`, { reviewNote: reviewNote || undefined });
+      setRejectTarget(null);
+      flash(t('adminClientDetail.requestRejected'));
+      load();
+    } catch (err) {
+      setRequestActionError(translateBackendMessage(err.message, language));
     }
   };
 
@@ -251,8 +275,12 @@ export default function ClientDetailPage() {
 
   const clientAccStatus = statusOf(accountStatusMap, client.status);
   const subaccounts = client.apiSubaccounts || [];
+  // GESTIÓN DINÁMICA DE SUBCUENTAS — `client.apiSubaccounts` trae TODO
+  // (incluidas las eliminadas, para que el admin conserve acceso a su
+  // historial); la vista principal solo debe considerar las activas.
+  const numberedSubaccounts = subaccounts.filter((s) => !s.isPrincipal && !s.removedAt);
+  const removedSubaccounts = subaccounts.filter((s) => !s.isPrincipal && s.removedAt);
   // La cuenta PRINCIPAL (isPrincipal) nunca cuenta contra el máximo de 20.
-  const numberedSubaccounts = subaccounts.filter((s) => !s.isPrincipal);
   const canAddSubaccount = numberedSubaccounts.length < 20;
   // CORRECCIÓN 7 (bloque de 20) — por defecto solo se listan las
   // subcuentas ACTIVAS (conectadas); las inactivas (desconectadas o
@@ -308,9 +336,39 @@ export default function ClientDetailPage() {
 
       {message && <div className="qlc-card" style={{ borderColor: 'var(--qlc-ok-border)', marginBottom: 16 }}>{message}</div>}
 
-      {client.subaccountRequestedAt && (
+      {pendingRequests.length > 0 && (
         <div className="qlc-card" style={{ borderColor: 'var(--qlc-gold)', marginBottom: 16 }}>
-          {t('adminClientDetail.subaccountRequestBanner')} {new Date(client.subaccountRequestedAt).toLocaleString()}
+          <h3 style={{ marginTop: 0 }}>
+            {t('adminClientDetail.pendingRequestsTitle')} ({pendingRequests.length})
+          </h3>
+          <ul className="qlc-plain-list">
+            {pendingRequests.map((r) => (
+              <li key={r.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, paddingBottom: 8 }}>
+                <span style={{ fontSize: 13 }}>
+                  {r.type === 'CREATE' ? t('clientSubaccounts.requestTypeCreate') : t('clientSubaccounts.requestTypeDelete')}
+                  {r.apiSubaccount && ` — ${r.apiSubaccount.identifier || `#${r.apiSubaccount.slotIndex}`}`}
+                  <div style={{ fontSize: 11, color: 'var(--qlc-muted2)' }}>
+                    {new Date(r.requestedAt).toLocaleString()}
+                    {r.reason && ` · ${r.reason}`}
+                  </div>
+                </span>
+                <span style={{ display: 'flex', gap: 6 }}>
+                  {r.type === 'CREATE' ? (
+                    <button className="qlc-btn primary" onClick={() => openApproveCreate(r)}>
+                      {t('adminClientDetail.approveAction')}
+                    </button>
+                  ) : (
+                    <button className="qlc-btn primary" onClick={() => setApproveDeleteTarget(r)}>
+                      {t('adminClientDetail.approveAction')}
+                    </button>
+                  )}
+                  <button type="button" className="qlc-btn ghost" onClick={() => openReject(r)}>
+                    {t('adminPayments.reject')}
+                  </button>
+                </span>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 
@@ -354,7 +412,7 @@ export default function ClientDetailPage() {
             </thead>
             <tbody>
               {[principalSubaccount, ...activeSubaccounts].filter(Boolean).map((s) => (
-                <SubaccountRow key={s.id} s={s} id={id} t={t} language={language} apiStatusMap={apiStatusMap} onReveal={openReveal} />
+                <SubaccountRow key={s.id} s={s} id={id} t={t} language={language} apiStatusMap={apiStatusMap} onRemove={setRemoveTarget} />
               ))}
               {inactiveSubaccounts.length > 0 && (
                 <>
@@ -367,7 +425,7 @@ export default function ClientDetailPage() {
                   </tr>
                   {showInactiveSubaccounts &&
                     inactiveSubaccounts.map((s) => (
-                      <SubaccountRow key={s.id} s={s} id={id} t={t} language={language} apiStatusMap={apiStatusMap} onReveal={openReveal} />
+                      <SubaccountRow key={s.id} s={s} id={id} t={t} language={language} apiStatusMap={apiStatusMap} onRemove={setRemoveTarget} />
                     ))}
                 </>
               )}
@@ -376,8 +434,41 @@ export default function ClientDetailPage() {
         )}
       </CollapsibleSection>
 
+      {removedSubaccounts.length > 0 && (
+        <CollapsibleSection
+          className="qlc-collapsible-mb"
+          title={t('adminClientDetail.removedSubaccountsTitle')}
+          summary={`${removedSubaccounts.length} ${t('adminClientDetail.removedSubaccountsTitle')}`}
+          defaultOpen={false}
+        >
+          <p style={{ color: 'var(--qlc-muted)', fontSize: 12, marginTop: 0 }}>{t('adminClientDetail.removedSubaccountsNotice')}</p>
+          <table className="qlc-table">
+            <thead>
+              <tr>
+                <th>{t('adminClientDetail.identifier')}</th>
+                <th>{t('adminClientDetail.removedAtLabel')}</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {removedSubaccounts.map((s) => (
+                <tr key={s.id}>
+                  <td>{s.identifier || `#${s.slotIndex}`}</td>
+                  <td>{new Date(s.removedAt).toLocaleString()}</td>
+                  <td>
+                    <Link className="qlc-btn ghost" to={`/admin/clients/${id}/api-subaccounts/${s.id}`}>
+                      {t('adminClientsList.view')}
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </CollapsibleSection>
+      )}
+
       <CapitalIncreasePanel clientId={id} />
-      <CapitalRescuePanel clientId={id} subaccounts={subaccounts} />
+      <CapitalRescuePanel clientId={id} subaccounts={numberedSubaccounts} />
 
       <div className="qlc-detail-grid">
         <div className="qlc-card">
@@ -664,30 +755,74 @@ export default function ClientDetailPage() {
         </Modal>
       )}
 
-      {revealTarget && (
+      {removeTarget && (
+        <ConfirmModal
+          title={t('adminClientDetail.removeSubaccountTitle')}
+          message={`${t('adminClientDetail.removeSubaccountMessage')} ${t('adminClientDetail.removeSubaccountKeepsHistory')}`}
+          confirmLabel={t('adminClientDetail.removeSubaccount')}
+          twoStep
+          onClose={() => setRemoveTarget(null)}
+          onConfirm={confirmRemoveSubaccount}
+        />
+      )}
+
+      {approveDeleteTarget && (
+        <ConfirmModal
+          title={t('adminClientDetail.approveDeleteTitle')}
+          message={`${t('adminClientDetail.removeSubaccountMessage')} ${t('adminClientDetail.removeSubaccountKeepsHistory')}`}
+          confirmLabel={t('adminClientDetail.approveAction')}
+          twoStep
+          onClose={() => setApproveDeleteTarget(null)}
+          onConfirm={confirmApproveDelete}
+        />
+      )}
+
+      {approveCreateTarget && (
         <Modal
-          title={t('adminClientDetail.revealTitle')}
-          subtitle={t('adminClientDetail.revealSubtitle')}
-          onClose={() => setRevealTarget(null)}
+          title={t('adminClientDetail.approveCreateTitle')}
+          onClose={() => setApproveCreateTarget(null)}
           width={440}
         >
+          <p style={{ color: 'var(--qlc-muted)', fontSize: 13, marginTop: 0 }}>{t('adminClientDetail.approveCreateHint')}</p>
+          <label className="qlc-label">{t('adminClientDetail.identifierPlaceholder')}</label>
+          <input
+            className="qlc-input"
+            value={approveIdentifier}
+            onChange={(e) => setApproveIdentifier(e.target.value)}
+            placeholder="PCB-1-A-1"
+          />
           <label className="qlc-label">{t('adminClientDetail.revealCapitalLabel')}</label>
           <input
             className="qlc-input"
             type="number"
             step="0.01"
             min="0.01"
-            value={revealCapital}
-            onChange={(e) => setRevealCapital(e.target.value)}
-            autoFocus
+            value={approveCapital}
+            onChange={(e) => setApproveCapital(e.target.value)}
           />
-          {revealError && <div className="qlc-field-error">{revealError}</div>}
+          {requestActionError && <div className="qlc-field-error">{requestActionError}</div>}
           <div className="qlc-form-actions">
-            <button className="qlc-btn ghost" onClick={() => setRevealTarget(null)} disabled={revealing}>
+            <button className="qlc-btn ghost" onClick={() => setApproveCreateTarget(null)}>
               {t('modals.cancel')}
             </button>
-            <button className="qlc-btn primary" onClick={confirmReveal} disabled={revealing}>
-              {revealing ? t('modals.processing') : t('adminClientDetail.revealConfirm')}
+            <button className="qlc-btn primary" onClick={confirmApproveCreate}>
+              {t('adminClientDetail.approveAction')}
+            </button>
+          </div>
+        </Modal>
+      )}
+
+      {rejectTarget && (
+        <Modal title={t('adminClientDetail.rejectRequestTitle')} onClose={() => setRejectTarget(null)} width={440}>
+          <label className="qlc-label">{t('adminClientDetail.reviewNoteLabelOptional')}</label>
+          <textarea className="qlc-textarea" rows={3} value={reviewNote} onChange={(e) => setReviewNote(e.target.value)} />
+          {requestActionError && <div className="qlc-field-error">{requestActionError}</div>}
+          <div className="qlc-form-actions">
+            <button className="qlc-btn ghost" onClick={() => setRejectTarget(null)}>
+              {t('modals.cancel')}
+            </button>
+            <button className="qlc-btn danger" onClick={confirmReject}>
+              {t('adminPayments.reject')}
             </button>
           </div>
         </Modal>

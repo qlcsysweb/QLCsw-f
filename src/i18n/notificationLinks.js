@@ -21,6 +21,13 @@ const ADMIN_GENERAL_PATHS = {
   new_prospect_admin: '/admin/prospects',
 };
 
+// Estas SÍ traen apiSubaccountId en templateParams, pero ese destino ya no
+// existe/no es accesible (la subcuenta fue eliminada) — se revisan ANTES
+// del atajo genérico "si trae apiSubaccountId, ir a su detalle" de abajo.
+const CLIENT_TEMPLATE_OVERRIDE_PATHS = {
+  subaccount_removed: '/client/api-subaccounts',
+};
+
 const CLIENT_GENERAL_PATHS = {
   document_resubmit: '/client/documents',
   document_submitted: '/client/documents',
@@ -70,6 +77,7 @@ export function resolveNotificationLink(notification, role) {
   }
 
   // CLIENT — siempre sobre sus propios recursos, nunca necesita un clientId.
+  if (CLIENT_TEMPLATE_OVERRIDE_PATHS[templateKey]) return { path: CLIENT_TEMPLATE_OVERRIDE_PATHS[templateKey] };
   if (p.apiSubaccountId) return { path: `/client/api-subaccounts/${p.apiSubaccountId}` };
   if (p.caseId) return { path: `/client/support?case=${p.caseId}` };
   if (CLIENT_GENERAL_PATHS[templateKey]) return { path: CLIENT_GENERAL_PATHS[templateKey] };

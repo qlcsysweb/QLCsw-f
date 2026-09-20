@@ -28,6 +28,7 @@ export default function AdminLayout() {
   const NAV_ITEMS = [
     { to: '/admin', label: t('adminNav.dashboard'), end: true },
     { to: '/admin/clients', label: t('adminNav.clients') },
+    { to: '/admin/subaccounts-audit', label: t('adminNav.subaccountsAudit') },
     { to: '/admin/cms', label: t('adminNav.content') },
     { to: '/admin/track-record', label: t('adminNav.trackRecord') },
     { to: '/admin/guides', label: t('adminNav.guides') },

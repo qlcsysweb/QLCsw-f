@@ -1,55 +1,88 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
+import Modal from '../../components/Modal';
 import { API_CONNECTION_STATUS, statusOf } from '../../utils/statusLabels';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { getLocalizedModel } from '../../i18n/bilingualContent';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 import usePolling from '../../hooks/usePolling';
 
-// CORRECCIÓN 11 — el cliente puede tener hasta 20 subcuentas/API, cada una
-// con su propio modelo, contrato, proceso, pagos y estados de cuenta. Esta
-// página es el punto de entrada: cada subcuenta lleva a su propio detalle.
-//
-// CORRECCIÓN (subcuentas ocultas) — de esas 20, el cliente solo ve la
-// PRINCIPAL y las que un admin ya reveló; el resto queda oculto para no
-// abrumar con subcuentas que todavía no usa. Si quiere una más, la solicita
-// aquí y el equipo QLC la habilita manualmente.
+const REQUEST_STATUS_CLASS = { PENDING: 'warn', APPROVED: 'ok', REJECTED: 'danger' };
+
+// GESTIÓN DINÁMICA DE SUBCUENTAS — el cliente ya no ve 20 subcuentas
+// pre-creadas: solo su cuenta PRINCIPAL y las que realmente fueron
+// aprobadas por un admin. Para cualquier subcuenta adicional, o para dejar
+// de usar una, el cliente solicita y el admin decide — nunca crea ni
+// elimina directamente.
 export default function SubaccountsPage() {
   const { t, language } = useLanguage();
   const [subaccounts, setSubaccounts] = useState(null);
-  const [hiddenCount, setHiddenCount] = useState(0);
-  const [requestPending, setRequestPending] = useState(false);
+  const [activeCount, setActiveCount] = useState(0);
+  const [maxSubaccounts, setMaxSubaccounts] = useState(20);
+  const [requests, setRequests] = useState([]);
+
+  const [showNewRequest, setShowNewRequest] = useState(false);
+  const [newReason, setNewReason] = useState('');
   const [requesting, setRequesting] = useState(false);
   const [requestError, setRequestError] = useState('');
-  const [requestOk, setRequestOk] = useState('');
+
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleteReason, setDeleteReason] = useState('');
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
+
+  const [showHistory, setShowHistory] = useState(false);
 
   const apiStatusMap = API_CONNECTION_STATUS(t);
 
   const load = () => {
     api.get('/client/api-subaccounts').then(({ data }) => {
       setSubaccounts(data.subaccounts);
-      setHiddenCount(data.hiddenCount || 0);
-      setRequestPending(Boolean(data.requestPending));
+      setActiveCount(data.activeCount);
+      setMaxSubaccounts(data.maxSubaccounts);
+      setRequests(data.requests || []);
     });
   };
   useEffect(load, []);
-  // Actualización sin refresh manual: si un admin revela una subcuenta
-  // oculta, aparece sola en esta lista sin que el cliente tenga que recargar.
+  // Actualización sin refresh manual: si un admin aprueba/rechaza una
+  // solicitud, o revela una subcuenta, aparece solo sin que el cliente
+  // tenga que recargar.
   usePolling(load, 8000);
 
-  const requestAdditional = async () => {
+  const pendingCreateRequest = requests.find((r) => r.type === 'CREATE' && r.status === 'PENDING');
+  const pendingDeleteBySubaccountId = new Set(
+    requests.filter((r) => r.type === 'DELETE' && r.status === 'PENDING').map((r) => r.apiSubaccountId)
+  );
+  const reachedMax = activeCount >= maxSubaccounts;
+
+  const submitNewRequest = async () => {
     setRequesting(true);
     setRequestError('');
-    setRequestOk('');
     try {
-      await api.post('/client/api-subaccounts/request-additional');
-      setRequestOk(t('clientSubaccounts.requestSentOk'));
+      await api.post('/client/api-subaccounts/requests', { reason: newReason || undefined });
+      setShowNewRequest(false);
+      setNewReason('');
       load();
     } catch (err) {
       setRequestError(translateBackendMessage(err.message, language));
     } finally {
       setRequesting(false);
+    }
+  };
+
+  const submitDeleteRequest = async () => {
+    setDeleting(true);
+    setDeleteError('');
+    try {
+      await api.post(`/client/api-subaccounts/${deleteTarget.id}/requests/delete`, { reason: deleteReason || undefined });
+      setDeleteTarget(null);
+      setDeleteReason('');
+      load();
+    } catch (err) {
+      setDeleteError(translateBackendMessage(err.message, language));
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -61,18 +94,29 @@ export default function SubaccountsPage() {
       <h1 style={{ marginTop: 0 }}>{t('clientSubaccounts.title')}</h1>
       <p style={{ color: 'var(--qlc-muted)', fontSize: 13, maxWidth: 640 }}>{t('clientSubaccounts.intro')}</p>
 
-      {hiddenCount > 0 && (
-        <div className="qlc-card" style={{ marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-          <p style={{ margin: 0, fontSize: 13, color: 'var(--qlc-muted)' }}>
-            {requestPending ? t('clientSubaccounts.requestPending') : t('clientSubaccounts.requestIntro')}
-          </p>
-          <button className="qlc-btn ghost" disabled={requesting || requestPending} onClick={requestAdditional}>
-            {requesting ? t('common.sending') : t('clientSubaccounts.requestAdditional')}
-          </button>
+      <div
+        className="qlc-card"
+        style={{ marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}
+      >
+        <div>
+          <strong style={{ fontSize: 15 }}>
+            {t('clientSubaccounts.activeCountLabel')}: {activeCount} {t('clientSubaccounts.of')} {maxSubaccounts}
+          </strong>
+          {pendingCreateRequest && (
+            <p style={{ margin: '6px 0 0', fontSize: 12, color: 'var(--qlc-warn)' }}>
+              {t('clientSubaccounts.pendingCreateNotice')}
+            </p>
+          )}
         </div>
-      )}
-      {requestError && <p style={{ color: 'var(--qlc-danger)', fontSize: 13 }}>{requestError}</p>}
-      {requestOk && <p style={{ color: 'var(--qlc-ok)', fontSize: 13 }}>{requestOk}</p>}
+        <button
+          className="qlc-btn primary"
+          disabled={reachedMax || Boolean(pendingCreateRequest)}
+          title={reachedMax ? t('clientSubaccounts.maxReached') : ''}
+          onClick={() => setShowNewRequest(true)}
+        >
+          + {t('clientSubaccounts.requestAdditional')}
+        </button>
+      </div>
 
       {subaccounts.length === 0 ? (
         <div className="qlc-empty">{t('clientSubaccounts.none')}</div>
@@ -81,32 +125,142 @@ export default function SubaccountsPage() {
           {subaccounts.map((s) => {
             const status = statusOf(apiStatusMap, s.status, 'PENDIENTE');
             const model = s.clientModel?.model ? getLocalizedModel(s.clientModel.model, language) : null;
+            const pendingDelete = pendingDeleteBySubaccountId.has(s.id);
             return (
-              <Link
-                key={s.id}
-                to={`/client/api-subaccounts/${s.id}`}
-                className="qlc-card"
-                style={{ display: 'block', ...(s.isPrincipal ? { borderColor: 'var(--qlc-gold)' } : {}) }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <h3 style={{ margin: 0 }}>
-                    {s.isPrincipal ? t('clientSubaccounts.principalLabel') : `${t('clientSubaccounts.subaccountLabel')} #${s.slotIndex}`}
-                  </h3>
-                  <span className={`qlc-badge ${status.className}`}>{status.text}</span>
-                </div>
-                <p style={{ color: 'var(--qlc-muted)', fontSize: 12, marginTop: 4, marginBottom: 4 }}>
-                  {t('clientSubaccounts.operatorUser')}: {s.identifier || t('clientSubaccounts.unassignedIdentifier')}
-                </p>
-                <p style={{ color: 'var(--qlc-muted)', fontSize: 13, marginBottom: 4 }}>
-                  {t('clientSubaccounts.model')}: {model ? model.name : t('clientSubaccounts.noModel')}
-                </p>
-                <p style={{ color: 'var(--qlc-muted2)', fontSize: 12 }}>
-                  {s.process?.isActivated ? t('clientSubaccounts.activated') : t('clientSubaccounts.inProcess')}
-                </p>
-              </Link>
+              <div key={s.id} className="qlc-card" style={s.isPrincipal ? { borderColor: 'var(--qlc-gold)' } : undefined}>
+                <Link to={`/client/api-subaccounts/${s.id}`} style={{ display: 'block', color: 'inherit', textDecoration: 'none' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <h3 style={{ margin: 0 }}>
+                      {s.isPrincipal ? t('clientSubaccounts.principalLabel') : `${t('clientSubaccounts.subaccountLabel')} #${s.slotIndex}`}
+                    </h3>
+                    <span className={`qlc-badge ${status.className}`}>{status.text}</span>
+                  </div>
+                  <p style={{ color: 'var(--qlc-muted)', fontSize: 12, marginTop: 4, marginBottom: 4 }}>
+                    {t('clientSubaccounts.operatorUser')}: {s.identifier || t('clientSubaccounts.unassignedIdentifier')}
+                  </p>
+                  <p style={{ color: 'var(--qlc-muted)', fontSize: 13, marginBottom: 4 }}>
+                    {t('clientSubaccounts.model')}: {model ? model.name : t('clientSubaccounts.noModel')}
+                  </p>
+                  <p style={{ color: 'var(--qlc-muted2)', fontSize: 12, marginBottom: 0 }}>
+                    {s.process?.isActivated ? t('clientSubaccounts.activated') : t('clientSubaccounts.inProcess')}
+                  </p>
+                </Link>
+                {!s.isPrincipal && (
+                  <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--qlc-line)' }}>
+                    {pendingDelete ? (
+                      <span className="qlc-badge warn">{t('clientSubaccounts.pendingDeleteNotice')}</span>
+                    ) : (
+                      <button
+                        type="button"
+                        className="qlc-btn ghost"
+                        style={{ fontSize: 12 }}
+                        onClick={() => setDeleteTarget(s)}
+                      >
+                        {t('clientSubaccounts.requestDeletion')}
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
             );
           })}
         </div>
+      )}
+
+      {requests.length > 0 && (
+        <div className="qlc-card" style={{ marginTop: 20 }}>
+          <button
+            type="button"
+            className="qlc-btn ghost"
+            onClick={() => setShowHistory((v) => !v)}
+            style={{ marginBottom: showHistory ? 12 : 0 }}
+          >
+            {showHistory ? '▾' : '▸'} {t('clientSubaccounts.requestHistoryTitle')} ({requests.length})
+          </button>
+          {showHistory && (
+            <ul className="qlc-plain-list">
+              {requests.map((r) => (
+                <li key={r.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, paddingBottom: 8 }}>
+                  <span style={{ fontSize: 13 }}>
+                    {r.type === 'CREATE' ? t('clientSubaccounts.requestTypeCreate') : t('clientSubaccounts.requestTypeDelete')}
+                    {r.apiSubaccount && ` — ${r.apiSubaccount.identifier || `#${r.apiSubaccount.slotIndex}`}`}
+                    <div style={{ fontSize: 11, color: 'var(--qlc-muted2)' }}>{new Date(r.requestedAt).toLocaleString()}</div>
+                    {r.reviewNote && <div style={{ fontSize: 11, color: 'var(--qlc-muted2)' }}>{r.reviewNote}</div>}
+                  </span>
+                  <span className={`qlc-badge ${REQUEST_STATUS_CLASS[r.status] || 'muted'}`}>
+                    {t(`clientSubaccounts.requestStatus${r.status}`)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+
+      {showNewRequest && (
+        <Modal
+          title={t('clientSubaccounts.requestAdditional')}
+          onClose={() => {
+            setShowNewRequest(false);
+            setRequestError('');
+          }}
+          width={440}
+        >
+          <p style={{ color: 'var(--qlc-muted)', fontSize: 13, marginTop: 0 }}>
+            {t('clientSubaccounts.activeCountLabel')}: {activeCount} {t('clientSubaccounts.of')} {maxSubaccounts}
+          </p>
+          <label className="qlc-label">{t('clientSubaccounts.reasonLabelOptional')}</label>
+          <textarea
+            className="qlc-textarea"
+            rows={3}
+            value={newReason}
+            onChange={(e) => setNewReason(e.target.value)}
+            placeholder={t('clientSubaccounts.reasonPlaceholder')}
+          />
+          {requestError && <div className="qlc-field-error">{requestError}</div>}
+          <div className="qlc-form-actions">
+            <button className="qlc-btn ghost" onClick={() => setShowNewRequest(false)} disabled={requesting}>
+              {t('modals.cancel')}
+            </button>
+            <button className="qlc-btn primary" onClick={submitNewRequest} disabled={requesting}>
+              {requesting ? t('common.sending') : t('clientSubaccounts.sendRequest')}
+            </button>
+          </div>
+        </Modal>
+      )}
+
+      {deleteTarget && (
+        <Modal
+          title={t('clientSubaccounts.requestDeletion')}
+          subtitle={deleteTarget.identifier || `#${deleteTarget.slotIndex}`}
+          onClose={() => {
+            setDeleteTarget(null);
+            setDeleteReason('');
+            setDeleteError('');
+          }}
+          width={440}
+        >
+          <p style={{ color: 'var(--qlc-muted)', fontSize: 13, lineHeight: 1.6, marginTop: 0 }}>
+            {t('clientSubaccounts.deleteRequestNotice')}
+          </p>
+          <label className="qlc-label">{t('clientSubaccounts.reasonLabelOptional')}</label>
+          <textarea
+            className="qlc-textarea"
+            rows={3}
+            value={deleteReason}
+            onChange={(e) => setDeleteReason(e.target.value)}
+            placeholder={t('clientSubaccounts.reasonPlaceholder')}
+          />
+          {deleteError && <div className="qlc-field-error">{deleteError}</div>}
+          <div className="qlc-form-actions">
+            <button className="qlc-btn ghost" onClick={() => setDeleteTarget(null)} disabled={deleting}>
+              {t('modals.cancel')}
+            </button>
+            <button className="qlc-btn danger" onClick={submitDeleteRequest} disabled={deleting}>
+              {deleting ? t('common.sending') : t('clientSubaccounts.sendRequest')}
+            </button>
+          </div>
+        </Modal>
       )}
     </div>
   );
