@@ -109,7 +109,13 @@ export default function PaymentsPage() {
           }}
         >
           <h3 style={{ marginTop: 0 }}>{t('adminPayments.paymentData')}</h3>
-          {config?.qrUrl && <img src={config.qrUrl} alt="QR de pago" style={{ width: 120, borderRadius: 10, marginBottom: 10 }} />}
+          {(config?.qrDriveFileId || config?.qrUrl) && (
+            <img
+              src={config.qrDriveFileId ? `${API_BASE_URL}/admin/payment-config/qr` : config.qrUrl}
+              alt="QR de pago"
+              style={{ width: 120, borderRadius: 10, marginBottom: 10 }}
+            />
+          )}
           <label className="qlc-label">{t('adminPayments.qrCode')}</label>
           <input className="qlc-input" type="file" accept="image/*" onChange={uploadQr} />
           <label className="qlc-label">{t('adminPayments.currency')}</label>

@@ -1,8 +1,22 @@
 import { useEffect, useState } from 'react';
-import api from '../../../services/api';
+import api, { API_BASE_URL } from '../../../services/api';
 import ConfirmModal from '../../../components/ConfirmModal';
 import { useLanguage } from '../../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../../i18n/backendMessages';
+
+// IMPLEMENTACIÓN DEFINITIVA DE GOOGLE DRIVE — QLC usa el Drive PERSONAL de
+// sistemaweb.qlc@gmail.com (sin Google Workspace), así que ya no existe una
+// cuenta de servicio: el admin autoriza esa cuenta una sola vez con OAuth2,
+// mismo patrón ya usado en Configuración → Correo.
+const OAUTH_CALLBACK_PATH = '/api/drive-config/oauth/callback';
+
+function backendPublicUrlGuess() {
+  try {
+    return new URL(API_BASE_URL).origin;
+  } catch {
+    return API_BASE_URL.replace(/\/api\/?$/, '');
+  }
+}
 
 export default function GoogleDriveSettingsPage() {
   const { t, language } = useLanguage();
@@ -10,15 +24,17 @@ export default function GoogleDriveSettingsPage() {
   const [form, setForm] = useState({
     rootFolderId: '',
     rootFolderName: '',
-    serviceAccountEmail: '',
-    serviceAccountPrivateKey: '',
+    googleClientId: '',
+    googleClientSecret: '',
   });
   const [testResult, setTestResult] = useState(null);
   const [testing, setTesting] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [connecting, setConnecting] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [confirmingDisconnect, setConfirmingDisconnect] = useState(false);
+  const [confirmingTest, setConfirmingTest] = useState(false);
 
   const CAPABILITY_LABELS = {
     canCreate: t('adminDrive.capCreate'),
@@ -36,15 +52,36 @@ export default function GoogleDriveSettingsPage() {
         rootFolderName: data.config.rootFolderName || 'QLC',
       }));
     });
+
   useEffect(() => {
     load();
+  }, []);
+
+  // Al volver de Google (redirección real del navegador, no un XHR), el
+  // backend agrega ?oauth=success|error&... a esta misma URL.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const oauth = params.get('oauth');
+    if (!oauth) return;
+    if (oauth === 'success') {
+      flash(t('adminDrive.oauthSuccessNotice'));
+      load();
+    } else if (oauth === 'error') {
+      setError(params.get('reason') || 'No se pudo conectar con Google.');
+    }
+    params.delete('oauth');
+    params.delete('reason');
+    params.delete('email');
+    const cleanQuery = params.toString();
+    window.history.replaceState({}, '', window.location.pathname + (cleanQuery ? `?${cleanQuery}` : ''));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (!config) return <div className="qlc-empty">{t('adminDrive.loadingConfig')}</div>;
 
   const flash = (msg) => {
     setMessage(msg);
-    setTimeout(() => setMessage(''), 4000);
+    setTimeout(() => setMessage(''), 5000);
   };
 
   const save = async (e) => {
@@ -52,16 +89,12 @@ export default function GoogleDriveSettingsPage() {
     setSaving(true);
     setError('');
     try {
-      const payload = {
-        rootFolderId: form.rootFolderId,
-        rootFolderName: form.rootFolderName,
-        isEnabled: true,
-      };
-      if (form.serviceAccountEmail) payload.serviceAccountEmail = form.serviceAccountEmail;
-      if (form.serviceAccountPrivateKey) payload.serviceAccountPrivateKey = form.serviceAccountPrivateKey;
+      const payload = { rootFolderId: form.rootFolderId, rootFolderName: form.rootFolderName, isEnabled: true };
+      if (form.googleClientId) payload.googleClientId = form.googleClientId;
+      if (form.googleClientSecret) payload.googleClientSecret = form.googleClientSecret;
       const { data } = await api.put('/admin/drive-config', payload);
       setConfig(data.config);
-      setForm((f) => ({ ...f, serviceAccountEmail: '', serviceAccountPrivateKey: '' }));
+      setForm((f) => ({ ...f, googleClientId: '', googleClientSecret: '' }));
       flash(t('adminDrive.saved'));
     } catch (err) {
       setError(translateBackendMessage(err.message, language));
@@ -70,7 +103,23 @@ export default function GoogleDriveSettingsPage() {
     }
   };
 
+  const connectGoogle = async () => {
+    setConnecting(true);
+    setError('');
+    try {
+      const { data } = await api.get('/admin/drive-config/oauth/start');
+      window.location.href = data.url;
+    } catch (err) {
+      setError(translateBackendMessage(err.message, language));
+      setConnecting(false);
+    }
+  };
+
+  // Envía una petición real a Google Drive (verifica el token y la carpeta
+  // raíz). Se pide confirmación explícita antes de disparar — el admin
+  // decide cuándo autorizar la primera prueba real.
   const testConnection = async () => {
+    setConfirmingTest(false);
     setTesting(true);
     setTestResult(null);
     setError('');
@@ -95,9 +144,12 @@ export default function GoogleDriveSettingsPage() {
 
   const statusLabel = config.isConnected
     ? { text: t('adminDrive.connected'), className: 'ok', dot: '●' }
-    : config.hasServiceAccountCreds
+    : config.hasCredentials
     ? { text: t('adminDrive.disconnected'), className: 'danger', dot: '×' }
     : { text: t('adminDrive.notConfigured'), className: 'muted', dot: '—' };
+
+  const canConnectGoogle = Boolean(form.googleClientId || config.hasGoogleOAuthClient);
+  const redirectUri = `${backendPublicUrlGuess()}${OAUTH_CALLBACK_PATH}`;
 
   return (
     <div>
@@ -120,18 +172,10 @@ export default function GoogleDriveSettingsPage() {
           </div>
         )}
 
-        {!config.hasServiceAccountCreds && (
+        {!config.hasCredentials && (
           <div className="qlc-card" style={{ borderColor: 'var(--qlc-warn-border)', marginBottom: 20 }}>
             <p style={{ margin: 0, fontSize: 13 }}>{t('adminDrive.noCredsNotice')}</p>
           </div>
-        )}
-
-        {config.hasServiceAccountCreds && (
-          <p style={{ fontSize: 12, color: 'var(--qlc-muted2)', marginTop: -10, marginBottom: 20 }}>
-            {t('adminDrive.technicalAccountConfigured')}: {config.serviceAccountEmailMasked}
-            {' · '}
-            {config.hasOwnCredentials ? t('adminDrive.credsSourcePanel') : t('adminDrive.credsSourceEnv')}
-          </p>
         )}
 
         <details style={{ marginBottom: 18, fontSize: 12, color: 'var(--qlc-muted2)', border: '1px solid var(--qlc-line)', borderRadius: 8, padding: '10px 14px' }}>
@@ -140,35 +184,68 @@ export default function GoogleDriveSettingsPage() {
             <p style={{ margin: '4px 0 10px', padding: '8px 10px', borderRadius: 6, background: 'var(--qlc-warn-bg, rgba(255,193,7,0.08))', border: '1px solid var(--qlc-warn-border)' }}>
               {t('adminDrive.howToFreeNotice')}
             </p>
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((n) => (
+            {[1, 2, 3, 4, 5, 6].map((n) => (
+              <p key={n} style={{ margin: '4px 0' }}>{t(`adminDrive.howToStep${n}`)}</p>
+            ))}
+            <code style={{ display: 'block', background: 'var(--qlc-panel2, rgba(255,255,255,0.04))', padding: '6px 10px', borderRadius: 6, wordBreak: 'break-all', margin: '4px 0 8px' }}>
+              {redirectUri}
+            </code>
+            {[7, 8, 9, 10].map((n) => (
               <p key={n} style={{ margin: '4px 0' }}>{t(`adminDrive.howToStep${n}`)}</p>
             ))}
           </div>
         </details>
 
         <form onSubmit={save}>
-          <h3 style={{ fontSize: 14, marginTop: 0 }}>{t('adminDrive.credentialsTitle')}</h3>
-          <p style={{ fontSize: 12, color: 'var(--qlc-muted2)', marginTop: -6 }}>{t('adminDrive.credentialsHint')}</p>
-          <label className="qlc-label">{t('adminDrive.serviceAccountEmailLabel')}</label>
+          <h3 style={{ fontSize: 14, marginTop: 0 }}>{t('adminDrive.oauthSectionTitle')}</h3>
+          <label className="qlc-label">{t('adminDrive.oauthClientIdLabel')}</label>
           <input
             className="qlc-input"
-            type="email"
-            value={form.serviceAccountEmail}
-            onChange={(e) => setForm((f) => ({ ...f, serviceAccountEmail: e.target.value }))}
-            placeholder={config.serviceAccountEmailMasked || 'nombre@proyecto.iam.gserviceaccount.com'}
+            value={form.googleClientId}
+            onChange={(e) => setForm((f) => ({ ...f, googleClientId: e.target.value }))}
+            placeholder={config.googleOAuthClientIdMasked || 'xxxxxxxx.apps.googleusercontent.com'}
             disabled={config.isLockedByAnother}
           />
-          <label className="qlc-label">{t('adminDrive.privateKeyLabel')}</label>
-          <textarea
-            className="qlc-textarea"
-            rows={4}
-            value={form.serviceAccountPrivateKey}
-            onChange={(e) => setForm((f) => ({ ...f, serviceAccountPrivateKey: e.target.value }))}
-            placeholder={config.hasOwnCredentials ? '•••••••••••••••••••••••••• (configurada)' : '-----BEGIN PRIVATE KEY-----\n...'}
+          <label className="qlc-label">{t('adminDrive.oauthClientSecretLabel')}</label>
+          <input
+            className="qlc-input"
+            type="password"
+            value={form.googleClientSecret}
+            onChange={(e) => setForm((f) => ({ ...f, googleClientSecret: e.target.value }))}
+            placeholder={config.hasGoogleOAuthClient ? '•••••••••••••••• (configurado)' : 'GOCSPX-xxxxxxxxxxxxxxxx'}
             disabled={config.isLockedByAnother}
           />
-          <p style={{ fontSize: 11, color: 'var(--qlc-muted2)', marginTop: -4, marginBottom: 14 }}>{t('adminDrive.privateKeyHint')}</p>
+          <p style={{ fontSize: 11, color: 'var(--qlc-muted2)', marginTop: -4, marginBottom: 14 }}>{t('adminDrive.oauthClientSecretHint')}</p>
 
+          <div
+            className="qlc-card"
+            style={{ borderColor: config.oauthConnectedEmail ? 'var(--qlc-ok-border)' : 'var(--qlc-warn-border)', marginBottom: 14, padding: '10px 14px' }}
+          >
+            <p style={{ margin: 0, fontSize: 13 }}>
+              {config.oauthConnectedEmail ? (
+                <>
+                  ✓ {t('adminDrive.oauthConnectedAs')}: <strong>{config.oauthConnectedEmailMasked}</strong>
+                </>
+              ) : (
+                t('adminDrive.oauthNotConnectedYet')
+              )}
+            </p>
+            <p style={{ margin: '6px 0 0', fontSize: 11 }}>{t('adminDrive.oauthExpectedAccountNotice')}</p>
+          </div>
+
+          <div style={{ marginBottom: 18 }}>
+            <button
+              type="button"
+              className="qlc-btn ghost"
+              onClick={connectGoogle}
+              disabled={connecting || config.isLockedByAnother || !canConnectGoogle}
+            >
+              {connecting ? t('adminDrive.oauthConnecting') : config.oauthConnectedEmail ? t('adminDrive.oauthReconnectButton') : t('adminDrive.oauthConnectButton')}
+            </button>
+            {!canConnectGoogle && <p style={{ fontSize: 11, color: 'var(--qlc-muted2)', marginTop: 6 }}>{t('adminDrive.oauthNeedsSaveFirst')}</p>}
+          </div>
+
+          <h3 style={{ fontSize: 14, marginTop: 0 }}>{t('adminDrive.folderSectionTitle')}</h3>
           <label className="qlc-label">{t('adminDrive.folderNameLabel')}</label>
           <input
             className="qlc-input"
@@ -186,15 +263,12 @@ export default function GoogleDriveSettingsPage() {
             placeholder="Ej: 1AbCdEfGhIjKlMnOpQrStUvWxYz"
             disabled={config.isLockedByAnother}
           />
-          <p style={{ fontSize: 11, color: 'var(--qlc-muted2)', marginTop: 6 }}>
-            {t('adminDrive.folderIdHint')}
-            {config.usingBootstrapFolder && t('adminDrive.usingBootstrapFolder')}
-          </p>
+          <p style={{ fontSize: 11, color: 'var(--qlc-muted2)', marginTop: 6 }}>{t('adminDrive.folderIdHint')}</p>
 
           {error && <div className="qlc-field-error">{error}</div>}
 
           <div className="qlc-form-actions">
-            <button type="button" className="qlc-btn ghost" onClick={testConnection} disabled={testing}>
+            <button type="button" className="qlc-btn ghost" onClick={() => setConfirmingTest(true)} disabled={testing}>
               {testing ? t('adminDrive.testing') : t('adminDrive.testConnection')}
             </button>
             <button className="qlc-btn primary" disabled={saving || config.isLockedByAnother}>
@@ -205,15 +279,12 @@ export default function GoogleDriveSettingsPage() {
 
         {testResult?.ok && (
           <div className="qlc-card" style={{ marginTop: 18, borderColor: 'var(--qlc-ok-border)' }}>
-            <p style={{ margin: '0 0 10px', fontSize: 13 }}>
-              {t('adminDrive.connectedOk')} "{testResult.folderName}".
-            </p>
-            {testResult.capabilities &&
-              Object.entries(CAPABILITY_LABELS).map(([key, label]) => (
-                <div key={key} style={{ fontSize: 13, marginBottom: 4 }}>
-                  {testResult.capabilities[key] ? '✓' : '×'} {label}
-                </div>
-              ))}
+            <p style={{ margin: '0 0 10px', fontSize: 13 }}>{testResult.message}</p>
+          </div>
+        )}
+        {testResult && !testResult.ok && (
+          <div className="qlc-card" style={{ marginTop: 18, borderColor: 'var(--qlc-danger-border)' }}>
+            <p style={{ margin: 0, fontSize: 13 }}>{testResult.message}</p>
           </div>
         )}
 
@@ -240,6 +311,16 @@ export default function GoogleDriveSettingsPage() {
           confirmLabel={t('adminDrive.disconnect')}
           onClose={() => setConfirmingDisconnect(false)}
           onConfirm={disconnect}
+        />
+      )}
+
+      {confirmingTest && (
+        <ConfirmModal
+          title={t('adminDrive.testTitle')}
+          message={t('adminDrive.testConfirmMessage')}
+          confirmLabel={t('adminDrive.testConnection')}
+          onClose={() => setConfirmingTest(false)}
+          onConfirm={testConnection}
         />
       )}
     </div>

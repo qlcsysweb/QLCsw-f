@@ -597,7 +597,13 @@ export default function ClientDetailPage() {
               {copiedWalletField === 'address' ? t('common.copied') : t('common.copy')}
             </button>
           </p>
-          {client.walletQrUrl && <img src={client.walletQrUrl} alt="QR wallet" style={{ width: 130, borderRadius: 10 }} />}
+          {(client.walletQrDriveFileId || client.walletQrUrl) && (
+            <img
+              src={client.walletQrDriveFileId ? `${API_BASE_URL}/admin/clients/${id}/wallet-qr` : client.walletQrUrl}
+              alt="QR wallet"
+              style={{ width: 130, borderRadius: 10 }}
+            />
+          )}
         </div>
 
         {/* CORREGIR.xlsx ADMIN 14 — mensajería manual admin→cliente. */}

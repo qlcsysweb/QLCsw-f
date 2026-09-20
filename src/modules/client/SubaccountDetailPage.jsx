@@ -476,7 +476,13 @@ export default function SubaccountDetailPage() {
           <h3 style={{ marginTop: 0 }}>{t('clientPayments.paymentDataTitle')}</h3>
           {paymentConfig?.walletAddress ? (
             <>
-              {paymentConfig.qrUrl && <img src={paymentConfig.qrUrl} alt="QR de pago" style={{ width: 130, borderRadius: 10, marginBottom: 10 }} />}
+              {(paymentConfig.qrDriveFileId || paymentConfig.qrUrl) && (
+                <img
+                  src={paymentConfig.qrDriveFileId ? `${API_BASE_URL}/client/payment-config/qr` : paymentConfig.qrUrl}
+                  alt="QR de pago"
+                  style={{ width: 130, borderRadius: 10, marginBottom: 10 }}
+                />
+              )}
               <p style={{ fontSize: 13 }}><strong>{t('clientPayments.currency')}:</strong> {paymentConfig.currency || 'USDT'}</p>
               {paymentConfig.network && <p style={{ fontSize: 13 }}><strong>{t('clientPayments.network')}:</strong> {paymentConfig.network}</p>}
               <p style={{ fontSize: 13, wordBreak: 'break-all' }}><strong>{t('clientPayments.wallet')}:</strong> {paymentConfig.walletAddress}</p>

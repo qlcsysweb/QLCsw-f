@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import api from '../../services/api';
+import api, { API_BASE_URL } from '../../services/api';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 
@@ -104,10 +104,14 @@ export default function WalletPage() {
           </button>
         </form>
 
-        {wallet.walletQrUrl && (
+        {(wallet.hasWalletQrDrive || wallet.walletQrUrl) && (
           <div className="qlc-card">
             <h3 style={{ marginTop: 0 }}>{t('clientWallet.qrTitle')}</h3>
-            <img src={wallet.walletQrUrl} alt="QR wallet" style={{ width: 160, borderRadius: 10 }} />
+            <img
+              src={wallet.hasWalletQrDrive ? `${API_BASE_URL}/client/wallet/qr` : wallet.walletQrUrl}
+              alt="QR wallet"
+              style={{ width: 160, borderRadius: 10 }}
+            />
           </div>
         )}
       </div>
