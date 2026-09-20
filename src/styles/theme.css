@@ -475,3 +475,101 @@ textarea {
     display: none;
   }
 }
+
+/* Secciones/tablas colapsables — mismo look de .qlc-card, con encabezado
+   siempre visible y un cuerpo que se expande/contrae sin perder contenido. */
+.qlc-collapsible {
+  border: 1px solid var(--qlc-line);
+  border-radius: 18px;
+  background: rgba(13, 19, 26, 0.76);
+  overflow: hidden;
+}
+.qlc-collapsible + .qlc-collapsible {
+  margin-top: 16px;
+}
+.qlc-collapsible-mb {
+  margin-bottom: 20px;
+}
+.qlc-collapsible-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+}
+.qlc-collapsible-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  color: var(--qlc-text);
+  font: inherit;
+  text-align: left;
+  flex: 1;
+  min-width: 0;
+}
+.qlc-collapsible-toggle:focus-visible {
+  outline: 2px solid var(--qlc-blue);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+.qlc-collapsible-chevron {
+  display: inline-flex;
+  flex-shrink: 0;
+  color: var(--qlc-muted);
+  transition: transform 0.2s ease;
+}
+.qlc-collapsible-chevron.open {
+  transform: rotate(-180deg);
+}
+.qlc-collapsible-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+.qlc-collapsible-badge {
+  flex-shrink: 0;
+}
+.qlc-collapsible-summary {
+  padding: 0 20px 16px;
+  margin-top: -6px;
+  font-size: 12px;
+  color: var(--qlc-muted);
+}
+.qlc-collapsible-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.25s ease;
+}
+.qlc-collapsible-body.open {
+  grid-template-rows: 1fr;
+}
+.qlc-collapsible-body-inner {
+  overflow: hidden;
+  min-height: 0;
+}
+.qlc-collapsible-body.open .qlc-collapsible-body-inner {
+  padding: 0 20px 20px;
+}
+@media (max-width: 600px) {
+  .qlc-collapsible-header {
+    padding: 14px 16px;
+  }
+  .qlc-collapsible-body.open .qlc-collapsible-body-inner {
+    padding: 0 16px 16px;
+  }
+  .qlc-collapsible-summary {
+    padding: 0 16px 14px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .qlc-collapsible-body {
+    transition: none;
+  }
+  .qlc-collapsible-chevron {
+    transition: none;
+  }
+}

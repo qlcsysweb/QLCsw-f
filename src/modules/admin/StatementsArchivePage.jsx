@@ -15,6 +15,17 @@ export default function StatementsArchivePage() {
   const [statements, setStatements] = useState(null);
   const [filter, setFilter] = useState('active');
   const [error, setError] = useState('');
+  // Archivo de años/periodos: cada año puede minimizarse para no tener que
+  // desplazarse por años completos ya cerrados — nunca se pierden filas,
+  // solo se ocultan hasta que el admin vuelve a expandir ese año.
+  const [collapsedYears, setCollapsedYears] = useState(() => new Set());
+  const toggleYear = (year) =>
+    setCollapsedYears((prev) => {
+      const next = new Set(prev);
+      if (next.has(year)) next.delete(year);
+      else next.add(year);
+      return next;
+    });
   const statementStatusMap = STATEMENT_STATUS(t);
 
   const load = () => {
@@ -117,14 +128,39 @@ export default function StatementsArchivePage() {
             </thead>
             {years.map((year) => {
               const months = Object.keys(groupedByYear[year]).sort((a, b) => b - a);
+              const yearCount = months.reduce((sum, m) => sum + groupedByYear[year][m].length, 0);
+              const isCollapsed = collapsedYears.has(year);
               return (
               <tbody key={year}>
                 <tr>
-                  <td colSpan={13} style={{ background: 'var(--qlc-line)', fontWeight: 700, fontSize: 12 }}>
-                    {year}
+                  <td colSpan={13} style={{ background: 'var(--qlc-line)', padding: 0 }}>
+                    <button
+                      type="button"
+                      onClick={() => toggleYear(year)}
+                      aria-expanded={!isCollapsed}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        width: '100%',
+                        padding: '10px 14px',
+                        background: 'transparent',
+                        border: 'none',
+                        cursor: 'pointer',
+                        fontWeight: 700,
+                        fontSize: 12,
+                        color: 'inherit',
+                        textAlign: 'left',
+                      }}
+                    >
+                      <span style={{ display: 'inline-flex', transition: 'transform 0.2s ease', transform: isCollapsed ? 'rotate(-90deg)' : 'none' }} aria-hidden="true">
+                        ▾
+                      </span>
+                      {year} ({yearCount})
+                    </button>
                   </td>
                 </tr>
-                {months.map((month) => (
+                {!isCollapsed && months.map((month) => (
                   <Fragment key={`${year}-${month}`}>
                     <tr>
                       <td colSpan={13} style={{ fontWeight: 600, fontSize: 11, color: 'var(--qlc-blue2)', paddingTop: 10 }}>

@@ -428,6 +428,20 @@ const es = {
     capUpload: 'Puede subir archivos',
     capDownload: 'Puede descargar archivos',
     capDelete: 'Puede eliminar archivos',
+    howToTitle: 'Cómo configurar Google Drive paso a paso (gratis)',
+    howToFreeNotice: 'Todo este proceso es gratuito: crear el proyecto, habilitar la API y crear la cuenta de servicio no requieren facturación. Si Google Cloud te ofrece "activar los $300 de crédito gratis" o te pide "configurar facturación", NO es necesario para esta integración — puedes omitirlo y continuar sin agregar ninguna tarjeta.',
+    howToStep1: '1. Entra a console.cloud.google.com con la cuenta corporativa de QLC (no una cuenta personal de un cliente).',
+    howToStep2: '2. Arriba, en el selector de proyectos, crea un proyecto nuevo (por ejemplo "QLC") o selecciona uno existente.',
+    howToStep3: '3. Ve a "APIs y servicios" → "Biblioteca" → busca "Google Drive API" → pulsa "Habilitar".',
+    howToStep4: '4. El código de QLC usa una Cuenta de servicio (Service Account), no OAuth2 — es el tipo de credencial correcto porque el backend administra los archivos directamente, sin que ningún cliente ni administrador tenga que iniciar sesión en Google.',
+    howToStep5: '5. Ve a "IAM y administración" → "Cuentas de servicio" → "Crear cuenta de servicio". Ponle un nombre (ej. "qlc-drive") y pulsa "Crear y continuar". No hace falta asignar ningún rol de proyecto — pulsa "Listo".',
+    howToStep6: '6. Abre la cuenta de servicio recién creada → pestaña "Claves" → "Agregar clave" → "Crear clave nueva" → tipo JSON → "Crear". Se descargará un archivo .json — consérvalo en un lugar seguro.',
+    howToStep7: '7. Abre ese archivo JSON descargado y copia dos valores: el campo "client_email" (el Service Account Email) y el campo "private_key" completo, incluyendo las líneas "-----BEGIN PRIVATE KEY-----" y "-----END PRIVATE KEY-----".',
+    howToStep8: '8. Entra a drive.google.com con la cuenta corporativa de QLC y crea una carpeta nueva llamada "QLC" (o el nombre que prefieras) — ahí se guardarán todos los documentos de todos los clientes.',
+    howToStep9: '9. Haz clic derecho sobre esa carpeta → "Compartir" → pega el "client_email" del paso 7 → asígnale el rol "Editor" → "Enviar". Sin este paso, Google Drive rechazará cualquier subida o descarga (error 403).',
+    howToStep10: '10. Abre la carpeta con doble clic y copia el Folder ID: es el texto largo al final de la URL, después de "folders/" (ej. en .../folders/1AbCdEfGhIjKlMnOpQrStUvWxYz, el ID es "1AbCdEfGhIjKlMnOpQrStUvWxYz").',
+    howToStep11: '11. En este panel, pega: "Service Account Email" = client_email (paso 7), "Service Account Private Key" = private_key completo (paso 7), "Nombre de la carpeta principal" = el nombre que le pusiste (paso 8), "Folder ID" = el ID copiado (paso 10). Pulsa "Guardar".',
+    howToStep12: '12. Pulsa "Probar conexión". Si todo quedó bien, verás el estado CONECTADO en verde, el nombre real de la carpeta, y los cuatro permisos (crear, subir, descargar, eliminar) marcados con ✓. Si ves un error, este mismo panel te dirá exactamente cuál (carpeta no encontrada, sin permiso, o credencial inválida).',
   },
 
   adminEmail: {
@@ -1564,6 +1578,7 @@ const es = {
     kicker: 'ESTADOS DE CUENTA',
     title: 'Tus estados de cuenta',
     intro: 'Consulta aquí todos tus estados de cuenta, de cualquier subcuenta/API, organizados por año y subcuenta.',
+    countLabel: 'estados de cuenta',
   },
 
   clientSubaccounts: {
@@ -2286,6 +2301,20 @@ const en = {
     capUpload: 'Can upload files',
     capDownload: 'Can download files',
     capDelete: 'Can delete files',
+    howToTitle: 'How to set up Google Drive step by step (free)',
+    howToFreeNotice: 'This whole process is free: creating the project, enabling the API and creating the service account require no billing. If Google Cloud offers to "activate your $300 free credit" or asks you to "set up billing", it is NOT required for this integration — you can skip it and continue without adding any card.',
+    howToStep1: "1. Go to console.cloud.google.com using QLC's corporate account (not a client's personal account).",
+    howToStep2: '2. At the top, in the project selector, create a new project (e.g. "QLC") or select an existing one.',
+    howToStep3: '3. Go to "APIs & Services" → "Library" → search "Google Drive API" → click "Enable".',
+    howToStep4: "4. QLC's code uses a Service Account, not OAuth2 — this is the correct credential type because the backend manages files directly, without any client or admin having to sign in to Google.",
+    howToStep5: '5. Go to "IAM & Admin" → "Service Accounts" → "Create service account". Give it a name (e.g. "qlc-drive") and click "Create and continue". No project role is needed — click "Done".',
+    howToStep6: '6. Open the newly created service account → "Keys" tab → "Add key" → "Create new key" → type JSON → "Create". A .json file will download — keep it somewhere safe.',
+    howToStep7: '7. Open that downloaded JSON file and copy two values: the "client_email" field (the Service Account Email) and the full "private_key" field, including the "-----BEGIN PRIVATE KEY-----" and "-----END PRIVATE KEY-----" lines.',
+    howToStep8: '8. Go to drive.google.com with the corporate QLC account and create a new folder called "QLC" (or whatever name you prefer) — every client\'s documents will be stored there.',
+    howToStep9: '9. Right-click that folder → "Share" → paste the "client_email" from step 7 → give it the "Editor" role → "Send". Without this step, Google Drive will reject every upload or download (403 error).',
+    howToStep10: '10. Open the folder and copy the Folder ID: it\'s the long text at the end of the URL, after "folders/" (e.g. in .../folders/1AbCdEfGhIjKlMnOpQrStUvWxYz, the ID is "1AbCdEfGhIjKlMnOpQrStUvWxYz").',
+    howToStep11: '11. In this panel, paste: "Service Account Email" = client_email (step 7), "Service Account Private Key" = the full private_key (step 7), "Main folder name" = the name you gave it (step 8), "Folder ID" = the copied ID (step 10). Click "Save".',
+    howToStep12: '12. Click "Test connection". If everything is correct, you\'ll see the CONNECTED status in green, the real folder name, and all four permissions (create, upload, download, delete) checked. If there\'s an error, this same panel will tell you exactly what it is (folder not found, no permission, or invalid credential).',
   },
 
   adminEmail: {
@@ -3417,6 +3446,7 @@ const en = {
     kicker: 'STATEMENTS',
     title: 'Your statements',
     intro: 'Check all your statements here, for any subaccount/API, organized by year and subaccount.',
+    countLabel: 'statements',
   },
 
   clientSubaccounts: {

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../../services/api';
 import ConfirmModal from '../../components/ConfirmModal';
+import CollapsibleSection from '../../components/CollapsibleSection';
 import { APPOINTMENT_STATUS, statusOf } from '../../utils/statusLabels';
 import { formatDateOnly } from '../../utils/cdmxTime';
 import { useLanguage } from '../../i18n/LanguageContext';
@@ -51,10 +52,16 @@ function AvailabilityEditor() {
     }
   };
 
+  const activeDaysSummary = DAY_LABELS.filter((_, dayOfWeek) => slots.some((s) => s.dayOfWeek === dayOfWeek)).join(', ');
+
   return (
-    <div className="qlc-card" style={{ marginBottom: 20 }}>
-      <h3 style={{ marginTop: 0 }}>{t('adminAppointments.weeklyAvailability')}</h3>
-      <p style={{ color: 'var(--qlc-muted)', fontSize: 13 }}>{t('adminAppointments.availabilityIntro')}</p>
+    <CollapsibleSection
+      title={t('adminAppointments.weeklyAvailability')}
+      summary={activeDaysSummary || t('adminAppointments.notAvailable')}
+      defaultOpen={false}
+      className="qlc-collapsible-mb"
+    >
+      <p style={{ color: 'var(--qlc-muted)', fontSize: 13, marginTop: 0 }}>{t('adminAppointments.availabilityIntro')}</p>
       {DAY_LABELS.map((label, dayOfWeek) => {
         const slot = slots.find((s) => s.dayOfWeek === dayOfWeek);
         return (
@@ -96,7 +103,7 @@ function AvailabilityEditor() {
           {saving ? t('common.saving') : t('adminAppointments.saveAvailability')}
         </button>
       </div>
-    </div>
+    </CollapsibleSection>
   );
 }
 

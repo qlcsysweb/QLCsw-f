@@ -134,6 +134,18 @@ export default function GoogleDriveSettingsPage() {
           </p>
         )}
 
+        <details style={{ marginBottom: 18, fontSize: 12, color: 'var(--qlc-muted2)', border: '1px solid var(--qlc-line)', borderRadius: 8, padding: '10px 14px' }}>
+          <summary style={{ cursor: 'pointer', fontWeight: 600, color: 'var(--qlc-text, inherit)' }}>{t('adminDrive.howToTitle')}</summary>
+          <div style={{ marginTop: 10, lineHeight: 1.6 }}>
+            <p style={{ margin: '4px 0 10px', padding: '8px 10px', borderRadius: 6, background: 'var(--qlc-warn-bg, rgba(255,193,7,0.08))', border: '1px solid var(--qlc-warn-border)' }}>
+              {t('adminDrive.howToFreeNotice')}
+            </p>
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((n) => (
+              <p key={n} style={{ margin: '4px 0' }}>{t(`adminDrive.howToStep${n}`)}</p>
+            ))}
+          </div>
+        </details>
+
         <form onSubmit={save}>
           <h3 style={{ fontSize: 14, marginTop: 0 }}>{t('adminDrive.credentialsTitle')}</h3>
           <p style={{ fontSize: 12, color: 'var(--qlc-muted2)', marginTop: -6 }}>{t('adminDrive.credentialsHint')}</p>

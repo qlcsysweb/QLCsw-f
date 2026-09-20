@@ -3,6 +3,7 @@ import api from '../../services/api';
 import { PROSPECT_STATUS, statusOf } from '../../utils/statusLabels';
 import { useLanguage } from '../../i18n/LanguageContext';
 import ConfirmModal from '../../components/ConfirmModal';
+import CollapsibleSection from '../../components/CollapsibleSection';
 
 function CopyEmailButton({ email, t }) {
   const [copied, setCopied] = useState(false);
@@ -141,9 +142,12 @@ export default function ProspectsPage() {
         )}
       </section>
 
-      <section>
-        <h3>{t('adminProspects.registeredTitle')}</h3>
-        <p style={{ color: 'var(--qlc-muted, #8a8f98)', marginTop: -4 }}>{t('adminProspects.registeredIntro')}</p>
+      <CollapsibleSection
+        title={t('adminProspects.registeredTitle')}
+        summary={`${registered.length} ${t('adminProspects.alreadyRegistered')}`}
+        defaultOpen={false}
+      >
+        <p style={{ color: 'var(--qlc-muted, #8a8f98)', marginTop: 0 }}>{t('adminProspects.registeredIntro')}</p>
         {registered.length === 0 ? (
           <div className="qlc-empty">{t('adminProspects.noneRegistered')}</div>
         ) : (
@@ -166,7 +170,7 @@ export default function ProspectsPage() {
             </table>
           </div>
         )}
-      </section>
+      </CollapsibleSection>
 
       {confirmDelete && (
         <ConfirmModal

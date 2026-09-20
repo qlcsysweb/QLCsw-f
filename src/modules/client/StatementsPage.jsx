@@ -4,6 +4,7 @@ import { STATEMENT_STATUS, statusOf } from '../../utils/statusLabels';
 import { formatCdmxDate } from '../../utils/cdmxTime';
 import { useLanguage } from '../../i18n/LanguageContext';
 import CountdownTimer from '../../components/CountdownTimer';
+import CollapsibleSection from '../../components/CollapsibleSection';
 
 // CORREGIR(2).xlsx CLIENTE 39 — el cliente debe poder consultar TODOS sus
 // estados de cuenta (de cualquier subcuenta/API) en un solo lugar,
@@ -41,9 +42,16 @@ export default function StatementsPage() {
       {statements.length === 0 ? (
         <div className="qlc-empty">{t('clientSubaccountDetail.noStatements')}</div>
       ) : (
-        years.map((year) => (
-          <div key={year} className="qlc-card" style={{ marginBottom: 16 }}>
-            <h3 style={{ marginTop: 0 }}>{year}</h3>
+        years.map((year, index) => {
+          const yearCount = Object.values(groupedByYear[year]).reduce((sum, list) => sum + list.length, 0);
+          return (
+          <CollapsibleSection
+            key={year}
+            title={year}
+            summary={`${yearCount} ${t('clientStatements.countLabel')}`}
+            defaultOpen={index === 0}
+            className="qlc-collapsible-mb"
+          >
             {Object.keys(groupedByYear[year]).map((subLabel) => (
               <div key={subLabel} style={{ marginBottom: 14 }}>
                 <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--qlc-blue2)', marginBottom: 6 }}>{subLabel}</div>
@@ -75,8 +83,9 @@ export default function StatementsPage() {
                 </ul>
               </div>
             ))}
-          </div>
-        ))
+          </CollapsibleSection>
+          );
+        })
       )}
     </div>
   );

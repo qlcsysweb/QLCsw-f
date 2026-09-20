@@ -10,6 +10,7 @@ import { getLocalizedModel } from '../../i18n/bilingualContent';
 import CapitalIncreasePanel from './CapitalIncreasePanel';
 import CapitalRescuePanel from './CapitalRescuePanel';
 import usePolling from '../../hooks/usePolling';
+import CollapsibleSection from '../../components/CollapsibleSection';
 
 // CORRECCIÓN 7 (bloque de 20) — fila reutilizable para no duplicar el JSX
 // entre subcuentas activas/principal e inactivas colapsadas.
@@ -313,11 +314,17 @@ export default function ClientDetailPage() {
         </div>
       )}
 
-      <div className="qlc-card" style={{ marginBottom: 20 }}>
-        <h3 style={{ marginTop: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          {t('adminClientDetail.subaccounts')} ({numberedSubaccounts.length}/20)
-          {canAddSubaccount && (
-            <span style={{ display: 'flex', gap: 8 }}>
+      <CollapsibleSection
+        className="qlc-collapsible-mb"
+        title={`${t('adminClientDetail.subaccounts')} (${numberedSubaccounts.length}/20)`}
+        summary={
+          principalSubaccount || activeSubaccounts.length
+            ? `${activeSubaccounts.length + (principalSubaccount ? 1 : 0)} ${t('adminClientDetail.subaccounts')}`
+            : t('adminClientDetail.noSubaccounts')
+        }
+        badge={
+          canAddSubaccount && (
+            <span style={{ display: 'flex', gap: 8 }} onClick={(e) => e.stopPropagation()}>
               <input
                 className="qlc-input"
                 style={{ width: 160 }}
@@ -329,8 +336,9 @@ export default function ClientDetailPage() {
                 {creatingSubaccount ? t('common.saving') : t('adminClientDetail.newSubaccount')}
               </button>
             </span>
-          )}
-        </h3>
+          )
+        }
+      >
         {subaccounts.length === 0 ? (
           <div className="qlc-empty">{t('adminClientDetail.noSubaccounts')}</div>
         ) : (
@@ -366,7 +374,7 @@ export default function ClientDetailPage() {
             </tbody>
           </table>
         )}
-      </div>
+      </CollapsibleSection>
 
       <CapitalIncreasePanel clientId={id} />
       <CapitalRescuePanel clientId={id} subaccounts={subaccounts} />
