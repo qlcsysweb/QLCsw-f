@@ -142,11 +142,17 @@ export default function GoogleDriveSettingsPage() {
     flash(t('adminDrive.disconnectedNotice'));
   };
 
-  const statusLabel = config.isConnected
-    ? { text: t('adminDrive.connected'), className: 'ok', dot: '●' }
-    : config.hasCredentials
-    ? { text: t('adminDrive.disconnected'), className: 'danger', dot: '×' }
-    : { text: t('adminDrive.notConfigured'), className: 'muted', dot: '—' };
+  // CORRECCIÓN — el estado ahora viene de `connectionState`, calculado en
+  // vivo por el backend contra el propio OAuth2 de Google (nunca requiere
+  // haber pulsado "Probar conexión", que además toca la carpeta real de
+  // Drive). Los 4 estados posibles, ver driveConfigService.getStatus().
+  const STATUS_LABELS = {
+    CONNECTED: { text: t('adminDrive.connected'), className: 'ok', dot: '●' },
+    AUTH_ERROR: { text: t('adminDrive.authError'), className: 'danger', dot: '×' },
+    PENDING_AUTHORIZATION: { text: t('adminDrive.pendingAuthorization'), className: 'warn', dot: '◌' },
+    NOT_CONFIGURED: { text: t('adminDrive.notConfigured'), className: 'muted', dot: '—' },
+  };
+  const statusLabel = STATUS_LABELS[config.connectionState] || STATUS_LABELS.NOT_CONFIGURED;
 
   const canConnectGoogle = Boolean(form.googleClientId || config.hasGoogleOAuthClient);
   const redirectUri = `${backendPublicUrlGuess()}${OAUTH_CALLBACK_PATH}`;
@@ -172,7 +178,7 @@ export default function GoogleDriveSettingsPage() {
           </div>
         )}
 
-        {!config.hasCredentials && (
+        {!config.hasGoogleOAuthClient && (
           <div className="qlc-card" style={{ borderColor: 'var(--qlc-warn-border)', marginBottom: 20 }}>
             <p style={{ margin: 0, fontSize: 13 }}>{t('adminDrive.noCredsNotice')}</p>
           </div>
@@ -219,17 +225,39 @@ export default function GoogleDriveSettingsPage() {
 
           <div
             className="qlc-card"
-            style={{ borderColor: config.oauthConnectedEmail ? 'var(--qlc-ok-border)' : 'var(--qlc-warn-border)', marginBottom: 14, padding: '10px 14px' }}
+            style={{
+              borderColor:
+                config.connectionState === 'CONNECTED'
+                  ? 'var(--qlc-ok-border)'
+                  : config.connectionState === 'AUTH_ERROR'
+                  ? 'var(--qlc-danger-border)'
+                  : 'var(--qlc-warn-border)',
+              marginBottom: 14,
+              padding: '10px 14px',
+            }}
           >
+            {/* Nunca se muestra "✓ Conectado" solo porque hay un correo
+                guardado en la fila — eso mostraría una cuenta "fantasma"
+                enmascarada si la autorización ya no es válida. El check
+                verde exige connectionState === 'CONNECTED' (verificado en
+                vivo contra Google en este mismo request). */}
             <p style={{ margin: 0, fontSize: 13 }}>
-              {config.oauthConnectedEmail ? (
+              {config.connectionState === 'CONNECTED' && (
                 <>
                   ✓ {t('adminDrive.oauthConnectedAs')}: <strong>{config.oauthConnectedEmailMasked}</strong>
                 </>
-              ) : (
-                t('adminDrive.oauthNotConnectedYet')
               )}
+              {config.connectionState === 'AUTH_ERROR' && (
+                <>
+                  ⚠ {t('adminDrive.oauthPreviouslyAuthorizedAs')} <strong>{config.oauthConnectedEmailMasked}</strong>, {t('adminDrive.oauthNoLongerValid')}
+                </>
+              )}
+              {(config.connectionState === 'PENDING_AUTHORIZATION' || config.connectionState === 'NOT_CONFIGURED') &&
+                t('adminDrive.oauthNotConnectedYet')}
             </p>
+            {config.connectionState === 'AUTH_ERROR' && config.connectionError && (
+              <p style={{ margin: '6px 0 0', fontSize: 12, color: 'var(--qlc-danger)' }}>{translateBackendMessage(config.connectionError, language)}</p>
+            )}
             <p style={{ margin: '6px 0 0', fontSize: 11 }}>{t('adminDrive.oauthExpectedAccountNotice')}</p>
           </div>
 
@@ -240,7 +268,7 @@ export default function GoogleDriveSettingsPage() {
               onClick={connectGoogle}
               disabled={connecting || config.isLockedByAnother || !canConnectGoogle}
             >
-              {connecting ? t('adminDrive.oauthConnecting') : config.oauthConnectedEmail ? t('adminDrive.oauthReconnectButton') : t('adminDrive.oauthConnectButton')}
+              {connecting ? t('adminDrive.oauthConnecting') : config.hasCredentials ? t('adminDrive.oauthReconnectButton') : t('adminDrive.oauthConnectButton')}
             </button>
             {!canConnectGoogle && <p style={{ fontSize: 11, color: 'var(--qlc-muted2)', marginTop: 6 }}>{t('adminDrive.oauthNeedsSaveFirst')}</p>}
           </div>
@@ -295,7 +323,7 @@ export default function GoogleDriveSettingsPage() {
           </p>
         )}
 
-        {config.isConnected && !config.isLockedByAnother && (
+        {config.hasCredentials && !config.isLockedByAnother && (
           <div className="qlc-form-actions" style={{ marginTop: 20, borderTop: '1px solid var(--qlc-line)', paddingTop: 16 }}>
             <button className="qlc-btn danger" onClick={() => setConfirmingDisconnect(true)}>
               {t('adminDrive.disconnect')}
