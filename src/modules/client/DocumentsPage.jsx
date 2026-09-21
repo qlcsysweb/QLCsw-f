@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import api, { API_BASE_URL } from '../../services/api';
+import api from '../../services/api';
 import ConfirmModal from '../../components/ConfirmModal';
+import DocumentViewerModal from '../../components/DocumentViewerModal';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 
@@ -12,6 +13,7 @@ export default function DocumentsPage() {
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const [viewingDocument, setViewingDocument] = useState(null);
 
   const CATEGORIES = [
     { value: 'identificacion', label: t('clientDocuments.categoryId') },
@@ -78,9 +80,13 @@ export default function DocumentsPage() {
                 <span>
                   {CATEGORIES.find((c) => c.value === d.category)?.label || d.category}
                   <span style={{ color: 'var(--qlc-muted2)', marginLeft: 8, fontSize: 12 }}>
-                    <a href={`${API_BASE_URL}/client/documents/${d.id}/download`} target="_blank" rel="noreferrer">
+                    <button
+                      type="button"
+                      onClick={() => setViewingDocument(d)}
+                      style={{ background: 'none', border: 'none', padding: 0, font: 'inherit', color: 'var(--qlc-blue2)', cursor: 'pointer' }}
+                    >
                       {t('clientDocuments.view')}
-                    </a>
+                    </button>
                   </span>
                 </span>
                 <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -105,6 +111,14 @@ export default function DocumentsPage() {
           </p>
         )}
       </div>
+
+      {viewingDocument && (
+        <DocumentViewerModal
+          url={`/client/documents/${viewingDocument.id}/download`}
+          fileName={viewingDocument.fileName}
+          onClose={() => setViewingDocument(null)}
+        />
+      )}
 
       {confirmDelete && (
         <ConfirmModal

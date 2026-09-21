@@ -1452,6 +1452,12 @@ const es = {
     uploading: 'Subiendo…',
     uploadDocument: 'Subir documento',
     allCategoriesSent: 'Ya enviaste un documento en cada categoría disponible.',
+    viewerTitle: 'Documento',
+    viewerLoading: 'Cargando documento…',
+    viewerErrorNotFound: 'No pudimos encontrar este documento. Puede que haya sido eliminado.',
+    viewerErrorGeneric: 'No pudimos cargar el documento. Intenta nuevamente.',
+    viewerUnsupported: 'Este tipo de archivo no se puede previsualizar aquí. Descárgalo para verlo.',
+    viewerDownload: 'Descargar',
   },
 
   clientApiConnection: {
@@ -3391,6 +3397,12 @@ const en = {
     uploading: 'Uploading…',
     uploadDocument: 'Upload document',
     allCategoriesSent: "You've already submitted a document in every available category.",
+    viewerTitle: 'Document',
+    viewerLoading: 'Loading document…',
+    viewerErrorNotFound: "We couldn't find this document. It may have been deleted.",
+    viewerErrorGeneric: "We couldn't load the document. Please try again.",
+    viewerUnsupported: "This file type can't be previewed here. Download it to view it.",
+    viewerDownload: 'Download',
   },
 
   clientApiConnection: {
