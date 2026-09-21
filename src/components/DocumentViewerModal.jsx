@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Modal from './Modal';
 import api from '../services/api';
+import { triggerBlobDownload } from '../utils/downloadFile';
 import { translateBackendMessage } from '../i18n/backendMessages';
 import { useLanguage } from '../i18n/LanguageContext';
 
@@ -69,12 +70,7 @@ export default function DocumentViewerModal({ url, fileName, onClose }) {
 
   const download = () => {
     if (!blobUrl) return;
-    const a = document.createElement('a');
-    a.href = blobUrl;
-    a.download = fileName || 'documento';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
+    triggerBlobDownload(blobUrl, fileName || 'documento');
   };
 
   const isImage = mimeType.startsWith('image/');

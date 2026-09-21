@@ -3,6 +3,8 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import api, { API_BASE_URL } from '../../services/api';
 import ConfirmModal from '../../components/ConfirmModal';
 import Modal from '../../components/Modal';
+import DocumentViewerModal from '../../components/DocumentViewerModal';
+import { downloadAuthenticatedFile } from '../../utils/downloadFile';
 import { ACCOUNT_STATUS, API_CONNECTION_STATUS, statusOf } from '../../utils/statusLabels';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
@@ -104,11 +106,10 @@ export default function ClientDetailPage() {
   const [messages, setMessages] = useState([]);
   const [messageForm, setMessageForm] = useState({ title: '', message: '' });
   const [sendingMessage, setSendingMessage] = useState(false);
-  // CORREGIR.xlsx ADMIN 07 — organización Año/Periodo/Mes de documentos.
-  const [orgDraft, setOrgDraft] = useState({});
-  // AUDITORÍA QLC PARTE 1 — vista previa embebida (imagen ampliada / PDF
-  // con visor nativo) antes de imprimir, sin salir de la página.
+  // Vista previa autenticada (Blob, nunca la URL directa del backend) — ver
+  // components/DocumentViewerModal.jsx, compartido con el panel del cliente.
   const [previewDoc, setPreviewDoc] = useState(null);
+  const [downloadingDocId, setDownloadingDocId] = useState(null);
 
   const accountStatusMap = ACCOUNT_STATUS(t);
   const apiStatusMap = API_CONNECTION_STATUS(t);
@@ -126,8 +127,8 @@ export default function ClientDetailPage() {
   // Actualización sin refresh manual: si el cliente solicita una subcuenta,
   // reporta un pago, sube algo, etc., esta ficha lo refleja sola. Seguro
   // porque `client`/`messages` no alimentan ningún formulario en edición
-  // (newIdentifier, messageForm, orgDraft, approveCapital, etc. son estado
-  // aparte que esto nunca sobreescribe).
+  // (newIdentifier, messageForm, approveCapital, etc. son estado aparte que
+  // esto nunca sobreescribe).
   usePolling(load, 8000);
 
   const sendMessage = async (e) => {
@@ -143,16 +144,6 @@ export default function ClientDetailPage() {
     } finally {
       setSendingMessage(false);
     }
-  };
-
-  const saveDocOrganization = async (doc) => {
-    const draft = orgDraft[doc.id] || {};
-    await api.patch(`/admin/documents/${doc.id}/organize`, {
-      year: draft.year ?? doc.year ?? null,
-      month: draft.month ?? doc.month ?? null,
-      periodLabel: draft.periodLabel ?? doc.periodLabel ?? null,
-    });
-    load();
   };
 
   const flash = (msg) => {
@@ -178,22 +169,16 @@ export default function ClientDetailPage() {
     load();
   };
 
-  // AUDITORÍA QLC PARTE 1 — el documento se sirve "inline" (ver
-  // documentController.downloadDocument), así que abrirlo en pestaña nueva
-  // ya deja disponible el visor nativo del navegador. Igual que en el
-  // archivo de Estados de Cuenta, intentamos además disparar el diálogo de
-  // impresión automáticamente; si el navegador lo bloquea, el admin puede
-  // imprimir manualmente desde esa misma pestaña.
-  const printDocument = (doc) => {
-    const win = window.open(`${API_BASE_URL}/admin/documents/${doc.id}/download`, '_blank');
-    if (win) {
-      win.onload = () => {
-        try {
-          win.print();
-        } catch {
-          // El admin puede imprimir manualmente desde el visor del navegador.
-        }
-      };
+  // Descarga autenticada por Blob — nunca abre la URL directa del backend
+  // (ver utils/downloadFile.js).
+  const downloadDoc = async (doc) => {
+    setDownloadingDocId(doc.id);
+    try {
+      await downloadAuthenticatedFile(api, `/admin/documents/${doc.id}/download`, doc.fileName);
+    } catch (err) {
+      setError(translateBackendMessage(err.message, language));
+    } finally {
+      setDownloadingDocId(null);
     }
   };
 
@@ -566,77 +551,36 @@ export default function ClientDetailPage() {
           </h3>
           {client.documents?.length ? (
             <ul className="qlc-plain-list">
-              {client.documents.map((d) => {
-                const draft = orgDraft[d.id] || {};
-                return (
-                  <li key={d.id} style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '8px 0', borderBottom: '1px solid var(--qlc-line)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span>
-                        <strong>{d.fileName}</strong>{' '}
-                        <span style={{ color: 'var(--qlc-muted2)' }}>({d.category})</span>
-                        {d.clientEditUnlocked && (
-                          <span className="qlc-badge warn" style={{ marginLeft: 6 }}>
-                            {t('adminClientDetail.unlockedForClient')}
-                          </span>
-                        )}
+              {client.documents.map((d) => (
+                <li key={d.id} className="qlc-doc-card">
+                  <div className="qlc-doc-card-info">
+                    <strong className="qlc-doc-card-name">{d.fileName}</strong>
+                    <span style={{ color: 'var(--qlc-muted2)' }}>({d.category})</span>
+                    {d.clientEditUnlocked && (
+                      <span className="qlc-badge warn">{t('adminClientDetail.unlockedForClient')}</span>
+                    )}
+                    {d._count?.corrections > 0 && (
+                      <span className="qlc-badge ok">
+                        {t('adminClientDetail.correctedBadge').replace('{count}', d._count.corrections)}
                       </span>
-                      <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                        <button type="button" className="qlc-btn primary" onClick={() => setPreviewDoc(d)}>
-                          {t('adminClientDetail.previewDocument')}
-                        </button>
-                        <a
-                          className="qlc-btn ghost"
-                          href={`${API_BASE_URL}/admin/documents/${d.id}/download`}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          {t('adminClientDetail.viewDocument')}
-                        </a>
-                        <button className="qlc-btn ghost" onClick={() => printDocument(d)}>
-                          {t('adminClientDetail.printDocument')}
-                        </button>
-                        <button className="qlc-btn ghost" onClick={() => toggleDocUnlock(d)}>
-                          {d.clientEditUnlocked ? t('adminClientDetail.lockDocument') : t('adminClientDetail.unlockDocument')}
-                        </button>
-                        <button className="qlc-btn ghost" onClick={() => setConfirmDeleteDoc(d)}>
-                          {t('adminClientDetail.delete')}
-                        </button>
-                      </span>
-                    </div>
-                    {/* CORREGIR.xlsx ADMIN 07 — organización Año/Periodo/Mes tipo Drive */}
-                    <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                      <input
-                        className="qlc-input"
-                        style={{ width: 90 }}
-                        type="number"
-                        placeholder={t('adminClientDetail.docYear')}
-                        defaultValue={d.year || ''}
-                        onChange={(e) => setOrgDraft((v) => ({ ...v, [d.id]: { ...v[d.id], year: e.target.value ? Number(e.target.value) : null } }))}
-                      />
-                      <input
-                        className="qlc-input"
-                        style={{ width: 140 }}
-                        placeholder={t('adminClientDetail.docPeriod')}
-                        defaultValue={d.periodLabel || ''}
-                        onChange={(e) => setOrgDraft((v) => ({ ...v, [d.id]: { ...v[d.id], periodLabel: e.target.value || null } }))}
-                      />
-                      <input
-                        className="qlc-input"
-                        style={{ width: 70 }}
-                        type="number"
-                        min={1}
-                        max={12}
-                        placeholder={t('adminClientDetail.docMonth')}
-                        defaultValue={d.month || ''}
-                        onChange={(e) => setOrgDraft((v) => ({ ...v, [d.id]: { ...v[d.id], month: e.target.value ? Number(e.target.value) : null } }))}
-                      />
-                      <button className="qlc-btn ghost" onClick={() => saveDocOrganization(d)}>
-                        {t('common.save')}
-                      </button>
-                    </div>
-                  </li>
-                );
-              })}
+                    )}
+                  </div>
+                  <div className="qlc-doc-card-actions">
+                    <button type="button" className="qlc-btn primary" onClick={() => setPreviewDoc(d)}>
+                      {t('adminClientDetail.previewDocument')}
+                    </button>
+                    <button type="button" className="qlc-btn ghost" disabled={downloadingDocId === d.id} onClick={() => downloadDoc(d)}>
+                      {downloadingDocId === d.id ? t('common.loading') : t('common.download')}
+                    </button>
+                    <button type="button" className="qlc-btn ghost" onClick={() => toggleDocUnlock(d)}>
+                      {d.clientEditUnlocked ? t('adminClientDetail.lockDocument') : t('adminClientDetail.unlockDocument')}
+                    </button>
+                    <button type="button" className="qlc-btn ghost" onClick={() => setConfirmDeleteDoc(d)}>
+                      {t('adminClientDetail.delete')}
+                    </button>
+                  </div>
+                </li>
+              ))}
             </ul>
           ) : (
             <div className="qlc-empty">{t('adminClientDetail.noDocuments')}</div>
@@ -757,37 +701,11 @@ export default function ClientDetailPage() {
       )}
 
       {previewDoc && (
-        <Modal title={previewDoc.fileName} subtitle={previewDoc.category} onClose={() => setPreviewDoc(null)} width={860}>
-          {previewDoc.mimeType?.startsWith('image/') ? (
-            <img
-              src={`${API_BASE_URL}/admin/documents/${previewDoc.id}/download`}
-              alt={previewDoc.fileName}
-              style={{ maxWidth: '100%', maxHeight: '70vh', display: 'block', margin: '0 auto', borderRadius: 8 }}
-            />
-          ) : previewDoc.mimeType === 'application/pdf' ? (
-            <iframe
-              id="qlc-doc-preview-frame"
-              title={previewDoc.fileName}
-              src={`${API_BASE_URL}/admin/documents/${previewDoc.id}/download`}
-              style={{ width: '100%', height: '70vh', border: '1px solid var(--qlc-line)', borderRadius: 8 }}
-            />
-          ) : (
-            <p style={{ fontSize: 13, color: 'var(--qlc-muted)' }}>{t('adminClientDetail.previewNotAvailable')}</p>
-          )}
-          <div className="qlc-form-actions">
-            <button type="button" className="qlc-btn ghost" onClick={() => printDocument(previewDoc)}>
-              {t('adminClientDetail.printDocument')}
-            </button>
-            <a
-              className="qlc-btn primary"
-              href={`${API_BASE_URL}/admin/documents/${previewDoc.id}/download`}
-              target="_blank"
-              rel="noreferrer"
-            >
-              {t('adminClientDetail.viewDocument')}
-            </a>
-          </div>
-        </Modal>
+        <DocumentViewerModal
+          url={`/admin/documents/${previewDoc.id}/download`}
+          fileName={previewDoc.fileName}
+          onClose={() => setPreviewDoc(null)}
+        />
       )}
 
       {/* Confirmación 1 de 2: advertencia completa de lo que se va a borrar,

@@ -425,6 +425,57 @@ textarea {
   font-size: 13px;
 }
 
+/* Tarjeta de documento (admin y cliente) — antes los botones se salían de
+   la tarjeta en pantallas angostas porque el nombre del archivo y el grupo
+   de botones vivían en una sola fila sin wrap. Con flex-wrap + gap, ambos
+   grupos pueden bajar a su propia fila, y los botones a su vez pueden
+   ocupar varias filas entre sí, sin anchos fijos que rompan el responsive. */
+.qlc-doc-card {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--qlc-line);
+}
+.qlc-doc-card-info {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex: 1 1 220px;
+}
+.qlc-doc-card-name {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+.qlc-doc-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex: 0 1 auto;
+}
+@media (max-width: 480px) {
+  .qlc-doc-card-actions {
+    width: 100%;
+  }
+  .qlc-doc-card-actions .qlc-btn {
+    flex: 1 1 auto;
+    text-align: center;
+  }
+}
+/* El formulario de "archivo corregido" siempre ocupa su propia fila
+   completa dentro de la tarjeta, sin importar el tamaño de pantalla. */
+.qlc-doc-correction-form {
+  flex: 1 1 100%;
+  margin-top: 4px;
+}
+.qlc-doc-correction-form input[type='file'] {
+  max-width: 100%;
+}
+
 /*
  * Animación del logotipo QLC — pensada para NO alterar el logo en absoluto.
  * El propio logo (--logo-src) se usa como máscara: un brillo recorre la
