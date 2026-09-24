@@ -46,17 +46,14 @@ export const API_CONNECTION_STATUS = (t) => ({
   PENDIENTE: { text: `◌ ${t('status.apiConnection.pending')}`, className: 'warn' },
 });
 
-// CORRECCIÓN 5 / AUDITORÍA QLC PARTE 10 — estado visible de un Estado de
-// Cuenta, calculado desde el backend (displayStatus) a partir de
-// commission/commissionPaid. NUNCA se usa la palabra "ACTIVA": "GENERADO"
-// (resaltado en azul, className 'ok') mientras está recién generado y
-// pendiente de pago; "PAGADO" (tono normal, sin resaltar) en cuanto el
-// admin marca el pago; "DISPONIBLE" cuando no aplica ninguna comisión.
-export const STATEMENT_STATUS = (t) => ({
-  NO_DISPONIBLE: { text: `× ${t('status.statement.notAvailable')}`, className: 'muted' },
-  DISPONIBLE: { text: `✓ ${t('status.statement.available')}`, className: 'muted' },
-  GENERADO: { text: `● ${t('status.statement.generated')}`, className: 'ok' },
-  PAGADO: { text: `✓ ${t('status.statement.paid')}`, className: 'muted' },
+// Reporte de transferencia interna Bitget — solo tres estados visibles:
+// PENDIENTE (incluye pasos intermedios de revisión), CONFIRMADO, RECHAZADO.
+export const TRANSFER_REPORT_STATUS = (t) => ({
+  PENDING: { text: `◌ ${t('clientPayments.reportStatus.PENDING')}`, className: 'warn' },
+  EN_REVISION: { text: `◌ ${t('clientPayments.reportStatus.PENDING')}`, className: 'warn' },
+  GARANTIA_REPORTADA: { text: `◌ ${t('clientPayments.reportStatus.PENDING')}`, className: 'warn' },
+  APROBADO: { text: `✓ ${t('clientPayments.reportStatus.CONFIRMED')}`, className: 'success' },
+  RECHAZADO: { text: `× ${t('clientPayments.reportStatus.REJECTED')}`, className: 'danger' },
 });
 
 export const PROSPECT_STATUS = (t) => ({

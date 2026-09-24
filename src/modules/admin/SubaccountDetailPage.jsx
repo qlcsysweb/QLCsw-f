@@ -1,17 +1,18 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api, { API_BASE_URL } from '../../services/api';
-import { API_CONNECTION_STATUS, PAYMENT_REPORT_STATUS, STATEMENT_STATUS, statusOf } from '../../utils/statusLabels';
-import { formatCdmxDate } from '../../utils/cdmxTime';
+import { API_CONNECTION_STATUS, PAYMENT_REPORT_STATUS, statusOf } from '../../utils/statusLabels';
+import { formatCdmxDate, formatDateOnly } from '../../utils/cdmxTime';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 import { getLocalizedModel } from '../../i18n/bilingualContent';
-import CountdownTimer from '../../components/CountdownTimer';
+import StatementStatus, { StatementBadge } from '../../components/StatementStatus';
+import ConfirmModal from '../../components/ConfirmModal';
+import TransferReportList from './TransferReportList';
 
-// CORRECCIÓN 6 — orden alineado al flujo real del cliente (ver
-// backend/src/utils/subaccountProvisioning.js). Los valores del enum no
-// cambiaron, solo el orden de presentación.
-const CONDITION_ORDER = ['WALLET', 'PAYMENT', 'FUNDS', 'API', 'ACTIVATION'];
+// Orden alineado al flujo real del cliente (ver
+// backend/src/utils/subaccountProvisioning.js).
+const CONDITION_ORDER = ['PAYMENT', 'FUNDS', 'API', 'ACTIVATION'];
 
 function ConditionRow({ condition, onUpdate, t }) {
   const [saving, setSaving] = useState(false);
@@ -80,11 +81,13 @@ export default function AdminSubaccountDetailPage() {
   const [secrets, setSecrets] = useState(null);
   const [payments, setPayments] = useState([]);
   const [statements, setStatements] = useState([]);
+  const [currentStatement, setCurrentStatement] = useState(null);
+  const [receiveUid, setReceiveUid] = useState('');
+  const [confirmMarkPaid, setConfirmMarkPaid] = useState(null);
   // CORREGIR.xlsx CLIENTE 13 — reportes de distribución de capital, revisados por el admin.
   const [distributionReports, setDistributionReports] = useState([]);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-  const [copiedHashId, setCopiedHashId] = useState(null);
 
   const [apiForm, setApiForm] = useState({ identifier: '', exchangeName: '', apiKey: '', apiSecret: '', apiPassphrase: '', status: 'PENDIENTE', requiredCapital: '', connectionReason: '', ipRequired: false, ipAddress: '' });
   // CORRECCIÓN 6 (bloque de 20) — editar las credenciales API exige una
@@ -95,12 +98,9 @@ export default function AdminSubaccountDetailPage() {
     periodStart: '', periodEnd: '', startingBalance: '', endingBalance: '', resultAmount: '', resultPercentage: '', volatility: '', netResult: '', commission: '0', activityNotes: '', adminNotes: '',
   });
   const [creatingStatement, setCreatingStatement] = useState(false);
-  const [evidenceUploading, setEvidenceUploading] = useState(null);
-  const [sendingStatement, setSendingStatement] = useState(null);
 
   const apiStatusMap = API_CONNECTION_STATUS(t);
   const paymentStatusMap = PAYMENT_REPORT_STATUS(t);
-  const statementStatusMap = STATEMENT_STATUS(t);
 
   const load = () => {
     api.get(`/admin/clients/${clientId}`).then(({ data }) => {
@@ -118,21 +118,26 @@ export default function AdminSubaccountDetailPage() {
     });
     api.get(`/admin/api-subaccounts/${id}/secrets`).then(({ data }) => setSecrets(data.secrets));
     api.get('/admin/payment-reports', { params: { apiSubaccountId: id } }).then(({ data }) => setPayments(data.reports));
-    api.get(`/admin/api-subaccounts/${id}/statements`).then(({ data }) => setStatements(data.statements));
+    api.get(`/admin/api-subaccounts/${id}/statements`).then(({ data }) => {
+      setStatements(data.statements);
+      setCurrentStatement(data.current);
+    });
+    api.get('/admin/payment-config').then(({ data }) => setReceiveUid(data.config?.bitgetReceiveUid || '')).catch(() => {});
     api
       .get('/admin/capital-distribution-reports', { params: { apiSubaccountId: id } })
       .then(({ data }) => setDistributionReports(data.reports));
   };
   useEffect(load, [id]);
 
-  // Actualización sin refresh manual: si el cliente reporta una
-  // transferencia, administración lo ve sin recargar la página. Poll
-  // acotado solo a los reportes de pago (no re-ejecuta el load() completo)
-  // para no pisar edición en curso en los formularios de esta página.
-  // Mismo patrón de polling ya usado en el chat de soporte (ChatPanel).
+  // Actualización sin refresh manual: reportes de transferencia y estado de
+  // cuenta (sin re-ejecutar el load() completo, para no pisar formularios).
   useEffect(() => {
     const interval = setInterval(() => {
       api.get('/admin/payment-reports', { params: { apiSubaccountId: id } }).then(({ data }) => setPayments(data.reports));
+      api.get(`/admin/api-subaccounts/${id}/statements`).then(({ data }) => {
+        setStatements(data.statements);
+        setCurrentStatement(data.current);
+      });
     }, 8000);
     return () => clearInterval(interval);
   }, [id]);
@@ -195,29 +200,6 @@ export default function AdminSubaccountDetailPage() {
     }
   };
 
-  const copyHash = async (reportId, hash) => {
-    try {
-      await navigator.clipboard.writeText(hash);
-      setCopiedHashId(reportId);
-      setTimeout(() => setCopiedHashId((id) => (id === reportId ? null : id)), 2000);
-    } catch {
-      // Clipboard puede fallar en contexto no seguro; no bloquea la vista.
-    }
-  };
-
-  const reviewPayment = async (reportId, status) => {
-    await api.patch(`/admin/payment-reports/${reportId}`, { status });
-    flash(t('adminClientDetail.paymentReviewed'));
-    load();
-  };
-
-  // CORRECCIÓN 10 (bloque de 20) — acción independiente de aprobar: solo
-  // confirma que se identificó la transferencia.
-  const markTransferReceived = async (reportId) => {
-    await api.patch(`/admin/payment-reports/${reportId}/transfer-received`);
-    load();
-  };
-
   const reviewDistribution = async (reportId, status) => {
     await api.patch(`/admin/capital-distribution-reports/${reportId}`, { status });
     flash(t('adminClientDetail.paymentReviewed'));
@@ -240,7 +222,7 @@ export default function AdminSubaccountDetailPage() {
       const payload = { ...statementForm };
       if (hasPreviousStatement) delete payload.periodStart;
       await api.post(`/admin/api-subaccounts/${id}/statements`, payload);
-      flash(t('adminClientDetail.statementCreated'));
+      flash(t('statementStatus.generated'));
       setStatementForm({ periodStart: '', periodEnd: '', startingBalance: '', endingBalance: '', resultAmount: '', resultPercentage: '', volatility: '', netResult: '', commission: '0', activityNotes: '', adminNotes: '' });
       load();
     } catch (err) {
@@ -250,39 +232,17 @@ export default function AdminSubaccountDetailPage() {
     }
   };
 
-  const uploadEvidence = async (statementId, file) => {
-    if (!file) return;
-    setEvidenceUploading(statementId);
-    const fd = new FormData();
-    fd.append('file', file);
-    try {
-      await api.post(`/admin/statements/${statementId}/evidence`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
-      load();
-    } catch (err) {
-      setError(translateBackendMessage(err.message, language));
-    } finally {
-      setEvidenceUploading(null);
-    }
-  };
-
-  const sendStatementToClient = async (statementId) => {
-    setSendingStatement(statementId);
-    try {
-      await api.post(`/admin/statements/${statementId}/send`);
-      flash(t('adminClientDetail.sentToClientOk'));
-    } catch (err) {
-      setError(translateBackendMessage(err.message, language));
-    } finally {
-      setSendingStatement(null);
-    }
+  const markStatementPaid = async () => {
+    await api.patch(`/admin/statements/${confirmMarkPaid}/mark-paid`);
+    flash(t('statementStatus.markedPaid'));
+    load();
   };
 
   const status = statusOf(apiStatusMap, subaccount.status, 'PENDIENTE');
   const conditionsSummary = subaccount.conditionsSummary || { total: 0, confirmed: 0, allConfirmed: false };
-  // Transferencia de garantía — la más reciente sin ligar a un estado de
-  // cuenta (esas son comisiones, un flujo distinto). `payments` ya viene
-  // ordenado por fecha descendente desde el backend.
-  const latestGuaranteeReport = payments.find((p) => !p.statementId) || null;
+  const statementStatus = currentStatement?.status || 'NO_GENERADO';
+  const hasUnpaidStatement = statementStatus === 'PENDIENTE_DE_PAGO' || statementStatus === 'VENCIDO_SIN_PAGAR';
+  const latestStatement = statements[0] || null;
 
   return (
     <div>
@@ -338,11 +298,6 @@ export default function AdminSubaccountDetailPage() {
             <input className="qlc-input" value={apiForm.identifier} onChange={(e) => setApiForm((f) => ({ ...f, identifier: e.target.value }))} placeholder={subaccount.identifier || 'PCB-1-A-1'} />
             <label className="qlc-label">{t('adminClientDetail.requiredCapital')}</label>
             <input className="qlc-input" type="number" step="0.01" value={apiForm.requiredCapital} onChange={(e) => setApiForm((f) => ({ ...f, requiredCapital: e.target.value }))} placeholder="20" />
-            {subaccount.capitalDistributionItems?.length > 0 && (
-              <p style={{ fontSize: 12, color: 'var(--qlc-muted)' }}>
-                {t('adminClientDetail.capitalReceived')}: {subaccount.capitalDistributionItems.reduce((sum, i) => sum + Number(i.amount), 0)} USDT
-              </p>
-            )}
             <label className="qlc-label">{t('adminClientDetail.status')}</label>
             <select className="qlc-select" value={apiForm.status} onChange={(e) => setApiForm((f) => ({ ...f, status: e.target.value }))}>
               <option value="PENDIENTE">{t('adminClientDetail.apiStatusPending')}</option>
@@ -425,97 +380,9 @@ export default function AdminSubaccountDetailPage() {
 
         <div className="qlc-card">
           <h3 style={{ marginTop: 0 }}>
-            {t('adminClientDetail.reportedPayments')} ({payments.length})
+            {t('adminPayments.title')} ({payments.length})
           </h3>
-
-          {/* CORRECCIÓN 10 (bloque de 20) — dos acciones independientes:
-              "Transferencia recibida" solo confirma que se identificó la
-              transferencia (NUNCA aprueba); "Garantía reportada" es la
-              acción separada que sí mueve el pago a APROBADO. */}
-          {latestGuaranteeReport && latestGuaranteeReport.status !== 'APROBADO' && !latestGuaranteeReport.transferReceivedAt && (
-            <div
-              className="qlc-card"
-              style={{ borderColor: 'var(--qlc-warn-border)', marginBottom: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}
-            >
-              <div>
-                <strong>{t('adminClientDetail.transferReported')}</strong>
-                <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--qlc-muted)' }}>
-                  {t('adminClientDetail.transferReportedDesc')}
-                </p>
-              </div>
-              <button className="qlc-btn primary" onClick={() => markTransferReceived(latestGuaranteeReport.id)}>
-                {t('adminClientDetail.transferMarkReceived')}
-              </button>
-            </div>
-          )}
-          {latestGuaranteeReport && latestGuaranteeReport.status !== 'APROBADO' && latestGuaranteeReport.transferReceivedAt && (
-            <div
-              className="qlc-card"
-              style={{ borderColor: 'var(--qlc-ok-border)', marginBottom: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}
-            >
-              <div>
-                <span className="qlc-badge ok">✓ {t('adminClientDetail.transferReceived')}</span>
-                <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--qlc-muted)' }}>
-                  {formatCdmxDate(latestGuaranteeReport.transferReceivedAt)}
-                </p>
-              </div>
-              <button className="qlc-btn primary" onClick={() => reviewPayment(latestGuaranteeReport.id, 'APROBADO')}>
-                {t('adminPayments.guaranteeReported')}
-              </button>
-            </div>
-          )}
-          {latestGuaranteeReport?.status === 'APROBADO' && (
-            <div className="qlc-badge ok" style={{ display: 'block', width: 'fit-content', marginBottom: 14, fontSize: 13, padding: '8px 12px' }}>
-              ✓ {t('adminPayments.guaranteeReported')}
-            </div>
-          )}
-
-          {payments.length ? (
-            <ul className="qlc-plain-list">
-              {payments.map((p) => {
-                const s = statusOf(paymentStatusMap, p.status, 'PENDING');
-                return (
-                  <li key={p.id} style={{ display: 'flex', flexDirection: 'column', gap: 4, paddingBottom: 10 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span>
-                        {p.amount} {p.currency} — <span className={`qlc-badge ${s.className}`}>{s.text}</span>
-                      </span>
-                      {p.status !== 'APROBADO' && (
-                        <span style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                          {!p.transferReceivedAt && (
-                            <button className="qlc-btn ghost" onClick={() => markTransferReceived(p.id)}>{t('adminPayments.markTransferReceived')}</button>
-                          )}
-                          <button className="qlc-btn primary" onClick={() => reviewPayment(p.id, 'APROBADO')}>{t('adminPayments.guaranteeReported')}</button>
-                          <button className="qlc-btn ghost" onClick={() => reviewPayment(p.id, 'RECHAZADO')}>{t('adminClientDetail.reject')}</button>
-                        </span>
-                      )}
-                    </div>
-                    <span style={{ fontSize: 12, color: 'var(--qlc-muted2)' }}>
-                      {formatCdmxDate(p.reportedAt)}
-                      {p.transferReceivedAt && (
-                        <span style={{ color: 'var(--qlc-ok)' }}> · ✓ {t('adminClientDetail.transferReceived')} {formatCdmxDate(p.transferReceivedAt)}</span>
-                      )}
-                    </span>
-                    {p.reference && (
-                      <span style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--qlc-muted2)', fontSize: 12 }}>
-                        {t('adminClientDetail.paymentReference')}: <code style={{ wordBreak: 'break-all' }}>{p.reference}</code>
-                        <button type="button" className="qlc-btn ghost" style={{ flexShrink: 0 }} onClick={() => copyHash(p.id, p.reference)}>
-                          {copiedHashId === p.id ? t('common.copied') : t('common.copy')}
-                        </button>
-                      </span>
-                    )}
-                    {p.proofDriveFileId && (
-                      <a style={{ fontSize: 12 }} href={`${API_BASE_URL}/admin/payment-reports/${p.id}/proof`} target="_blank" rel="noreferrer">
-                        {t('adminClientDetail.viewProof')}
-                      </a>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          ) : (
-            <div className="qlc-empty">{t('adminClientDetail.noPaymentsReported')}</div>
-          )}
+          <TransferReportList reports={payments} receiveUid={receiveUid} onChanged={load} />
         </div>
 
         <div className="qlc-card">
@@ -547,67 +414,63 @@ export default function AdminSubaccountDetailPage() {
           )}
         </div>
 
-        <div className="qlc-card">
-          <h3 style={{ marginTop: 0 }}>{t('adminClientDetail.statements')} ({statements.length})</h3>
-          {statements.length > 0 && (
-            <ul className="qlc-plain-list" style={{ marginBottom: 14 }}>
-              {statements.map((s) => {
-                const stStatus = statusOf(statementStatusMap, s.displayStatus, 'DISPONIBLE');
-                return (
-                  <li key={s.id} style={{ display: 'flex', flexDirection: 'column', gap: 6, paddingBottom: 10, borderBottom: '1px solid var(--qlc-line)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span>{formatCdmxDate(s.periodStart)} – {formatCdmxDate(s.periodEnd)} · {s.resultPercentage}%</span>
-                      <span className={`qlc-badge ${stStatus.className}`}>{stStatus.text}</span>
-                    </div>
-                    {!s.commissionPaid && s.commissionDueAt && (
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12 }}>
-                        <span style={{ color: 'var(--qlc-muted2)' }}>{t('clientSubaccountDetail.timeToPay')}</span>
-                        <CountdownTimer deadline={s.commissionDueAt} expiredLabel={t('clientSubaccountDetail.deadlineExpired')} />
-                      </div>
-                    )}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12 }}>
-                      <span style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                        {s.pdfDriveFileId && (
-                          <a href={`${API_BASE_URL}/admin/statements/${s.id}/download`} target="_blank" rel="noreferrer">{t('clientSubaccountDetail.viewPdf')}</a>
-                        )}
-                        <label style={{ cursor: 'pointer', color: 'var(--qlc-muted)' }}>
-                          {evidenceUploading === s.id ? t('common.saving') : t('adminClientDetail.uploadEvidence')}
-                          <input
-                            type="file"
-                            accept=".pdf,image/*"
-                            style={{ display: 'none' }}
-                            disabled={evidenceUploading === s.id}
-                            onChange={(e) => uploadEvidence(s.id, e.target.files[0])}
-                          />
-                        </label>
-                      </span>
-                      <button className="qlc-btn ghost" disabled={sendingStatement === s.id} onClick={() => sendStatementToClient(s.id)}>
-                        {sendingStatement === s.id ? t('common.sending') : t('adminClientDetail.sendToClient')}
-                      </button>
-                    </div>
-                    {s.evidenceDocuments?.length > 0 && (
-                      <div style={{ fontSize: 12, color: 'var(--qlc-muted)' }}>
-                        {t('adminClientDetail.statementEvidence')}:{' '}
-                        {s.evidenceDocuments.map((d, idx) => (
-                          <span key={d.id}>
-                            {idx > 0 && ', '}
-                            <a href={`${API_BASE_URL}/admin/documents/${d.id}/download`} target="_blank" rel="noreferrer">{d.fileName}</a>
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
+        <div className={`qlc-card qlc-card-span-all${statementStatus === 'PENDIENTE_DE_PAGO' ? ' qlc-card-attention' : ''}`}>
+          <div className="qlc-statement-card-head">
+            <h3>{t('statementStatus.title')}</h3>
+            <StatementStatus status={statementStatus} expiresAt={currentStatement?.expiresAt} onExpire={load} />
+          </div>
+          {latestStatement && (
+            <p className="qlc-statement-meta">
+              {formatDateOnly(latestStatement.periodStart)} – {formatDateOnly(latestStatement.periodEnd)}
+              {Number(latestStatement.commission) > 0 ? ` · ${latestStatement.commission} USDT` : ''}
+            </p>
           )}
-          <form onSubmit={createStatement} style={{ borderTop: '1px solid var(--qlc-line)', paddingTop: 14 }}>
-            <h4 style={{ margin: '0 0 8px' }}>{t('adminClientDetail.newStatement')}</h4>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+          <div className="qlc-statement-actions">
+            {latestStatement?.pdfDriveFileId && (
+              <a className="qlc-btn ghost" href={`${API_BASE_URL}/admin/statements/${latestStatement.id}/download`} target="_blank" rel="noreferrer">
+                {t('statementStatus.viewPdf')}
+              </a>
+            )}
+            {hasUnpaidStatement && latestStatement && (
+              <button type="button" className="qlc-btn primary" onClick={() => setConfirmMarkPaid(latestStatement.id)}>
+                {t('statementStatus.markPaid')}
+              </button>
+            )}
+          </div>
+          {statements.length > 1 && (
+            <div style={{ marginTop: 14 }}>
+              <div style={{ fontSize: 12, color: 'var(--qlc-muted)' }}>{t('statementStatus.previous')}</div>
+              <ul className="qlc-plain-list qlc-statement-history" style={{ margin: 0 }}>
+                {statements.slice(1).map((s) => (
+                  <li key={s.id}>
+                    <span>
+                      {formatDateOnly(s.periodStart)} – {formatDateOnly(s.periodEnd)}
+                      {s.pdfDriveFileId && (
+                        <>
+                          {' · '}
+                          <a href={`${API_BASE_URL}/admin/statements/${s.id}/download`} target="_blank" rel="noreferrer">
+                            {t('statementStatus.viewPdf')}
+                          </a>
+                        </>
+                      )}
+                    </span>
+                    <StatementBadge status={s.status} />
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          <form onSubmit={createStatement} style={{ borderTop: '1px solid var(--qlc-line)', paddingTop: 14, marginTop: 14 }}>
+            <h4 style={{ margin: '0 0 4px' }}>{t('statementStatus.generateTitle')}</h4>
+            <p style={{ fontSize: 12, color: 'var(--qlc-muted)', margin: 0 }}>
+              {hasUnpaidStatement ? t('statementStatus.blockedUnpaid') : t('statementStatus.generateHint')}
+            </p>
+            <fieldset disabled={hasUnpaidStatement || creatingStatement} className="qlc-plain-fieldset">
+            <div className="qlc-statement-form-grid">
               {hasPreviousStatement ? (
                 <div style={{ gridColumn: '1 / -1' }}>
                   <label className="qlc-label">{t('adminClientDetail.periodStart')}</label>
-                  <input className="qlc-input" value={formatCdmxDate(latestPeriodEnd)} disabled />
+                  <input className="qlc-input" value={formatDateOnly(latestPeriodEnd)} disabled />
                   <p style={{ fontSize: 11, color: 'var(--qlc-muted2)', margin: '4px 0 0' }}>{t('adminClientDetail.periodStartAuto')}</p>
                 </div>
               ) : (
@@ -656,12 +519,24 @@ export default function AdminSubaccountDetailPage() {
             <textarea className="qlc-textarea" rows={2} value={statementForm.activityNotes} onChange={(e) => setStatementForm((f) => ({ ...f, activityNotes: e.target.value }))} />
             <label className="qlc-label">{t('adminClientDetail.adminNotes')}</label>
             <textarea className="qlc-textarea" rows={2} value={statementForm.adminNotes} onChange={(e) => setStatementForm((f) => ({ ...f, adminNotes: e.target.value }))} />
-            <button className="qlc-btn primary" style={{ marginTop: 12, width: '100%' }} disabled={creatingStatement}>
-              {creatingStatement ? t('common.saving') : t('adminClientDetail.generateStatement')}
+            <button className="qlc-btn primary" style={{ marginTop: 12, width: '100%' }}>
+              {creatingStatement ? t('common.saving') : t('statementStatus.generate')}
             </button>
+            </fieldset>
           </form>
         </div>
       </div>
+
+      {confirmMarkPaid && (
+        <ConfirmModal
+          title={t('statementStatus.markPaidTitle')}
+          message={t('statementStatus.markPaidMessage')}
+          confirmLabel={t('statementStatus.markPaid')}
+          danger={false}
+          onClose={() => setConfirmMarkPaid(null)}
+          onConfirm={markStatementPaid}
+        />
+      )}
 
       {pendingApiSave && (
         <div className="qlc-modal-overlay">

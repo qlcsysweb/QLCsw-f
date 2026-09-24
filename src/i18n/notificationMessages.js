@@ -16,6 +16,7 @@ const STATUS_LABEL_KEYS = {
     status: {
       PENDING: 'status.paymentReport.pending',
       EN_REVISION: 'status.paymentReport.inReview',
+      GARANTIA_REPORTADA: 'status.paymentReport.guaranteeReported',
       APROBADO: 'status.paymentReport.approved',
       RECHAZADO: 'status.paymentReport.rejected',
     },
@@ -43,7 +44,6 @@ const STATUS_LABEL_KEYS = {
       REJECTED: 'status.condition.rejected',
     },
     conditionType: {
-      WALLET: 'status.conditionType.WALLET',
       FUNDS: 'status.conditionType.FUNDS',
       PAYMENT: 'status.conditionType.PAYMENT',
       API: 'status.conditionType.API',

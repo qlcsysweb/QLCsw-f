@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import api, { API_BASE_URL } from '../../services/api';
+import api from '../../services/api';
 import ConfirmModal from '../../components/ConfirmModal';
 import Modal from '../../components/Modal';
 import DocumentViewerModal from '../../components/DocumentViewerModal';
@@ -9,8 +9,7 @@ import { ACCOUNT_STATUS, API_CONNECTION_STATUS, statusOf } from '../../utils/sta
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 import { getLocalizedModel } from '../../i18n/bilingualContent';
-import CapitalIncreasePanel from './CapitalIncreasePanel';
-import CapitalRescuePanel from './CapitalRescuePanel';
+import { formatCdmxDateTime } from '../../utils/cdmxTime';
 import usePolling from '../../hooks/usePolling';
 import CollapsibleSection from '../../components/CollapsibleSection';
 
@@ -80,7 +79,6 @@ export default function ClientDetailPage() {
   const [deleting, setDeleting] = useState(false);
   const [creatingSubaccount, setCreatingSubaccount] = useState(false);
   const [newIdentifier, setNewIdentifier] = useState('');
-  const [copiedWalletField, setCopiedWalletField] = useState(null);
   // "Desconectadas" es el estado de la conexión API (CONECTADA/no) — un eje
   // totalmente distinto de ACTIVA/INACTIVA (estado de la subcuenta misma).
   const [showDisconnectedSubaccounts, setShowDisconnectedSubaccounts] = useState(false);
@@ -135,9 +133,12 @@ export default function ClientDetailPage() {
     e.preventDefault();
     setSendingMessage(true);
     try {
-      await api.post(`/admin/clients/${id}/messages`, messageForm);
+      // Guarda el mensaje + notificación interna y envía el correo al email
+      // real del cliente en la misma acción; si el correo falla, el mensaje
+      // interno queda guardado igual y se avisa aquí al admin.
+      const { data } = await api.post(`/admin/clients/${id}/messages`, messageForm);
       setMessageForm({ title: '', message: '' });
-      flash(t('adminMessages.sentOk'));
+      flash(data.message?.emailSent ? t('adminMessages.sentOk') : t('adminMessages.sentOkEmailFailed'));
       load();
     } catch (err) {
       setError(translateBackendMessage(err.message, language));
@@ -205,13 +206,6 @@ export default function ClientDetailPage() {
     } finally {
       setDeleting(false);
     }
-  };
-
-  const copyWalletValue = (field, value) => {
-    if (!value) return;
-    navigator.clipboard?.writeText(value);
-    setCopiedWalletField(field);
-    setTimeout(() => setCopiedWalletField((f) => (f === field ? null : f)), 2000);
   };
 
   // GESTIÓN DINÁMICA DE SUBCUENTAS — cambio de estado (ACTIVA/INACTIVA)
@@ -541,9 +535,6 @@ export default function ClientDetailPage() {
         )}
       </CollapsibleSection>
 
-      <CapitalIncreasePanel clientId={id} />
-      <CapitalRescuePanel clientId={id} subaccounts={activeNumberedSubaccounts} />
-
       <div className="qlc-detail-grid">
         <div className="qlc-card">
           <h3 style={{ marginTop: 0 }}>
@@ -592,53 +583,6 @@ export default function ClientDetailPage() {
               exclusiva del cliente desde su propio panel. */}
         </div>
 
-        <div className="qlc-card">
-          <h3 style={{ marginTop: 0 }}>{t('adminClientDetail.wallet')}</h3>
-          {/* CORRECCIÓN 9 (bloque de 20) — WALLET/RED/COPIAR siempre
-              visibles, incluso sin dato registrado todavía; estado
-              explícito Registrada/No registrada, nunca información
-              inventada (sin "liga" porque ese dato no existe para la
-              wallet personal del cliente). */}
-          <p style={{ fontSize: 13, marginBottom: 10 }}>
-            <span className={`qlc-badge ${client.walletAddress ? 'ok' : 'muted'}`}>
-              {client.walletAddress ? t('adminClientDetail.walletRegistered') : t('adminClientDetail.walletNotRegistered')}
-            </span>
-          </p>
-          <p style={{ fontSize: 13, display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'flex-start' }}>
-            <span>
-              <strong>{t('clientWallet.network')}:</strong> {client.walletNetwork || t('adminClientDetail.noWalletDataShort')}
-            </span>
-            <button
-              className="qlc-btn ghost"
-              style={{ flexShrink: 0 }}
-              disabled={!client.walletNetwork}
-              onClick={() => copyWalletValue('network', client.walletNetwork)}
-            >
-              {copiedWalletField === 'network' ? t('common.copied') : t('common.copy')}
-            </button>
-          </p>
-          <p style={{ fontSize: 13, wordBreak: 'break-all', display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'flex-start' }}>
-            <span>
-              <strong>{t('clientWallet.address')}:</strong> {client.walletAddress || t('adminClientDetail.noWalletDataShort')}
-            </span>
-            <button
-              className="qlc-btn ghost"
-              style={{ flexShrink: 0 }}
-              disabled={!client.walletAddress}
-              onClick={() => copyWalletValue('address', client.walletAddress)}
-            >
-              {copiedWalletField === 'address' ? t('common.copied') : t('common.copy')}
-            </button>
-          </p>
-          {(client.walletQrDriveFileId || client.walletQrUrl) && (
-            <img
-              src={client.walletQrDriveFileId ? `${API_BASE_URL}/admin/clients/${id}/wallet-qr` : client.walletQrUrl}
-              alt="QR wallet"
-              style={{ width: 130, borderRadius: 10 }}
-            />
-          )}
-        </div>
-
         {/* CORREGIR.xlsx ADMIN 14 — mensajería manual admin→cliente. */}
         <div className="qlc-card">
           <h3 style={{ marginTop: 0 }}>{t('adminMessages.title')}</h3>
@@ -669,8 +613,20 @@ export default function ClientDetailPage() {
               <ul className="qlc-plain-list">
                 {messages.map((m) => (
                   <li key={m.id} style={{ fontSize: 12, marginBottom: 8 }}>
-                    <strong>{m.title}</strong> — {new Date(m.createdAt).toLocaleString()}
-                    <div style={{ color: 'var(--qlc-muted2)' }}>{m.message}</div>
+                    <div className="qlc-message-head">
+                      <strong>{m.title}</strong>
+                      <span
+                        className={`qlc-badge ${m.emailSent ? 'ok' : 'danger'}`}
+                        title={m.emailSent ? undefined : m.emailError || t('adminMessages.emailFailedHint')}
+                      >
+                        {m.emailSent ? `✉ ${t('adminMessages.emailSent')}` : `! ${t('adminMessages.emailFailed')}`}
+                      </span>
+                    </div>
+                    <div style={{ color: 'var(--qlc-muted2)' }}>{formatCdmxDateTime(m.createdAt)}</div>
+                    <div style={{ color: 'var(--qlc-muted2)', overflowWrap: 'anywhere' }}>{m.message}</div>
+                    {!m.emailSent && m.emailError && (
+                      <div style={{ color: 'var(--qlc-danger)', fontSize: 11 }}>{m.emailError}</div>
+                    )}
                   </li>
                 ))}
               </ul>

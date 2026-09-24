@@ -12,6 +12,17 @@
  * del backend en vez de romper o mostrarse en un idioma mezclado.
  */
 const KNOWN_MESSAGES = {
+  // Estado de cuenta / Transferencia interna Bitget
+  'El número de orden es obligatorio': 'The order number is required',
+  'El número de orden no puede superar 64 caracteres': 'The order number cannot exceed 64 characters',
+  'El número de orden solo puede contener letras, números y guiones': 'The order number may only contain letters, numbers and hyphens',
+  'La fecha y hora de la transacción no es válida': 'The transaction date and time is not valid',
+  'La fecha y hora de la transacción no puede estar en el futuro.': 'The transaction date and time cannot be in the future.',
+  'Ese número de orden ya fue reportado.': 'That order number has already been reported.',
+  'Esta subcuenta fue desactivada.': 'This subaccount was deactivated.',
+  'El UID de Bitget solo puede contener números': 'The Bitget UID may only contain numbers',
+  'Esta subcuenta/API ya tiene un estado de cuenta sin pagar. Confirma su pago antes de generar uno nuevo.':
+    'This subaccount/API already has an unpaid statement. Confirm its payment before generating a new one.',
   'Usuario o contraseña incorrectos': 'Incorrect username or password',
   'Demasiados intentos de inicio de sesión. Intenta más tarde.': 'Too many login attempts. Please try again later.',
   'Sesión no encontrada': 'Session not found',

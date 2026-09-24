@@ -170,6 +170,56 @@ textarea {
 .qlc-badge.muted {
   color: var(--qlc-muted);
 }
+.qlc-badge.success {
+  border-color: rgba(130, 224, 189, 0.4);
+  color: var(--qlc-success);
+}
+.qlc-badge-lg {
+  font-size: 12px;
+  padding: 8px 12px;
+}
+
+/* Estado de cuenta + contador de 72 h */
+.qlc-statement-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.qlc-countdown {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--qlc-line);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  max-width: 100%;
+}
+.qlc-countdown strong {
+  font-size: 13px;
+  white-space: nowrap;
+}
+.qlc-countdown-label {
+  color: var(--qlc-muted);
+}
+.qlc-countdown.safe {
+  border-color: rgba(130, 224, 189, 0.4);
+  color: var(--qlc-success);
+}
+.qlc-countdown.urgent {
+  border-color: var(--qlc-danger-border);
+  color: var(--qlc-danger);
+}
+/* Iluminación azul QLC: solo mientras hay un estado de cuenta PENDIENTE DE PAGO. */
+.qlc-card.qlc-card-attention {
+  border-color: rgba(0, 168, 255, 0.6);
+  box-shadow: 0 0 0 1px rgba(0, 168, 255, 0.25), 0 12px 40px var(--qlc-glow);
+  background: linear-gradient(160deg, rgba(0, 168, 255, 0.1), rgba(13, 19, 26, 0.85) 60%);
+}
 
 .qlc-table-wrap {
   overflow: auto;
@@ -311,7 +361,7 @@ textarea {
 
 .qlc-stat-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(190px, 100%), 1fr));
   gap: 14px;
   margin-top: 22px;
 }
@@ -391,7 +441,7 @@ textarea {
 
 .qlc-detail-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr));
   gap: 18px;
   align-items: start;
 }
@@ -401,15 +451,27 @@ textarea {
 .qlc-card-span-all {
   grid-column: 1 / -1;
 }
+/* Los hijos del grid pueden encogerse: las tablas anchas (min-width) hacen
+   scroll dentro de su .qlc-table-wrap en vez de ensanchar toda la página. */
+.qlc-detail-grid > * {
+  min-width: 0;
+}
 
 .qlc-condition-row {
-  display: grid;
-  grid-template-columns: 1fr auto auto;
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
+  gap: 8px 12px;
   padding: 10px 0;
   border-bottom: 1px solid var(--qlc-line);
   font-size: 13px;
+}
+.qlc-condition-row > :first-child {
+  flex: 1 1 140px;
+  min-width: 0;
+}
+.qlc-condition-row > div {
+  flex-wrap: wrap;
 }
 .qlc-condition-row:last-of-type {
   border-bottom: none;
@@ -623,4 +685,299 @@ textarea {
   .qlc-collapsible-chevron {
     transition: none;
   }
+}
+
+/* Dashboard del cliente: Estado de cuenta (con contador) primero; Subcuentas/API
+   y Notificaciones sin leer a su derecha. Se reacomoda sin cortar contenido. */
+.qlc-client-stats {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 22px;
+  align-items: stretch;
+}
+.qlc-client-stats > .qlc-card {
+  min-width: 0;
+}
+.qlc-client-statement .qlc-stat-hint {
+  overflow-wrap: anywhere;
+}
+.qlc-client-statement-cta {
+  align-self: flex-start;
+  margin-top: 4px;
+  padding: 9px 16px;
+}
+@media (max-width: 980px) {
+  .qlc-client-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .qlc-client-statement {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 480px) {
+  .qlc-client-stats {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .qlc-client-statement-cta {
+    align-self: stretch;
+  }
+}
+
+/* "Tu proceso, paso a paso" — 8 pasos en rejilla equilibrada (4 / 2 / 1). */
+.qlc-process-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  counter-reset: none;
+}
+.qlc-process-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--qlc-line);
+  border-radius: 12px;
+  background: rgba(8, 12, 17, 0.6);
+  min-width: 0;
+}
+.qlc-process-step-num {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--qlc-blue2);
+  border: 1px solid var(--qlc-ok-border);
+  background: rgba(0, 168, 255, 0.08);
+}
+.qlc-process-step-title {
+  font-size: 13px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 1100px) {
+  .qlc-process-steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 520px) {
+  .qlc-process-steps {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Transferencia interna Bitget (Depósito de tu garantía) */
+.qlc-bitget {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 22px;
+  scroll-margin-top: 20px;
+}
+.qlc-bitget-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  margin-bottom: 6px;
+}
+.qlc-bitget-head h3 {
+  margin: 0;
+}
+.qlc-bitget-intro {
+  color: var(--qlc-muted);
+  font-size: 13px;
+  margin: 0 0 14px;
+}
+.qlc-bitget-uid {
+  border: 1px solid var(--qlc-ok-border);
+  background: rgba(0, 168, 255, 0.06);
+  border-radius: 14px;
+  padding: 14px;
+}
+.qlc-bitget-uid-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.qlc-bitget-uid-value {
+  flex: 1 1 180px;
+  min-width: 0;
+  font-size: clamp(18px, 2.4vw, 24px);
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+  color: var(--qlc-text);
+}
+.qlc-bitget-steps {
+  margin: 14px 0 0;
+  padding-left: 18px;
+  font-size: 13px;
+  color: var(--qlc-muted);
+  display: grid;
+  gap: 4px;
+}
+.qlc-bitget-form {
+  border-left: 1px solid var(--qlc-line);
+  padding-left: 22px;
+  min-width: 0;
+}
+.qlc-bitget-form h4 {
+  margin: 0 0 4px;
+}
+.qlc-bitget-form .qlc-btn {
+  width: 100%;
+  margin-top: 14px;
+}
+.qlc-bitget-history {
+  grid-column: 1 / -1;
+  border-top: 1px solid var(--qlc-line);
+  padding-top: 12px;
+}
+.qlc-bitget-history li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px 12px;
+  font-size: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--qlc-line);
+}
+.qlc-bitget-history li span {
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+@media (max-width: 900px) {
+  .qlc-bitget {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .qlc-bitget-form {
+    border-left: none;
+    padding-left: 0;
+    border-top: 1px solid var(--qlc-line);
+    padding-top: 14px;
+  }
+}
+@media (max-width: 480px) {
+  .qlc-bitget-uid-row .qlc-btn {
+    width: 100%;
+  }
+}
+
+/* Estado de cuenta dentro de la subcuenta/API */
+.qlc-statement-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px 12px;
+  margin-bottom: 10px;
+}
+.qlc-statement-card-head h3 {
+  margin: 0;
+}
+.qlc-statement-meta {
+  font-size: 12px;
+  color: var(--qlc-muted);
+  margin: 10px 0 0;
+  overflow-wrap: anywhere;
+}
+.qlc-statement-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+.qlc-statement-history li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px 10px;
+  font-size: 12px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--qlc-line);
+}
+.qlc-statement-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(160px, 100%), 1fr));
+  gap: 0 12px;
+}
+
+/* Reportes de transferencia interna Bitget (admin) */
+.qlc-transfer-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+.qlc-transfer-item {
+  border: 1px solid var(--qlc-line);
+  border-radius: 12px;
+  padding: 12px;
+  min-width: 0;
+}
+.qlc-transfer-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px 10px;
+  margin-bottom: 8px;
+}
+.qlc-transfer-data {
+  display: grid;
+  grid-template-columns: minmax(90px, max-content) minmax(0, 1fr);
+  gap: 4px 12px;
+  margin: 0;
+  font-size: 12px;
+}
+.qlc-transfer-data dt {
+  color: var(--qlc-muted2);
+}
+.qlc-transfer-data dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.qlc-transfer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+@media (max-width: 420px) {
+  .qlc-transfer-data {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .qlc-transfer-data dd {
+    margin-bottom: 4px;
+  }
+  .qlc-transfer-actions .qlc-btn {
+    flex: 1 1 auto;
+  }
+}
+
+.qlc-plain-fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+
+.qlc-message-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 4px 8px;
 }

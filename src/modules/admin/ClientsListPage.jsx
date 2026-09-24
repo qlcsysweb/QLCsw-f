@@ -193,8 +193,8 @@ function EditClientModal({ client, onClose, onSaved }) {
   );
 }
 
-// AUDITORÍA QLC PARTE 6 — progreso de UNA subcuenta/API: cuántas de sus 5
-// condiciones de activación (Wallet, Garantía, Capital, API, Activación) ya
+// AUDITORÍA QLC PARTE 6 — progreso de UNA subcuenta/API: cuántas de sus 4
+// condiciones de activación (Garantía, Capital, API, Activación) ya
 // están confirmadas. Mismo cálculo que usa el backend (summarizeConditions
 // en clientController.js), replicado aquí porque el listado ya trae el
 // detalle completo de cada subcuenta (conditions) y no hace falta pedirlo

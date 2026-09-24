@@ -1,14 +1,15 @@
-import { useEffect, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import api, { API_BASE_URL } from '../../services/api';
 import Modal from '../../components/Modal';
-import { API_CONNECTION_STATUS, PAYMENT_REPORT_STATUS, STATEMENT_STATUS, statusOf } from '../../utils/statusLabels';
-import { formatCdmxDate } from '../../utils/cdmxTime';
+import { API_CONNECTION_STATUS, PAYMENT_REPORT_STATUS, statusOf } from '../../utils/statusLabels';
+import { formatCdmxDate, formatDateOnly } from '../../utils/cdmxTime';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 import { getLocalizedModel } from '../../i18n/bilingualContent';
 import ModelComparisonTable from '../../components/ModelComparisonTable';
-import CountdownTimer from '../../components/CountdownTimer';
+import StatementStatus, { StatementBadge } from '../../components/StatementStatus';
+import BitgetTransferSection from './BitgetTransferSection';
 import usePolling from '../../hooks/usePolling';
 
 function ModelDetailsModal({ model, onClose, onSelect, selecting, t }) {
@@ -66,11 +67,11 @@ export default function SubaccountDetailPage() {
   const [apiForm, setApiForm] = useState({ exchangeName: '', apiKey: '', apiSecret: '', apiPassphrase: '', ipAddress: '' });
   const [savingApi, setSavingApi] = useState(false);
   const [payments, setPayments] = useState([]);
-  const [paymentForm, setPaymentForm] = useState({ amount: '', reference: '' });
-  const [reportingPayment, setReportingPayment] = useState(false);
   const [statements, setStatements] = useState([]);
+  const [currentStatement, setCurrentStatement] = useState(null);
   const [paymentConfig, setPaymentConfig] = useState(null);
-  const [copiedField, setCopiedField] = useState(null);
+  const location = useLocation();
+  const scrolledToHash = useRef(false);
   // CORREGIR.xlsx CLIENTE 13 — reporte real de distribución de capital.
   const [distributionReports, setDistributionReports] = useState([]);
   const [distributionForm, setDistributionForm] = useState({ note: '' });
@@ -78,7 +79,6 @@ export default function SubaccountDetailPage() {
 
   const apiStatusMap = API_CONNECTION_STATUS(t);
   const paymentStatusMap = PAYMENT_REPORT_STATUS(t);
-  const statementStatusMap = STATEMENT_STATUS(t);
 
   const load = () => {
     api
@@ -99,7 +99,10 @@ export default function SubaccountDetailPage() {
           .catch(() => {});
         api
           .get(`/client/api-subaccounts/${id}/statements`)
-          .then(({ data }) => setStatements(data.statements))
+          .then(({ data }) => {
+            setStatements(data.statements);
+            setCurrentStatement(data.current);
+          })
           .catch(() => {});
         api.get('/client/payment-config').then(({ data }) => setPaymentConfig(data.config)).catch(() => {});
         api
@@ -120,6 +123,14 @@ export default function SubaccountDetailPage() {
       });
   };
   useEffect(load, [id]);
+
+  // Acceso directo "Ir a pagar" desde el dashboard (#garantia): una sola
+  // vez, en cuanto la sección ya está renderizada.
+  useEffect(() => {
+    if (!subaccount || scrolledToHash.current || location.hash !== '#garantia') return;
+    scrolledToHash.current = true;
+    requestAnimationFrame(() => document.getElementById('garantia')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  }, [subaccount, location.hash]);
 
   // Actualización sin refresh manual: si administración marca la
   // transferencia como recibida, el cliente lo ve sin recargar la página.
@@ -151,11 +162,12 @@ export default function SubaccountDetailPage() {
   const models = modelsRaw.map((m) => getLocalizedModel(m, language));
   const hasModel = Boolean(subaccount.clientModel);
   const modelConfirmed = Boolean(subaccount.clientModel?.confirmedAt);
-  // Transferencia de garantía — la más reciente sin ligar a un estado de
-  // cuenta (esas son comisiones, un flujo distinto). `payments` ya viene
-  // ordenado por fecha descendente desde el backend.
-  const latestGuaranteeReport = payments.find((p) => !p.statementId) || null;
-  const guaranteeReceived = latestGuaranteeReport?.status === 'APROBADO';
+  // Garantía confirmada = algún reporte de garantía (sin estado de cuenta
+  // ligado) ya CONFIRMADO. `payments` viene ordenado desc. desde backend.
+  const guaranteeConfirmed = payments.some((p) => !p.statementId && p.status === 'APROBADO');
+  const statementStatus = currentStatement?.status || 'NO_GENERADO';
+  const hasUnpaidStatement = statementStatus === 'PENDIENTE_DE_PAGO' || statementStatus === 'VENCIDO_SIN_PAGAR';
+  const latestStatement = statements[0] || null;
 
   const selectModel = async (modelId) => {
     setSelecting(true);
@@ -235,36 +247,6 @@ export default function SubaccountDetailPage() {
     }
   };
 
-  const copyField = async (field, value) => {
-    if (!value) return;
-    try {
-      await navigator.clipboard.writeText(value);
-      setCopiedField(field);
-      setTimeout(() => setCopiedField((f) => (f === field ? null : f)), 2000);
-    } catch {
-      // Si el navegador bloquea el portapapeles no rompemos la vista.
-    }
-  };
-
-  const submitPayment = async (e) => {
-    e.preventDefault();
-    if (!paymentForm.amount) return;
-    setReportingPayment(true);
-    try {
-      await api.post(`/client/api-subaccounts/${id}/payment-reports`, {
-        amount: paymentForm.amount,
-        reference: paymentForm.reference || undefined,
-      });
-      flash(t('clientPayments.reportedOk'));
-      setPaymentForm({ amount: '', reference: '' });
-      load();
-    } catch (err) {
-      setError(translateBackendMessage(err.message, language));
-    } finally {
-      setReportingPayment(false);
-    }
-  };
-
   return (
     <div>
       <Link to="/client/api-subaccounts" style={{ fontSize: 12, color: 'var(--qlc-muted)' }}>
@@ -286,7 +268,7 @@ export default function SubaccountDetailPage() {
         <div className="qlc-card" style={{ marginBottom: 16 }}>
           <h3 style={{ marginTop: 0 }}>{t('clientProcess.title')}</h3>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10 }}>
-            {['WALLET', 'PAYMENT', 'FUNDS', 'API', 'ACTIVATION'].map((type) => {
+            {['PAYMENT', 'FUNDS', 'API', 'ACTIVATION'].map((type) => {
               const condition = subaccount.process.conditions.find((c) => c.type === type);
               const cStatus = condition?.status || 'PENDING';
               const info =
@@ -378,12 +360,6 @@ export default function SubaccountDetailPage() {
               <span style={{ color: 'var(--qlc-muted2)' }}>{t('clientApiConnection.requiredCapitalPending')}</span>
             )}
           </p>
-          {subaccount.capitalDistributionItems?.length > 0 && (
-            <p style={{ fontSize: 14 }}>
-              <strong>{t('clientApiConnection.capitalReceived')}:</strong>{' '}
-              {subaccount.capitalDistributionItems.reduce((sum, i) => sum + Number(i.amount), 0)} USDT
-            </p>
-          )}
           {subaccount.clientReportedCapitalReady && (
             <p style={{ fontSize: 12, color: 'var(--qlc-ok)' }}>✓ {t('clientApiConnection.capitalReported')}</p>
           )}
@@ -513,154 +489,62 @@ export default function SubaccountDetailPage() {
           )}
         </div>
 
-        <div className="qlc-card">
-          <h3 style={{ marginTop: 0 }}>{t('clientPayments.paymentDataTitle')}</h3>
-          {paymentConfig?.walletAddress ? (
-            <>
-              {(paymentConfig.qrDriveFileId || paymentConfig.qrUrl) && (
-                <img
-                  src={paymentConfig.qrDriveFileId ? `${API_BASE_URL}/client/payment-config/qr` : paymentConfig.qrUrl}
-                  alt="QR de pago"
-                  style={{ width: 130, borderRadius: 10, marginBottom: 10 }}
-                />
-              )}
-              <p style={{ fontSize: 13 }}><strong>{t('clientPayments.currency')}:</strong> {paymentConfig.currency || 'USDT'}</p>
-              {paymentConfig.network && <p style={{ fontSize: 13 }}><strong>{t('clientPayments.network')}:</strong> {paymentConfig.network}</p>}
-              <p style={{ fontSize: 13, wordBreak: 'break-all' }}><strong>{t('clientPayments.wallet')}:</strong> {paymentConfig.walletAddress}</p>
-              <button type="button" className="qlc-btn ghost" onClick={() => copyField('wallet', paymentConfig.walletAddress)}>
-                {copiedField === 'wallet' ? t('common.copied') : t('common.copy')}
-              </button>
-              {paymentConfig.paymentLink && (
-                <div style={{ marginTop: 10 }}>
-                  <p style={{ fontSize: 13, wordBreak: 'break-all', marginBottom: 6 }}>
-                    <strong>{t('clientPayments.paymentLink')}:</strong> {paymentConfig.paymentLink}
-                  </p>
-                  <div style={{ display: 'flex', gap: 6 }}>
-                    <button type="button" className="qlc-btn ghost" onClick={() => copyField('link', paymentConfig.paymentLink)}>
-                      {copiedField === 'link' ? t('common.copied') : t('common.copy')}
-                    </button>
-                    <a className="qlc-btn ghost" href={paymentConfig.paymentLink} target="_blank" rel="noreferrer">
-                      {t('clientPayments.openWalletLink')}
-                    </a>
-                  </div>
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="qlc-empty">{t('clientPayments.pendingConfig')}</div>
-          )}
-        </div>
-
-        <div className="qlc-card">
-          <h3 style={{ marginTop: 0 }}>{t('clientPayments.reportPaymentTitle')}</h3>
-
-          {/* Estado de transferencia — claramente diferenciado: sin reportar /
-              reportada (en revisión) / recibida. QLC solo administra este
-              estado de confirmación, nunca procesa la transferencia. */}
-          <div
-            className={`qlc-badge ${guaranteeReceived ? 'ok' : latestGuaranteeReport ? 'warn' : 'muted'}`}
-            style={{ display: 'block', width: 'fit-content', marginBottom: 12, fontSize: 13, padding: '8px 12px' }}
-          >
-            {guaranteeReceived
-              ? `✓ ${t('clientPayments.transferReceived')}`
-              : latestGuaranteeReport
-                ? `◌ ${t('clientPayments.transferReported')}`
-                : t('clientPayments.transferPendingReport')}
+        <div className={`qlc-card${statementStatus === 'PENDIENTE_DE_PAGO' ? ' qlc-card-attention' : ''}`}>
+          <div className="qlc-statement-card-head">
+            <h3>{t('statementStatus.title')}</h3>
+            <StatementStatus status={statementStatus} expiresAt={currentStatement?.expiresAt} onExpire={load} />
           </div>
-          {latestGuaranteeReport && !guaranteeReceived && (
-            <p style={{ fontSize: 12, color: 'var(--qlc-muted)', marginTop: -6, marginBottom: 12 }}>
-              {t('clientPayments.transferReportedHint')}
+          {latestStatement && (
+            <p className="qlc-statement-meta">
+              {formatDateOnly(latestStatement.periodStart)} – {formatDateOnly(latestStatement.periodEnd)}
+              {Number(latestStatement.commission) > 0 ? ` · ${latestStatement.commission} USDT` : ''}
             </p>
           )}
-          {latestGuaranteeReport?.reference && (
-            <p style={{ fontSize: 12, color: 'var(--qlc-muted2)', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
-              {t('clientPayments.reference')}: <code style={{ wordBreak: 'break-all' }}>{latestGuaranteeReport.reference}</code>
-              <button type="button" className="qlc-btn ghost" onClick={() => copyField('hash', latestGuaranteeReport.reference)}>
-                {copiedField === 'hash' ? t('common.copied') : t('common.copy')}
-              </button>
-            </p>
-          )}
-
-          {guaranteeReceived ? (
-            <p style={{ fontSize: 13, color: 'var(--qlc-muted)' }}>{t('clientPayments.transferReceivedHint')}</p>
-          ) : (
-            <>
-              {subaccount.requiredCapital != null && (
-                <p style={{ fontSize: 12, color: 'var(--qlc-muted2)', marginTop: -6, marginBottom: 12 }}>
-                  {t('clientPayments.guaranteeHint').replace('{minimum}', (Number(subaccount.requiredCapital) * 0.1).toFixed(2))}
-                </p>
-              )}
-              <form onSubmit={submitPayment}>
-                <label className="qlc-label">{t('clientPayments.amount')}</label>
-                <input className="qlc-input" type="number" step="0.01" value={paymentForm.amount} onChange={(e) => setPaymentForm((f) => ({ ...f, amount: e.target.value }))} required />
-                <label className="qlc-label">{t('clientPayments.reference')}</label>
-                <input className="qlc-input" value={paymentForm.reference} onChange={(e) => setPaymentForm((f) => ({ ...f, reference: e.target.value }))} placeholder={t('clientPayments.referencePlaceholder')} />
-                <button className="qlc-btn primary" style={{ marginTop: 12, width: '100%' }} disabled={reportingPayment}>
-                  {reportingPayment ? t('clientPayments.sending') : t('clientPayments.reportPayment')}
-                </button>
-              </form>
-            </>
-          )}
-
-          {payments.length > 0 && (
-            <ul className="qlc-plain-list" style={{ marginTop: 14 }}>
-              {payments.map((p) => (
-                <li key={p.id}>
-                  {p.amount} {p.currency} — <span className={`qlc-badge ${statusOf(paymentStatusMap, p.status).className}`}>{statusOf(paymentStatusMap, p.status).text}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-
-        <div className="qlc-card">
-          <h3 style={{ marginTop: 0 }}>
-            {t('clientSubaccountDetail.statements')} ({statements.length})
-          </h3>
-          {statements.length === 0 ? (
-            <div className="qlc-empty">{t('clientSubaccountDetail.noStatements')}</div>
-          ) : (
-            <ul className="qlc-plain-list">
-              {statements.map((s) => {
-                const stStatus = statusOf(statementStatusMap, s.displayStatus, 'DISPONIBLE');
-                return (
-                  <li key={s.id} style={{ display: 'flex', flexDirection: 'column', gap: 6, paddingBottom: 10, borderBottom: '1px solid var(--qlc-line)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span>
-                        {formatCdmxDate(s.periodStart)} – {formatCdmxDate(s.periodEnd)} · {s.resultPercentage}%
-                      </span>
-                      <span className={`qlc-badge ${stStatus.className}`}>{stStatus.text}</span>
-                    </div>
-                    {!s.commissionPaid && s.commissionDueAt && (
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12 }}>
-                        <span style={{ color: 'var(--qlc-muted2)' }}>{t('clientSubaccountDetail.timeToPay')}</span>
-                        <CountdownTimer deadline={s.commissionDueAt} expiredLabel={t('clientSubaccountDetail.deadlineExpired')} />
-                      </div>
-                    )}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12 }}>
-                      {s.pdfDriveFileId && (
-                        <a href={`${API_BASE_URL}/client/statements/${s.id}/download`} target="_blank" rel="noreferrer">
-                          {t('clientSubaccountDetail.viewPdf')}
-                        </a>
+          <div className="qlc-statement-actions">
+            {latestStatement?.hasPdf && (
+              <a className="qlc-btn ghost" href={`${API_BASE_URL}/client/statements/${latestStatement.id}/download`} target="_blank" rel="noreferrer">
+                {t('statementStatus.viewPdf')}
+              </a>
+            )}
+            {hasUnpaidStatement && (
+              <a className="qlc-btn primary" href="#garantia">
+                {t('statementStatus.goPay')}
+              </a>
+            )}
+          </div>
+          {statements.length > 1 && (
+            <div style={{ marginTop: 14 }}>
+              <div style={{ fontSize: 12, color: 'var(--qlc-muted)' }}>{t('statementStatus.previous')}</div>
+              <ul className="qlc-plain-list qlc-statement-history" style={{ margin: 0 }}>
+                {statements.slice(1).map((s) => (
+                  <li key={s.id}>
+                    <span>
+                      {formatDateOnly(s.periodStart)} – {formatDateOnly(s.periodEnd)}
+                      {s.hasPdf && (
+                        <>
+                          {' · '}
+                          <a href={`${API_BASE_URL}/client/statements/${s.id}/download`} target="_blank" rel="noreferrer">
+                            {t('statementStatus.viewPdf')}
+                          </a>
+                        </>
                       )}
-                    </div>
-                    {s.evidenceDocuments?.length > 0 && (
-                      <div style={{ fontSize: 12, color: 'var(--qlc-muted)' }}>
-                        {t('clientSubaccountDetail.statementEvidence')}:{' '}
-                        {s.evidenceDocuments.map((d, idx) => (
-                          <span key={d.id}>
-                            {idx > 0 && ', '}
-                            <a href={`${API_BASE_URL}/client/documents/${d.id}/download`} target="_blank" rel="noreferrer">{d.fileName}</a>
-                          </span>
-                        ))}
-                      </div>
-                    )}
+                    </span>
+                    <StatementBadge status={s.status} />
                   </li>
-                );
-              })}
-            </ul>
+                ))}
+              </ul>
+            </div>
           )}
         </div>
+
+        <BitgetTransferSection
+          subaccountId={id}
+          config={paymentConfig}
+          reports={payments}
+          hasUnpaidStatement={hasUnpaidStatement}
+          guaranteeConfirmed={guaranteeConfirmed}
+          onReported={load}
+        />
       </div>
 
       {detailsModel && (

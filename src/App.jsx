@@ -26,7 +26,6 @@ import EmailSettingsPage from './modules/admin/settings/EmailSettingsPage';
 import SecuritySettingsPage from './modules/admin/settings/SecuritySettingsPage';
 import PlatformSettingsPage from './modules/admin/PlatformSettingsPage';
 import AdminGuidesPage from './modules/admin/GuidesPage';
-import StatementsArchivePage from './modules/admin/StatementsArchivePage';
 import ProcessStepsPage from './modules/admin/ProcessStepsPage';
 import AdminNotificationsPage from './modules/admin/NotificationsPage';
 import SubaccountAuditPage from './modules/admin/SubaccountAuditPage';
@@ -37,13 +36,9 @@ import ClientProfilePage from './modules/client/ProfilePage';
 import ClientSubaccountsPage from './modules/client/SubaccountsPage';
 import ClientSubaccountDetailPage from './modules/client/SubaccountDetailPage';
 import ClientDocumentsPage from './modules/client/DocumentsPage';
-import ClientStatementsPage from './modules/client/StatementsPage';
-import ClientWalletPage from './modules/client/WalletPage';
 import ClientSupportPage from './modules/client/SupportPage';
 import ClientNotificationsPage from './modules/client/NotificationsPage';
-import ClientCapitalIncreasePage from './modules/client/CapitalIncreasePage';
 import ClientGuidesPage from './modules/client/GuidesPage';
-import ClientCapitalRescuePage from './modules/client/CapitalRescuePage';
 
 function AppRoutes() {
   const { hasChosenLanguage } = useLanguage();
@@ -88,7 +83,6 @@ function AppRoutes() {
               <Route path="support" element={<AdminSupportPage />} />
               <Route path="prospects" element={<ProspectsPage />} />
               <Route path="admins" element={<AdminsPage />} />
-              <Route path="statements" element={<StatementsArchivePage />} />
               <Route path="subaccounts-audit" element={<SubaccountAuditPage />} />
               <Route path="notifications" element={<AdminNotificationsPage />} />
             </Route>
@@ -101,11 +95,7 @@ function AppRoutes() {
               <Route path="api-subaccounts" element={<ClientSubaccountsPage />} />
               <Route path="api-subaccounts/:id" element={<ClientSubaccountDetailPage />} />
               <Route path="documents" element={<ClientDocumentsPage />} />
-              <Route path="statements" element={<ClientStatementsPage />} />
               <Route path="guides" element={<ClientGuidesPage />} />
-              <Route path="wallet" element={<ClientWalletPage />} />
-              <Route path="capital-increase" element={<ClientCapitalIncreasePage />} />
-              <Route path="capital-rescue" element={<ClientCapitalRescuePage />} />
               {/* CORRECCIÓN 16 (bloque de 20) — "Citas" ya no es una ruta
                   independiente: se solicita desde dentro de un caso en
                   Soporte. Se conserva el redirect por si queda algún enlace
