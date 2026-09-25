@@ -14,7 +14,6 @@ import DashboardPage from './modules/admin/DashboardPage';
 import ClientsListPage from './modules/admin/ClientsListPage';
 import ClientDetailPage from './modules/admin/ClientDetailPage';
 import AdminSubaccountDetailPage from './modules/admin/SubaccountDetailPage';
-import AdminPaymentsPage from './modules/admin/PaymentsPage';
 import AdminAppointmentsPage from './modules/admin/AppointmentsPage';
 import AdminSupportPage from './modules/admin/SupportPage';
 import ProspectsPage from './modules/admin/ProspectsPage';
@@ -78,7 +77,6 @@ function AppRoutes() {
               <Route path="settings/platform" element={<PlatformSettingsPage />} />
               <Route path="settings/security" element={<SecuritySettingsPage />} />
               <Route path="settings/process-steps" element={<ProcessStepsPage />} />
-              <Route path="payments" element={<AdminPaymentsPage />} />
               <Route path="appointments" element={<AdminAppointmentsPage />} />
               <Route path="support" element={<AdminSupportPage />} />
               <Route path="prospects" element={<ProspectsPage />} />

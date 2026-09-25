@@ -88,6 +88,10 @@
   padding: 32px 36px;
   max-width: 1280px;
   width: 100%;
+  /* Un elemento de grid no se encoge por debajo de su contenido mínimo (tablas
+     con min-width): sin esto la columna crece más que la ventana y aparece
+     scroll horizontal en toda la página. */
+  min-width: 0;
 }
 
 @media (max-width: 900px) {

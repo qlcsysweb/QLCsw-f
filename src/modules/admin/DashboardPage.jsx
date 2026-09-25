@@ -90,7 +90,7 @@ export default function DashboardPage() {
           to="/admin/clients"
         />
         <StatCard label={t('adminDashboard.pendingAppointments')} value={summary.appointments.pending} to="/admin/appointments" />
-        <StatCard label={t('adminDashboard.pendingPayments')} value={summary.payments.pending} to="/admin/payments" />
+        <StatCard label={t('adminDashboard.pendingPayments')} value={summary.payments.pending} to="/admin/clients" />
         <StatCard label={t('adminDashboard.apiConnected')} value={summary.apiConnections.connected} hint="Bitget" to="/admin/clients" />
         <StatCard label={t('adminDashboard.apiDisconnected')} value={summary.apiConnections.disconnected} to="/admin/clients" />
         <StatCard label={t('adminDashboard.apiPending')} value={summary.apiConnections.pending} to="/admin/clients" />

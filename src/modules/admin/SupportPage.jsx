@@ -6,73 +6,8 @@ import { SUPPORT_CASE_STATUS, CHAT_SESSION_STATUS, statusOf } from '../../utils/
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 import usePolling from '../../hooks/usePolling';
+import CaseMessagesModal, { CaseMessagesButton } from '../../components/CaseMessagesModal';
 import { formatCdmxDateTime } from '../../utils/cdmxTime';
-
-// AUDITORÍA QLC PARTE 7 — mensajería interna del caso: el admin puede
-// escribir aquí para pedir información/aclarar dudas ANTES de que exista
-// una cita — independiente del chat de 15 minutos (ChatPanel, más abajo).
-function CaseMessagesThread({ caseId }) {
-  const { user } = useAuth();
-  const { t } = useLanguage();
-  const [messages, setMessages] = useState(null);
-  const [content, setContent] = useState('');
-  const [sending, setSending] = useState(false);
-
-  const refresh = () => api.get(`/admin/support-cases/${caseId}/messages`).then(({ data }) => setMessages(data.messages));
-  useEffect(() => {
-    refresh();
-    const interval = setInterval(refresh, 6000);
-    return () => clearInterval(interval);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [caseId]);
-
-  const send = async (e) => {
-    e.preventDefault();
-    if (!content.trim()) return;
-    setSending(true);
-    try {
-      await api.post(`/admin/support-cases/${caseId}/messages`, { content });
-      setContent('');
-      refresh();
-    } finally {
-      setSending(false);
-    }
-  };
-
-  return (
-    <div style={{ marginTop: 8, borderTop: '1px solid var(--qlc-line)', paddingTop: 8 }}>
-      <div style={{ fontSize: 11, color: 'var(--qlc-muted2)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-        {t('adminSupport.caseMessagesTitle')}
-      </div>
-      <div style={{ maxHeight: 220, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 8 }}>
-        {messages === null ? (
-          <span style={{ fontSize: 12, color: 'var(--qlc-muted2)' }}>{t('common.loading')}</span>
-        ) : messages.length === 0 ? (
-          <span style={{ fontSize: 12, color: 'var(--qlc-muted2)' }}>{t('adminSupport.noCaseMessages')}</span>
-        ) : (
-          messages.map((m) => (
-            <div key={m.id} style={{ fontSize: 12 }}>
-              <strong>{m.senderUserId === user.id ? t('adminSupport.youAdmin') : t('adminSupport.client')}:</strong> {m.content}
-              <div style={{ fontSize: 10, color: 'var(--qlc-muted2)' }}>{formatCdmxDateTime(m.createdAt)}</div>
-            </div>
-          ))
-        )}
-      </div>
-      <form onSubmit={send} style={{ display: 'flex', gap: 6 }}>
-        <input
-          className="qlc-input"
-          style={{ fontSize: 12 }}
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          placeholder={t('adminSupport.caseMessagePlaceholder')}
-        />
-        <button className="qlc-btn primary" disabled={sending}>
-          {t('adminSupport.send')}
-        </button>
-      </form>
-    </div>
-  );
-}
 
 function ChatPanel({ session, onClose }) {
   const { user } = useAuth();
@@ -206,7 +141,8 @@ export default function SupportPage() {
   const [cases, setCases] = useState([]);
   const [sessions, setSessions] = useState([]);
   const [activeChat, setActiveChat] = useState(null);
-  const [expandedCaseId, setExpandedCaseId] = useState(null);
+  // Caso cuya mensajería interna está abierta en el modal.
+  const [openCaseId, setOpenCaseId] = useState(null);
 
   const supportCaseStatusMap = SUPPORT_CASE_STATUS(t);
   const chatSessionStatusMap = CHAT_SESSION_STATUS(t);
@@ -243,7 +179,7 @@ export default function SupportPage() {
     if (!caseId || cases.length === 0) return;
     const target = cases.find((c) => c.id === caseId);
     if (target) {
-      setExpandedCaseId(target.id);
+      setOpenCaseId(target.id);
       searchParams.delete('case');
       setSearchParams(searchParams, { replace: true });
     }
@@ -302,7 +238,7 @@ export default function SupportPage() {
               <div style={{ fontSize: 12, color: 'var(--qlc-muted2)', marginBottom: 8 }}>
                 {c.client?.firstName} {c.client?.lastName}
               </div>
-              <div style={{ display: 'flex', gap: 6 }}>
+              <div className="qlc-case-actions">
                 {c.status !== 'IN_PROGRESS' && (
                   <button className="qlc-btn ghost" onClick={() => updateStatus(c.id, 'IN_PROGRESS')}>
                     {t('adminSupport.inProgress')}
@@ -313,14 +249,22 @@ export default function SupportPage() {
                     {t('adminSupport.closeCase')}
                   </button>
                 )}
-                <button className="qlc-btn ghost" onClick={() => setExpandedCaseId(expandedCaseId === c.id ? null : c.id)}>
-                  {t('adminSupport.caseMessagesTitle')}
-                </button>
+                <CaseMessagesButton hasUnread={c.hasUnread} unreadCount={c.unreadMessages} onClick={() => setOpenCaseId(c.id)} />
               </div>
-              {expandedCaseId === c.id && <CaseMessagesThread caseId={c.id} />}
             </div>
           );
         })
+      )}
+
+      {openCaseId && cases.find((c) => c.id === openCaseId) && (
+        <CaseMessagesModal
+          apiBase="/admin"
+          supportCase={cases.find((c) => c.id === openCaseId)}
+          onClose={() => {
+            setOpenCaseId(null);
+            load();
+          }}
+        />
       )}
 
       {activeChat && (

@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import api, { setAuthToken } from '../services/api';
+import api, { getAuthToken, setAuthToken } from '../services/api';
 
 const AuthContext = createContext(null);
 
@@ -7,12 +7,34 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const [authError, setAuthError] = useState('');
+
   const refresh = useCallback(async () => {
+    // Sin token guardado no hay sesión que restaurar: se evita pedir /auth/me
+    // (siempre respondería 401 y ensuciaría la consola en cada visita al
+    // sitio público o al login).
+    if (!getAuthToken()) {
+      setUser(null);
+      setAuthError('');
+      setLoading(false);
+      return;
+    }
     try {
       const { data } = await api.get('/auth/me');
       setUser(data.user);
-    } catch {
-      setUser(null);
+      setAuthError('');
+    } catch (err) {
+      if (err.status === 401 || err.status === 403) {
+        // Sesión realmente inexistente/vencida: se limpia el token viejo para
+        // no reenviarlo en cada petición.
+        setAuthToken(null);
+        setUser(null);
+        setAuthError('');
+      } else {
+        // Fallo del servidor/red: NO es una sesión inválida. Se conserva el
+        // token y se informa, en vez de expulsar al usuario al login en bucle.
+        setAuthError(err.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -54,7 +76,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, loginWithTwoFactor, register, logout, refresh }}>
+    <AuthContext.Provider value={{ user, loading, authError, login, loginWithTwoFactor, register, logout, refresh }}>
       {children}
     </AuthContext.Provider>
   );

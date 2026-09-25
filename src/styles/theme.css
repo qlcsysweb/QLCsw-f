@@ -981,3 +981,11 @@ textarea {
   align-items: center;
   gap: 4px 8px;
 }
+
+/* Acciones de un caso (Solicitar cita / estado / Mensajes): nunca se salen de la tarjeta. */
+.qlc-case-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}

@@ -26,6 +26,8 @@ const KNOWN_MESSAGES = {
   'Usuario o contraseña incorrectos': 'Incorrect username or password',
   'Demasiados intentos de inicio de sesión. Intenta más tarde.': 'Too many login attempts. Please try again later.',
   'Sesión no encontrada': 'Session not found',
+  'El archivo supera el límite permitido de 5 MB.': 'The file exceeds the allowed limit of 5 MB.',
+  'El archivo está vacío.': 'The file is empty.',
   'Sesión inválida': 'Invalid session',
   'Sesión inválida o expirada': 'Invalid or expired session',
   'No tienes permisos para esta acción': "You don't have permission for this action",

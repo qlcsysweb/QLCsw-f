@@ -32,7 +32,6 @@ export default function AdminLayout() {
     { to: '/admin/cms', label: t('adminNav.content') },
     { to: '/admin/track-record', label: t('adminNav.trackRecord') },
     { to: '/admin/guides', label: t('adminNav.guides') },
-    { to: '/admin/payments', label: t('adminNav.payments') },
     { to: '/admin/appointments', label: t('adminNav.appointments') },
     { to: '/admin/support', label: t('adminNav.support') },
     { to: '/admin/prospects', label: t('adminNav.prospects') },

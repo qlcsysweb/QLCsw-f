@@ -947,8 +947,8 @@ const es = {
   adminPayments: {
     kicker: 'PAGOS / GARANTÍA',
     title: 'Transferencia interna Bitget',
-    configTitle: 'UID de recepción Bitget de QLC',
-    configHint: 'Los clientes verán este UID en Depósito de tu garantía → Transferencia interna Bitget. Solo administración puede cambiarlo.',
+    configTitle: 'Datos de pago de esta subcuenta',
+    configHint: 'UID de recepción Bitget de QLC para los pagos de ESTA subcuenta/API. El cliente lo verá solo dentro de esta subcuenta (Depósito de tu garantía → Transferencia interna Bitget). Solo administración puede cambiarlo.',
     receiveUid: 'UID de recepción',
     receiveUidPlaceholder: 'Ej. 4311439964',
     instructions: 'Instrucciones adicionales (opcional)',
@@ -1046,6 +1046,21 @@ const es = {
     inactive: 'Inactivo',
     activate: 'Activar',
     deactivate: 'Desactivar',
+  },
+
+  caseMessaging: {
+    button: 'Mensajes',
+    newMessage: 'Tienes un nuevo mensaje',
+    caseTitle: 'Caso',
+    files: 'Archivos del caso',
+    attach: 'Adjuntar archivo',
+    fileHint: 'Cualquier tipo de archivo, máximo 5 MB.',
+    fileTooBig: 'El archivo supera el límite permitido de 5 MB.',
+    noMessages: 'Todavía no hay mensajes en este caso.',
+    placeholder: 'Escribe tu mensaje…',
+    send: 'Enviar',
+    you: 'Tú',
+    client: 'Cliente',
   },
 
   clientNotifications: {
@@ -1286,6 +1301,16 @@ const es = {
     correctionSubmit: 'Enviar archivo corregido',
     correctionSubmitting: 'Enviando…',
     correctionSentOk: 'Tu documento corregido fue enviado correctamente.',
+    identityKicker: 'DOCUMENTO DE IDENTIDAD',
+    identityTitle: 'Identificación oficial',
+    identitySubtitle: 'Documento de identificación oficial del cliente.',
+    identityName: 'Identificación oficial',
+    stateNotSent: 'No enviado',
+    stateSent: 'Enviado',
+    uploadedAt: 'Fecha de carga',
+    viewDocument: 'Ver documento',
+    sendDocument: 'Enviar documento',
+    otherDocuments: 'Otros documentos',
   },
 
   clientApiConnection: {
@@ -2610,8 +2635,8 @@ const en = {
   adminPayments: {
     kicker: 'PAYMENTS / GUARANTEE',
     title: 'Bitget internal transfer',
-    configTitle: "QLC's Bitget receiving UID",
-    configHint: 'Clients will see this UID under Your guarantee deposit → Bitget internal transfer. Only administration can change it.',
+    configTitle: 'Payment data for this subaccount',
+    configHint: "QLC's Bitget receiving UID for payments of THIS subaccount/API. The client sees it only inside this subaccount (Your guarantee deposit → Bitget internal transfer). Only administration can change it.",
     receiveUid: 'Receiving UID',
     receiveUidPlaceholder: 'e.g. 4311439964',
     instructions: 'Additional instructions (optional)',
@@ -2710,6 +2735,21 @@ const en = {
     inactive: 'Inactive',
     activate: 'Activate',
     deactivate: 'Deactivate',
+  },
+
+  caseMessaging: {
+    button: 'Messages',
+    newMessage: 'You have a new message',
+    caseTitle: 'Case',
+    files: 'Case files',
+    attach: 'Attach file',
+    fileHint: 'Any file type, 5 MB maximum.',
+    fileTooBig: 'The file exceeds the allowed limit of 5 MB.',
+    noMessages: 'There are no messages in this case yet.',
+    placeholder: 'Write your message…',
+    send: 'Send',
+    you: 'You',
+    client: 'Client',
   },
 
   clientNotifications: {
@@ -2944,6 +2984,16 @@ const en = {
     correctionSubmit: 'Submit corrected file',
     correctionSubmitting: 'Submitting…',
     correctionSentOk: 'Your corrected document was submitted successfully.',
+    identityKicker: 'IDENTITY DOCUMENT',
+    identityTitle: 'Official identification',
+    identitySubtitle: "The client's official identification document.",
+    identityName: 'Official identification',
+    stateNotSent: 'Not submitted',
+    stateSent: 'Submitted',
+    uploadedAt: 'Upload date',
+    viewDocument: 'View document',
+    sendDocument: 'Submit document',
+    otherDocuments: 'Other documents',
   },
 
   clientApiConnection: {

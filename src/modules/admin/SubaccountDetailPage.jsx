@@ -83,6 +83,10 @@ export default function AdminSubaccountDetailPage() {
   const [statements, setStatements] = useState([]);
   const [currentStatement, setCurrentStatement] = useState(null);
   const [receiveUid, setReceiveUid] = useState('');
+  // DATOS DE PAGO de ESTA subcuenta (UID de recepción Bitget + instrucciones).
+  const [paymentForm, setPaymentForm] = useState({ bitgetReceiveUid: '', instructions: '', dirty: false });
+  const [savingPaymentData, setSavingPaymentData] = useState(false);
+  const [paymentDataMsg, setPaymentDataMsg] = useState('');
   const [confirmMarkPaid, setConfirmMarkPaid] = useState(null);
   // CORREGIR.xlsx CLIENTE 13 — reportes de distribución de capital, revisados por el admin.
   const [distributionReports, setDistributionReports] = useState([]);
@@ -122,12 +126,30 @@ export default function AdminSubaccountDetailPage() {
       setStatements(data.statements);
       setCurrentStatement(data.current);
     });
-    api.get('/admin/payment-config').then(({ data }) => setReceiveUid(data.config?.bitgetReceiveUid || '')).catch(() => {});
+    api
+      .get(`/admin/api-subaccounts/${id}/payment-data`)
+      .then(({ data }) => {
+        setReceiveUid(data.paymentData?.bitgetReceiveUid || '');
+        // No pisa lo que el admin está escribiendo en el formulario.
+        setPaymentForm((f) => (f.dirty ? f : { bitgetReceiveUid: data.paymentData?.bitgetReceiveUid || '', instructions: data.paymentData?.instructions || '', dirty: false }));
+      })
+      .catch(() => {});
     api
       .get('/admin/capital-distribution-reports', { params: { apiSubaccountId: id } })
       .then(({ data }) => setDistributionReports(data.reports));
   };
-  useEffect(load, [id]);
+  // Al cambiar de subcuenta se vacían los datos dependientes (evita mezclar
+  // pagos/datos de pago entre subcuentas si una respuesta falla o tarda).
+  useEffect(() => {
+    setPayments([]);
+    setStatements([]);
+    setCurrentStatement(null);
+    setReceiveUid('');
+    setPaymentForm({ bitgetReceiveUid: '', instructions: '', dirty: false });
+    setDistributionReports([]);
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   // Actualización sin refresh manual: reportes de transferencia y estado de
   // cuenta (sin re-ejecutar el load() completo, para no pisar formularios).
@@ -145,6 +167,26 @@ export default function AdminSubaccountDetailPage() {
   const flash = (msg) => {
     setMessage(msg);
     setTimeout(() => setMessage(''), 3000);
+  };
+
+  const savePaymentData = async (e) => {
+    e.preventDefault();
+    setSavingPaymentData(true);
+    setError('');
+    try {
+      await api.put(`/admin/api-subaccounts/${id}/payment-data`, {
+        bitgetReceiveUid: paymentForm.bitgetReceiveUid.trim(),
+        instructions: paymentForm.instructions,
+      });
+      setPaymentForm((f) => ({ ...f, dirty: false }));
+      setPaymentDataMsg(t('adminPayments.updated'));
+      setTimeout(() => setPaymentDataMsg(''), 3000);
+      load();
+    } catch (err) {
+      setError(translateBackendMessage(err.message, language));
+    } finally {
+      setSavingPaymentData(false);
+    }
   };
 
   if (!subaccount) return <div className="qlc-empty">{t('adminClientDetail.loadingClient')}</div>;
@@ -379,8 +421,37 @@ export default function AdminSubaccountDetailPage() {
         </div>
 
         <div className="qlc-card">
+          <h3 style={{ marginTop: 0 }}>{t('adminPayments.configTitle')}</h3>
+          <p style={{ fontSize: 12, color: 'var(--qlc-muted)', marginTop: 0 }}>{t('adminPayments.configHint')}</p>
+          <form onSubmit={savePaymentData}>
+            <label className="qlc-label" htmlFor="bitget-uid">{t('adminPayments.receiveUid')}</label>
+            <input
+              id="bitget-uid"
+              className="qlc-input"
+              inputMode="numeric"
+              maxLength={40}
+              placeholder={t('adminPayments.receiveUidPlaceholder')}
+              value={paymentForm.bitgetReceiveUid}
+              onChange={(e) => setPaymentForm((f) => ({ ...f, dirty: true, bitgetReceiveUid: e.target.value.replace(/\D/g, '') }))}
+            />
+            <label className="qlc-label" htmlFor="bitget-instructions">{t('adminPayments.instructions')}</label>
+            <textarea
+              id="bitget-instructions"
+              className="qlc-textarea"
+              rows={3}
+              value={paymentForm.instructions}
+              onChange={(e) => setPaymentForm((f) => ({ ...f, dirty: true, instructions: e.target.value }))}
+            />
+            <div className="qlc-form-actions">
+              {paymentDataMsg && <span style={{ color: 'var(--qlc-ok)', fontSize: 12 }}>{paymentDataMsg}</span>}
+              <button className="qlc-btn primary" disabled={savingPaymentData}>{t('common.save')}</button>
+            </div>
+          </form>
+        </div>
+
+        <div className="qlc-card">
           <h3 style={{ marginTop: 0 }}>
-            {t('adminPayments.title')} ({payments.length})
+            {t('adminPayments.reports')} ({payments.length})
           </h3>
           <TransferReportList reports={payments} receiveUid={receiveUid} onChanged={load} />
         </div>

@@ -104,7 +104,11 @@ export default function SubaccountDetailPage() {
             setCurrentStatement(data.current);
           })
           .catch(() => {});
-        api.get('/client/payment-config').then(({ data }) => setPaymentConfig(data.config)).catch(() => {});
+        // Datos de pago de ESTA subcuenta (no existe un dato general de pagos).
+        api
+          .get(`/client/api-subaccounts/${id}/payment-data`)
+          .then(({ data }) => setPaymentConfig(data.paymentData))
+          .catch(() => {});
         api
           .get(`/client/api-subaccounts/${id}/capital-distribution-reports`)
           .then(({ data }) => setDistributionReports(data.reports))
@@ -122,7 +126,20 @@ export default function SubaccountDetailPage() {
         );
       });
   };
-  useEffect(load, [id]);
+  // Al cambiar de subcuenta se vacían TODOS los datos dependientes antes de
+  // pedir los de la nueva: así una subcuenta jamás muestra (ni conserva por
+  // un fallo de red) datos de la anterior.
+  useEffect(() => {
+    setSubaccount(null);
+    setPayments([]);
+    setStatements([]);
+    setCurrentStatement(null);
+    setPaymentConfig(null);
+    setDistributionReports([]);
+    setUnavailable(null);
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   // Acceso directo "Ir a pagar" desde el dashboard (#garantia): una sola
   // vez, en cuanto la sección ya está renderizada.
