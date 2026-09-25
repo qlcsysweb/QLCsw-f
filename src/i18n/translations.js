@@ -82,10 +82,6 @@ const es = {
   },
 
   nav: {
-    inicio: 'Inicio',
-    contacto: 'Contacto',
-    privacidad: 'Privacidad',
-    terminos: 'Términos',
     modelo: 'Modelo',
     comoFunciona: 'Cómo funciona',
     tecnologia: 'Tecnología',
@@ -1774,10 +1770,6 @@ const en = {
   },
 
   nav: {
-    inicio: 'Home',
-    contacto: 'Contact',
-    privacidad: 'Privacy',
-    terminos: 'Terms',
     modelo: 'Model',
     comoFunciona: 'How it works',
     tecnologia: 'Technology',

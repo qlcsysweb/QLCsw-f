@@ -58,7 +58,6 @@ function AppRoutes() {
           <Route path="/seguridad" element={<PublicHomePage />} />
           <Route path="/sobre-qlc" element={<PublicHomePage />} />
           <Route path="/faq" element={<PublicHomePage />} />
-          <Route path="/contacto" element={<PublicHomePage />} />
           <Route path="/privacidad" element={<PrivacyPolicyPage />} />
           <Route path="/terminos" element={<TermsOfServicePage />} />
           <Route path="/login" element={<LoginPage />} />

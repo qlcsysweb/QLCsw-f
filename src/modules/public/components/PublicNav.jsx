@@ -60,31 +60,11 @@ export default function PublicNav() {
   const [activeId, setActiveId] = useState(null);
   const [scrolled, setScrolled] = useState(false);
   const didInitialScroll = useRef(false);
-  const navRef = useRef(null);
-
-  // La altura del navbar varía (los enlaces pasan a 2 filas en pantallas
-  // angostas): se publica como variable CSS para que las secciones queden
-  // siempre justo debajo, sin taparse.
-  useEffect(() => {
-    const el = navRef.current;
-    if (!el) return undefined;
-    const apply = () => document.documentElement.style.setProperty('--qlc-nav-h', `${el.offsetHeight}px`);
-    apply();
-    const ro = new ResizeObserver(apply);
-    ro.observe(el);
-    return () => {
-      ro.disconnect();
-      document.documentElement.style.removeProperty('--qlc-nav-h');
-    };
-  }, []);
 
   // El navbar es fijo y NUNCA se esconde; solo aumenta el contraste del fondo
   // al alejarse del tope.
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 40);
-      if (window.scrollY < 200) setActiveId(null);
-    };
+    const handleScroll = () => setScrolled(window.scrollY > 40);
     handleScroll();
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
@@ -167,7 +147,7 @@ export default function PublicNav() {
   };
 
   return (
-    <nav ref={navRef} className={`nav${scrolled ? ' nav-scrolled' : ''}`}>
+    <nav className={`nav${scrolled ? ' nav-scrolled' : ''}`}>
       <div className="container nav-inner">
         <div className="brand-area">
           <a className="brand" href="/" onClick={goHome}>
@@ -176,12 +156,12 @@ export default function PublicNav() {
         </div>
 
         <div className="nav-links">
-          {/* Sin scroll manual, el navbar es la única vía de acceso: debe listar
-              TODAS las secciones (y las páginas legales del pie). */}
-          <a href="/" className={activeId === null ? 'active' : ''} onClick={goHome}>
-            {t('nav.inicio')}
-          </a>
-          {SECTIONS.map((s) => (
+          {/* CORRECCIÓN 20/3: navbar reducido — "Modelo", "Cómo funciona" y
+              "Modelos de participación" NO aparecen aquí (las páginas y
+              rutas siguen existiendo, solo se quitó el enlace del navbar).
+              "El problema" SÍ debe aparecer, justo después de Microposiciones
+              (ver orden real en SECTIONS). */}
+          {SECTIONS.filter((s) => !['modelo', 'como-funciona', 'modelos'].includes(s.id)).map((s) => (
             <a
               key={s.id}
               href={s.path}
@@ -191,8 +171,6 @@ export default function PublicNav() {
               {t(s.labelKey)}
             </a>
           ))}
-          <Link to="/privacidad">{t('nav.privacidad')}</Link>
-          <Link to="/terminos">{t('nav.terminos')}</Link>
         </div>
 
         <div className="qlc-nav-actions">
