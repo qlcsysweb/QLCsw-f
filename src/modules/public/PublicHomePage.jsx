@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import usePublicData from './usePublicData';
+import useLockUserScroll from './useLockUserScroll';
 import { getCookie, setCookie } from '../../utils/cookies';
 import DailyLanguagePrompt from '../../i18n/DailyLanguagePrompt';
 import AntiScamModal from '../../components/AntiScamModal';
@@ -27,6 +28,7 @@ const LANGUAGE_PROMPT_COOKIE = 'qlc_language_prompt_date';
 const todayString = () => new Date().toISOString().slice(0, 10);
 
 export default function PublicHomePage() {
+  useLockUserScroll();
   const { text, media, models, faqs, trackRecord, loading } = usePublicData();
   const [showLanguagePrompt, setShowLanguagePrompt] = useState(
     () => getCookie(LANGUAGE_PROMPT_COOKIE) !== todayString()

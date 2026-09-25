@@ -59,25 +59,13 @@ export default function PublicNav() {
 
   const [activeId, setActiveId] = useState(null);
   const [scrolled, setScrolled] = useState(false);
-  const [hidden, setHidden] = useState(false);
-  const lastScrollY = useRef(0);
   const didInitialScroll = useRef(false);
 
-  // Esconder/mostrar según dirección de scroll + aumentar contraste del fondo
-  // al alejarse del tope — transición suave vía CSS (ver public.css).
+  // El navbar es fijo y NUNCA se esconde; solo aumenta el contraste del fondo
+  // al alejarse del tope.
   useEffect(() => {
-    const handleScroll = () => {
-      const currentY = window.scrollY;
-      setScrolled(currentY > 40);
-      if (currentY < 120) {
-        setHidden(false);
-      } else if (currentY > lastScrollY.current + 4) {
-        setHidden(true);
-      } else if (currentY < lastScrollY.current - 4) {
-        setHidden(false);
-      }
-      lastScrollY.current = currentY;
-    };
+    const handleScroll = () => setScrolled(window.scrollY > 40);
+    handleScroll();
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -159,7 +147,7 @@ export default function PublicNav() {
   };
 
   return (
-    <nav className={`nav${scrolled ? ' nav-scrolled' : ''}${hidden ? ' nav-hidden' : ''}`}>
+    <nav className={`nav${scrolled ? ' nav-scrolled' : ''}`}>
       <div className="container nav-inner">
         <div className="brand-area">
           <a className="brand" href="/" onClick={goHome}>

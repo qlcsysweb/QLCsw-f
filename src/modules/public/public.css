@@ -38,8 +38,17 @@
   background: rgba(5, 7, 10, 0.94);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
 }
-.qlc-public .nav.nav-hidden {
-  transform: translateY(-100%);
+/* Sin scroll manual: sin barra ni gestos; solo se navega con el navbar fijo. */
+html.qlc-no-user-scroll {
+  scrollbar-width: none;
+  overscroll-behavior: none;
+}
+html.qlc-no-user-scroll::-webkit-scrollbar {
+  display: none;
+}
+/* El navbar fijo ocupa 76px: la sección destino debe quedar justo debajo. */
+.qlc-public main > * {
+  scroll-margin-top: 76px;
 }
 .qlc-public .nav-inner {
   height: 76px;
