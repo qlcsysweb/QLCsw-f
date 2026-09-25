@@ -303,7 +303,7 @@ export default function AdminSubaccountDetailPage() {
       {message && <div className="qlc-card" style={{ borderColor: 'var(--qlc-ok-border)', marginBottom: 16 }}>{message}</div>}
       {error && <div className="qlc-card" style={{ borderColor: 'var(--qlc-danger-border)', marginBottom: 16 }}>{error}</div>}
 
-      <div className="qlc-detail-grid">
+      <div className="qlc-detail-grid masonry">
         <div className="qlc-card">
           <h3 style={{ marginTop: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             {t('adminClientDetail.activationProcess')}

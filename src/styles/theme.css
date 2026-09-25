@@ -456,6 +456,19 @@ textarea {
 .qlc-detail-grid > * {
   min-width: 0;
 }
+/* Variante "mosaico": las tarjetas se apilan por columnas, juntas y sin huecos
+   verticales aunque tengan alturas distintas, siempre con separación de 18px. */
+.qlc-detail-grid.masonry {
+  display: block;
+  column-width: 320px;
+  column-gap: 18px;
+}
+.qlc-detail-grid.masonry > * {
+  break-inside: avoid;
+  margin: 0 0 18px;
+  width: 100%;
+  box-sizing: border-box;
+}
 
 .qlc-condition-row {
   display: flex;
