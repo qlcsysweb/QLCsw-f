@@ -85,7 +85,7 @@ export default function DashboardPage() {
         {/* Estados de cuenta VENCIDO / SIN PAGAR (plazo de 72 h agotado). */}
         <StatCard
           label={t('adminDashboard.expiredStatements')}
-          value={summary.expiredStatements ?? '—'}
+          value={summary.expiredStatements}
           hint={t('adminDashboard.expiredStatementsHint')}
           to="/admin/clients"
         />
