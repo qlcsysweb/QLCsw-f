@@ -15,6 +15,7 @@ export const SECTIONS = [
   { id: 'seguridad', path: '/seguridad', labelKey: 'nav.seguridad' },
   { id: 'sobre-qlc', path: '/sobre-qlc', labelKey: 'nav.sobreQlc' },
   { id: 'faq', path: '/faq', labelKey: 'nav.faq' },
+  { id: 'contacto', path: '/contacto', labelKey: 'nav.contacto' },
 ];
 
 export const PATH_TO_ID = SECTIONS.reduce((acc, s) => ({ ...acc, [s.path]: s.id }), {});

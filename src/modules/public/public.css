@@ -48,13 +48,14 @@ html.qlc-no-user-scroll::-webkit-scrollbar {
 }
 /* El navbar fijo ocupa 76px: la sección destino debe quedar justo debajo. */
 .qlc-public main > * {
-  scroll-margin-top: 76px;
+  scroll-margin-top: var(--qlc-nav-h, 76px);
 }
 .qlc-public .nav-inner {
-  height: 76px;
+  min-height: 76px;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 18px;
+  gap: 6px 18px;
 }
 .qlc-public .brand-area {
   display: flex;
@@ -94,12 +95,21 @@ html.qlc-no-user-scroll::-webkit-scrollbar {
   gap: 22px;
   flex: 1;
   min-width: 0;
-  overflow-x: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  /* Sin scroll horizontal (el gesto está bloqueado): si no caben, pasan a
+     una segunda fila centrada bajo el logo y los botones. */
+  flex-wrap: wrap;
+  gap: 4px 16px;
 }
-.qlc-public .nav-links::-webkit-scrollbar {
-  display: none;
+@media (max-width: 1500px) {
+  .qlc-public .nav-links {
+    order: 3;
+    flex: 1 0 100%;
+    justify-content: center;
+    padding-bottom: 8px;
+  }
+  .qlc-public .qlc-nav-actions {
+    margin-left: auto;
+  }
 }
 .qlc-public .nav-links a {
   position: relative;
@@ -243,7 +253,7 @@ html.qlc-no-user-scroll::-webkit-scrollbar {
    hero-mini) se reduce de forma proporcional en pantallas de poca altura
    mediante unidades vh — ver abajo. */
 .qlc-public .hero {
-  min-height: min(720px, calc(100svh - 76px));
+  min-height: min(720px, calc(100svh - var(--qlc-nav-h, 76px)));
   display: grid;
   place-items: center;
   position: relative;
@@ -880,8 +890,8 @@ html.qlc-no-user-scroll::-webkit-scrollbar {
     order: 3;
     flex: none;
     width: 100%;
-    gap: 18px;
-    justify-content: flex-start;
+    gap: 4px 14px;
+    justify-content: center;
   }
   .qlc-public .feature-list {
     grid-template-columns: 1fr;
@@ -920,7 +930,7 @@ html.qlc-no-user-scroll::-webkit-scrollbar {
     gap: 6px;
   }
   .qlc-public .nav-links {
-    gap: 14px;
+    gap: 4px 12px;
   }
   .qlc-public .hero {
     min-height: auto;
