@@ -13,6 +13,7 @@ export default function ClientLayout() {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [unread, setUnread] = useState(0);
+  const [unreadMessages, setUnreadMessages] = useState(0);
 
   // CORRECCIÓN 15 (bloque de 20) — Notificaciones va primero en el menú,
   // antes de cualquier otra opción funcional (se renderiza aparte, ver
@@ -30,6 +31,11 @@ export default function ClientLayout() {
   const loadUnread = () => {
     api.get('/client/notifications').then(({ data }) => {
       setUnread(data.notifications.filter((n) => !n.isRead).length);
+    });
+    // Sondeo de solo lectura — nunca marca nada como leído (eso solo pasa
+    // al abrir de verdad la sección de Mensajes, ver MessagesPage.jsx).
+    api.get('/client/messages').then(({ data }) => {
+      setUnreadMessages(data.messages.filter((m) => !m.isRead && m.senderUserId !== user?.id).length);
     });
   };
   useEffect(loadUnread, []);
@@ -58,6 +64,14 @@ export default function ClientLayout() {
           >
             {t('clientNav.notifications')}
             {unread > 0 && <span className="qlc-badge warn">{unread}</span>}
+          </NavLink>
+          <NavLink
+            to="/client/messages"
+            className={({ isActive }) => `qlc-admin-nav-link${isActive ? ' active' : ''}`}
+            style={{ display: 'flex', justifyContent: 'space-between' }}
+          >
+            {t('clientNav.messages')}
+            {unreadMessages > 0 && <span className="qlc-badge warn">{unreadMessages}</span>}
           </NavLink>
           {NAV_ITEMS.map((item) => (
             <NavLink

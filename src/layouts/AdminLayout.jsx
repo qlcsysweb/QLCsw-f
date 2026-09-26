@@ -13,10 +13,14 @@ export default function AdminLayout() {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [unread, setUnread] = useState(0);
+  const [unreadMessages, setUnreadMessages] = useState(0);
 
   const loadUnread = () => {
     api.get('/admin/notifications').then(({ data }) => {
       setUnread(data.notifications.filter((n) => !n.isRead).length);
+    });
+    api.get('/admin/messages').then(({ data }) => {
+      setUnreadMessages(data.inbox.reduce((sum, row) => sum + row.unreadCount, 0));
     });
   };
   useEffect(loadUnread, []);
@@ -28,6 +32,7 @@ export default function AdminLayout() {
   const NAV_ITEMS = [
     { to: '/admin', label: t('adminNav.dashboard'), end: true },
     { to: '/admin/clients', label: t('adminNav.clients') },
+    { to: '/admin/messages', label: t('adminNav.messages'), badge: unreadMessages },
     { to: '/admin/subaccounts-audit', label: t('adminNav.subaccountsAudit') },
     { to: '/admin/cms', label: t('adminNav.content') },
     { to: '/admin/track-record', label: t('adminNav.trackRecord') },
@@ -70,8 +75,10 @@ export default function AdminLayout() {
               to={item.to}
               end={item.end}
               className={({ isActive }) => `qlc-admin-nav-link${isActive ? ' active' : ''}`}
+              style={item.badge ? { display: 'flex', justifyContent: 'space-between' } : undefined}
             >
               {item.label}
+              {item.badge > 0 && <span className="qlc-badge warn">{item.badge}</span>}
             </NavLink>
           ))}
         </nav>

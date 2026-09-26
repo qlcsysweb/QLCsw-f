@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import api, { API_BASE_URL } from '../../services/api';
+import api from '../../services/api';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 import { TRANSFER_REPORT_STATUS, statusOf } from '../../utils/statusLabels';
 import { formatCdmxDate, formatCdmxDateTime } from '../../utils/cdmxTime';
+import DocumentViewerModal from '../../components/DocumentViewerModal';
 
 // "Ahora" en formato datetime-local (hora del dispositivo), usado como
 // límite superior del selector — el backend vuelve a validar.
@@ -26,6 +27,7 @@ export default function BitgetTransferSection({ subaccountId, config, reports, h
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState('');
   const [ok, setOk] = useState('');
+  const [viewingProof, setViewingProof] = useState(null);
   const reportStatusMap = TRANSFER_REPORT_STATUS(t);
   const uid = config?.bitgetReceiveUid;
 
@@ -182,9 +184,13 @@ export default function BitgetTransferSection({ subaccountId, config, reports, h
                         {r.proofDriveFileId && (
                           <>
                             {' · '}
-                            <a href={`${API_BASE_URL}/client/payment-reports/${r.id}/proof`} target="_blank" rel="noreferrer">
+                            <button
+                              type="button"
+                              onClick={() => setViewingProof({ url: `/client/payment-reports/${r.id}/proof`, fileName: r.proofFileName || 'comprobante' })}
+                              style={{ background: 'none', border: 'none', padding: 0, font: 'inherit', color: 'var(--qlc-blue2)', cursor: 'pointer' }}
+                            >
                               {t('clientPayments.viewProof')}
-                            </a>
+                            </button>
                           </>
                         )}
                       </>
@@ -196,6 +202,9 @@ export default function BitgetTransferSection({ subaccountId, config, reports, h
             })}
           </ul>
         </div>
+      )}
+      {viewingProof && (
+        <DocumentViewerModal url={viewingProof.url} fileName={viewingProof.fileName} onClose={() => setViewingProof(null)} />
       )}
     </section>
   );

@@ -223,6 +223,7 @@ const es = {
   adminNav: {
     dashboard: 'Dashboard',
     clients: 'Clientes',
+    messages: 'Mensajes',
     subaccountsAudit: 'Auditoría de subcuentas',
     content: 'Contenido del sitio',
     trackRecord: 'Track Record',
@@ -974,6 +975,7 @@ const es = {
     approvePayment: 'Confirmar pago',
     viewProofImage: 'Ver comprobante',
     legacyAmount: 'Monto (reporte anterior)',
+    hashLabel: 'Hash / referencia de transacción',
   },
 
   adminProspects: {
@@ -1010,12 +1012,23 @@ const es = {
     subject: 'Asunto',
     content: 'Mensaje',
     send: 'Enviar mensaje',
-    sentOk: 'Mensaje enviado. El cliente lo verá en sus notificaciones y lo recibirá por correo.',
+    sentOk: 'Mensaje enviado. El cliente lo verá en Mensajes y recibirá un aviso por correo para consultarlo.',
     history: 'Historial de mensajes',
     emailSent: 'Correo enviado',
     emailFailed: 'Correo no enviado',
     emailFailedHint: 'El mensaje interno quedó guardado; el correo no pudo enviarse.',
     sentOkEmailFailed: 'Mensaje guardado y visible para el cliente, pero el correo no pudo enviarse.',
+    fromClient: 'Enviado por el cliente',
+  },
+
+  adminMessagesInbox: {
+    kicker: 'MENSAJERÍA INTERNA',
+    title: 'Mensajes',
+    intro: 'Buzón de mensajería interna con los clientes — distinto del chat de citas y de los casos de soporte. Cada renglón es un cliente que te escribió; ábrelo para ver el hilo completo y responder.',
+    inboxTitle: 'Bandeja de entrada',
+    none: 'Todavía no has recibido mensajes de ningún cliente.',
+    unread: 'NO LEÍDO',
+    read: 'Leído',
   },
 
   adminSecurity: {
@@ -1466,11 +1479,27 @@ const es = {
     profile: 'Perfil',
     subaccounts: 'Subcuentas / API',
     documents: 'Documentos',
+    messages: 'Mensajes',
     guides: 'Guías de Uso',
     support: 'Soporte',
     appointments: 'Citas',
     notifications: 'Notificaciones',
     brand: 'QLC CLIENTE',
+  },
+
+  clientMessages: {
+    kicker: 'MENSAJERÍA INTERNA',
+    title: 'Mensajes',
+    intro: 'Comunicación directa con QLC — distinta del chat de citas y de los casos de soporte. Escribe tu mensaje y el equipo te responderá aquí mismo.',
+    history: 'Historial',
+    none: 'Todavía no tienes mensajes.',
+    fromMe: 'Tú',
+    fromQlc: 'QLC',
+    newTitle: 'Nuevo mensaje',
+    subject: 'Asunto',
+    content: 'Mensaje',
+    send: 'Enviar mensaje',
+    sentOk: 'Tu mensaje fue enviado. El equipo de QLC te responderá aquí mismo.',
   },
 
   clientSubaccounts: {
@@ -1571,7 +1600,7 @@ const es = {
     prospect: { new: 'Nuevo', contacted: 'Contactado', converted: 'Convertido', discarded: 'Descartado' },
     statement: {
       notGenerated: 'No generado',
-      pending: 'Pendiente de pago',
+      pending: 'Generado',
       paid: 'Pagado',
       overdue: 'Vencido / Sin pagar',
     },
@@ -1911,6 +1940,7 @@ const en = {
   adminNav: {
     dashboard: 'Dashboard',
     clients: 'Clients',
+    messages: 'Messages',
     subaccountsAudit: 'Subaccount audit',
     content: 'Site content',
     trackRecord: 'Track Record',
@@ -2662,6 +2692,7 @@ const en = {
     approvePayment: 'Confirm payment',
     viewProofImage: 'View proof',
     legacyAmount: 'Amount (previous report)',
+    hashLabel: 'Transaction hash / reference',
   },
 
   adminProspects: {
@@ -2698,12 +2729,23 @@ const en = {
     subject: 'Subject',
     content: 'Message',
     send: 'Send message',
-    sentOk: 'Message sent. The client will see it in their notifications and receive it by email.',
+    sentOk: 'Message sent. The client will see it in Messages and get an email prompting them to check it.',
     history: 'Message history',
     emailSent: 'Email sent',
     emailFailed: 'Email not sent',
     emailFailedHint: 'The internal message was saved; the email could not be sent.',
     sentOkEmailFailed: 'Message saved and visible to the client, but the email could not be sent.',
+    fromClient: 'Sent by the client',
+  },
+
+  adminMessagesInbox: {
+    kicker: 'INTERNAL MESSAGING',
+    title: 'Messages',
+    intro: "Internal messaging inbox with clients — distinct from the appointment chat and support cases. Each row is a client who wrote to you; open it to see the full thread and reply.",
+    inboxTitle: 'Inbox',
+    none: "You haven't received any messages from clients yet.",
+    unread: 'UNREAD',
+    read: 'Read',
   },
 
   adminSecurity: {
@@ -3149,11 +3191,27 @@ const en = {
     profile: 'Profile',
     subaccounts: 'Subaccounts / API',
     documents: 'Documents',
+    messages: 'Messages',
     guides: 'Usage Guides',
     support: 'Support',
     appointments: 'Appointments',
     notifications: 'Notifications',
     brand: 'QLC CLIENT',
+  },
+
+  clientMessages: {
+    kicker: 'INTERNAL MESSAGING',
+    title: 'Messages',
+    intro: 'Direct communication with QLC — distinct from the appointment chat and support cases. Write your message and the team will reply here.',
+    history: 'History',
+    none: "You don't have any messages yet.",
+    fromMe: 'You',
+    fromQlc: 'QLC',
+    newTitle: 'New message',
+    subject: 'Subject',
+    content: 'Message',
+    send: 'Send message',
+    sentOk: 'Your message was sent. The QLC team will reply here.',
   },
 
   clientSubaccounts: {
@@ -3254,7 +3312,7 @@ const en = {
     prospect: { new: 'New', contacted: 'Contacted', converted: 'Converted', discarded: 'Discarded' },
     statement: {
       notGenerated: 'Not generated',
-      pending: 'Pending payment',
+      pending: 'Generated',
       paid: 'Paid',
       overdue: 'Overdue / Unpaid',
     },

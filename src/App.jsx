@@ -12,6 +12,7 @@ import TermsOfServicePage from './modules/public/TermsOfServicePage';
 import AdminLayout from './layouts/AdminLayout';
 import DashboardPage from './modules/admin/DashboardPage';
 import ClientsListPage from './modules/admin/ClientsListPage';
+import AdminMessagesPage from './modules/admin/MessagesPage';
 import ClientDetailPage from './modules/admin/ClientDetailPage';
 import AdminSubaccountDetailPage from './modules/admin/SubaccountDetailPage';
 import AdminAppointmentsPage from './modules/admin/AppointmentsPage';
@@ -35,6 +36,7 @@ import ClientProfilePage from './modules/client/ProfilePage';
 import ClientSubaccountsPage from './modules/client/SubaccountsPage';
 import ClientSubaccountDetailPage from './modules/client/SubaccountDetailPage';
 import ClientDocumentsPage from './modules/client/DocumentsPage';
+import ClientMessagesPage from './modules/client/MessagesPage';
 import ClientSupportPage from './modules/client/SupportPage';
 import ClientNotificationsPage from './modules/client/NotificationsPage';
 import ClientGuidesPage from './modules/client/GuidesPage';
@@ -67,6 +69,7 @@ function AppRoutes() {
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<DashboardPage />} />
               <Route path="clients" element={<ClientsListPage />} />
+              <Route path="messages" element={<AdminMessagesPage />} />
               <Route path="clients/:id" element={<ClientDetailPage />} />
               <Route path="clients/:clientId/api-subaccounts/:id" element={<AdminSubaccountDetailPage />} />
               <Route path="cms" element={<CmsPage />} />
@@ -93,6 +96,7 @@ function AppRoutes() {
               <Route path="api-subaccounts" element={<ClientSubaccountsPage />} />
               <Route path="api-subaccounts/:id" element={<ClientSubaccountDetailPage />} />
               <Route path="documents" element={<ClientDocumentsPage />} />
+              <Route path="messages" element={<ClientMessagesPage />} />
               <Route path="guides" element={<ClientGuidesPage />} />
               {/* CORRECCIÓN 16 (bloque de 20) — "Citas" ya no es una ruta
                   independiente: se solicita desde dentro de un caso en

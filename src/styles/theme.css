@@ -174,6 +174,15 @@ textarea {
   border-color: rgba(130, 224, 189, 0.4);
   color: var(--qlc-success);
 }
+/* "GENERADO" (estado de cuenta recién generado, pendiente de pago) — se
+   ilumina en azul para que el cliente note de inmediato que hay algo nuevo
+   disponible; PAGADO/NO GENERADO/VENCIDO nunca usan este brillo. */
+.qlc-badge.info {
+  border-color: var(--qlc-blue3);
+  color: var(--qlc-blue2);
+  background: rgba(0, 168, 255, 0.1);
+  box-shadow: 0 0 0 1px rgba(0, 168, 255, 0.25), 0 0 14px rgba(0, 168, 255, 0.35);
+}
 .qlc-badge-lg {
   font-size: 12px;
   padding: 8px 12px;
@@ -962,6 +971,19 @@ textarea {
   overflow-wrap: anywhere;
   min-width: 0;
 }
+/* Fila hash/orden + botón Copiar — envuelve en pantallas angostas sin que el
+   código largo empuje el botón fuera de la tarjeta. */
+.qlc-copy-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.qlc-copy-btn {
+  padding: 2px 8px;
+  font-size: 11px;
+  flex-shrink: 0;
+}
 .qlc-transfer-actions {
   display: flex;
   flex-wrap: wrap;
@@ -993,6 +1015,30 @@ textarea {
   justify-content: space-between;
   align-items: center;
   gap: 4px 8px;
+}
+.qlc-message-item {
+  padding: 8px 0 10px;
+  border-bottom: 1px solid var(--qlc-line);
+  font-size: 13px;
+  min-width: 0;
+}
+.qlc-message-item:last-child {
+  border-bottom: none;
+}
+.qlc-message-inbox-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  color: inherit;
+  text-decoration: none;
+}
+.qlc-message-inbox-client {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1 1 200px;
+  min-width: 0;
 }
 
 /* Acciones de un caso (Solicitar cita / estado / Mensajes): nunca se salen de la tarjeta. */

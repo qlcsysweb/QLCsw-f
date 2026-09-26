@@ -611,24 +611,31 @@ export default function ClientDetailPage() {
             <div style={{ marginTop: 14, borderTop: '1px solid var(--qlc-line)', paddingTop: 12 }}>
               <div style={{ fontSize: 12, color: 'var(--qlc-muted)', marginBottom: 6 }}>{t('adminMessages.history')}</div>
               <ul className="qlc-plain-list">
-                {messages.map((m) => (
-                  <li key={m.id} style={{ fontSize: 12, marginBottom: 8 }}>
-                    <div className="qlc-message-head">
-                      <strong>{m.title}</strong>
-                      <span
-                        className={`qlc-badge ${m.emailSent ? 'ok' : 'danger'}`}
-                        title={m.emailSent ? undefined : m.emailError || t('adminMessages.emailFailedHint')}
-                      >
-                        {m.emailSent ? `✉ ${t('adminMessages.emailSent')}` : `! ${t('adminMessages.emailFailed')}`}
-                      </span>
-                    </div>
-                    <div style={{ color: 'var(--qlc-muted2)' }}>{formatCdmxDateTime(m.createdAt)}</div>
-                    <div style={{ color: 'var(--qlc-muted2)', overflowWrap: 'anywhere' }}>{m.message}</div>
-                    {!m.emailSent && m.emailError && (
-                      <div style={{ color: 'var(--qlc-danger)', fontSize: 11 }}>{m.emailError}</div>
-                    )}
-                  </li>
-                ))}
+                {messages.map((m) => {
+                  const fromClient = m.sender?.role === 'CLIENT';
+                  return (
+                    <li key={m.id} className="qlc-message-item" style={{ borderLeft: `3px solid ${fromClient ? 'var(--qlc-blue3)' : 'var(--qlc-line)'}`, paddingLeft: 10 }}>
+                      <div className="qlc-message-head">
+                        <strong>{m.title}</strong>
+                        {fromClient ? (
+                          <span className="qlc-badge info">{t('adminMessages.fromClient')}</span>
+                        ) : (
+                          <span
+                            className={`qlc-badge ${m.emailSent ? 'ok' : 'danger'}`}
+                            title={m.emailSent ? undefined : m.emailError || t('adminMessages.emailFailedHint')}
+                          >
+                            {m.emailSent ? `✉ ${t('adminMessages.emailSent')}` : `! ${t('adminMessages.emailFailed')}`}
+                          </span>
+                        )}
+                      </div>
+                      <div style={{ color: 'var(--qlc-muted2)' }}>{formatCdmxDateTime(m.createdAt)}</div>
+                      <div style={{ color: 'var(--qlc-muted2)', overflowWrap: 'anywhere' }}>{m.message}</div>
+                      {!fromClient && !m.emailSent && m.emailError && (
+                        <div style={{ color: 'var(--qlc-danger)', fontSize: 11 }}>{m.emailError}</div>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           )}

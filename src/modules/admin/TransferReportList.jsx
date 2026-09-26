@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import api, { API_BASE_URL } from '../../services/api';
+import api from '../../services/api';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 import { TRANSFER_REPORT_STATUS, statusOf } from '../../utils/statusLabels';
 import { formatCdmxDate, formatCdmxDateTime } from '../../utils/cdmxTime';
 import ConfirmModal from '../../components/ConfirmModal';
+import DocumentViewerModal from '../../components/DocumentViewerModal';
+import useCopyToClipboard from '../../hooks/useCopyToClipboard';
 
 /*
  * TRANSFERENCIA INTERNA BITGET — reportes que envía el cliente (número de
@@ -27,8 +29,10 @@ export default function TransferReportList({ reports, receiveUid, showClient = f
   const { t, language } = useLanguage();
   const [busyId, setBusyId] = useState(null);
   const [rejecting, setRejecting] = useState(null);
+  const [viewingProof, setViewingProof] = useState(null);
   const [error, setError] = useState('');
   const statusMap = TRANSFER_REPORT_STATUS(t);
+  const { copy, isCopied } = useCopyToClipboard();
 
   const run = async (report, fn) => {
     setBusyId(report.id);
@@ -86,25 +90,44 @@ export default function TransferReportList({ reports, receiveUid, showClient = f
                 {r.bitgetOrderNumber ? (
                   <>
                     <dt>{t('adminPayments.orderNumber')}</dt>
-                    <dd><code>{r.bitgetOrderNumber}</code></dd>
+                    <dd className="qlc-copy-row">
+                      <code>{r.bitgetOrderNumber}</code>
+                      <button type="button" className="qlc-btn ghost qlc-copy-btn" onClick={() => copy(r.bitgetOrderNumber, `order-${r.id}`)}>
+                        {isCopied(`order-${r.id}`) ? t('common.copied') : t('common.copy')}
+                      </button>
+                    </dd>
                     <dt>{t('adminPayments.transactionAt')}</dt>
                     <dd>{r.transactionAt ? formatCdmxDateTime(r.transactionAt) : '—'}</dd>
                   </>
                 ) : (
                   <>
                     <dt>{t('adminPayments.legacyAmount')}</dt>
-                    <dd>
-                      {r.amount != null ? `${r.amount} ${r.currency}` : '—'} · {formatCdmxDate(r.reportedAt)}
-                      {r.reference && <> · <code>{r.reference}</code></>}
-                      {r.proofDriveFileId && (
-                        <>
-                          {' · '}
-                          <a href={`${API_BASE_URL}/admin/payment-reports/${r.id}/proof`} target="_blank" rel="noreferrer">
+                    <dd>{r.amount != null ? `${r.amount} ${r.currency}` : '—'} · {formatCdmxDate(r.reportedAt)}</dd>
+                    {r.reference && (
+                      <>
+                        <dt>{t('adminPayments.hashLabel')}</dt>
+                        <dd className="qlc-copy-row">
+                          <code style={{ wordBreak: 'break-all' }}>{r.reference}</code>
+                          <button type="button" className="qlc-btn ghost qlc-copy-btn" onClick={() => copy(r.reference, `ref-${r.id}`)}>
+                            {isCopied(`ref-${r.id}`) ? t('common.copied') : t('common.copy')}
+                          </button>
+                        </dd>
+                      </>
+                    )}
+                    {r.proofDriveFileId && (
+                      <>
+                        <dt>{t('adminPayments.viewProofImage')}</dt>
+                        <dd>
+                          <button
+                            type="button"
+                            className="qlc-btn ghost"
+                            onClick={() => setViewingProof({ url: `/admin/payment-reports/${r.id}/proof`, fileName: r.proofFileName || 'comprobante' })}
+                          >
                             {t('adminPayments.viewProofImage')}
-                          </a>
-                        </>
-                      )}
-                    </dd>
+                          </button>
+                        </dd>
+                      </>
+                    )}
                   </>
                 )}
                 {r.transferReceivedAt && !r.statementId && (
@@ -147,6 +170,9 @@ export default function TransferReportList({ reports, receiveUid, showClient = f
             onChanged?.();
           }}
         />
+      )}
+      {viewingProof && (
+        <DocumentViewerModal url={viewingProof.url} fileName={viewingProof.fileName} onClose={() => setViewingProof(null)} />
       )}
     </>
   );

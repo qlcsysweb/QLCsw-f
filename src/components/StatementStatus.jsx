@@ -15,7 +15,10 @@ const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000;
 
 export const STATEMENT_STATUS_META = {
   NO_GENERADO: { icon: '⚪', className: 'muted', key: 'notGenerated' },
-  PENDIENTE_DE_PAGO: { icon: '🟡', className: 'warn', key: 'pending' },
+  // "Generado" se ilumina en azul (className "info") — es la señal de que
+  // hay un estado de cuenta nuevo disponible para el cliente. Al marcarse
+  // PAGADO deja de usar este color, y NO_GENERADO/VENCIDO nunca lo usan.
+  PENDIENTE_DE_PAGO: { icon: '🔵', className: 'info', key: 'pending' },
   PAGADO: { icon: '🟢', className: 'success', key: 'paid' },
   VENCIDO_SIN_PAGAR: { icon: '🔴', className: 'danger', key: 'overdue' },
 };
