@@ -2,13 +2,15 @@ import { useEffect, useState } from 'react';
 import api from '../../services/api';
 import BilingualField from '../../components/BilingualField';
 import { useLanguage } from '../../i18n/LanguageContext';
+import { translateBackendMessage } from '../../i18n/backendMessages';
 
 export default function TrackRecordPage() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [record, setRecord] = useState(null);
   const [form, setForm] = useState(null);
   const [message, setMessage] = useState('');
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
 
   const load = () =>
     api.get('/admin/track-record').then(({ data }) => {
@@ -26,6 +28,7 @@ export default function TrackRecordPage() {
   const submit = async (e) => {
     e.preventDefault();
     setSaving(true);
+    setError('');
     try {
       await api.patch(`/admin/track-record/${record.id}`, {
         title: form.title,
@@ -34,11 +37,14 @@ export default function TrackRecordPage() {
         descriptionEn: form.descriptionEn || null,
         platformName: form.platformName,
         profileLink: form.profileLink || '',
-        ranking: form.ranking,
+        roi30d: form.roi30d ?? '',
+        winRate: form.winRate ?? '',
       });
       setMessage(t('adminTrackRecord.updated'));
       setTimeout(() => setMessage(''), 3000);
       load();
+    } catch (err) {
+      setError(translateBackendMessage(err.message, language));
     } finally {
       setSaving(false);
     }
@@ -73,8 +79,32 @@ export default function TrackRecordPage() {
           onChange={update('profileLink')}
           placeholder="https://www.bitget.com/copytrading/..."
         />
-        <label className="qlc-label">{t('adminTrackRecord.currentRanking')}</label>
-        <input className="qlc-input" value={form.ranking} onChange={update('ranking')} placeholder="#XXX" />
+        {/* Indicadores que el sitio público muestra en el hero y en
+            Resultados (antes: "#XXX / Clasificación actual"). Vacío = "—". */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 }}>
+          <div>
+            <label className="qlc-label">{t('adminTrackRecord.roi30d')}</label>
+            <input
+              className="qlc-input"
+              inputMode="decimal"
+              value={form.roi30d ?? ''}
+              onChange={update('roi30d')}
+              placeholder="+12.34"
+            />
+          </div>
+          <div>
+            <label className="qlc-label">{t('adminTrackRecord.winRate')}</label>
+            <input
+              className="qlc-input"
+              inputMode="decimal"
+              value={form.winRate ?? ''}
+              onChange={update('winRate')}
+              placeholder="78.5"
+            />
+          </div>
+        </div>
+        <p style={{ fontSize: 12, color: 'var(--qlc-muted2)', marginTop: 4 }}>{t('adminTrackRecord.indicatorsHint')}</p>
+        {error && <div className="qlc-field-error">{error}</div>}
 
         <div className="qlc-form-actions">
           {message && <span style={{ color: 'var(--qlc-ok)', fontSize: 12 }}>{message}</span>}

@@ -34,21 +34,87 @@
   border-bottom: 1px solid var(--line);
   transition: transform 0.35s ease, background 0.3s ease, box-shadow 0.3s ease;
 }
-.qlc-public .nav.nav-scrolled {
-  background: rgba(5, 7, 10, 0.94);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+
+/* ---------- APP SHELL: navegación por pantallas ----------
+   En la página pública (PublicHomePage, clase .qlc-public-app) el documento
+   NO se desplaza: el navbar queda fijo arriba y debajo se muestra una sola
+   sección a la vez dentro de .qlc-stage. Si esa sección no cabe en la altura
+   disponible, SOLO .qlc-stage muestra scroll interno; si cabe, no aparece
+   ninguna barra. Privacidad/Términos (sin .qlc-public-app) no cambian. */
+.qlc-public.qlc-public-app {
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
-/* Sin scroll manual: sin barra ni gestos; solo se navega con el navbar fijo. */
-html.qlc-no-user-scroll {
-  scrollbar-width: none;
-  overscroll-behavior: none;
+.qlc-public-app .nav {
+  position: relative;
+  flex: none;
 }
-html.qlc-no-user-scroll::-webkit-scrollbar {
-  display: none;
+.qlc-public .qlc-stage {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(110, 190, 255, 0.35) transparent;
 }
-/* El navbar fijo ocupa 76px: la sección destino debe quedar justo debajo. */
-.qlc-public main > * {
-  scroll-margin-top: 76px;
+.qlc-public .qlc-stage::-webkit-scrollbar {
+  width: 8px;
+}
+.qlc-public .qlc-stage::-webkit-scrollbar-thumb {
+  background: rgba(110, 190, 255, 0.3);
+  border-radius: 8px;
+}
+.qlc-public .qlc-stage::-webkit-scrollbar-track {
+  background: transparent;
+}
+/* margin:auto centra verticalmente la sección cuando cabe y, cuando no cabe,
+   la deja alineada arriba con scroll interno (sin recortar el inicio). */
+.qlc-public .qlc-view {
+  width: 100%;
+  margin: auto 0;
+  outline: none;
+  animation: qlc-view-in 220ms ease-out both;
+}
+.qlc-public .qlc-view.is-leaving {
+  animation: none;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 160ms ease-in, transform 160ms ease-in;
+}
+@keyframes qlc-view-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .qlc-public .qlc-view,
+  .qlc-public .qlc-view.is-leaving {
+    animation: none;
+    transition: none;
+    transform: none;
+  }
+}
+.qlc-public-app .section {
+  padding: clamp(24px, 6vh, 72px) 0;
+}
+.qlc-public-app .hero {
+  min-height: 0;
+}
+.qlc-public-app .hero-grid {
+  padding: clamp(16px, 4vh, 48px) 0;
 }
 .qlc-public .nav-inner {
   height: 76px;
@@ -167,6 +233,9 @@ html.qlc-no-user-scroll::-webkit-scrollbar {
   background: linear-gradient(135deg, var(--qlc-blue), var(--qlc-blue3));
   color: #04101a;
   box-shadow: 0 10px 26px rgba(0, 168, 255, 0.28);
+}
+.qlc-public .access-primary.is-current {
+  box-shadow: 0 0 0 2px rgba(141, 223, 255, 0.55), 0 10px 26px rgba(0, 168, 255, 0.28);
 }
 .qlc-public .access-primary:hover {
   background: linear-gradient(135deg, var(--qlc-blue2), var(--qlc-blue));
@@ -373,7 +442,7 @@ html.qlc-no-user-scroll::-webkit-scrollbar {
      visible respecto al logo. */
   margin-top: clamp(14px, 2.2vh, 30px);
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
 }
 .qlc-public .hero-mini .mini {
@@ -395,6 +464,24 @@ html.qlc-no-user-scroll::-webkit-scrollbar {
   margin-top: 8px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
+  overflow-wrap: anywhere;
+}
+.qlc-public .hero-mini .mini {
+  min-width: 0;
+}
+/* ROI 30D / Tasa de éxito: etiqueta arriba, cifra destacada abajo. */
+.qlc-public .hero-mini .mini-metric span {
+  margin-top: 0;
+}
+.qlc-public .hero-mini .mini-metric b {
+  margin-top: 6px;
+  color: #8ddfff;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.qlc-public .hero-mini.hero-mini-2x2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 0;
 }
 
 /* CORRECCIÓN — "congelar" el HERO para laptops chicas horizontales
@@ -752,6 +839,48 @@ html.qlc-no-user-scroll::-webkit-scrollbar {
   background: radial-gradient(circle at 85% 30%, rgba(0, 168, 255, 0.13), transparent 35%), #0b1016;
 }
 
+/* Resultados: copia + indicadores. */
+.qlc-public .resultados-grid {
+  align-items: stretch;
+}
+.qlc-public .resultados-grid .connection-copy p {
+  margin: 0 0 12px;
+}
+.qlc-public .resultados-cta {
+  margin-top: 14px;
+}
+.qlc-public .resultados-card {
+  justify-content: center;
+  gap: 16px;
+  padding: 25px;
+}
+.qlc-public .resultados-card .note {
+  margin: 0;
+}
+/* El problema: el texto largo se reparte en dos columnas en pantallas
+   anchas para que la sección no se convierta en una página interminable. */
+.qlc-public .problema-card {
+  column-count: 2;
+  column-gap: 44px;
+}
+.qlc-public .problema-card p {
+  break-inside: avoid;
+}
+/* Contacto: presentación y formulario lado a lado. */
+.qlc-public .contact-layout {
+  display: grid;
+  grid-template-columns: 1fr minmax(320px, 460px);
+  gap: 24px;
+  align-items: stretch;
+}
+.qlc-public .contact-layout .contact-clean {
+  grid-template-columns: 1fr;
+}
+.qlc-public .contact-layout .registro-panel {
+  margin-top: 0;
+  max-width: none;
+}
+
 /* ---------- REGISTRO ---------- */
 .qlc-public .registro-panel {
   margin-top: 32px;
@@ -862,12 +991,16 @@ html.qlc-no-user-scroll::-webkit-scrollbar {
     font-size: 48px;
   }
 }
-@media (max-width: 700px) {
+/* Navbar en dos filas cuando las opciones ya no caben en una sola línea
+   (tablets / ventanas angostas): marca + acciones arriba, TODAS las
+   opciones abajo, envolviéndose en varias líneas si hace falta — nunca se
+   ocultan opciones ni se provoca overflow horizontal. */
+@media (max-width: 960px) {
   .qlc-public .nav-inner {
     flex-wrap: wrap;
     height: auto;
-    padding: 12px 0;
-    row-gap: 10px;
+    padding: 10px 0;
+    row-gap: 8px;
   }
   .qlc-public .brand-area {
     order: 1;
@@ -880,9 +1013,26 @@ html.qlc-no-user-scroll::-webkit-scrollbar {
     order: 3;
     flex: none;
     width: 100%;
-    gap: 18px;
-    justify-content: flex-start;
+    flex-wrap: wrap;
+    overflow: visible;
+    column-gap: 18px;
+    row-gap: 2px;
+    justify-content: center;
   }
+  .qlc-public .brand-mark {
+    width: 36px;
+    height: 36px;
+  }
+  .qlc-public .contact-layout {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 900px) {
+  .qlc-public .problema-card {
+    column-count: 1;
+  }
+}
+@media (max-width: 700px) {
   .qlc-public .feature-list {
     grid-template-columns: 1fr;
   }
@@ -929,6 +1079,13 @@ html.qlc-no-user-scroll::-webkit-scrollbar {
     padding: 65px 0 45px;
     gap: 35px;
   }
+  .qlc-public-app .hero-grid {
+    padding: 22px 0 28px;
+    gap: 24px;
+  }
+  .qlc-public-app .section {
+    padding: 28px 0 36px;
+  }
   .qlc-public h1 {
     font-size: 46px;
   }
@@ -962,12 +1119,176 @@ html.qlc-no-user-scroll::-webkit-scrollbar {
     grid-template-columns: 1fr;
   }
 }
-@media (max-width: 560px) {
+@media (max-width: 420px) {
   .qlc-public .hero-mini {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+/* Teléfonos: navbar compacto — marca + acciones en la primera franja (las
+   acciones pueden partirse en dos líneas) y todas las opciones debajo en
+   líneas cortas. Nada se oculta y no hay overflow horizontal. */
+@media (max-width: 560px) {
+  .qlc-public .nav-inner {
+    padding: 8px 0;
+    column-gap: 8px;
+    row-gap: 6px;
+  }
+  .qlc-public .brand-mark {
+    width: 32px;
+    height: 32px;
+  }
+  .qlc-public .qlc-nav-actions {
+    flex: 1 1 0;
+    min-width: 0;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+  .qlc-public .qlc-nav-actions .access-btn {
+    min-height: 30px;
+    padding: 0 8px;
+    font-size: 10px;
+  }
+  .qlc-public .qlc-nav-lang-btn {
+    min-height: 30px;
+    padding: 0 7px;
+  }
+  .qlc-public .nav-links {
+    column-gap: 12px;
+    row-gap: 0;
+    align-content: flex-start;
+  }
+  .qlc-public .nav-links a {
+    font-size: 11px;
+    line-height: 1.3;
+    padding: 4px 0;
   }
   .qlc-public .pillars {
     grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- RESPONSIVE POR ALTURA (laptops de pantalla pequeña) ----------
+   Una laptop puede tener bastante ancho pero muy poca altura (1366×768,
+   1280×720, 1024×600 con barras del navegador). Se compacta el navbar y los
+   espaciados verticales; lo que aun así no quepa usa el scroll interno de
+   .qlc-stage — nunca se reduce el texto a tamaños ilegibles. */
+@media (max-height: 900px) {
+  .qlc-public .nav-inner {
+    height: 62px;
+  }
+  .qlc-public .brand-mark {
+    width: 36px;
+    height: 36px;
+  }
+  .qlc-public .access-btn {
+    min-height: 34px;
+  }
+  .qlc-public .qlc-nav-lang-btn {
+    min-height: 32px;
+  }
+  .qlc-public-app .section {
+    padding: clamp(20px, 5vh, 44px) 0;
+  }
+  .qlc-public h2 {
+    font-size: clamp(28px, 3.4vw, 42px);
+  }
+  .qlc-public .feature-list,
+  .qlc-public .pillars,
+  .qlc-public .security-grid,
+  .qlc-public .models,
+  .qlc-public .micro-hero,
+  .qlc-public .connection {
+    margin-top: 24px;
+  }
+  .qlc-public .models .model-card {
+    min-height: 0;
+  }
+  .qlc-public .feature-item {
+    min-height: 0;
+    padding: 18px 16px;
+  }
+  .qlc-public .micro-hero {
+    padding: 30px;
+  }
+  .qlc-public .connection-copy {
+    padding: 26px;
+  }
+  .qlc-public .flow-line {
+    padding: 20px;
+  }
+  .qlc-public .flow-node {
+    min-height: 96px;
+  }
+  .qlc-public .contact-clean {
+    padding: 36px 40px;
+  }
+  .qlc-public .faq-clean {
+    margin-top: 20px;
+  }
+  .qlc-public details {
+    padding: 14px 0;
+  }
+}
+/* Hero en laptops de poca altura (1280×720, 1024×600…): tipografía y logo
+   algo más compactos para que hero + 4 cards quepan sin recortar. */
+@media (min-width: 961px) and (max-height: 760px) {
+  .qlc-public h1 {
+    font-size: clamp(40px, 4.6vw, 62px);
+    margin: 14px 0 18px;
+  }
+  .qlc-public .lead {
+    font-size: 16px;
+  }
+  .qlc-public .actions,
+  .qlc-public .trust {
+    margin-top: 20px;
+  }
+  .qlc-public-app .hero-grid {
+    padding: 12px 0 16px;
+  }
+  .qlc-public .hero-logo {
+    max-width: min(340px, 44vh);
+  }
+  .qlc-public .hero-mini {
+    margin-top: 18px;
+  }
+  .qlc-public .hero-mini .mini {
+    padding: 9px 10px;
+    min-height: 54px;
+  }
+}
+@media (min-width: 961px) and (max-height: 620px) {
+  .qlc-public .nav-inner {
+    height: 56px;
+  }
+  .qlc-public h1 {
+    font-size: clamp(36px, 4.2vw, 52px);
+  }
+  .qlc-public .lead {
+    font-size: 15px;
+  }
+  .qlc-public .btn {
+    padding: 12px 18px;
+  }
+  .qlc-public .hero-logo {
+    max-width: min(280px, 40vh);
+  }
+  .qlc-public .hero-card {
+    padding: 14px;
+  }
+}
+/* Laptop/desktop con ventana poco ancha (1024 px): las 4 cards siguen en una
+   sola fila; se reducen gap y padding, no el número de columnas. */
+@media (min-width: 961px) and (max-width: 1180px) {
+  .qlc-public .hero-mini {
+    gap: 8px;
+  }
+  .qlc-public .hero-mini .mini {
+    padding-left: 9px;
+    padding-right: 9px;
+  }
+  .qlc-public .hero-mini .mini b {
+    font-size: 14px;
   }
 }
 

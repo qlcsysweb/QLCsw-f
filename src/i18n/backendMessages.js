@@ -66,6 +66,8 @@ const KNOWN_MESSAGES = {
   'Documento no encontrado': 'Document not found',
   'Prospecto no encontrado': 'Prospect not found',
   'Caso no encontrado': 'Case not found',
+  'El número de caso indicado no existe o no pertenece a tu cuenta.': 'The selected case number does not exist or does not belong to your account.',
+  'El caso indicado está cerrado y ya no admite nuevas citas.': 'The selected case is closed and no longer accepts new appointments.',
   'Modelo no encontrado': 'Model not found',
   'El archivo solicitado no existe todavía': 'The requested file does not exist yet',
   'Este reporte no tiene comprobante adjunto': 'This report has no proof attached',

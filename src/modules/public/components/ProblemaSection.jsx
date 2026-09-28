@@ -17,7 +17,7 @@ export default function ProblemaSection({ text, media = () => [] }) {
           {text('problema', 'lead', 'El 95% pierde. El 5% opera con otra infraestructura.')}
         </p>
 
-        <div className="clean-card">
+        <div className="clean-card problema-card">
           <p style={{ color: 'var(--qlc-muted)', fontSize: 15, lineHeight: 1.6, marginBottom: 15 }}>
             {text(
               'problema',

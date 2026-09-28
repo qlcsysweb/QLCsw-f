@@ -191,6 +191,7 @@ const es = {
     eliteTrader: 'ELITE TRADER',
     checkProfile: 'Comprobar perfil en',
     linkComingSoon: 'Enlace de perfil próximamente',
+    indicatorsNote: 'Indicadores publicados por Bitget. Son datos históricos informativos y no garantizan resultados futuros.',
   },
 
   seguridadSection: {
@@ -214,10 +215,9 @@ const es = {
     trustCapital: 'Tu capital',
     trustAccount: 'Tu cuenta',
     trustStrategy: 'Nuestra estrategia',
-    currentRanking: 'Clasificación actual',
-    publicData: 'Datos públicos',
     algoExecution: 'Ejecución algorítmica QLC',
-    trackRecord: 'TRACK RECORD',
+    roi30d: 'ROI 30D',
+    winRate: 'Tasa de éxito',
   },
 
   adminNav: {
@@ -226,7 +226,7 @@ const es = {
     messages: 'Mensajes',
     subaccountsAudit: 'Auditoría de subcuentas',
     content: 'Contenido del sitio',
-    trackRecord: 'Track Record',
+    trackRecord: 'Resultados · Bitget',
     guides: 'Guías de Uso',
     payments: 'Pagos',
     appointments: 'Citas',
@@ -259,7 +259,7 @@ const es = {
     tecnologia: 'Tecnología',
     microposiciones: 'Microposiciones',
     modelos: 'Modelos',
-    resultados: 'Resultados / Track Record',
+    resultados: 'Resultados / Bitget',
     seguridad: 'Seguridad',
     sobre_qlc: 'Sobre QLC',
     faq: 'FAQ',
@@ -357,8 +357,8 @@ const es = {
     microposicionesDesc: 'Rango de inversión y texto de escala.',
     modelosLabel: 'MODELOS',
     modelosDesc: 'Flexible, Performance y Compound — datos reales de cada modelo.',
-    trackRecordLabel: 'TRACK RECORD',
-    trackRecordDesc: 'Referencia externa verificable (Bitget), ranking y enlace.',
+    trackRecordLabel: 'RESULTADOS · BITGET',
+    trackRecordDesc: 'Referencia externa verificable (Bitget): ROI 30D, tasa de éxito y enlace.',
     seguridadLabel: 'SEGURIDAD',
     seguridadDesc: 'Control del capital y de la conexión API.',
     sobreQlcLabel: 'Sobre QLC',
@@ -630,17 +630,21 @@ const es = {
     reject: 'Rechazar',
     rejectTitle: '¿Rechazar esta cita?',
     rejectMessage: 'El solicitante verá su cita marcada como rechazada.',
+    relatedCase: 'Caso relacionado',
+    openCase: 'Ver caso',
   },
 
   adminTrackRecord: {
-    kicker: 'TRACK RECORD',
+    kicker: 'RESULTADOS · BITGET',
     title: 'Referencia externa verificable',
     fieldTitle: 'Título',
     description: 'Descripción',
     platform: 'Plataforma',
     profileLink: 'Enlace del perfil (Bitget)',
-    currentRanking: 'Clasificación actual',
-    updated: 'Track Record actualizado.',
+    roi30d: 'ROI 30 días (%)',
+    winRate: 'Tasa de éxito (%)',
+    indicatorsHint: 'Copia los valores tal como aparecen en tu perfil de Bitget. Déjalos vacíos si no quieres publicarlos: el sitio mostrará "—".',
+    updated: 'Resultados actualizados.',
   },
 
   adminFaq: {
@@ -1223,6 +1227,9 @@ const es = {
     selectTime: 'Selecciona un horario…',
     chatNotYetAvailable: 'El chat se habilita a partir de la fecha y hora de tu cita.',
     chatScheduledFor: 'Chat disponible a las {time}',
+    relatedCase: 'Caso relacionado',
+    newAppointment: 'Solicitar cita',
+    noOpenCases: 'Para solicitar una cita necesitas un caso abierto. Crea primero un caso de soporte.',
   },
 
   clientSupport: {
@@ -1908,6 +1915,7 @@ const en = {
     eliteTrader: 'ELITE TRADER',
     checkProfile: 'Check profile on',
     linkComingSoon: 'Profile link coming soon',
+    indicatorsNote: 'Indicators published by Bitget. They are historical, informational data and do not guarantee future results.',
   },
 
   seguridadSection: {
@@ -1931,10 +1939,9 @@ const en = {
     trustCapital: 'Your capital',
     trustAccount: 'Your account',
     trustStrategy: 'Our strategy',
-    currentRanking: 'Current ranking',
-    publicData: 'Public data',
     algoExecution: 'QLC algorithmic execution',
-    trackRecord: 'TRACK RECORD',
+    roi30d: '30D ROI',
+    winRate: 'Win rate',
   },
 
   adminNav: {
@@ -1943,7 +1950,7 @@ const en = {
     messages: 'Messages',
     subaccountsAudit: 'Subaccount audit',
     content: 'Site content',
-    trackRecord: 'Track Record',
+    trackRecord: 'Results · Bitget',
     guides: 'Usage Guides',
     payments: 'Payments',
     appointments: 'Appointments',
@@ -1976,7 +1983,7 @@ const en = {
     tecnologia: 'Technology',
     microposiciones: 'Micro-positions',
     modelos: 'Models',
-    resultados: 'Results / Track Record',
+    resultados: 'Results / Bitget',
     seguridad: 'Security',
     sobre_qlc: 'About QLC',
     faq: 'FAQ',
@@ -2074,8 +2081,8 @@ const en = {
     microposicionesDesc: 'Investment range and scale text.',
     modelosLabel: 'MODELS',
     modelosDesc: 'Flexible, Performance and Compound — real data for each model.',
-    trackRecordLabel: 'TRACK RECORD',
-    trackRecordDesc: 'Verifiable external reference (Bitget), ranking and link.',
+    trackRecordLabel: 'RESULTS · BITGET',
+    trackRecordDesc: 'Verifiable external reference (Bitget): 30D ROI, win rate and link.',
     seguridadLabel: 'SECURITY',
     seguridadDesc: 'Control of the capital and the API connection.',
     sobreQlcLabel: 'About QLC',
@@ -2347,17 +2354,21 @@ const en = {
     reject: 'Reject',
     rejectTitle: 'Reject this appointment?',
     rejectMessage: 'The requester will see their appointment marked as rejected.',
+    relatedCase: 'Related case',
+    openCase: 'View case',
   },
 
   adminTrackRecord: {
-    kicker: 'TRACK RECORD',
+    kicker: 'RESULTS · BITGET',
     title: 'Verifiable external reference',
     fieldTitle: 'Title',
     description: 'Description',
     platform: 'Platform',
     profileLink: 'Profile link (Bitget)',
-    currentRanking: 'Current ranking',
-    updated: 'Track Record updated.',
+    roi30d: '30-day ROI (%)',
+    winRate: 'Win rate (%)',
+    indicatorsHint: 'Copy the values exactly as shown on your Bitget profile. Leave them empty if you do not want to publish them: the site will show "—".',
+    updated: 'Results updated.',
   },
 
   adminFaq: {
@@ -2935,6 +2946,9 @@ const en = {
     selectTime: 'Select a time…',
     chatNotYetAvailable: 'The chat unlocks at your appointment date and time.',
     chatScheduledFor: 'Chat available at {time}',
+    relatedCase: 'Related case',
+    newAppointment: 'Request appointment',
+    noOpenCases: 'You need an open case to request an appointment. Create a support case first.',
   },
 
   clientSupport: {

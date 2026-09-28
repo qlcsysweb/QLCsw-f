@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import QlcLogo from '../../../components/QlcLogo';
 import { useLanguage } from '../../../i18n/LanguageContext';
-import useSectionNav, { SECTIONS, PATH_TO_ID } from '../useSectionNav';
+import useSectionNav, { SECTIONS, HOME_ID, CONTACT_ID, CONTACT_PATH } from '../useSectionNav';
 
 function LanguageDropdown() {
   const { t, language, setLanguage } = useLanguage();
@@ -52,113 +52,25 @@ function LanguageDropdown() {
   );
 }
 
-export default function PublicNav() {
+// activeId: vista mostrada por PublicHomePage. Fuera de la página pública
+// (Privacidad/Términos) no se recibe y ningún enlace aparece activo.
+export default function PublicNav({ activeId = null }) {
   const { t } = useLanguage();
-  const location = useLocation();
-  const navigate = useNavigate();
-
-  const [activeId, setActiveId] = useState(null);
-  const [scrolled, setScrolled] = useState(false);
-  const didInitialScroll = useRef(false);
-
-  // El navbar es fijo y NUNCA se esconde; solo aumenta el contraste del fondo
-  // al alejarse del tope.
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 40);
-    handleScroll();
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  // Detecta automáticamente qué sección está visible mientras el usuario
-  // baja/sube por la página (scrollspy) — nunca requiere clic. Modelos/FAQ
-  // se montan después (dependen de la carga del CMS), así que se reintenta
-  // observarlas hasta que las 9 secciones estén presentes en el DOM.
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) setActiveId(entry.target.id);
-        });
-      },
-      { rootMargin: '-45% 0px -50% 0px', threshold: 0 }
-    );
-    const observed = new Set();
-    const tryObserveAll = () => {
-      SECTIONS.forEach((s) => {
-        if (observed.has(s.id)) return;
-        const el = document.getElementById(s.id);
-        if (el) {
-          observer.observe(el);
-          observed.add(s.id);
-        }
-      });
-    };
-    tryObserveAll();
-    const interval = setInterval(() => {
-      tryObserveAll();
-      if (observed.size === SECTIONS.length) clearInterval(interval);
-    }, 300);
-    return () => {
-      observer.disconnect();
-      clearInterval(interval);
-    };
-  }, []);
-
-  // Si se entra directamente a una ruta limpia (o se recarga en ella), lleva
-  // a esa sección una sola vez al montar — sin animación (carga inicial).
-  // Modelos/FAQ dependen de la carga del CMS, así que se reintenta unos
-  // instantes si la sección todavía no está montada.
-  useEffect(() => {
-    if (didInitialScroll.current) return;
-    const id = PATH_TO_ID[location.pathname];
-    if (!id) {
-      didInitialScroll.current = true;
-      return;
-    }
-    let attempts = 0;
-    const tryScroll = () => {
-      const el = document.getElementById(id);
-      if (el) {
-        el.scrollIntoView({ behavior: 'auto', block: 'start' });
-        didInitialScroll.current = true;
-      } else if (attempts < 20) {
-        attempts += 1;
-        setTimeout(tryScroll, 150);
-      } else {
-        didInitialScroll.current = true;
-      }
-    };
-    tryScroll();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const goToSection = useSectionNav();
-
-  const goHome = (e) => {
-    e.preventDefault();
-    navigate('/');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const goToRegistroForm = (e) => {
-    e.preventDefault();
-    document.getElementById('registro-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
+  const goTo = useSectionNav();
 
   return (
-    <nav className={`nav${scrolled ? ' nav-scrolled' : ''}`}>
+    <nav className="nav" aria-label="QLC">
       <div className="container nav-inner">
         <div className="brand-area">
-          <a className="brand" href="/" onClick={goHome}>
+          <a className="brand" href="/" onClick={goTo('/')} aria-current={activeId === HOME_ID ? 'page' : undefined}>
             <QlcLogo className="brand-mark" alt="QLC" />
           </a>
         </div>
 
         <div className="nav-links">
           {/* CORRECCIÓN 20/3: navbar reducido — "Modelo", "Cómo funciona" y
-              "Modelos de participación" NO aparecen aquí (las páginas y
-              rutas siguen existiendo, solo se quitó el enlace del navbar).
+              "Modelos de participación" NO aparecen aquí (las vistas y rutas
+              siguen existiendo y se abren desde el hero y el footer).
               "El problema" SÍ debe aparecer, justo después de Microposiciones
               (ver orden real en SECTIONS). */}
           {SECTIONS.filter((s) => !['modelo', 'como-funciona', 'modelos'].includes(s.id)).map((s) => (
@@ -166,7 +78,8 @@ export default function PublicNav() {
               key={s.id}
               href={s.path}
               className={activeId === s.id ? 'active' : ''}
-              onClick={goToSection(s.path, s.id)}
+              aria-current={activeId === s.id ? 'page' : undefined}
+              onClick={goTo(s.path)}
             >
               {t(s.labelKey)}
             </a>
@@ -175,7 +88,12 @@ export default function PublicNav() {
 
         <div className="qlc-nav-actions">
           <LanguageDropdown />
-          <a className="access-btn access-primary" href="#registro-form" onClick={goToRegistroForm}>
+          <a
+            className={`access-btn access-primary${activeId === CONTACT_ID ? ' is-current' : ''}`}
+            href={CONTACT_PATH}
+            onClick={goTo(CONTACT_PATH)}
+            aria-current={activeId === CONTACT_ID ? 'page' : undefined}
+          >
             {t('contact.submit')}
           </a>
           <Link className="access-btn" to="/registro">

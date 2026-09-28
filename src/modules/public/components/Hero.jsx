@@ -1,5 +1,6 @@
 import QlcLogo from '../../../components/QlcLogo';
 import SectionMedia from './SectionMedia';
+import TrackRecordHighlights from './TrackRecordHighlights';
 import { useLanguage } from '../../../i18n/LanguageContext';
 import useSectionNav from '../useSectionNav';
 
@@ -26,10 +27,10 @@ export default function Hero({ text, media = () => [], trackRecord }) {
             )}
           </p>
           <div className="actions">
-            <a className="btn primary" href="/como-funciona" onClick={goToSection('/como-funciona', 'como-funciona')}>
+            <a className="btn primary" href="/como-funciona" onClick={goToSection('/como-funciona')}>
               {t('hero.howItWorks')}
             </a>
-            <a className="btn secondary" href="/modelos" onClick={goToSection('/modelos', 'modelos')}>
+            <a className="btn secondary" href="/modelos" onClick={goToSection('/modelos')}>
               {t('hero.seeModels')}
             </a>
           </div>
@@ -44,24 +45,7 @@ export default function Hero({ text, media = () => [], trackRecord }) {
 
         <div className="hero-card">
           <QlcLogo className="hero-logo" animated />
-          <div className="hero-mini">
-            <div className="mini">
-              <b>{text('hero', 'mini_platform_label', 'BITGET')}</b>
-              <span>{text('hero', 'mini_platform_value', 'Elite Trader')}</span>
-            </div>
-            <div className="mini">
-              <b>{trackRecord?.ranking || '#XXX'}</b>
-              <span>{t('hero.currentRanking')}</span>
-            </div>
-            <div className="mini">
-              <b>{t('hero.trackRecord')}</b>
-              <span>{t('hero.publicData')}</span>
-            </div>
-            <div className="mini">
-              <b>API</b>
-              <span>{t('hero.algoExecution')}</span>
-            </div>
-          </div>
+          <TrackRecordHighlights trackRecord={trackRecord} text={text} />
         </div>
       </div>
 

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
@@ -17,7 +17,6 @@ function ChatPanel({ session, onClose }) {
   const [current, setCurrent] = useState(session);
   const [remaining, setRemaining] = useState(null);
   const [sendError, setSendError] = useState('');
-  const pollRef = useRef(null);
 
   const refresh = () =>
     api.get(`/admin/chat/${session.id}`).then(({ data }) => {
@@ -27,10 +26,11 @@ function ChatPanel({ session, onClose }) {
 
   useEffect(() => {
     refresh();
-    pollRef.current = setInterval(refresh, 4000);
-    return () => clearInterval(pollRef.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session.id]);
+  // usePolling en vez de un setInterval propio: gana el refetch al recuperar
+  // foco/visibilidad.
+  usePolling(refresh, 4000);
 
   useEffect(() => {
     if (current?.status !== 'ACTIVE' || !current.endsAt) {

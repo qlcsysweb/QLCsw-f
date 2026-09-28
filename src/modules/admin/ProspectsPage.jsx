@@ -4,6 +4,7 @@ import { PROSPECT_STATUS, statusOf } from '../../utils/statusLabels';
 import { useLanguage } from '../../i18n/LanguageContext';
 import ConfirmModal from '../../components/ConfirmModal';
 import CollapsibleSection from '../../components/CollapsibleSection';
+import usePolling from '../../hooks/usePolling';
 
 function CopyEmailButton({ email, t }) {
   const [copied, setCopied] = useState(false);
@@ -78,6 +79,9 @@ export default function ProspectsPage() {
   useEffect(() => {
     load();
   }, []);
+  // Nuevos prospectos desde el formulario público, o cambios de otro admin,
+  // aparecen sin F5.
+  usePolling(load, 15000);
 
   const updateStatus = async (id, status) => {
     await api.patch(`/admin/prospects/${id}`, { status });

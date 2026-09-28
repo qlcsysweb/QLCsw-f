@@ -5,6 +5,7 @@ import DocumentViewerModal from '../../components/DocumentViewerModal';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 import { formatCdmxDateTime } from '../../utils/cdmxTime';
+import usePolling from '../../hooks/usePolling';
 import './DocumentsPage.css';
 
 // La categoría real del documento principal que se solicita al cliente.
@@ -36,6 +37,9 @@ export default function DocumentsPage() {
   useEffect(() => {
     load();
   }, []);
+  // Si el admin habilita/bloquea la corrección de un documento, el cliente
+  // lo ve sin recargar la página (mismo patrón de sondeo del resto del panel).
+  usePolling(load, 15000);
 
   const flash = (msg) => {
     setMessage(msg);

@@ -175,7 +175,7 @@ export default function AppointmentsPage() {
             <thead>
               <tr>
                 <th>{t('adminAppointments.requester')}</th>
-                <th>{t('clientAppointments.caseNumber')}</th>
+                <th>{t('adminAppointments.relatedCase')}</th>
                 <th>{t('clientAppointments.account')}</th>
                 <th>{t('adminAppointments.date')}</th>
                 <th>{t('adminAppointments.time')}</th>
@@ -193,7 +193,30 @@ export default function AppointmentsPage() {
                         ? `${a.client.firstName} ${a.client.lastName}`
                         : `${a.prospect?.firstName || ''} ${a.prospect?.lastName || ''} ${t('adminAppointments.prospectTag')}`}
                     </td>
-                    <td>{a.supportCase ? `#${a.supportCase.caseNumber}` : '—'}</td>
+                    <td>
+                      {/* Caso que originó la cita: se abre directamente en Soporte
+                          (mensajería del caso) para consultarlo. */}
+                      {a.supportCase ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                          <button
+                            type="button"
+                            className="qlc-link-btn"
+                            style={{ textAlign: 'left' }}
+                            onClick={() => navigate(`/admin/support?case=${a.supportCase.id}`)}
+                            title={t('adminAppointments.openCase')}
+                          >
+                            {t('adminSupport.caseNumber')}#{a.supportCase.caseNumber}
+                          </button>
+                          {a.supportCase.subject && (
+                            <span style={{ fontSize: 11, color: 'var(--qlc-muted2)', maxWidth: 220, overflowWrap: 'anywhere' }}>
+                              {a.supportCase.subject}
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        '—'
+                      )}
+                    </td>
                     <td>
                       {a.apiSubaccount
                         ? a.apiSubaccount.isPrincipal
@@ -206,7 +229,7 @@ export default function AppointmentsPage() {
                     <td>
                       <span className={`qlc-badge ${s.className}`}>{s.text}</span>
                     </td>
-                    <td style={{ display: 'flex', gap: 6 }}>
+                    <td style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                       {a.status === 'PENDING' && (
                         <>
                           <button className="qlc-btn ghost" onClick={() => updateStatus(a.id, 'AUTORIZADA')}>

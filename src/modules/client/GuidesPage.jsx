@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import api from '../../services/api';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
+import usePolling from '../../hooks/usePolling';
 
 // CORRECCIÓN 1/6/20/21 — Guías de Uso: biblioteca de contenido HTML
 // editable desde ADMIN → Guías de Uso. El PDF (si está configurado) se
@@ -12,20 +13,33 @@ export default function ClientGuidesPage() {
   const [activeId, setActiveId] = useState(null);
   const [pdfUrl, setPdfUrl] = useState(null);
   const [error, setError] = useState('');
+  const activeIdRef = useRef(null);
+  activeIdRef.current = activeId;
 
-  useEffect(() => {
+  const load = () => {
     api
       .get('/client/guides')
       .then(({ data }) => {
         setGuides(data.guides);
-        if (data.guides.length > 0) setActiveId(data.guides[0].id);
+        // Conserva la guía seleccionada si sigue existiendo (evita que el
+        // sondeo en segundo plano regrese a la primera guía mientras el
+        // cliente está leyendo otra).
+        const stillExists = data.guides.some((g) => g.id === activeIdRef.current);
+        if (!stillExists && data.guides.length > 0) setActiveId(data.guides[0].id);
       })
       .catch((err) => setError(translateBackendMessage(err.message, language)));
     api
       .get('/client/guide')
       .then(({ data }) => setPdfUrl(data.url))
       .catch(() => setPdfUrl(null));
+  };
+  useEffect(() => {
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  // Contenido administrable (ADMIN → Guías de Uso): mismo ritmo que el resto
+  // del contenido informativo/CMS, no requiere sondeo agresivo.
+  usePolling(load, 20000);
 
   if (error) return <div className="qlc-empty">{error}</div>;
   if (!guides) return <div className="qlc-empty">{t('common.loading')}</div>;

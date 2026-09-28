@@ -3,6 +3,7 @@ import api from '../../services/api';
 import ConfirmModal from '../../components/ConfirmModal';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
+import usePolling from '../../hooks/usePolling';
 
 // CORRECCIÓN 3 (bloque de 20) — un admin autorizado edita nombre/correo/
 // contraseña de otro admin desde este modal. La contraseña nueva es
@@ -122,6 +123,8 @@ export default function AdminsPage() {
   useEffect(() => {
     load();
   }, []);
+  // Si otro admin activa/desactiva/asciende a alguien, se refleja sin F5.
+  usePolling(load, 15000);
 
   const create = async (e) => {
     e.preventDefault();

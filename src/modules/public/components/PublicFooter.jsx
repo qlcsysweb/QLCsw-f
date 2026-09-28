@@ -18,15 +18,18 @@ export default function PublicFooter({ text, media = () => [] }) {
         <div>
           <h4>{t('footer.navigationHeading')}</h4>
           <div>
-            <a href="/modelo" onClick={goToSection('/modelo', 'modelo')}>{t('nav.modelo')}</a> ·{' '}
-            <a href="/como-funciona" onClick={goToSection('/como-funciona', 'como-funciona')}>{t('nav.comoFunciona')}</a> ·{' '}
-            <a href="/tecnologia" onClick={goToSection('/tecnologia', 'tecnologia')}>{t('nav.tecnologia')}</a>
+            <a href="/modelo" onClick={goToSection('/modelo')}>{t('nav.modelo')}</a> ·{' '}
+            <a href="/como-funciona" onClick={goToSection('/como-funciona')}>{t('nav.comoFunciona')}</a> ·{' '}
+            <a href="/tecnologia" onClick={goToSection('/tecnologia')}>{t('nav.tecnologia')}</a> ·{' '}
+            <a href="/microposiciones" onClick={goToSection('/microposiciones')}>{t('nav.microposiciones')}</a> ·{' '}
+            <a href="/el-problema" onClick={goToSection('/el-problema')}>{t('nav.elProblema')}</a>
           </div>
           <div>
-            <a href="/modelos" onClick={goToSection('/modelos', 'modelos')}>{t('nav.modelos')}</a> ·{' '}
-            <a href="/resultados" onClick={goToSection('/resultados', 'resultados')}>{t('nav.resultados')}</a> ·{' '}
-            <a href="/seguridad" onClick={goToSection('/seguridad', 'seguridad')}>{t('nav.seguridad')}</a> ·{' '}
-            <a href="/sobre-qlc" onClick={goToSection('/sobre-qlc', 'sobre-qlc')}>{t('nav.sobreQlc')}</a>
+            <a href="/modelos" onClick={goToSection('/modelos')}>{t('nav.modelos')}</a> ·{' '}
+            <a href="/resultados" onClick={goToSection('/resultados')}>{t('nav.resultados')}</a> ·{' '}
+            <a href="/seguridad" onClick={goToSection('/seguridad')}>{t('nav.seguridad')}</a> ·{' '}
+            <a href="/sobre-qlc" onClick={goToSection('/sobre-qlc')}>{t('nav.sobreQlc')}</a> ·{' '}
+            <a href="/faq" onClick={goToSection('/faq')}>{t('nav.faq')}</a>
           </div>
         </div>
         <div>

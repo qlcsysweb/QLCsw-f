@@ -1,9 +1,9 @@
 import { useNavigate } from 'react-router-dom';
 
-// Secciones públicas: id = ancla real en el DOM (PublicHomePage nunca cambia,
-// todas las secciones siguen siempre montadas); path = ruta limpia que las
-// expone individualmente vía React Router (ver App.jsx) sin duplicar contenido
-// ni volver a depender de hashes (#) en ningún enlace interno del sitio.
+// Secciones públicas: id = identificador de la vista; path = ruta limpia que
+// la expone individualmente vía React Router (ver App.jsx). La página pública
+// ya NO es una página larga: PublicHomePage monta SOLO la sección activa y la
+// cambia con un fundido (fade out → cambio → fade in), sin desplazar nada.
 export const SECTIONS = [
   { id: 'modelo', path: '/modelo', labelKey: 'nav.modelo' },
   { id: 'como-funciona', path: '/como-funciona', labelKey: 'nav.comoFunciona' },
@@ -17,16 +17,38 @@ export const SECTIONS = [
   { id: 'faq', path: '/faq', labelKey: 'nav.faq' },
 ];
 
-export const PATH_TO_ID = SECTIONS.reduce((acc, s) => ({ ...acc, [s.path]: s.id }), {});
+// Vistas adicionales que no son un enlace del navbar pero sí pantallas propias.
+export const HOME_ID = 'inicio';
+export const CONTACT_ID = 'contacto';
+export const CONTACT_PATH = '/contacto';
 
-// Navega a la ruta limpia de una sección y desplaza suavemente hasta ella —
-// reemplaza cualquier <a href="#seccion">. PublicHomePage siempre tiene las
-// 9 secciones montadas, así que nunca ocurre una recarga real de página.
+export const PATH_TO_ID = SECTIONS.reduce((acc, s) => ({ ...acc, [s.path]: s.id }), {
+  '/': HOME_ID,
+  [CONTACT_PATH]: CONTACT_ID,
+});
+
+const VIEW_IDS = new Set(Object.values(PATH_TO_ID));
+// Anclas antiguas (#registro-form, #inicio-hero) que apuntan a una vista.
+const HASH_ALIASES = { 'registro-form': CONTACT_ID, 'inicio-hero': HOME_ID };
+
+// Resuelve qué vista mostrar a partir de la URL. Se aceptan rutas limpias
+// (/faq) y también enlaces directos con hash (/#faq) — el hash solo elige la
+// vista, nunca provoca un desplazamiento por el documento.
+export function resolveViewId(pathname, hash = '') {
+  const fromHash = decodeURIComponent(hash.replace(/^#/, ''));
+  if (fromHash && (pathname === '/' || !PATH_TO_ID[pathname])) {
+    if (VIEW_IDS.has(fromHash)) return fromHash;
+    if (HASH_ALIASES[fromHash]) return HASH_ALIASES[fromHash];
+  }
+  return PATH_TO_ID[pathname] || HOME_ID;
+}
+
+// Cambia de vista navegando a su ruta limpia (el historial del navegador
+// conserva atrás/adelante). Sin scroll: PublicHomePage hace el fundido.
 export default function useSectionNav() {
   const navigate = useNavigate();
-  return (path, id) => (e) => {
+  return (path) => (e) => {
     e.preventDefault();
     navigate(path);
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 }

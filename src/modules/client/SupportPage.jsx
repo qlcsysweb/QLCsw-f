@@ -29,7 +29,6 @@ function ChatPanel({ session, onClose }) {
   const [remaining, setRemaining] = useState(null);
   const [current, setCurrent] = useState(session);
   const [sendError, setSendError] = useState('');
-  const pollRef = useRef(null);
 
   const refresh = () =>
     api.get(`/client/chat/${session.id}`).then(({ data }) => {
@@ -39,10 +38,12 @@ function ChatPanel({ session, onClose }) {
 
   useEffect(() => {
     refresh();
-    pollRef.current = setInterval(refresh, 4000);
-    return () => clearInterval(pollRef.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session.id]);
+  // usePolling en vez de un setInterval propio: gana el refetch al recuperar
+  // foco/visibilidad (si el cliente cambia de pestaña y vuelve, no espera
+  // hasta 4s para ver la respuesta del admin).
+  usePolling(refresh, 4000);
 
   useEffect(() => {
     if (current?.status !== 'ACTIVE' || !current.endsAt) {
@@ -81,7 +82,7 @@ function ChatPanel({ session, onClose }) {
 
   return (
     <div className="qlc-modal-overlay">
-      <div className="qlc-modal-panel" onClick={(e) => e.stopPropagation()} style={{ display: 'flex', flexDirection: 'column', height: 520 }}>
+      <div className="qlc-modal-panel" onClick={(e) => e.stopPropagation()} style={{ display: 'flex', flexDirection: 'column', height: 'min(520px, 82vh)', padding: 20 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h2 style={{ margin: 0 }}>{t('clientSupport.chatTitle')}</h2>
           <button className="qlc-btn ghost" onClick={onClose}>
@@ -154,9 +155,14 @@ export default function SupportPage() {
   const [openCaseId, setOpenCaseId] = useState(null);
   const [openingChat, setOpeningChat] = useState(null);
 
-  // Formulario de cita — se abre desde un caso específico.
-  const [schedulingCaseNumber, setSchedulingCaseNumber] = useState(null);
-  const [apptForm, setApptForm] = useState({ apiSubaccountId: '', requestedDate: '', requestedTime: '', notes: '' });
+  // Formulario de cita — vinculado SIEMPRE a un caso del propio cliente
+  // (CASO #XXXX → Solicitar cita). Se abre desde el caso (preseleccionado)
+  // o desde "Solicitar cita" en Mis citas (el cliente elige entre sus casos
+  // abiertos). El cliente nunca escribe un ID interno: solo ve "Caso #1042".
+  const EMPTY_APPT = { caseNumber: '', apiSubaccountId: '', requestedDate: '', requestedTime: '', notes: '' };
+  const [schedulingOpen, setSchedulingOpen] = useState(false);
+  const [apptForm, setApptForm] = useState(EMPTY_APPT);
+  const apptFormRef = useRef(null);
   const [availableSlots, setAvailableSlots] = useState(null);
   const [apptMessage, setApptMessage] = useState('');
   const [apptError, setApptError] = useState('');
@@ -228,11 +234,17 @@ export default function SupportPage() {
     load();
   };
 
-  const openScheduling = (caseNumber) => {
-    setSchedulingCaseNumber(caseNumber);
-    setApptForm({ apiSubaccountId: '', requestedDate: '', requestedTime: '', notes: '' });
+  // Casos que admiten una cita (el backend rechaza igualmente los cerrados
+  // y los que no pertenecen al cliente).
+  const openCases = cases.filter((c) => c.status !== 'CLOSED');
+
+  const openScheduling = (caseNumber = '') => {
+    setSchedulingOpen(true);
+    setApptForm({ ...EMPTY_APPT, caseNumber: caseNumber === '' ? '' : String(caseNumber) });
     setAvailableSlots(null);
     setApptError('');
+    setOpenCaseId(null);
+    requestAnimationFrame(() => apptFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }));
   };
 
   const submitAppointment = async (e) => {
@@ -240,10 +252,10 @@ export default function SupportPage() {
     setApptError('');
     setSubmittingAppt(true);
     try {
-      await api.post('/client/appointments', { ...apptForm, caseNumber: schedulingCaseNumber });
+      await api.post('/client/appointments', { ...apptForm, caseNumber: Number(apptForm.caseNumber) });
       setApptMessage(t('clientAppointments.requestSent'));
       setTimeout(() => setApptMessage(''), 3000);
-      setSchedulingCaseNumber(null);
+      setSchedulingOpen(false);
       load();
     } catch (err) {
       setApptError(translateBackendMessage(err.message, language));
@@ -316,9 +328,11 @@ export default function SupportPage() {
                   </span>
                   <div style={{ color: 'var(--qlc-muted2)', fontSize: 12, marginBottom: 6 }}>{c.message}</div>
                   <div className="qlc-case-actions">
-                    <button type="button" className="qlc-btn ghost" onClick={() => openScheduling(c.caseNumber)}>
-                      {t('clientAppointments.requestFromCase')}
-                    </button>
+                    {c.status !== 'CLOSED' && (
+                      <button type="button" className="qlc-btn ghost" onClick={() => openScheduling(c.caseNumber)}>
+                        {t('clientAppointments.requestFromCase')}
+                      </button>
+                    )}
                     <CaseMessagesButton hasUnread={c.hasUnread} unreadCount={c.unreadMessages} onClick={() => setOpenCaseId(c.id)} />
                   </div>
                 </li>
@@ -327,11 +341,30 @@ export default function SupportPage() {
           )}
         </div>
 
-        {schedulingCaseNumber != null ? (
-          <form className="qlc-card" onSubmit={submitAppointment}>
+        {schedulingOpen ? (
+          <form className="qlc-card" onSubmit={submitAppointment} ref={apptFormRef}>
             <h3 style={{ marginTop: 0 }}>
-              {t('clientAppointments.requestTitle')} — #{schedulingCaseNumber}
+              {t('clientAppointments.requestTitle')}
+              {apptForm.caseNumber && ` — ${t('clientSupport.caseNumber')}#${apptForm.caseNumber}`}
             </h3>
+            <label className="qlc-label">{t('clientAppointments.relatedCase')}</label>
+            {openCases.length === 0 ? (
+              <p style={{ fontSize: 12, color: 'var(--qlc-muted2)' }}>{t('clientAppointments.noOpenCases')}</p>
+            ) : (
+              <select
+                className="qlc-select"
+                value={apptForm.caseNumber}
+                onChange={(e) => setApptForm((f) => ({ ...f, caseNumber: e.target.value }))}
+                required
+              >
+                <option value="">{t('clientAppointments.selectCase')}</option>
+                {openCases.map((c) => (
+                  <option key={c.id} value={String(c.caseNumber)}>
+                    {t('clientSupport.caseNumber')}#{c.caseNumber} — {c.subject}
+                  </option>
+                ))}
+              </select>
+            )}
             <label className="qlc-label">{t('clientAppointments.account')}</label>
             {subaccounts.length === 0 ? (
               <p style={{ fontSize: 12, color: 'var(--qlc-muted2)' }}>{t('clientAppointments.noAccountsYet')}</p>
@@ -385,10 +418,10 @@ export default function SupportPage() {
             <textarea className="qlc-textarea" rows={2} value={apptForm.notes} onChange={(e) => setApptForm((f) => ({ ...f, notes: e.target.value }))} />
             {apptError && <div className="qlc-field-error">{apptError}</div>}
             <div className="qlc-form-actions">
-              <button type="button" className="qlc-btn ghost" onClick={() => setSchedulingCaseNumber(null)}>
+              <button type="button" className="qlc-btn ghost" onClick={() => setSchedulingOpen(false)}>
                 {t('common.cancel')}
               </button>
-              <button className="qlc-btn primary" disabled={submittingAppt || !apptForm.requestedTime || subaccounts.length === 0}>
+              <button className="qlc-btn primary" disabled={submittingAppt || !apptForm.caseNumber || !apptForm.requestedTime || subaccounts.length === 0}>
                 {submittingAppt ? t('common.sending') : t('clientAppointments.request')}
               </button>
             </div>
@@ -408,7 +441,12 @@ export default function SupportPage() {
       </div>
 
       <div className="qlc-card" style={{ marginTop: 20 }}>
-        <h3 style={{ marginTop: 0 }}>{t('clientAppointments.myAppointments')}</h3>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 8 }}>
+          <h3 style={{ margin: 0 }}>{t('clientAppointments.myAppointments')}</h3>
+          <button type="button" className="qlc-btn ghost" onClick={() => openScheduling()} disabled={openCases.length === 0} title={openCases.length === 0 ? t('clientAppointments.noOpenCases') : ''}>
+            {t('clientAppointments.newAppointment')}
+          </button>
+        </div>
         {apptMessage && <div style={{ color: 'var(--qlc-ok)', fontSize: 12, marginBottom: 10 }}>{apptMessage}</div>}
         {appointments.length === 0 ? (
           <div className="qlc-empty">{t('clientAppointments.noAppointments')}</div>
@@ -422,7 +460,14 @@ export default function SupportPage() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
                     <span>
                       {formatDateOnly(a.requestedDate)} · {a.requestedTime}
-                      {a.supportCase && <span style={{ color: 'var(--qlc-muted2)' }}> · #{a.supportCase.caseNumber}</span>}
+                      {a.supportCase && (
+                        <span style={{ color: 'var(--qlc-muted2)' }}>
+                          {' '}· {t('clientAppointments.relatedCase')}:{' '}
+                          <button type="button" className="qlc-link-btn" onClick={() => setOpenCaseId(a.supportCase.id)}>
+                            {t('clientSupport.caseNumber')}#{a.supportCase.caseNumber}
+                          </button>
+                        </span>
+                      )}
                       {a.apiSubaccount && (
                         <span style={{ color: 'var(--qlc-muted2)' }}>
                           {' '}· {a.apiSubaccount.isPrincipal ? t('clientSubaccounts.principalLabel') : a.apiSubaccount.identifier}
@@ -455,6 +500,11 @@ export default function SupportPage() {
         <CaseMessagesModal
           apiBase="/client"
           supportCase={cases.find((c) => c.id === openCaseId)}
+          onRequestAppointment={
+            cases.find((c) => c.id === openCaseId).status !== 'CLOSED'
+              ? () => openScheduling(cases.find((c) => c.id === openCaseId).caseNumber)
+              : undefined
+          }
           onClose={() => {
             setOpenCaseId(null);
             load();

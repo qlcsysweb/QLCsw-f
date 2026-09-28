@@ -34,7 +34,7 @@ export default function ContactoSection({ text, media = () => [] }) {
 
   return (
     <section className="section" id="contacto">
-      <div className="container">
+      <div className="container contact-layout">
         <div className="contact-clean">
           <div>
             <div className="kicker">{text('contacto', 'kicker', 'QUANTUM LIQUIDITY CAPITAL')}</div>
@@ -42,18 +42,6 @@ export default function ContactoSection({ text, media = () => [] }) {
             <p className="sub">
               {text('contacto', 'sub', 'Trading cuantitativo · Algoritmos · API Execution · Microposiciones')}
             </p>
-          </div>
-          <div>
-            <a
-              className="btn primary"
-              href="#registro-form"
-              onClick={(e) => {
-                e.preventDefault();
-                document.getElementById('registro-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-              }}
-            >
-              {t('contact.submit')}
-            </a>
           </div>
         </div>
 
@@ -82,7 +70,9 @@ export default function ContactoSection({ text, media = () => [] }) {
             </form>
           )}
         </div>
+      </div>
 
+      <div className="container">
         <SectionMedia items={media('contacto')} />
       </div>
     </section>

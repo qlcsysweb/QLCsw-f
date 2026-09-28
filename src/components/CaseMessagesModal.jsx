@@ -50,8 +50,10 @@ export function CaseMessagesButton({ hasUnread, unreadCount = 0, onClick }) {
  * (lo hace el backend al listar los mensajes) y conserva el historial.
  *
  * apiBase: '/client' o '/admin' — mismas rutas, permisos distintos en backend.
+ * onRequestAppointment (opcional, solo cliente): muestra "Solicitar cita
+ * para este caso" — la cita queda vinculada a este número de caso.
  */
-export default function CaseMessagesModal({ apiBase, supportCase, onClose }) {
+export default function CaseMessagesModal({ apiBase, supportCase, onClose, onRequestAppointment }) {
   const { user } = useAuth();
   const { t, language } = useLanguage();
   const [messages, setMessages] = useState(null);
@@ -163,6 +165,13 @@ export default function CaseMessagesModal({ apiBase, supportCase, onClose }) {
       width={680}
     >
       <div className="qlc-case-modal">
+        {onRequestAppointment && (
+          <div className="qlc-case-modal-actions">
+            <button type="button" className="qlc-btn primary" onClick={onRequestAppointment}>
+              {t('clientAppointments.requestFromCase')}
+            </button>
+          </div>
+        )}
         <section className="qlc-case-files">
           <div className="qlc-case-files-head">
             <strong>{t('caseMessaging.files')}</strong>

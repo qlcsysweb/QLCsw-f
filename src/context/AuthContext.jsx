@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import api, { getAuthToken, setAuthToken } from '../services/api';
+import api, { getAuthToken, setAuthToken, setUnauthorizedHandler } from '../services/api';
 
 const AuthContext = createContext(null);
 
@@ -43,6 +43,19 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     refresh();
   }, [refresh]);
+
+  // Cualquier 401 (token vencido/inválido en CUALQUIER petición, no solo el
+  // chequeo inicial) cierra la sesión aquí mismo — ver services/api.js. Un
+  // 401 repetido tras esto ya no encuentra token que reenviar (401 "sin
+  // sesión"), así que nunca reintenta ni entra en bucle; simplemente deja de
+  // pasar por aquí en cuanto ProtectedRoute redirige al login.
+  useEffect(() => {
+    setUnauthorizedHandler(() => {
+      setAuthToken(null);
+      setUser(null);
+    });
+    return () => setUnauthorizedHandler(null);
+  }, []);
 
   const login = async (email, password) => {
     const { data } = await api.post('/auth/login', { email, password });

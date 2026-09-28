@@ -65,6 +65,10 @@ export default function SubaccountDetailPage() {
   const [message, setMessage] = useState('');
 
   const [apiForm, setApiForm] = useState({ exchangeName: '', apiKey: '', apiSecret: '', apiPassphrase: '', ipAddress: '' });
+  // Evita que el sondeo en segundo plano (usePolling más abajo) pise la IP
+  // mientras el cliente la está escribiendo: solo se refresca desde el
+  // servidor si el campo no tiene cambios propios sin guardar.
+  const [ipDirty, setIpDirty] = useState(false);
   const [savingApi, setSavingApi] = useState(false);
   const [payments, setPayments] = useState([]);
   const [statements, setStatements] = useState([]);
@@ -85,7 +89,7 @@ export default function SubaccountDetailPage() {
       .get(`/client/api-subaccounts/${id}`)
       .then(({ data }) => {
         setSubaccount(data.subaccount);
-        setApiForm((f) => ({ ...f, ipAddress: data.subaccount.ipAddress || '' }));
+        setApiForm((f) => (ipDirty ? f : { ...f, ipAddress: data.subaccount.ipAddress || '' }));
         setUnavailable(null);
         // Los datos dependientes de la subcuenta solo se piden si la
         // subcuenta principal existe y sigue activa — evita repetir el
@@ -231,6 +235,7 @@ export default function SubaccountDetailPage() {
       if (subaccount.ipRequired && apiForm.ipAddress) payload.ipAddress = apiForm.ipAddress;
       await api.patch(`/client/api-subaccounts/${id}`, payload);
       setApiForm((f) => ({ ...f, exchangeName: '', apiKey: '', apiSecret: '', apiPassphrase: '' }));
+      setIpDirty(false);
       flash(t('clientApiConnection.savedOk'));
       load();
     } catch (err) {
@@ -466,7 +471,10 @@ export default function SubaccountDetailPage() {
                   <input
                     className="qlc-input"
                     value={apiForm.ipAddress}
-                    onChange={(e) => setApiForm((f) => ({ ...f, ipAddress: e.target.value }))}
+                    onChange={(e) => {
+                      setIpDirty(true);
+                      setApiForm((f) => ({ ...f, ipAddress: e.target.value }));
+                    }}
                     placeholder="203.0.113.10"
                   />
                   {subaccount.ipAddress && (

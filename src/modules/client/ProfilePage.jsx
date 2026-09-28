@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import api from '../../services/api';
 import { ACCOUNT_STATUS, statusOf } from '../../utils/statusLabels';
 import { useLanguage } from '../../i18n/LanguageContext';
+import usePolling from '../../hooks/usePolling';
 
 // CORRECCIÓN 6/17/18: sin teléfono, sin username — solo nombre, apellidos,
 // correo (identificador único) y estado de cuenta.
@@ -9,9 +10,13 @@ export default function ProfilePage() {
   const { t } = useLanguage();
   const [profile, setProfile] = useState(null);
 
+  const load = () => api.get('/client/me').then(({ data }) => setProfile(data.profile));
   useEffect(() => {
-    api.get('/client/me').then(({ data }) => setProfile(data.profile));
+    load();
   }, []);
+  // Página de solo lectura (ningún campo lo edita el cliente): si el admin
+  // cambia el estado de cuenta o el nombre, se refleja sin F5.
+  usePolling(load, 15000);
 
   if (!profile) return <div className="qlc-empty">{t('common.loading')}</div>;
 

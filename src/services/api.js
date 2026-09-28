@@ -45,6 +45,21 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// AUDITORÍA SINCRONIZACIÓN GLOBAL — hasta ahora solo el chequeo inicial
+// (AuthContext.refresh(), una sola vez al montar) reaccionaba a un 401
+// limpiando la sesión. Si el token expiraba MIENTRAS la pestaña seguía
+// abierta, cada sondeo en segundo plano (usePolling) recibía 401
+// silenciosamente para siempre y el usuario se quedaba viendo datos
+// obsoletos sin que nada lo mandara de vuelta al login. AuthContext
+// registra aquí el mismo "limpiar sesión" para que CUALQUIER 401, venga de
+// donde venga, lo dispare — nunca en 403 (permisos insuficientes con
+// sesión válida) ni en otros códigos, para no cerrar sesión por un error de
+// servidor/red ni por un simple "no autorizado para esto".
+let onUnauthorized = null;
+export function setUnauthorizedHandler(fn) {
+  onUnauthorized = fn;
+}
+
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -55,6 +70,7 @@ api.interceptors.response.use(
     // — p. ej. 404 (no existe / no es tuyo) vs 410 (existe pero desactivada).
     wrapped.status = error.response?.status;
     wrapped.details = error.response?.data?.details;
+    if (wrapped.status === 401) onUnauthorized?.();
     return Promise.reject(wrapped);
   }
 );

@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 import { formatCdmxDateTime } from '../../utils/cdmxTime';
+import usePolling from '../../hooks/usePolling';
 
 /*
  * MENSAJERÍA INTERNA — buzón admin↔cliente, deliberadamente distinto del
@@ -28,6 +29,12 @@ export default function MessagesPage() {
     // contador del menú, que usa el mismo GET pero sin este efecto.
     api.post('/client/messages/read-all').catch(() => {});
   }, []);
+  // Actualización sin refresh manual: antes solo el badge del menú (otro
+  // sondeo, en ClientLayout.jsx) se actualizaba solo — si el admin respondía
+  // mientras el cliente ya tenía esta pantalla abierta, el mensaje nuevo no
+  // aparecía hasta recargar. `load()` es de solo lectura (nunca marca como
+  // leído), así que sondearlo aquí es seguro.
+  usePolling(load, 5000);
 
   const submit = async (e) => {
     e.preventDefault();

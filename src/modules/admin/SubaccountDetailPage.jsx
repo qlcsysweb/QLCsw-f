@@ -9,6 +9,7 @@ import { getLocalizedModel } from '../../i18n/bilingualContent';
 import StatementStatus, { StatementBadge } from '../../components/StatementStatus';
 import ConfirmModal from '../../components/ConfirmModal';
 import TransferReportList from './TransferReportList';
+import usePolling from '../../hooks/usePolling';
 
 // Orden alineado al flujo real del cliente (ver
 // backend/src/utils/subaccountProvisioning.js).
@@ -151,18 +152,37 @@ export default function AdminSubaccountDetailPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  // Actualización sin refresh manual: reportes de transferencia y estado de
-  // cuenta (sin re-ejecutar el load() completo, para no pisar formularios).
-  useEffect(() => {
-    const interval = setInterval(() => {
-      api.get('/admin/payment-reports', { params: { apiSubaccountId: id } }).then(({ data }) => setPayments(data.reports));
-      api.get(`/admin/api-subaccounts/${id}/statements`).then(({ data }) => {
-        setStatements(data.statements);
-        setCurrentStatement(data.current);
-      });
-    }, 8000);
-    return () => clearInterval(interval);
-  }, [id]);
+  // Actualización sin refresh manual (sin re-ejecutar el load() completo,
+  // que pisaría lo que el admin esté escribiendo en el formulario de
+  // Conexión API): refresca reportes de transferencia, estado de cuenta,
+  // reportes de distribución de capital y los campos de solo lectura de la
+  // subcuenta (condiciones del proceso, historial de conexión, bandera de
+  // "capital ya distribuido") — así una acción del CLIENTE (reportar pago,
+  // reportar distribución) aparece aquí sin F5. Reutiliza el mismo
+  // usePolling ya usado en el resto del panel (mensajes, notificaciones,
+  // dashboard) en vez de un setInterval propio.
+  const refreshLive = () => {
+    api.get(`/admin/clients/${clientId}`).then(({ data }) => {
+      const found = data.client.apiSubaccounts.find((s) => s.id === id);
+      if (found) setSubaccount(found);
+    });
+    api.get('/admin/payment-reports', { params: { apiSubaccountId: id } }).then(({ data }) => setPayments(data.reports));
+    api.get(`/admin/api-subaccounts/${id}/statements`).then(({ data }) => {
+      setStatements(data.statements);
+      setCurrentStatement(data.current);
+    });
+    api
+      .get('/admin/capital-distribution-reports', { params: { apiSubaccountId: id } })
+      .then(({ data }) => setDistributionReports(data.reports));
+    api
+      .get(`/admin/api-subaccounts/${id}/payment-data`)
+      .then(({ data }) => {
+        setReceiveUid(data.paymentData?.bitgetReceiveUid || '');
+        setPaymentForm((f) => (f.dirty ? f : { bitgetReceiveUid: data.paymentData?.bitgetReceiveUid || '', instructions: data.paymentData?.instructions || '', dirty: false }));
+      })
+      .catch(() => {});
+  };
+  usePolling(refreshLive, 8000);
 
   const flash = (msg) => {
     setMessage(msg);
