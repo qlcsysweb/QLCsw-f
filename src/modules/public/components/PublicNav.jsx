@@ -62,12 +62,21 @@ export default function PublicNav({ activeId = null }) {
     <nav className="nav" aria-label="QLC">
       <div className="container nav-inner">
         <div className="brand-area">
-          <a className="brand" href="/" onClick={goTo('/')} aria-current={activeId === HOME_ID ? 'page' : undefined}>
+          <a className="brand" href="/" onClick={goTo('/')} aria-label={t('nav.inicio')}>
             <QlcLogo className="brand-mark" alt="QLC" />
           </a>
         </div>
 
         <div className="nav-links">
+          {/* "Inicio" es siempre la primera opción: regresa al hero. */}
+          <a
+            href="/"
+            className={activeId === HOME_ID ? 'active' : ''}
+            aria-current={activeId === HOME_ID ? 'page' : undefined}
+            onClick={goTo('/')}
+          >
+            {t('nav.inicio')}
+          </a>
           {/* CORRECCIÓN 20/3: navbar reducido — "Modelo", "Cómo funciona" y
               "Modelos de participación" NO aparecen aquí (las vistas y rutas
               siguen existiendo y se abren desde el hero y el footer).

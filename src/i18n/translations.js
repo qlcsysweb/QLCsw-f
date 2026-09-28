@@ -82,6 +82,7 @@ const es = {
   },
 
   nav: {
+    inicio: 'Inicio',
     modelo: 'Modelo',
     comoFunciona: 'Cómo funciona',
     tecnologia: 'Tecnología',
@@ -1806,6 +1807,7 @@ const en = {
   },
 
   nav: {
+    inicio: 'Home',
     modelo: 'Model',
     comoFunciona: 'How it works',
     tecnologia: 'Technology',

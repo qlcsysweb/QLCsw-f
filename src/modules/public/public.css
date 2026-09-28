@@ -1177,7 +1177,9 @@
    1280×720, 1024×600 con barras del navegador). Se compacta el navbar y los
    espaciados verticales; lo que aun así no quepa usa el scroll interno de
    .qlc-stage — nunca se reduce el texto a tamaños ilegibles. */
-@media (max-height: 900px) {
+/* Navbar de una sola fila (desktop/laptop): alto fijo compacto. En ≤960px
+   el navbar pasa a varias filas con alto automático y NO debe fijarse. */
+@media (min-width: 961px) and (max-height: 900px) {
   .qlc-public .nav-inner {
     height: 62px;
   }
@@ -1191,6 +1193,8 @@
   .qlc-public .qlc-nav-lang-btn {
     min-height: 32px;
   }
+}
+@media (max-height: 900px) {
   .qlc-public-app .section {
     padding: clamp(20px, 5vh, 44px) 0;
   }
