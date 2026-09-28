@@ -31,7 +31,9 @@ export default function ModelosSection({ models, text, media = () => [] }) {
               {m.objective && (
                 <p>
                   {t('modelosSection.objective')}: <strong>{m.objective}</strong>
-                  {m.period ? ` (${m.period})` : ''}
+                  {/* El periodo solo se agrega si el objetivo no lo menciona ya
+                      (ej. "40% (Anual)" + periodo "Anual" → evitar "(Anual) (Anual)"). */}
+                  {m.period && !m.objective.toLowerCase().includes(m.period.toLowerCase()) ? ` (${m.period})` : ''}
                 </p>
               )}
               <div className="model-tag">{m.name}</div>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import api from '../../services/api';
 import ConfirmModal from '../../components/ConfirmModal';
+import PaymentConfigurationCard from './PaymentConfigurationCard';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 
@@ -144,6 +145,9 @@ export default function PlatformSettingsPage() {
             {saving ? t('common.saving') : t('common.save')}
           </button>
         </form>
+
+        {/* Datos de pago generales: se configuran una vez y aplican a todos los clientes. */}
+        <PaymentConfigurationCard />
 
         <GuideCard role="ADMIN" settings={settings} t={t} onUploaded={setSettings} onDeleted={setSettings} />
         <GuideCard role="CLIENT" settings={settings} t={t} onUploaded={setSettings} onDeleted={setSettings} />

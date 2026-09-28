@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api, { API_BASE_URL } from '../../services/api';
 import { API_CONNECTION_STATUS, PAYMENT_REPORT_STATUS, statusOf } from '../../utils/statusLabels';
@@ -83,11 +83,8 @@ export default function AdminSubaccountDetailPage() {
   const [payments, setPayments] = useState([]);
   const [statements, setStatements] = useState([]);
   const [currentStatement, setCurrentStatement] = useState(null);
+  // UID de recepción GENERAL (solo lectura aquí; se edita en Configuración · Plataforma).
   const [receiveUid, setReceiveUid] = useState('');
-  // DATOS DE PAGO de ESTA subcuenta (UID de recepción Bitget + instrucciones).
-  const [paymentForm, setPaymentForm] = useState({ bitgetReceiveUid: '', instructions: '', dirty: false });
-  const [savingPaymentData, setSavingPaymentData] = useState(false);
-  const [paymentDataMsg, setPaymentDataMsg] = useState('');
   const [confirmMarkPaid, setConfirmMarkPaid] = useState(null);
   // CORREGIR.xlsx CLIENTE 13 — reportes de distribución de capital, revisados por el admin.
   const [distributionReports, setDistributionReports] = useState([]);
@@ -103,6 +100,9 @@ export default function AdminSubaccountDetailPage() {
     periodStart: '', periodEnd: '', startingBalance: '', endingBalance: '', resultAmount: '', resultPercentage: '', volatility: '', netResult: '', commission: '0', activityNotes: '', adminNotes: '',
   });
   const [creatingStatement, setCreatingStatement] = useState(false);
+  // PDF del estado de cuenta que el admin carga (se envía al cliente).
+  const [statementPdf, setStatementPdf] = useState(null);
+  const statementPdfRef = useRef(null);
 
   const apiStatusMap = API_CONNECTION_STATUS(t);
   const paymentStatusMap = PAYMENT_REPORT_STATUS(t);
@@ -128,12 +128,8 @@ export default function AdminSubaccountDetailPage() {
       setCurrentStatement(data.current);
     });
     api
-      .get(`/admin/api-subaccounts/${id}/payment-data`)
-      .then(({ data }) => {
-        setReceiveUid(data.paymentData?.bitgetReceiveUid || '');
-        // No pisa lo que el admin está escribiendo en el formulario.
-        setPaymentForm((f) => (f.dirty ? f : { bitgetReceiveUid: data.paymentData?.bitgetReceiveUid || '', instructions: data.paymentData?.instructions || '', dirty: false }));
-      })
+      .get('/admin/payment-configuration')
+      .then(({ data }) => setReceiveUid(data.paymentData?.bitgetReceiveUid || ''))
       .catch(() => {});
     api
       .get('/admin/capital-distribution-reports', { params: { apiSubaccountId: id } })
@@ -145,8 +141,6 @@ export default function AdminSubaccountDetailPage() {
     setPayments([]);
     setStatements([]);
     setCurrentStatement(null);
-    setReceiveUid('');
-    setPaymentForm({ bitgetReceiveUid: '', instructions: '', dirty: false });
     setDistributionReports([]);
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -174,39 +168,12 @@ export default function AdminSubaccountDetailPage() {
     api
       .get('/admin/capital-distribution-reports', { params: { apiSubaccountId: id } })
       .then(({ data }) => setDistributionReports(data.reports));
-    api
-      .get(`/admin/api-subaccounts/${id}/payment-data`)
-      .then(({ data }) => {
-        setReceiveUid(data.paymentData?.bitgetReceiveUid || '');
-        setPaymentForm((f) => (f.dirty ? f : { bitgetReceiveUid: data.paymentData?.bitgetReceiveUid || '', instructions: data.paymentData?.instructions || '', dirty: false }));
-      })
-      .catch(() => {});
   };
   usePolling(refreshLive, 8000);
 
   const flash = (msg) => {
     setMessage(msg);
     setTimeout(() => setMessage(''), 3000);
-  };
-
-  const savePaymentData = async (e) => {
-    e.preventDefault();
-    setSavingPaymentData(true);
-    setError('');
-    try {
-      await api.put(`/admin/api-subaccounts/${id}/payment-data`, {
-        bitgetReceiveUid: paymentForm.bitgetReceiveUid.trim(),
-        instructions: paymentForm.instructions,
-      });
-      setPaymentForm((f) => ({ ...f, dirty: false }));
-      setPaymentDataMsg(t('adminPayments.updated'));
-      setTimeout(() => setPaymentDataMsg(''), 3000);
-      load();
-    } catch (err) {
-      setError(translateBackendMessage(err.message, language));
-    } finally {
-      setSavingPaymentData(false);
-    }
   };
 
   if (!subaccount) return <div className="qlc-empty">{t('adminClientDetail.loadingClient')}</div>;
@@ -278,14 +245,28 @@ export default function AdminSubaccountDetailPage() {
 
   const createStatement = async (e) => {
     e.preventDefault();
+    if (!statementPdf) {
+      setError(t('statementStatus.pdfRequired'));
+      return;
+    }
     setCreatingStatement(true);
     setError('');
     try {
-      const payload = { ...statementForm };
-      if (hasPreviousStatement) delete payload.periodStart;
-      await api.post(`/admin/api-subaccounts/${id}/statements`, payload);
-      flash(t('statementStatus.generated'));
+      // multipart: campos + el PDF del estado de cuenta (se adjunta al correo
+      // del cliente y queda en su subcuenta). Los campos vacíos no se envían.
+      const fd = new FormData();
+      Object.entries(statementForm).forEach(([key, value]) => {
+        if (key === 'periodStart' && hasPreviousStatement) return;
+        if (value !== '' && value !== null && value !== undefined) fd.append(key, value);
+      });
+      fd.append('file', statementPdf);
+      const { data } = await api.post(`/admin/api-subaccounts/${id}/statements`, fd, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      flash(data.emailSent ? t('statementStatus.generatedWithEmail') : t('statementStatus.generatedNoEmail'));
       setStatementForm({ periodStart: '', periodEnd: '', startingBalance: '', endingBalance: '', resultAmount: '', resultPercentage: '', volatility: '', netResult: '', commission: '0', activityNotes: '', adminNotes: '' });
+      setStatementPdf(null);
+      if (statementPdfRef.current) statementPdfRef.current.value = '';
       load();
     } catch (err) {
       setError(translateBackendMessage(err.message, language));
@@ -441,38 +422,15 @@ export default function AdminSubaccountDetailPage() {
         </div>
 
         <div className="qlc-card">
-          <h3 style={{ marginTop: 0 }}>{t('adminPayments.configTitle')}</h3>
-          <p style={{ fontSize: 12, color: 'var(--qlc-muted)', marginTop: 0 }}>{t('adminPayments.configHint')}</p>
-          <form onSubmit={savePaymentData}>
-            <label className="qlc-label" htmlFor="bitget-uid">{t('adminPayments.receiveUid')}</label>
-            <input
-              id="bitget-uid"
-              className="qlc-input"
-              inputMode="numeric"
-              maxLength={40}
-              placeholder={t('adminPayments.receiveUidPlaceholder')}
-              value={paymentForm.bitgetReceiveUid}
-              onChange={(e) => setPaymentForm((f) => ({ ...f, dirty: true, bitgetReceiveUid: e.target.value.replace(/\D/g, '') }))}
-            />
-            <label className="qlc-label" htmlFor="bitget-instructions">{t('adminPayments.instructions')}</label>
-            <textarea
-              id="bitget-instructions"
-              className="qlc-textarea"
-              rows={3}
-              value={paymentForm.instructions}
-              onChange={(e) => setPaymentForm((f) => ({ ...f, dirty: true, instructions: e.target.value }))}
-            />
-            <div className="qlc-form-actions">
-              {paymentDataMsg && <span style={{ color: 'var(--qlc-ok)', fontSize: 12 }}>{paymentDataMsg}</span>}
-              <button className="qlc-btn primary" disabled={savingPaymentData}>{t('common.save')}</button>
-            </div>
-          </form>
-        </div>
-
-        <div className="qlc-card">
           <h3 style={{ marginTop: 0 }}>
             {t('adminPayments.reports')} ({payments.length})
           </h3>
+          {/* El UID de recepción es GENERAL (Configuración · Plataforma):
+              aquí solo se muestra como referencia para revisar reportes. */}
+          <p style={{ fontSize: 12, color: 'var(--qlc-muted)', marginTop: 0 }}>
+            {t('adminPayments.receiveUid')}: <strong>{receiveUid || t('adminPayments.notConfigured')}</strong> ·{' '}
+            <Link to="/admin/settings/platform">{t('adminPayments.editGeneral')}</Link>
+          </p>
           <TransferReportList reports={payments} receiveUid={receiveUid} onChanged={load} />
         </div>
 
@@ -610,6 +568,30 @@ export default function AdminSubaccountDetailPage() {
             <textarea className="qlc-textarea" rows={2} value={statementForm.activityNotes} onChange={(e) => setStatementForm((f) => ({ ...f, activityNotes: e.target.value }))} />
             <label className="qlc-label">{t('adminClientDetail.adminNotes')}</label>
             <textarea className="qlc-textarea" rows={2} value={statementForm.adminNotes} onChange={(e) => setStatementForm((f) => ({ ...f, adminNotes: e.target.value }))} />
+            {/* PDF del estado de cuenta: se envía al cliente adjunto en el
+                correo, se avisa por mensajería interna y queda descargable
+                en su subcuenta. */}
+            <label className="qlc-label" htmlFor="statement-pdf">{t('statementStatus.pdfLabel')}</label>
+            <input
+              id="statement-pdf"
+              ref={statementPdfRef}
+              type="file"
+              className="qlc-input"
+              accept="application/pdf"
+              required
+              onChange={(e) => {
+                const file = e.target.files?.[0] || null;
+                if (file && file.type !== 'application/pdf') {
+                  setError(t('statementStatus.pdfOnly'));
+                  e.target.value = '';
+                  setStatementPdf(null);
+                  return;
+                }
+                setError('');
+                setStatementPdf(file);
+              }}
+            />
+            <p style={{ fontSize: 11, color: 'var(--qlc-muted2)', margin: '4px 0 0' }}>{t('statementStatus.pdfHint')}</p>
             <button className="qlc-btn primary" style={{ marginTop: 12, width: '100%' }}>
               {creatingStatement ? t('common.saving') : t('statementStatus.generate')}
             </button>
