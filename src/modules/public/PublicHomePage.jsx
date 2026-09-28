@@ -1,6 +1,7 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import usePublicData from './usePublicData';
+import useDominoEntrance from './useDominoEntrance';
 import { resolveViewId, HOME_ID } from './useSectionNav';
 import { getCookie, setCookie } from '../../utils/cookies';
 import DailyLanguagePrompt from '../../i18n/DailyLanguagePrompt';
@@ -28,19 +29,14 @@ import './public.css';
 const LANGUAGE_PROMPT_COOKIE = 'qlc_language_prompt_date';
 const todayString = () => new Date().toISOString().slice(0, 10);
 
-// Duración del fundido de salida; la entrada (≈220ms) es una animación CSS
-// (.qlc-view) — ver public.css.
-const FADE_OUT_MS = 160;
-
-const prefersReducedMotion = () =>
-  typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-
 /*
  * La página pública funciona como un conjunto de pantallas: el navbar queda
  * fijo arriba y debajo se muestra ÚNICAMENTE la sección activa. Al elegir otra
- * opción: fade out → se reemplaza el contenido → fade in. No existe scroll
- * entre secciones; si una sección no cabe en la altura disponible, solo su
- * contenedor (.qlc-stage) muestra scroll interno.
+ * opción, la sección nueva reemplaza a la anterior al instante (sin fundido
+ * de salida) y sus elementos entran en dominó, uno tras otro, hasta quedar
+ * acomodados (ver useDominoEntrance.js). No existe scroll entre secciones; si
+ * una sección no cabe en la altura disponible, solo su contenedor
+ * (.qlc-stage) muestra scroll interno.
  */
 export default function PublicHomePage() {
   const location = useLocation();
@@ -52,30 +48,14 @@ export default function PublicHomePage() {
     () => getCookie(LANGUAGE_PROMPT_COOKIE) === todayString()
   );
 
-  const targetId = resolveViewId(location.pathname, location.hash);
-  const [shownId, setShownId] = useState(targetId);
-  const [leaving, setLeaving] = useState(false);
+  const shownId = resolveViewId(location.pathname, location.hash);
   const stageRef = useRef(null);
   const viewRef = useRef(null);
   const isFirstView = useRef(true);
 
-  useEffect(() => {
-    if (targetId === shownId) {
-      setLeaving(false);
-      return undefined;
-    }
-    if (prefersReducedMotion()) {
-      setShownId(targetId);
-      return undefined;
-    }
-    setLeaving(true);
-    const timer = setTimeout(() => {
-      setShownId(targetId);
-      setLeaving(false);
-    }, FADE_OUT_MS);
-    return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [targetId]);
+  // Cascada dominó al entrar a una sección; `loading` la vuelve a evaluar
+  // cuando llegan los datos del CMS (FAQ / modelos se montan después).
+  useDominoEntrance(viewRef, [shownId, loading]);
 
   // Cada sección empieza desde su propio inicio (sin arrastrar el scroll
   // interno de la anterior) y recibe el foco para lectores de pantalla.
@@ -133,13 +113,13 @@ export default function PublicHomePage() {
     <div className="qlc-public qlc-public-app">
       {showLanguagePrompt && <DailyLanguagePrompt onDone={handleLanguagePromptDone} />}
       {showScamModal && <AntiScamModal onClose={() => setShowScamModal(false)} />}
-      <PublicNav activeId={targetId} />
+      <PublicNav activeId={shownId} />
       <main className="qlc-stage" ref={stageRef}>
         <div
           key={shownId}
           ref={viewRef}
           tabIndex={-1}
-          className={`qlc-view${leaving ? ' is-leaving' : ''}`}
+          className="qlc-view"
           data-view={shownId}
         >
           {renderView()}

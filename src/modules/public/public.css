@@ -81,30 +81,35 @@
   width: 100%;
   margin: auto 0;
   outline: none;
-  animation: qlc-view-in 220ms ease-out both;
 }
-.qlc-public .qlc-view.is-leaving {
-  animation: none;
-  opacity: 0;
-  transform: translateY(-4px);
-  transition: opacity 160ms ease-in, transform 160ms ease-in;
+/* ENTRADA EN DOMINÓ — la sección nueva reemplaza a la anterior al instante
+   (sin fundido de salida) y sus elementos llegan uno tras otro, en orden de
+   lectura, con el mismo intervalo entre cada pieza: cada uno "cae" desde
+   arriba como una ficha de dominó y se acomoda en su lugar. El índice y el
+   retardo (--qlc-d) los asigna useDominoEntrance.js. */
+.qlc-public .qlc-domino {
+  animation: qlc-domino-in 520ms cubic-bezier(0.22, 0.8, 0.25, 1) both;
+  animation-delay: var(--qlc-d, 0ms);
+  transform-origin: 50% 0%;
+  backface-visibility: hidden;
 }
-@keyframes qlc-view-in {
-  from {
+@keyframes qlc-domino-in {
+  0% {
     opacity: 0;
-    transform: translateY(6px);
+    transform: perspective(700px) rotateX(-62deg) translateY(-10px);
   }
-  to {
+  60% {
+    opacity: 1;
+    transform: perspective(700px) rotateX(8deg) translateY(1px);
+  }
+  100% {
     opacity: 1;
     transform: none;
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .qlc-public .qlc-view,
-  .qlc-public .qlc-view.is-leaving {
+  .qlc-public .qlc-domino {
     animation: none;
-    transition: none;
-    transform: none;
   }
 }
 .qlc-public-app .section {
