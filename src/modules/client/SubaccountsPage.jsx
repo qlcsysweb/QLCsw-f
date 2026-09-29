@@ -4,7 +4,7 @@ import api from '../../services/api';
 import Modal from '../../components/Modal';
 import { API_CONNECTION_STATUS, statusOf } from '../../utils/statusLabels';
 import { useLanguage } from '../../i18n/LanguageContext';
-import { getLocalizedModel } from '../../i18n/bilingualContent';
+import { formatParticipationSplit } from '../../components/ParticipationModelSummary';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 import usePolling from '../../hooks/usePolling';
 
@@ -125,7 +125,6 @@ export default function SubaccountsPage() {
         <div className="qlc-detail-grid">
           {subaccounts.map((s) => {
             const status = statusOf(apiStatusMap, s.status, 'PENDIENTE');
-            const model = s.clientModel?.model ? getLocalizedModel(s.clientModel.model, language) : null;
             const pendingDeactivate = pendingDeactivateBySubaccountId.has(s.id);
             return (
               <div key={s.id} className="qlc-card" style={s.isPrincipal ? { borderColor: 'var(--qlc-gold)' } : undefined}>
@@ -140,7 +139,7 @@ export default function SubaccountsPage() {
                     {t('clientSubaccounts.operatorUser')}: {s.identifier || t('clientSubaccounts.unassignedIdentifier')}
                   </p>
                   <p style={{ color: 'var(--qlc-muted)', fontSize: 13, marginBottom: 4 }}>
-                    {t('clientSubaccounts.model')}: {model ? model.name : t('clientSubaccounts.noModel')}
+                    {t('clientSubaccounts.model')}: {formatParticipationSplit(s.clientModel?.model, t)}
                   </p>
                   <p style={{ color: 'var(--qlc-muted2)', fontSize: 12, marginBottom: 0 }}>
                     {s.process?.isActivated ? t('clientSubaccounts.activated') : t('clientSubaccounts.inProcess')}

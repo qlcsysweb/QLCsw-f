@@ -8,7 +8,7 @@ import { downloadAuthenticatedFile } from '../../utils/downloadFile';
 import { ACCOUNT_STATUS, API_CONNECTION_STATUS, statusOf } from '../../utils/statusLabels';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
-import { getLocalizedModel } from '../../i18n/bilingualContent';
+import { formatParticipationSplit } from '../../components/ParticipationModelSummary';
 import { formatCdmxDateTime } from '../../utils/cdmxTime';
 import usePolling from '../../hooks/usePolling';
 import CollapsibleSection from '../../components/CollapsibleSection';
@@ -30,7 +30,7 @@ function SubaccountRow({ s, id, t, language, apiStatusMap, onDeactivate, onActiv
   return (
     <tr>
       <td>{s.isPrincipal ? t('clientSubaccounts.principalLabel') : (s.identifier || t('adminClientDetail.unassignedIdentifier'))}</td>
-      <td>{s.clientModel?.model ? getLocalizedModel(s.clientModel.model, language).name : t('adminClientDetail.noModelAssigned')}</td>
+      <td>{formatParticipationSplit(s.clientModel?.model, t)}</td>
       <td>
         <span className={`qlc-badge ${apiStatus.className}`}>{apiStatus.text}</span>
       </td>

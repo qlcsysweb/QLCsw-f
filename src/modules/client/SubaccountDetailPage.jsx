@@ -7,42 +7,26 @@ import { formatCdmxDate, formatDateOnly } from '../../utils/cdmxTime';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 import { getLocalizedModel } from '../../i18n/bilingualContent';
-import ModelComparisonTable from '../../components/ModelComparisonTable';
+import ParticipationModelSummary from '../../components/ParticipationModelSummary';
 import StatementStatus, { StatementBadge } from '../../components/StatementStatus';
 import BitgetTransferSection from './BitgetTransferSection';
 import usePolling from '../../hooks/usePolling';
 
-function ModelDetailsModal({ model, onClose, onSelect, selecting, t }) {
+// Detalle (solo lectura) del modelo único de participación — ya no hay
+// nada que elegir ni confirmar.
+function ModelDetailsModal({ model, onClose, t }) {
   return (
-    <Modal title={model.name} onClose={onClose} width={600}>
-      {model.tagline && <p style={{ color: 'var(--qlc-blue2)', fontWeight: 600 }}>{model.tagline}</p>}
-      <p style={{ color: 'var(--qlc-muted)', fontSize: 14, lineHeight: 1.6 }}>{model.description}</p>
-      {model.conditions && (
-        <p style={{ fontSize: 13 }}>
-          <strong>{t('clientModels.conditions')}:</strong> {model.conditions}
-        </p>
-      )}
-      {model.period && (
-        <p style={{ fontSize: 13 }}>
-          <strong>{t('clientModels.period')}:</strong> {model.period}
-        </p>
-      )}
-      {model.objective && (
-        <p style={{ fontSize: 13 }}>
-          <strong>{t('clientModels.objective')}:</strong> {model.objective}
-        </p>
+    <Modal title={t('participationModel.title')} onClose={onClose} width={600} closeOnOverlayClick closeOnEscape>
+      <ParticipationModelSummary model={model} showTitle={false} />
+      {model.description && (
+        <p style={{ color: 'var(--qlc-muted)', fontSize: 14, lineHeight: 1.6, marginTop: 14 }}>{model.description}</p>
       )}
       {model.detailsContent && (
-        <p style={{ fontSize: 13, color: 'var(--qlc-muted)', whiteSpace: 'pre-line', marginTop: 14 }}>
-          {model.detailsContent}
-        </p>
+        <p style={{ fontSize: 13, color: 'var(--qlc-muted)', whiteSpace: 'pre-line', marginTop: 14 }}>{model.detailsContent}</p>
       )}
       <div className="qlc-form-actions">
-        <button className="qlc-btn ghost" onClick={onClose}>
-          {t('common.cancel')}
-        </button>
-        <button className="qlc-btn primary" disabled={selecting} onClick={onSelect}>
-          {selecting ? t('common.saving') : t('clientModels.selectConfirm').replace('{model}', model.name)}
+        <button className="qlc-btn primary" onClick={onClose}>
+          {t('clientSupport.close')}
         </button>
       </div>
     </Modal>
@@ -58,9 +42,7 @@ export default function SubaccountDetailPage() {
   // URL, o de otro cliente) guardamos por qué, y dejamos de sondear el
   // backend — evita el bucle de 404 infinitos reportado en consola.
   const [unavailable, setUnavailable] = useState(null);
-  const [modelsRaw, setModelsRaw] = useState([]);
-  const [detailsModel, setDetailsModel] = useState(null);
-  const [selecting, setSelecting] = useState(false);
+  const [showModelDetails, setShowModelDetails] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
 
@@ -96,7 +78,6 @@ export default function SubaccountDetailPage() {
         // patrón de 404 en cascada reportado (todos estos endpoints
         // dependen del mismo :id, así que fallan igual si la subcuenta ya
         // no está disponible).
-        api.get('/client/models').then(({ data }) => setModelsRaw(data.models)).catch(() => {});
         api
           .get(`/client/api-subaccounts/${id}/payment-reports`)
           .then(({ data }) => setPayments(data.reports))
@@ -180,44 +161,14 @@ export default function SubaccountDetailPage() {
   if (!subaccount) return <div className="qlc-empty">{t('common.loading')}</div>;
 
   const status = statusOf(apiStatusMap, subaccount.status, 'PENDIENTE');
-  const models = modelsRaw.map((m) => getLocalizedModel(m, language));
-  const hasModel = Boolean(subaccount.clientModel);
-  const modelConfirmed = Boolean(subaccount.clientModel?.confirmedAt);
+  // Modelo único de participación (asignado automáticamente por el backend).
+  const participationModel = subaccount.clientModel?.model ? getLocalizedModel(subaccount.clientModel.model, language) : null;
   // Garantía confirmada = algún reporte de garantía (sin estado de cuenta
   // ligado) ya CONFIRMADO. `payments` viene ordenado desc. desde backend.
   const guaranteeConfirmed = payments.some((p) => !p.statementId && p.status === 'APROBADO');
   const statementStatus = currentStatement?.status || 'NO_GENERADO';
   const hasUnpaidStatement = statementStatus === 'PENDIENTE_DE_PAGO' || statementStatus === 'VENCIDO_SIN_PAGAR';
   const latestStatement = statements[0] || null;
-
-  const selectModel = async (modelId) => {
-    setSelecting(true);
-    setError('');
-    try {
-      await api.post(`/client/api-subaccounts/${id}/model`, { modelId });
-      setDetailsModel(null);
-      flash(t('clientModels.confirmed'));
-      load();
-    } catch (err) {
-      setError(translateBackendMessage(err.message, language));
-    } finally {
-      setSelecting(false);
-    }
-  };
-
-  const confirmModel = async () => {
-    setSelecting(true);
-    setError('');
-    try {
-      await api.post(`/client/api-subaccounts/${id}/model/confirm`);
-      flash(t('clientModels.confirmed'));
-      load();
-    } catch (err) {
-      setError(translateBackendMessage(err.message, language));
-    } finally {
-      setSelecting(false);
-    }
-  };
 
   const saveApi = async (e) => {
     e.preventDefault();
@@ -316,56 +267,13 @@ export default function SubaccountDetailPage() {
       )}
 
       <div className="qlc-detail-grid">
-        {/* CORREGIR(2).xlsx CLIENTE 29 — "Tu contrato" ya no existe; esta
-            tarjeta ocupa ahora ese espacio (grid-column: 1 / -1, ver
-            theme.css) cuando muestra la tabla de comparación, para que no
-            quede apretada en una sola columna de ~320px. */}
-        <div className={`qlc-card${!hasModel ? ' qlc-card-span-all' : ''}`}>
-          <h3 style={{ marginTop: 0, marginBottom: 4 }}>{t('clientModels.title')}</h3>
-          {!hasModel && (
-            <p style={{ color: 'var(--qlc-muted)', fontSize: 13, marginBottom: 16 }}>{t('clientModels.subtitle')}</p>
-          )}
-          {hasModel ? (
-            <>
-              {!modelConfirmed && (
-                <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--qlc-blue2)', marginBottom: 6 }}>
-                  {t('clientModels.selectedBanner').replace('{model}', getLocalizedModel(subaccount.clientModel.model, language).name)}
-                </p>
-              )}
-              {!modelConfirmed && (
-                <p style={{ fontSize: 12, color: 'var(--qlc-muted)', marginBottom: 12 }}>{t('clientModels.selectedIntro')}</p>
-              )}
-              <p style={{ fontSize: 15, fontWeight: 600 }}>{getLocalizedModel(subaccount.clientModel.model, language).name}</p>
-              <span className={`qlc-badge ${modelConfirmed ? 'ok' : 'warn'}`}>
-                {modelConfirmed ? t('clientModels.currentModel') : t('clientModels.pendingConfirm')}
-              </span>
-              {!modelConfirmed && (
-                <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-                  <button className="qlc-btn ghost" style={{ flex: 1 }} onClick={() => setDetailsModel(getLocalizedModel(subaccount.clientModel.model, language))}>
-                    {t('clientModels.backToCompare')}
-                  </button>
-                  <button className="qlc-btn primary" style={{ flex: 1 }} disabled={selecting} onClick={confirmModel}>
-                    {selecting ? t('common.saving') : t('clientModels.confirmSelection')}
-                  </button>
-                </div>
-              )}
-            </>
-          ) : (
-            <>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 18 }}>
-                {models.map((m) => (
-                  <div key={m.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--qlc-line)', paddingBottom: 8 }}>
-                    <span>{m.name}</span>
-                    <button className="qlc-btn ghost" onClick={() => setDetailsModel(m)}>
-                      {t('clientModels.details')}
-                    </button>
-                  </div>
-                ))}
-              </div>
-              <h4 style={{ marginBottom: 10 }}>{t('clientModels.comparisonTitle')}</h4>
-              <ModelComparisonTable />
-              <p style={{ fontSize: 11, color: 'var(--qlc-muted2)', marginTop: 10 }}>{t('clientModels.disclaimer')}</p>
-            </>
+        {/* MODELO ÚNICO DE PARTICIPACIÓN — sin selector: se muestra directo. */}
+        <div className="qlc-card">
+          <ParticipationModelSummary model={participationModel} />
+          {participationModel && (participationModel.description || participationModel.detailsContent) && (
+            <button className="qlc-btn ghost" style={{ marginTop: 12 }} onClick={() => setShowModelDetails(true)}>
+              {t('clientModels.details')}
+            </button>
           )}
         </div>
 
@@ -572,14 +480,8 @@ export default function SubaccountDetailPage() {
         />
       </div>
 
-      {detailsModel && (
-        <ModelDetailsModal
-          model={detailsModel}
-          onClose={() => setDetailsModel(null)}
-          selecting={selecting}
-          onSelect={() => selectModel(detailsModel.id)}
-          t={t}
-        />
+      {showModelDetails && participationModel && (
+        <ModelDetailsModal model={participationModel} onClose={() => setShowModelDetails(false)} t={t} />
       )}
     </div>
   );

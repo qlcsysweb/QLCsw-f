@@ -1,9 +1,13 @@
 import SectionMedia from './SectionMedia';
-import ModelComparisonTable from '../../../components/ModelComparisonTable';
+import ParticipationModelSummary from '../../../components/ParticipationModelSummary';
 import { useLanguage } from '../../../i18n/LanguageContext';
 
+// MODELO ÚNICO DE PARTICIPACIÓN — QLC 70% / Cliente 30%. Sin selector ni
+// comparación: se presenta directamente el único modelo disponible (textos
+// administrables desde Admin → Modelo de participación).
 export default function ModelosSection({ models, text, media = () => [] }) {
   const { t } = useLanguage();
+  const model = models[0] || null;
   return (
     <section className="section alt" id="modelos">
       <div className="container">
@@ -15,34 +19,17 @@ export default function ModelosSection({ models, text, media = () => [] }) {
         </h2>
         <p className="sub">{t('modelosSection.sub')}</p>
 
-        <div className="models">
-          {models.map((m) => (
-            <div className={`model-card${m.key === 'PERFORMANCE' ? ' featured' : ''}`} key={m.id}>
-              <div className="model-no">
-                {String(m.displayOrder).padStart(2, '0')} · {m.key}
-              </div>
-              <h3>{m.tagline || m.name}</h3>
-              <p>{m.description}</p>
-              {m.conditions && (
-                <p>
-                  <strong>{m.conditions}</strong>
-                </p>
-              )}
-              {m.objective && (
-                <p>
-                  {t('modelosSection.objective')}: <strong>{m.objective}</strong>
-                  {/* El periodo solo se agrega si el objetivo no lo menciona ya
-                      (ej. "40% (Anual)" + periodo "Anual" → evitar "(Anual) (Anual)"). */}
-                  {m.period && !m.objective.toLowerCase().includes(m.period.toLowerCase()) ? ` (${m.period})` : ''}
-                </p>
-              )}
-              <div className="model-tag">{m.name}</div>
-            </div>
-          ))}
+        <div className="model-single">
+          <div className="model-card featured">
+            <div className="model-no">{t('participationModel.title')}</div>
+            {model?.tagline && <h3>{model.tagline}</h3>}
+            {model?.description && <p>{model.description}</p>}
+            {model?.detailsContent && <p className="model-details">{model.detailsContent}</p>}
+          </div>
+          <div className="model-card model-split-card">
+            <ParticipationModelSummary model={model} />
+          </div>
         </div>
-
-        <h3 style={{ marginTop: 50, marginBottom: 16 }}>{t('modelComparison.sectionTitle')}</h3>
-        <ModelComparisonTable />
 
         <p className="note">
           {text(

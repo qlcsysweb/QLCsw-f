@@ -738,11 +738,13 @@
   white-space: nowrap;
 }
 
-.qlc-public .models {
+/* Modelo único de participación: descripción + reparto QLC/Cliente. */
+.qlc-public .model-single {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
   gap: 14px;
-  margin-top: 40px;
+  margin-top: 36px;
+  align-items: stretch;
 }
 .qlc-public .model-card {
   position: relative;
@@ -750,7 +752,21 @@
   border: 1px solid var(--line);
   border-radius: 20px;
   background: #0b1016;
-  min-height: 250px;
+}
+.qlc-public .model-split-card {
+  display: flex;
+  align-items: center;
+}
+.qlc-public .model-split-card .qlc-pm {
+  width: 100%;
+}
+.qlc-public .model-split-card .qlc-pm-split dd {
+  font-size: 40px;
+}
+.qlc-public .model-card .model-details {
+  white-space: pre-line;
+  font-size: 12px;
+  margin-bottom: 0;
 }
 .qlc-public .model-card.featured {
   border-color: rgba(0, 168, 255, 0.34);
@@ -769,18 +785,6 @@
 .qlc-public .model-card p {
   color: var(--qlc-muted);
   font-size: 13px;
-}
-.qlc-public .model-tag {
-  position: absolute;
-  top: 18px;
-  right: 18px;
-  font-size: 9px;
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
-  color: #9ddfff;
-  border: 1px solid rgba(91, 212, 255, 0.28);
-  padding: 6px 8px;
-  border-radius: 999px;
 }
 .qlc-public .note {
   font-size: 12px;
@@ -986,7 +990,7 @@
   .qlc-public .contact-clean {
     grid-template-columns: 1fr;
   }
-  .qlc-public .models {
+  .qlc-public .model-single {
     grid-template-columns: 1fr;
   }
   .qlc-public .security-grid {
@@ -1204,13 +1208,13 @@
   .qlc-public .feature-list,
   .qlc-public .pillars,
   .qlc-public .security-grid,
-  .qlc-public .models,
+  .qlc-public .model-single,
   .qlc-public .micro-hero,
   .qlc-public .connection {
     margin-top: 24px;
   }
-  .qlc-public .models .model-card {
-    min-height: 0;
+  .qlc-public .model-card {
+    padding: 22px;
   }
   .qlc-public .feature-item {
     min-height: 0;

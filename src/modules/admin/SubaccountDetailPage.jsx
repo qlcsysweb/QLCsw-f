@@ -5,7 +5,7 @@ import { API_CONNECTION_STATUS, PAYMENT_REPORT_STATUS, statusOf } from '../../ut
 import { formatCdmxDate, formatDateOnly } from '../../utils/cdmxTime';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
-import { getLocalizedModel } from '../../i18n/bilingualContent';
+import { formatParticipationSplit } from '../../components/ParticipationModelSummary';
 import StatementStatus, { StatementBadge } from '../../components/StatementStatus';
 import ConfirmModal from '../../components/ConfirmModal';
 import TransferReportList from './TransferReportList';
@@ -325,7 +325,7 @@ export default function AdminSubaccountDetailPage() {
         <div className="qlc-card">
           <h3 style={{ marginTop: 0 }}>{t('adminClientDetail.model')}</h3>
           <p style={{ color: 'var(--qlc-muted)', fontSize: 13 }}>
-            {subaccount.clientModel?.model ? getLocalizedModel(subaccount.clientModel.model, language).name : t('adminClientDetail.noModelAssigned')}
+            {formatParticipationSplit(subaccount.clientModel?.model, t)}
           </p>
 
           <h3>{t('adminClientDetail.apiConnection')} ({subaccount.exchangeName || 'Bitget'})</h3>

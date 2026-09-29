@@ -921,6 +921,41 @@ textarea {
   overflow-wrap: anywhere;
   min-width: 0;
 }
+/* Modelo único de participación (QLC 70% · Cliente 30%). */
+.qlc-pm-title {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--qlc-blue2);
+  margin-bottom: 10px;
+}
+.qlc-pm-split {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.qlc-pm-split > div {
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--qlc-line);
+  background: rgba(255, 255, 255, 0.025);
+}
+.qlc-pm-split > div:first-child {
+  border-color: var(--qlc-ok-border);
+  background: rgba(0, 168, 255, 0.06);
+}
+.qlc-pm-split dt {
+  font-size: 12px;
+  color: var(--qlc-muted);
+}
+.qlc-pm-split dd {
+  margin: 2px 0 0;
+  font-size: 26px;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
 /* Modal "Eliminar cliente": cliente afectado bien visible. */
 .qlc-delete-target {
   display: flex;
