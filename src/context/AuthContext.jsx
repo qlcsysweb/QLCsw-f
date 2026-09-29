@@ -88,6 +88,15 @@ export function AuthProvider({ children }) {
     return data.user;
   };
 
+  // Acceso con correo + código de Google Authenticator (sin contraseña).
+  const loginWithCode = async (email, code) => {
+    const { data } = await api.post('/auth/login/code', { email, code });
+    setAuthToken(data.token);
+    markBitgetModalPending(data.user);
+    setUser(data.user);
+    return data.user;
+  };
+
   const register = async (payload) => {
     const { data } = await api.post('/auth/register', payload);
     setAuthToken(data.token);
@@ -106,7 +115,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, authError, login, loginWithTwoFactor, register, logout, refresh }}>
+    <AuthContext.Provider value={{ user, loading, authError, login, loginWithTwoFactor, loginWithCode, register, logout, refresh }}>
       {children}
     </AuthContext.Provider>
   );

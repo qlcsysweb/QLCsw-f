@@ -99,19 +99,19 @@ export default function CapitalConfirmation({ subaccountId, requiredCapital, rep
               {lastRejected.reviewNote ? ` — ${lastRejected.reviewNote}` : ''}
             </p>
           )}
-          {hasCapital && (
-            <>
-              <p className="qlc-capital-help">{t('clientApiConnection.confirmInstructions')}</p>
-              <div className="qlc-capital-phrases">
-                {Object.entries(CAPITAL_DECLARATIONS).map(([lang, phrase]) => (
-                  <p key={lang} className="qlc-capital-phrase-row" lang={lang.toLowerCase()}>
-                    <span className="qlc-capital-phrase-lang">{lang}:</span>
-                    <span className="qlc-capital-phrase-text">{phrase}</span>
-                  </p>
-                ))}
-              </div>
-            </>
-          )}
+          {/* Las frases se muestran siempre (también con el capital pendiente)
+              para que el cliente sepa qué confirmará; el campo y el botón
+              solo se habilitan cuando el ADMIN fija el capital. */}
+          {!hasCapital && <p className="qlc-capital-help">{t('clientApiConnection.capitalPendingHelp')}</p>}
+          <p className="qlc-capital-help">{t('clientApiConnection.confirmInstructions')}</p>
+          <div className="qlc-capital-phrases">
+            {Object.entries(CAPITAL_DECLARATIONS).map(([lang, phrase]) => (
+              <p key={lang} className="qlc-capital-phrase-row" lang={lang.toLowerCase()}>
+                <span className="qlc-capital-phrase-lang">{lang}:</span>
+                <span className="qlc-capital-phrase-text">{phrase}</span>
+              </p>
+            ))}
+          </div>
           <label className="qlc-label" htmlFor="capital-confirmation">
             {t('clientApiConnection.confirmationLabel')}
           </label>

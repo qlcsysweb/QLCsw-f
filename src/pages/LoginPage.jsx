@@ -7,7 +7,7 @@ import { translateBackendMessage } from '../i18n/backendMessages';
 import './LoginPage.css';
 
 export default function LoginPage() {
-  const { login, loginWithTwoFactor } = useAuth();
+  const { login, loginWithTwoFactor, loginWithCode } = useAuth();
   const { t, language } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
@@ -16,12 +16,15 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [code, setCode] = useState('');
   const [tempToken, setTempToken] = useState(null);
+  // Acceso con contraseña O con código de Google Authenticator (uno de los dos).
+  const [mode, setMode] = useState('password');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const from = location.state?.from?.pathname;
 
   const goAfterLogin = (user) => {
+    if (user.twoFactorSetupRequired) return navigate('/seguridad-2fa', { replace: true });
     const destination = from || (user.role === 'ADMIN' ? '/admin' : '/client');
     navigate(destination, { replace: true });
   };
@@ -31,7 +34,7 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
     try {
-      const result = await login(email, password);
+      const result = mode === 'code' ? await loginWithCode(email, code) : await login(email, password);
       if (result?.twoFactorRequired) {
         setTempToken(result.tempToken);
       } else {
@@ -71,6 +74,23 @@ export default function LoginPage() {
 
         {!tempToken ? (
           <form onSubmit={handleSubmit}>
+            <div className="qlc-login-modes" role="tablist" aria-label={t('auth.modeLabel')}>
+              {['password', 'code'].map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  role="tab"
+                  aria-selected={mode === m}
+                  className={mode === m ? 'is-active' : ''}
+                  onClick={() => {
+                    setMode(m);
+                    setError('');
+                  }}
+                >
+                  {m === 'password' ? t('auth.modePassword') : t('auth.modeCode')}
+                </button>
+              ))}
+            </div>
             <label className="qlc-label">{t('auth.email')}</label>
             <input
               className="qlc-input"
@@ -81,41 +101,66 @@ export default function LoginPage() {
               autoComplete="email"
               required
             />
-            <label className="qlc-label">{t('auth.password')}</label>
-            <div style={{ position: 'relative' }}>
-              <input
-                className="qlc-input"
-                type={showPassword ? 'text' : 'password'}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                autoComplete="current-password"
-                required
-                style={{ paddingRight: 44 }}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword((v) => !v)}
-                aria-label={showPassword ? t('auth.hidePassword') : t('auth.showPassword')}
-                style={{
-                  position: 'absolute',
-                  right: 10,
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  color: 'var(--qlc-muted)',
-                  fontSize: 12,
-                }}
-              >
-                {showPassword ? t('auth.hidePassword') : t('auth.showPassword')}
-              </button>
-            </div>
+            {mode === 'code' ? (
+              <>
+                <label className="qlc-label" htmlFor="login-code">{t('auth.twoFactorCode')}</label>
+                <input
+                  id="login-code"
+                  className="qlc-input qlc-otp-input"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  placeholder="000000"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  required
+                />
+                <p className="qlc-login-sub" style={{ marginTop: 8, fontSize: 12 }}>{t('auth.codeModeHint')}</p>
+              </>
+            ) : (
+              <>
+                <label className="qlc-label">{t('auth.password')}</label>
+                <div style={{ position: 'relative' }}>
+                  <input
+                    className="qlc-input"
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    autoComplete="current-password"
+                    required
+                    style={{ paddingRight: 44 }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    aria-label={showPassword ? t('auth.hidePassword') : t('auth.showPassword')}
+                    style={{
+                      position: 'absolute',
+                      right: 10,
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      color: 'var(--qlc-muted)',
+                      fontSize: 12,
+                    }}
+                  >
+                    {showPassword ? t('auth.hidePassword') : t('auth.showPassword')}
+                  </button>
+                </div>
+
+                <div className="qlc-login-forgot">
+                  <button type="button" onClick={() => navigate('/restablecer-contrasena', { state: { email } })}>
+                    {t('auth.forgotPassword')}
+                  </button>
+                </div>
+              </>
+            )}
 
             {error && <div className="qlc-login-error">{error}</div>}
 
-            <button className="qlc-btn primary qlc-login-submit" type="submit" disabled={loading}>
+            <button className="qlc-btn primary qlc-login-submit" type="submit" disabled={loading || (mode === 'code' && code.length !== 6)}>
               {loading ? t('auth.submitting') : t('auth.submit')}
             </button>
 
@@ -125,13 +170,17 @@ export default function LoginPage() {
           </form>
         ) : (
           <form onSubmit={handleTwoFactorSubmit}>
-            <label className="qlc-label">{t('auth.twoFactorCode')}</label>
+            <p className="qlc-login-sub">{t('auth.twoFactorHint')}</p>
+            <label className="qlc-label" htmlFor="login-2fa">{t('auth.twoFactorCode')}</label>
             <input
-              className="qlc-input"
+              id="login-2fa"
+              className="qlc-input qlc-otp-input"
               value={code}
-              onChange={(e) => setCode(e.target.value)}
+              onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
               placeholder="000000"
-              maxLength={6}
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              autoFocus
               required
             />
             {error && <div className="qlc-login-error">{error}</div>}

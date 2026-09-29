@@ -27,6 +27,8 @@ export default function ProtectedRoute({ role }) {
 
   if (!user) return <Navigate to="/login" replace />;
   if (role && user.role !== role) return <Navigate to="/" replace />;
+  // 2FA obligatorio: sin Google Authenticator configurado no se entra al panel.
+  if (user.twoFactorSetupRequired) return <Navigate to="/seguridad-2fa" replace />;
 
   return <Outlet />;
 }

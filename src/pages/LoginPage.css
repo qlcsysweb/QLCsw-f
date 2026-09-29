@@ -64,3 +64,160 @@
   margin-top: 20px;
   padding: 13px;
 }
+.qlc-login-submit + .qlc-login-submit {
+  margin-top: 10px;
+}
+a.qlc-login-submit {
+  display: block;
+  box-sizing: border-box;
+  text-decoration: none;
+}
+
+/* Enlace "Restablecer contraseña" bajo el formulario de acceso. */
+.qlc-login-forgot {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+.qlc-login-forgot button {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--qlc-blue2);
+  font-size: 12px;
+  cursor: pointer;
+}
+.qlc-login-forgot button:hover,
+.qlc-login-forgot button:focus-visible {
+  text-decoration: underline;
+}
+
+/* Restablecer contraseña — indicador de pasos. */
+.qlc-reset-steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  list-style: none;
+  margin: 6px 0 18px;
+  padding: 0;
+}
+.qlc-reset-steps li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  text-align: center;
+  color: var(--qlc-muted2, var(--qlc-muted));
+}
+.qlc-reset-steps li span {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid var(--qlc-line);
+  font-weight: 700;
+}
+.qlc-reset-steps li.is-current {
+  color: var(--qlc-text);
+}
+.qlc-reset-steps li.is-current span {
+  border-color: var(--qlc-blue2);
+  background: rgba(91, 212, 255, 0.16);
+  color: var(--qlc-blue2);
+}
+.qlc-reset-steps li.is-done span {
+  border-color: rgba(91, 212, 255, 0.5);
+  background: var(--qlc-blue2);
+  color: #04121c;
+}
+.qlc-reset-email {
+  margin: 0 0 4px;
+  font-size: 13px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.qlc-otp-input {
+  font-size: 22px;
+  letter-spacing: 0.4em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.qlc-reset-show {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--qlc-muted);
+  cursor: pointer;
+}
+.qlc-reset-done {
+  margin: 0 0 8px;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--qlc-ok);
+}
+
+/* Configuración obligatoria de Google Authenticator. */
+.qlc-2fa-box {
+  width: min(480px, 100%);
+}
+.qlc-2fa-steps {
+  margin: 0 0 14px;
+  padding-left: 18px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--qlc-muted);
+}
+.qlc-2fa-qr {
+  display: grid;
+  place-items: center;
+  margin: 8px 0 12px;
+}
+.qlc-2fa-qr img {
+  width: 200px;
+  height: 200px;
+  padding: 10px;
+  border-radius: 12px;
+  background: #fff;
+}
+.qlc-2fa-secret {
+  display: block;
+  margin: 4px 0 6px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px dashed var(--qlc-line);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+
+/* Selector de forma de acceso: contraseña o Google Authenticator. */
+.qlc-login-modes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin: 8px 0 6px;
+  padding: 4px;
+  border: 1px solid var(--qlc-line);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.25);
+}
+.qlc-login-modes button {
+  padding: 9px 6px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--qlc-muted);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.qlc-login-modes button.is-active {
+  background: rgba(91, 212, 255, 0.16);
+  color: var(--qlc-blue2);
+}

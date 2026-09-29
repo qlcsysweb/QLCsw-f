@@ -340,7 +340,8 @@ export default function AdminSubaccountDetailPage() {
             <label className="qlc-label">{t('adminClientDetail.identifier')}</label>
             <input className="qlc-input" value={apiForm.identifier} onChange={(e) => setApiForm((f) => ({ ...f, identifier: e.target.value }))} placeholder={subaccount.identifier || 'PCB-1-A-1'} />
             <label className="qlc-label">{t('adminClientDetail.requiredCapital')}</label>
-            <input className="qlc-input" type="number" step="0.01" value={apiForm.requiredCapital} onChange={(e) => setApiForm((f) => ({ ...f, requiredCapital: e.target.value }))} placeholder="20" />
+            <input className="qlc-input" type="number" step="0.01" value={apiForm.requiredCapital} onChange={(e) => setApiForm((f) => ({ ...f, requiredCapital: e.target.value }))} placeholder="100" min="0" />
+            <p style={{ fontSize: 11, color: 'var(--qlc-muted)', margin: '4px 0 0' }}>{t('adminClientDetail.requiredCapitalHint')}</p>
             <label className="qlc-label">{t('adminClientDetail.status')}</label>
             <select className="qlc-select" value={apiForm.status} onChange={(e) => setApiForm((f) => ({ ...f, status: e.target.value }))}>
               <option value="PENDIENTE">{t('adminClientDetail.apiStatusPending')}</option>

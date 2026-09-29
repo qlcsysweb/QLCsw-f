@@ -75,6 +75,7 @@ export default function ClientDetailPage() {
   const [confirmDeactivate, setConfirmDeactivate] = useState(false);
   const [confirmDeleteDoc, setConfirmDeleteDoc] = useState(null);
   const [confirmDeleteClient, setConfirmDeleteClient] = useState(false);
+  const [confirmReset2fa, setConfirmReset2fa] = useState(false);
   const [deleteError, setDeleteError] = useState('');
   const [deleting, setDeleting] = useState(false);
   const [creatingSubaccount, setCreatingSubaccount] = useState(false);
@@ -378,8 +379,16 @@ export default function ClientDetailPage() {
             </div>
           )}
         </div>
-        <div style={{ display: 'flex', gap: 10 }}>
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
           <span className={`qlc-badge ${clientAccStatus.className}`}>{clientAccStatus.text}</span>
+          <span className={`qlc-badge ${client.user?.twoFactorEnabled ? 'ok' : 'muted'}`}>
+            {client.user?.twoFactorEnabled ? t('adminClientDetail.twoFactorOn') : t('adminClientDetail.twoFactorOff')}
+          </span>
+          {client.user?.twoFactorEnabled && (
+            <button className="qlc-btn ghost" onClick={() => setConfirmReset2fa(true)}>
+              {t('adminClientDetail.reset2fa')}
+            </button>
+          )}
           {client.user?.isActive ? (
             <button className="qlc-btn danger" onClick={() => setConfirmDeactivate(true)}>
               {t('adminClientDetail.deactivate')}
@@ -661,6 +670,19 @@ export default function ClientDetailPage() {
           )}
         </div>
       </div>
+
+      {confirmReset2fa && (
+        <ConfirmModal
+          title={t('adminClientDetail.reset2faTitle')}
+          message={t('adminClientDetail.reset2faMessage').replace('{name}', `${client.firstName} ${client.lastName}`)}
+          confirmLabel={t('adminClientDetail.reset2fa')}
+          onClose={() => setConfirmReset2fa(false)}
+          onConfirm={async () => {
+            await api.post(`/admin/clients/${id}/2fa/reset`);
+            await load();
+          }}
+        />
+      )}
 
       {confirmDeactivate && (
         <ConfirmModal

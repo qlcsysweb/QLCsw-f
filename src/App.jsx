@@ -4,6 +4,8 @@ import { LanguageProvider, useLanguage } from './i18n/LanguageContext';
 import WelcomeLanguageGate from './i18n/WelcomeLanguageGate';
 import ProtectedRoute from './routes/ProtectedRoute';
 import LoginPage from './pages/LoginPage';
+import PasswordResetPage from './pages/PasswordResetPage';
+import TwoFactorSetupPage from './pages/TwoFactorSetupPage';
 import RegisterPage from './pages/RegisterPage';
 import PublicHomePage from './modules/public/PublicHomePage';
 import PrivacyPolicyPage from './modules/public/PrivacyPolicyPage';
@@ -63,6 +65,8 @@ function AppRoutes() {
           <Route path="/privacidad" element={<PrivacyPolicyPage />} />
           <Route path="/terminos" element={<TermsOfServicePage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/restablecer-contrasena" element={<PasswordResetPage />} />
+          <Route path="/seguridad-2fa" element={<TwoFactorSetupPage />} />
           <Route path="/registro" element={<RegisterPage />} />
 
           <Route element={<ProtectedRoute role="ADMIN" />}>

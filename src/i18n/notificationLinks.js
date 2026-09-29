@@ -19,6 +19,7 @@ import { API_BASE_URL } from '../services/api';
 const ADMIN_GENERAL_PATHS = {
   new_admin_registered_admin: '/admin/admins',
   new_prospect_admin: '/admin/prospects',
+  new_prospect_admin_message: '/admin/prospects',
 };
 
 // Esta SÍ trae apiSubaccountId en templateParams, pero ese destino ya no es

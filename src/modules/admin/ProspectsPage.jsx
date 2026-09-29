@@ -32,6 +32,14 @@ function ProspectRow({ p, onUpdateStatus, onDelete, t, prospectStatusMap }) {
     <tr>
       <td>
         {p.firstName} {p.lastName || ''}
+        {/* Mensaje que escribió la persona en "Solicitar información". */}
+        {p.message?.trim() ? (
+          <div className="qlc-prospect-message">
+            <span>{t('adminProspects.message')}:</span> {p.message}
+          </div>
+        ) : (
+          <div className="qlc-prospect-message is-empty">{t('adminProspects.noMessage')}</div>
+        )}
       </td>
       <td>{p.email}</td>
       <td>

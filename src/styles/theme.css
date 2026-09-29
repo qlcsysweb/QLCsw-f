@@ -1444,8 +1444,16 @@ textarea {
   border-radius: 12px;
   background: rgba(0, 0, 0, 0.2);
 }
-.qlc-notif-toolbar .qlc-btn {
+.qlc-notif-toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
   margin-left: auto;
+}
+.qlc-btn-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 .qlc-notif-count {
   font-size: 12px;
@@ -1503,8 +1511,31 @@ textarea {
   border-color: currentColor;
 }
 @media (max-width: 560px) {
-  .qlc-notif-toolbar .qlc-btn {
+  .qlc-notif-toolbar-actions {
     margin-left: 0;
     width: 100%;
   }
+  .qlc-notif-toolbar-actions .qlc-btn {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+/* Prospectos — mensaje que escribió la persona al solicitar información. */
+.qlc-prospect-message {
+  margin-top: 6px;
+  max-width: 460px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--qlc-muted);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.qlc-prospect-message span {
+  font-weight: 700;
+  color: var(--qlc-text);
+}
+.qlc-prospect-message.is-empty {
+  font-style: italic;
+  color: var(--qlc-muted2);
 }

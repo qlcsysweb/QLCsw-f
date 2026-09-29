@@ -13,6 +13,14 @@ import ConfirmModal from './ConfirmModal';
  * Permite eliminar una, varias (casillas) o todas ("Seleccionar todo"); el
  * backend solo borra notificaciones del usuario autenticado.
  */
+function TrashIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+      <path fill="currentColor" d="M9 3h6l1 2h4v2H4V5h4l1-2Zm-3 6h12l-1 12H7L6 9Zm4 2v8h2v-8h-2Zm4 0v8h2v-8h-2Z" />
+    </svg>
+  );
+}
+
 export default function NotificationsList({ scope }) {
   const { t } = useLanguage();
   const navigate = useNavigate();
@@ -103,15 +111,26 @@ export default function NotificationsList({ scope }) {
           {selected.size > 0 && (
             <span className="qlc-notif-count">{t('clientNotifications.selectedCount').replace('{count}', selected.size)}</span>
           )}
-          <button
-            type="button"
-            className="qlc-btn danger"
-            disabled={selected.size === 0}
-            onClick={() => setPendingDelete([...selected])}
-          >
-            {t('clientNotifications.deleteSelected')}
-            {selected.size > 0 ? ` (${selected.size})` : ''}
-          </button>
+          <div className="qlc-notif-toolbar-actions">
+            <button
+              type="button"
+              className="qlc-btn ghost qlc-btn-icon"
+              disabled={selected.size === 0}
+              onClick={() => setPendingDelete([...selected])}
+            >
+              <TrashIcon />
+              {t('clientNotifications.deleteSelected')}
+              {selected.size > 0 ? ` (${selected.size})` : ''}
+            </button>
+            <button
+              type="button"
+              className="qlc-btn danger qlc-btn-icon"
+              onClick={() => setPendingDelete(notifications.map((n) => n.id))}
+            >
+              <TrashIcon />
+              {t('clientNotifications.deleteAll')}
+            </button>
+          </div>
         </div>
       )}
 
@@ -161,12 +180,7 @@ export default function NotificationsList({ scope }) {
                   setPendingDelete([n.id]);
                 }}
               >
-                <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-                  <path
-                    fill="currentColor"
-                    d="M9 3h6l1 2h4v2H4V5h4l1-2Zm-3 6h12l-1 12H7L6 9Zm4 2v8h2v-8h-2Zm4 0v8h2v-8h-2Z"
-                  />
-                </svg>
+                <TrashIcon />
               </button>
             </div>
           );
@@ -179,7 +193,9 @@ export default function NotificationsList({ scope }) {
           message={
             pendingDelete.length === 1
               ? t('clientNotifications.deleteConfirmOne')
-              : t('clientNotifications.deleteConfirmMany').replace('{count}', pendingDelete.length)
+              : pendingDelete.length === notifications.length
+                ? t('clientNotifications.deleteConfirmAll').replace('{count}', pendingDelete.length)
+                : t('clientNotifications.deleteConfirmMany').replace('{count}', pendingDelete.length)
           }
           confirmLabel={t('clientNotifications.deleteConfirmBtn')}
           onConfirm={() => deleteIds(pendingDelete)}

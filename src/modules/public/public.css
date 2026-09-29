@@ -22,6 +22,14 @@
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  /* Con letter-spacing negativo la última letra sobresale de la caja del
+     texto y background-clip no la pinta (la "e" final se veía cortada).
+     El padding amplía el área pintada; el margen negativo lo compensa para
+     no mover el layout. */
+  padding-right: 0.12em;
+  margin-right: -0.12em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
 }
 
 /* ---------- NAV ---------- */
@@ -736,6 +744,8 @@
   background-clip: text;
   color: transparent;
   white-space: nowrap;
+  padding-right: 0.12em;
+  margin-right: -0.12em;
 }
 
 /* Modelo único de participación: encabezado (tagline + descripción | reparto

@@ -6,6 +6,7 @@ import { translateBackendMessage } from '../../i18n/backendMessages';
 import { TRANSFER_REPORT_STATUS, statusOf } from '../../utils/statusLabels';
 import { formatCdmxDate, formatCdmxDateTime } from '../../utils/cdmxTime';
 import Modal from '../../components/Modal';
+import ConfirmModal from '../../components/ConfirmModal';
 import DocumentViewerModal from '../../components/DocumentViewerModal';
 import useCopyToClipboard from '../../hooks/useCopyToClipboard';
 
@@ -31,6 +32,7 @@ export default function TransferReportList({ reports, receiveUid, showClient = f
   const [rejecting, setRejecting] = useState(null);
   const [rejectReason, setRejectReason] = useState('');
   const [viewingProof, setViewingProof] = useState(null);
+  const [deleting, setDeleting] = useState(null);
   const [error, setError] = useState('');
   const statusMap = TRANSFER_REPORT_STATUS(t);
   const { copy, isCopied } = useCopyToClipboard();
@@ -57,6 +59,8 @@ export default function TransferReportList({ reports, receiveUid, showClient = f
         {reports.map((r) => {
           const st = statusOf(statusMap, r.status);
           const action = nextAction(r, t);
+          // Un pago de estado de cuenta ya confirmado es registro contable: no se borra.
+          const canDelete = !(r.statementId && r.status === 'APROBADO');
           const clientName = r.apiSubaccount?.client ? `${r.apiSubaccount.client.firstName} ${r.apiSubaccount.client.lastName}` : '';
           const subLabel = r.apiSubaccount?.identifier || (r.apiSubaccount?.isPrincipal ? 'PRINCIPAL' : '—');
           return (
@@ -174,21 +178,30 @@ export default function TransferReportList({ reports, receiveUid, showClient = f
                   </>
                 )}
               </dl>
-              {action && (
+              {(action || canDelete) && (
                 <div className="qlc-transfer-actions">
-                  <button className="qlc-btn primary" disabled={busyId === r.id} onClick={() => run(r, action.run)}>
-                    {action.label}
-                  </button>
-                  <button
-                    className="qlc-btn ghost"
-                    disabled={busyId === r.id}
-                    onClick={() => {
-                      setRejectReason('');
-                      setRejecting(r);
-                    }}
-                  >
-                    {t('adminPayments.reject')}
-                  </button>
+                  {action && (
+                    <>
+                      <button className="qlc-btn primary" disabled={busyId === r.id} onClick={() => run(r, action.run)}>
+                        {action.label}
+                      </button>
+                      <button
+                        className="qlc-btn ghost"
+                        disabled={busyId === r.id}
+                        onClick={() => {
+                          setRejectReason('');
+                          setRejecting(r);
+                        }}
+                      >
+                        {t('adminPayments.reject')}
+                      </button>
+                    </>
+                  )}
+                  {canDelete && (
+                    <button className="qlc-btn danger" disabled={busyId === r.id} onClick={() => setDeleting(r)}>
+                      {t('adminPayments.deleteReport')}
+                    </button>
+                  )}
                 </div>
               )}
             </li>
@@ -231,6 +244,18 @@ export default function TransferReportList({ reports, receiveUid, showClient = f
             </button>
           </div>
         </Modal>
+      )}
+      {deleting && (
+        <ConfirmModal
+          title={t('adminPayments.deleteReportTitle')}
+          message={(deleting.statementId ? t('adminPayments.deleteReportMessage') : deleting.status === 'APROBADO' ? t('adminPayments.deleteGuaranteeApprovedMessage') : t('adminPayments.deleteReportMessage')).replace('{order}', deleting.bitgetOrderNumber || '—')}
+          confirmLabel={t('adminPayments.deleteReport')}
+          onClose={() => setDeleting(null)}
+          onConfirm={async () => {
+            await api.delete(`/admin/payment-reports/${deleting.id}`);
+            onChanged?.();
+          }}
+        />
       )}
       {viewingProof && (
         <DocumentViewerModal url={viewingProof.url} fileName={viewingProof.fileName} onClose={() => setViewingProof(null)} />
