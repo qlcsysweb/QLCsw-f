@@ -5,13 +5,18 @@ import { translateBackendMessage } from '../../i18n/backendMessages';
 import { PAYMENT_REPORT_STATUS, statusOf } from '../../utils/statusLabels';
 import { formatCdmxDateTime } from '../../utils/cdmxTime';
 
-// Mismo formato y misma frase que valida el backend
-// (client/apiSubaccountController.capitalDeclaration) — el backend es la
-// fuente de verdad; esto solo habilita el botón en pantalla.
 export const formatCapital = (value) => String(Number(value));
-export const capitalDeclaration = (requiredCapital) =>
-  `CONFIRMO QUE EL SALDO DE MI CUENTA ES DE ${formatCapital(requiredCapital)} USDT`;
+
+// Declaraciones FIJAS autorizadas — mismas que valida el backend
+// (client/apiSubaccountController.CAPITAL_DECLARATIONS), que es la fuente de
+// verdad; aquí solo habilitan el botón. Se muestran SIEMPRE las dos, sin
+// traducir ni depender del idioma de la plataforma.
+export const CAPITAL_DECLARATIONS = {
+  ES: 'CONFIRMO QUE DISPONGO DEL SALDO REQUERIDO EN MI CUENTA',
+  EN: 'I CONFIRM THAT I HAVE THE REQUIRED BALANCE IN MY ACCOUNT',
+};
 const normalizePhrase = (s) => String(s || '').trim().replace(/\s+/g, ' ').toUpperCase();
+const isValidDeclaration = (s) => Object.values(CAPITAL_DECLARATIONS).includes(normalizePhrase(s));
 
 /*
  * CONFIRMACIÓN DEL CAPITAL OPERATIVO — el ADMIN fija el capital requerido de
@@ -29,8 +34,7 @@ export default function CapitalConfirmation({ subaccountId, requiredCapital, rep
   const statusMap = PAYMENT_REPORT_STATUS(t);
 
   const hasCapital = requiredCapital != null && Number(requiredCapital) > 0;
-  const expected = hasCapital ? capitalDeclaration(requiredCapital) : '';
-  const matches = hasCapital && normalizePhrase(confirmation) === normalizePhrase(expected);
+  const matches = hasCapital && isValidDeclaration(confirmation);
 
   // Confirmación vigente para el capital ACTUAL (si el admin cambia el
   // capital, se pide una confirmación nueva con el monto nuevo).
@@ -98,7 +102,14 @@ export default function CapitalConfirmation({ subaccountId, requiredCapital, rep
           {hasCapital && (
             <>
               <p className="qlc-capital-help">{t('clientApiConnection.confirmInstructions')}</p>
-              <p className="qlc-capital-phrase">“{expected}”</p>
+              <div className="qlc-capital-phrases">
+                {Object.entries(CAPITAL_DECLARATIONS).map(([lang, phrase]) => (
+                  <p key={lang} className="qlc-capital-phrase-row" lang={lang.toLowerCase()}>
+                    <span className="qlc-capital-phrase-lang">{lang}:</span>
+                    <span className="qlc-capital-phrase-text">{phrase}</span>
+                  </p>
+                ))}
+              </div>
             </>
           )}
           <label className="qlc-label" htmlFor="capital-confirmation">
@@ -110,7 +121,7 @@ export default function CapitalConfirmation({ subaccountId, requiredCapital, rep
             value={confirmation}
             onChange={(e) => setConfirmation(e.target.value)}
             disabled={!hasCapital || sending}
-            placeholder={hasCapital ? expected : ''}
+            placeholder={hasCapital ? t('clientApiConnection.confirmationPlaceholder') : ''}
             autoComplete="off"
             spellCheck={false}
             aria-invalid={confirmation !== '' && !matches}

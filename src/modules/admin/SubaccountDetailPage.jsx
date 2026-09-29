@@ -454,14 +454,20 @@ export default function AdminSubaccountDetailPage() {
                         {r.declaration ? t('adminClientDetail.clientConfirmed') : '—'}{' '}
                         <span className={`qlc-badge ${s.className}`}>{s.text}</span>
                       </dd>
-                      <dt>{t('adminClientDetail.confirmationDate')}</dt>
-                      <dd>{formatCdmxDateTime(r.reportedAt)}</dd>
                       {r.declaration && (
                         <>
                           <dt>{t('adminClientDetail.declaration')}</dt>
                           <dd>“{r.declaration}”</dd>
                         </>
                       )}
+                      {r.confirmationLanguage && (
+                        <>
+                          <dt>{t('adminClientDetail.confirmationLanguage')}</dt>
+                          <dd>{r.confirmationLanguage}</dd>
+                        </>
+                      )}
+                      <dt>{t('adminClientDetail.confirmationDate')}</dt>
+                      <dd>{formatCdmxDateTime(r.reportedAt)}</dd>
                       {r.note && (
                         <>
                           <dt>{t('adminClientDetail.note')}</dt>
