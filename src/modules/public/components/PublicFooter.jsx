@@ -12,7 +12,7 @@ export default function PublicFooter({ text, media = () => [] }) {
           <h4>QUANTUM LIQUIDITY CAPITAL</h4>
           <div>{t('footer.institutionalTagline')}</div>
           <div style={{ marginTop: 14, color: '#aab4bd' }}>
-            {text('footer', 'tagline', 'Copytrading Institucional. Accesible desde 20 USDT.')}
+            {text('footer', 'tagline', 'Copytrading Institucional. Accesible desde 100 USDT.')}
           </div>
         </div>
         <div>

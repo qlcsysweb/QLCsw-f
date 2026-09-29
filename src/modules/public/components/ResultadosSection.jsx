@@ -1,3 +1,5 @@
+import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import SectionMedia from './SectionMedia';
 import TrackRecordHighlights from './TrackRecordHighlights';
 import { useLanguage } from '../../../i18n/LanguageContext';
@@ -9,6 +11,7 @@ export default function ResultadosSection({ trackRecord, text, media = () => [] 
   const { t } = useLanguage();
   const platformName = trackRecord?.platformName || 'Bitget';
   const profileLink = trackRecord?.profileLink;
+  const [showWarning, setShowWarning] = useState(false);
 
   return (
     <section className="section" id="resultados">
@@ -36,7 +39,18 @@ export default function ResultadosSection({ trackRecord, text, media = () => [] 
           </p>
 
           {profileLink ? (
-            <a href={profileLink} target="_blank" rel="noreferrer" className="btn primary resultados-cta">
+            // El enlace NO se abre directo: primero se muestra la advertencia
+            // (la app oficial de Bitget es necesaria para ver el perfil).
+            <a
+              href={profileLink}
+              target="_blank"
+              rel="noreferrer"
+              className="btn primary resultados-cta"
+              onClick={(e) => {
+                e.preventDefault();
+                setShowWarning(true);
+              }}
+            >
               {t('resultadosSection.checkProfile')} {platformName} →
             </a>
           ) : (
@@ -55,6 +69,66 @@ export default function ResultadosSection({ trackRecord, text, media = () => [] 
       <div className="container">
         <SectionMedia items={media('resultados')} />
       </div>
+
+      {showWarning && profileLink && (
+        <BitgetProfileWarning
+          platformName={platformName}
+          onCancel={() => setShowWarning(false)}
+          onContinue={() => {
+            setShowWarning(false);
+            window.open(profileLink, '_blank', 'noopener,noreferrer');
+          }}
+        />
+      )}
     </section>
+  );
+}
+
+/*
+ * Advertencia previa al perfil de Bitget: el perfil puede no abrir si el
+ * visitante no tiene instalada la app oficial. Se muestra SOLO después de
+ * pulsar "Consultar perfil en Bitget"; el enlace se abre únicamente con
+ * "Continuar a Bitget". Portal a <body> para que ninguna animación de la
+ * sección afecte su posición fija.
+ */
+function BitgetProfileWarning({ platformName, onCancel, onContinue }) {
+  const { t } = useLanguage();
+  const continueRef = useRef(null);
+  useEffect(() => {
+    continueRef.current?.focus({ preventScroll: true });
+    const onKey = (e) => e.key === 'Escape' && onCancel();
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onCancel]);
+
+  return createPortal(
+    <div className="qlc-warn-overlay" onClick={onCancel}>
+      <div
+        className="qlc-warn-modal"
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="qlc-warn-title"
+        aria-describedby="qlc-warn-body"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="qlc-warn-head">
+          <span className="qlc-warn-icon" aria-hidden="true">⚠</span>
+          <h2 id="qlc-warn-title">{t('resultadosSection.warningTitle')}</h2>
+        </div>
+        <div id="qlc-warn-body">
+          <p>{t('resultadosSection.warningBody1').replaceAll('{platform}', platformName)}</p>
+          <p>{t('resultadosSection.warningBody2').replaceAll('{platform}', platformName)}</p>
+        </div>
+        <div className="qlc-warn-actions">
+          <button type="button" className="qlc-btn ghost" onClick={onCancel}>
+            {t('common.cancel')}
+          </button>
+          <button ref={continueRef} type="button" className="qlc-btn qlc-warn-continue" onClick={onContinue}>
+            {t('resultadosSection.warningContinue').replace('{platform}', platformName)}
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body
   );
 }

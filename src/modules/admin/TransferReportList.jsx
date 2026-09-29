@@ -5,7 +5,7 @@ import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 import { TRANSFER_REPORT_STATUS, statusOf } from '../../utils/statusLabels';
 import { formatCdmxDate, formatCdmxDateTime } from '../../utils/cdmxTime';
-import ConfirmModal from '../../components/ConfirmModal';
+import Modal from '../../components/Modal';
 import DocumentViewerModal from '../../components/DocumentViewerModal';
 import useCopyToClipboard from '../../hooks/useCopyToClipboard';
 
@@ -29,6 +29,7 @@ export default function TransferReportList({ reports, receiveUid, showClient = f
   const { t, language } = useLanguage();
   const [busyId, setBusyId] = useState(null);
   const [rejecting, setRejecting] = useState(null);
+  const [rejectReason, setRejectReason] = useState('');
   const [viewingProof, setViewingProof] = useState(null);
   const [error, setError] = useState('');
   const statusMap = TRANSFER_REPORT_STATUS(t);
@@ -126,6 +127,7 @@ export default function TransferReportList({ reports, receiveUid, showClient = f
                     <dt>{t('adminPayments.status')}</dt>
                     <dd>
                       <span className={`qlc-badge ${st.className}`}>{st.text}</span>
+                      {r.status === 'RECHAZADO' && r.reviewNote && <span style={{ color: 'var(--qlc-muted2)' }}> · {r.reviewNote}</span>}
                     </dd>
                   </>
                 ) : (
@@ -177,7 +179,14 @@ export default function TransferReportList({ reports, receiveUid, showClient = f
                   <button className="qlc-btn primary" disabled={busyId === r.id} onClick={() => run(r, action.run)}>
                     {action.label}
                   </button>
-                  <button className="qlc-btn ghost" disabled={busyId === r.id} onClick={() => setRejecting(r)}>
+                  <button
+                    className="qlc-btn ghost"
+                    disabled={busyId === r.id}
+                    onClick={() => {
+                      setRejectReason('');
+                      setRejecting(r);
+                    }}
+                  >
                     {t('adminPayments.reject')}
                   </button>
                 </div>
@@ -187,18 +196,41 @@ export default function TransferReportList({ reports, receiveUid, showClient = f
         })}
       </ul>
       {rejecting && (
-        <ConfirmModal
-          title={t('adminPayments.rejectTitle')}
-          message={t('adminPayments.rejectMessage')
-            .replace('{name}', rejecting.apiSubaccount?.client ? `${rejecting.apiSubaccount.client.firstName} ${rejecting.apiSubaccount.client.lastName}` : '')
-            .replace('{order}', rejecting.bitgetOrderNumber || '—')}
-          confirmLabel={t('adminPayments.reject')}
-          onClose={() => setRejecting(null)}
-          onConfirm={async () => {
-            await api.patch(`/admin/payment-reports/${rejecting.id}`, { status: 'RECHAZADO' });
-            onChanged?.();
-          }}
-        />
+        <Modal title={t('adminPayments.rejectTitle')} onClose={() => setRejecting(null)} width={480}>
+          <p style={{ color: 'var(--qlc-muted)', fontSize: 14, marginTop: 0 }}>
+            {t('adminPayments.rejectMessage')
+              .replace('{name}', rejecting.apiSubaccount?.client ? `${rejecting.apiSubaccount.client.firstName} ${rejecting.apiSubaccount.client.lastName}` : '')
+              .replace('{order}', rejecting.bitgetOrderNumber || '—')}
+          </p>
+          {/* Motivo opcional: el cliente lo ve y puede CORREGIR el mismo reporte. */}
+          <label className="qlc-label" htmlFor="reject-reason">{t('adminPayments.rejectReason')}</label>
+          <textarea
+            id="reject-reason"
+            className="qlc-textarea"
+            rows={3}
+            maxLength={500}
+            value={rejectReason}
+            onChange={(e) => setRejectReason(e.target.value)}
+          />
+          {error && <p className="qlc-field-error">{error}</p>}
+          <div className="qlc-form-actions">
+            <button className="qlc-btn ghost" onClick={() => setRejecting(null)} disabled={busyId === rejecting.id}>
+              {t('common.cancel')}
+            </button>
+            <button
+              className="qlc-btn danger"
+              disabled={busyId === rejecting.id}
+              onClick={async () => {
+                await run(rejecting, () =>
+                  api.patch(`/admin/payment-reports/${rejecting.id}`, { status: 'RECHAZADO', reviewNote: rejectReason.trim() || undefined })
+                );
+                setRejecting(null);
+              }}
+            >
+              {t('adminPayments.reject')}
+            </button>
+          </div>
+        </Modal>
       )}
       {viewingProof && (
         <DocumentViewerModal url={viewingProof.url} fileName={viewingProof.fileName} onClose={() => setViewingProof(null)} />

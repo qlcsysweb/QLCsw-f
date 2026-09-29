@@ -5,6 +5,7 @@ import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 import { formatCdmxDateTime } from '../../utils/cdmxTime';
 import usePolling from '../../hooks/usePolling';
+import MessageAttachments from '../../components/MessageAttachments';
 
 /*
  * MENSAJERÍA INTERNA — buzón admin↔cliente, deliberadamente distinto del
@@ -77,6 +78,7 @@ export default function MessagesPage() {
                   </div>
                   <div style={{ color: 'var(--qlc-muted2)', fontSize: 12 }}>{formatCdmxDateTime(m.createdAt)}</div>
                   <div style={{ overflowWrap: 'anywhere', marginTop: 4 }}>{m.message}</div>
+                  <MessageAttachments attachments={m.attachments} baseUrl={`/client/messages/${m.id}`} />
                 </li>
               );
             })}

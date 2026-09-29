@@ -12,6 +12,8 @@ import { formatParticipationSplit } from '../../components/ParticipationModelSum
 import { formatCdmxDateTime } from '../../utils/cdmxTime';
 import usePolling from '../../hooks/usePolling';
 import CollapsibleSection from '../../components/CollapsibleSection';
+import FilePicker from '../../components/FilePicker';
+import MessageAttachments from '../../components/MessageAttachments';
 
 // CORRECCIÓN 7 (bloque de 20) — fila reutilizable para no duplicar el JSX
 // entre subcuentas activas/principal e inactivas.
@@ -102,6 +104,7 @@ export default function ClientDetailPage() {
   const [messages, setMessages] = useState([]);
   const [messageForm, setMessageForm] = useState({ title: '', message: '' });
   const [sendingMessage, setSendingMessage] = useState(false);
+  const [messageFiles, setMessageFiles] = useState([]);
   // Vista previa autenticada (Blob, nunca la URL directa del backend) — ver
   // components/DocumentViewerModal.jsx, compartido con el panel del cliente.
   const [previewDoc, setPreviewDoc] = useState(null);
@@ -134,8 +137,16 @@ export default function ClientDetailPage() {
       // Guarda el mensaje + notificación interna y envía el correo al email
       // real del cliente en la misma acción; si el correo falla, el mensaje
       // interno queda guardado igual y se avisa aquí al admin.
-      const { data } = await api.post(`/admin/clients/${id}/messages`, messageForm);
+      // multipart: asunto + mensaje + adjuntos opcionales.
+      const fd = new FormData();
+      fd.append('title', messageForm.title);
+      fd.append('message', messageForm.message);
+      messageFiles.forEach((f) => fd.append('files', f.file, f.file.name));
+      const { data } = await api.post(`/admin/clients/${id}/messages`, fd, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
       setMessageForm({ title: '', message: '' });
+      setMessageFiles([]);
       flash(data.message?.emailSent ? t('adminMessages.sentOk') : t('adminMessages.sentOkEmailFailed'));
       load();
     } catch (err) {
@@ -599,6 +610,17 @@ export default function ClientDetailPage() {
               onChange={(e) => setMessageForm((f) => ({ ...f, message: e.target.value }))}
               required
             />
+            {/* Adjuntos opcionales (imágenes/PDF): se guardan en Drive y el
+                cliente los ve dentro de su mensaje. */}
+            <span className="qlc-label">{t('files.attachments')}</span>
+            <FilePicker
+              files={messageFiles}
+              onChange={setMessageFiles}
+              disabled={sendingMessage}
+              maxFiles={5}
+              maxBytes={10 * 1024 * 1024}
+              pickLabel={t('files.pick')}
+            />
             <button className="qlc-btn primary" style={{ marginTop: 10 }} disabled={sendingMessage}>
               {sendingMessage ? t('common.sending') : t('adminMessages.send')}
             </button>
@@ -627,6 +649,7 @@ export default function ClientDetailPage() {
                       </div>
                       <div style={{ color: 'var(--qlc-muted2)' }}>{formatCdmxDateTime(m.createdAt)}</div>
                       <div style={{ color: 'var(--qlc-muted2)', overflowWrap: 'anywhere' }}>{m.message}</div>
+                      <MessageAttachments attachments={m.attachments} baseUrl={`/admin/clients/${id}/messages/${m.id}`} />
                       {!fromClient && !m.emailSent && m.emailError && (
                         <div style={{ color: 'var(--qlc-danger)', fontSize: 11 }}>{m.emailError}</div>
                       )}

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api, { API_BASE_URL } from '../../services/api';
 import { API_CONNECTION_STATUS, PAYMENT_REPORT_STATUS, statusOf } from '../../utils/statusLabels';
-import { formatCdmxDate, formatDateOnly } from '../../utils/cdmxTime';
+import { formatCdmxDate, formatCdmxDateTime, formatDateOnly } from '../../utils/cdmxTime';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 import { formatParticipationSplit } from '../../components/ParticipationModelSummary';
@@ -438,21 +438,42 @@ export default function AdminSubaccountDetailPage() {
           <h3 style={{ marginTop: 0 }}>
             {t('adminClientDetail.distributionReports')} ({distributionReports.length})
           </h3>
+          {/* Declaración del CLIENTE (no una verificación automática del
+              exchange): capital requerido al confirmar, fecha y la frase. */}
           {distributionReports.length ? (
-            <ul className="qlc-plain-list">
+            <ul className="qlc-plain-list qlc-transfer-list">
               {distributionReports.map((r) => {
                 const s = statusOf(paymentStatusMap, r.status, 'PENDING');
                 return (
-                  <li key={r.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span>
-                      {r.amount} USDT — <span className={`qlc-badge ${s.className}`}>{s.text}</span>
-                      {r.note && <span style={{ color: 'var(--qlc-muted2)' }}> · {r.note}</span>}
-                    </span>
-                    {r.status !== 'APROBADO' && (
-                      <span style={{ display: 'flex', gap: 4 }}>
-                        <button className="qlc-btn ghost" onClick={() => reviewDistribution(r.id, 'APROBADO')}>{t('adminClientDetail.confirm')}</button>
+                  <li key={r.id} className="qlc-transfer-item">
+                    <dl className="qlc-transfer-data">
+                      <dt>{t('adminClientDetail.requiredCapital')}</dt>
+                      <dd>{Number(r.amount)} USDT</dd>
+                      <dt>{t('adminClientDetail.clientConfirmation')}</dt>
+                      <dd>
+                        {r.declaration ? t('adminClientDetail.clientConfirmed') : '—'}{' '}
+                        <span className={`qlc-badge ${s.className}`}>{s.text}</span>
+                      </dd>
+                      <dt>{t('adminClientDetail.confirmationDate')}</dt>
+                      <dd>{formatCdmxDateTime(r.reportedAt)}</dd>
+                      {r.declaration && (
+                        <>
+                          <dt>{t('adminClientDetail.declaration')}</dt>
+                          <dd>“{r.declaration}”</dd>
+                        </>
+                      )}
+                      {r.note && (
+                        <>
+                          <dt>{t('adminClientDetail.note')}</dt>
+                          <dd>{r.note}</dd>
+                        </>
+                      )}
+                    </dl>
+                    {(r.status === 'PENDING' || r.status === 'EN_REVISION') && (
+                      <div className="qlc-transfer-actions">
+                        <button className="qlc-btn primary" onClick={() => reviewDistribution(r.id, 'APROBADO')}>{t('adminClientDetail.confirm')}</button>
                         <button className="qlc-btn ghost" onClick={() => reviewDistribution(r.id, 'RECHAZADO')}>{t('adminClientDetail.reject')}</button>
-                      </span>
+                      </div>
                     )}
                   </li>
                 );

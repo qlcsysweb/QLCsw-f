@@ -1,156 +1,37 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import api from '../../services/api';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 import { TRANSFER_REPORT_STATUS, statusOf } from '../../utils/statusLabels';
 import { formatCdmxDate, formatCdmxDateTime } from '../../utils/cdmxTime';
 import DocumentViewerModal from '../../components/DocumentViewerModal';
+import FilePicker from '../../components/FilePicker';
 import { BitgetSteps, BitgetTransferData, BitgetAdvantages } from '../../components/BitgetTransferInfo';
 
-// "Ahora" en formato datetime-local (hora del dispositivo), usado como
-// límite superior del selector — el backend vuelve a validar.
-function nowLocalInput() {
-  const d = new Date();
+const IN_REVIEW = ['PENDING', 'EN_REVISION', 'GARANTIA_REPORTADA'];
+const MAX_FILES = 5;
+
+// Fecha/hora (ISO) → valor de <input type="datetime-local"> en hora local.
+function toLocalInput(value) {
+  const d = value ? new Date(value) : new Date();
   d.setSeconds(0, 0);
   return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
 }
 
-// Mismas reglas que el backend (middleware/upload.js → evidenceFiles): el
-// backend vuelve a validar tipo, firma del archivo, tamaño y cantidad.
-const EVIDENCE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
-const EVIDENCE_ACCEPT = '.jpg,.jpeg,.png,.webp,.pdf,image/jpeg,image/png,image/webp,application/pdf';
-const MAX_FILES = 5;
-const MAX_BYTES = 5 * 1024 * 1024;
-
-function formatBytes(bytes) {
-  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
-
 /*
- * Selector de EVIDENCIA: arrastrar y soltar o botón "Seleccionar archivos"
- * (funciona igual sin drag & drop). Lista previa con miniatura para
- * imágenes y opción de quitar cada archivo antes de enviar.
+ * Formulario de confirmación (nuevo reporte o corrección de uno rechazado).
+ * Corregir modifica el MISMO registro (PUT) — nunca crea un duplicado.
  */
-function EvidencePicker({ files, onChange, disabled }) {
-  const { t } = useLanguage();
-  const inputRef = useRef(null);
-  const [over, setOver] = useState(false);
-  const [pickError, setPickError] = useState('');
-  const [previews, setPreviews] = useState({});
-
-  // Miniaturas (Blob URLs) solo para imágenes; se liberan al quitar/enviar.
-  useEffect(() => {
-    const next = {};
-    files.forEach((f) => {
-      if (f.type.startsWith('image/')) next[f.key] = URL.createObjectURL(f.file);
-    });
-    setPreviews(next);
-    return () => Object.values(next).forEach((url) => URL.revokeObjectURL(url));
-  }, [files]);
-
-  const addFiles = (list) => {
-    setPickError('');
-    const incoming = Array.from(list || []);
-    const accepted = [];
-    for (const file of incoming) {
-      if (!EVIDENCE_TYPES.includes(file.type)) {
-        setPickError(t('clientPayments.evidenceInvalid').replace('{name}', file.name));
-        continue;
-      }
-      if (file.size > MAX_BYTES) {
-        setPickError(t('clientPayments.evidenceTooBig').replace('{name}', file.name));
-        continue;
-      }
-      if (files.length + accepted.length >= MAX_FILES) {
-        setPickError(t('clientPayments.evidenceTooMany'));
-        break;
-      }
-      accepted.push({ key: `${file.name}-${file.size}-${file.lastModified}-${Math.random()}`, file, type: file.type });
-    }
-    if (accepted.length) onChange([...files, ...accepted]);
-  };
-
-  return (
-    <div>
-      <div
-        className={`qlc-bt-drop${over ? ' is-over' : ''}`}
-        onDragOver={(e) => {
-          e.preventDefault();
-          if (!disabled) setOver(true);
-        }}
-        onDragLeave={() => setOver(false)}
-        onDrop={(e) => {
-          e.preventDefault();
-          setOver(false);
-          if (!disabled) addFiles(e.dataTransfer.files);
-        }}
-      >
-        <p>{t('clientPayments.evidenceDrop')}</p>
-        <p>{t('clientPayments.evidenceOr')}</p>
-        <button type="button" className="qlc-btn ghost" onClick={() => inputRef.current?.click()} disabled={disabled || files.length >= MAX_FILES}>
-          {t('clientPayments.evidencePick')}
-        </button>
-        <input
-          ref={inputRef}
-          type="file"
-          multiple
-          accept={EVIDENCE_ACCEPT}
-          hidden
-          onChange={(e) => {
-            addFiles(e.target.files);
-            e.target.value = '';
-          }}
-        />
-        <p className="qlc-bt-drop-hint">{t('clientPayments.evidenceHint')}</p>
-      </div>
-      {pickError && <p className="qlc-field-error">{pickError}</p>}
-      {files.length > 0 && (
-        <ul className="qlc-bt-files" aria-label={t('clientPayments.evidenceLabel')}>
-          {files.map((f) => (
-            <li key={f.key} className="qlc-bt-file">
-              {previews[f.key] ? (
-                <img className="qlc-bt-file-thumb" src={previews[f.key]} alt="" />
-              ) : (
-                <span className="qlc-bt-file-icon">PDF</span>
-              )}
-              <span className="qlc-bt-file-name" title={f.file.name}>
-                {f.file.name}
-              </span>
-              <span className="qlc-bt-file-size">{formatBytes(f.file.size)}</span>
-              <button
-                type="button"
-                className="qlc-bt-file-remove"
-                onClick={() => onChange(files.filter((x) => x.key !== f.key))}
-                disabled={disabled}
-                aria-label={`${t('clientPayments.evidenceRemove')} ${f.file.name}`}
-              >
-                {t('clientPayments.evidenceRemove')}
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-}
-
-/*
- * DEPÓSITO DE TU GARANTÍA → TRANSFERENCIA INTERNA BITGET.
- * El cliente ve (y copia) el UID de recepción de QLC — nunca lo edita — y,
- * después de transferir, CONFIRMA la transferencia con: número de orden /
- * transacción de Bitget, fecha y hora y evidencias (1 a 5 archivos).
- */
-export default function BitgetTransferSection({ subaccountId, config, reports, hasUnpaidStatement, guaranteeConfirmed, onReported }) {
+function TransferReportForm({ subaccountId, uid, editing, hasUnpaidStatement, onDone, onCancel }) {
   const { t, language } = useLanguage();
-  const [form, setForm] = useState({ bitgetOrderNumber: '', transactionAt: '' });
+  const [form, setForm] = useState({
+    bitgetOrderNumber: editing?.bitgetOrderNumber || '',
+    transactionAt: editing?.transactionAt ? toLocalInput(editing.transactionAt) : '',
+  });
+  const [keptFiles, setKeptFiles] = useState(editing?.evidenceFiles || []);
   const [evidence, setEvidence] = useState([]);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
-  const [ok, setOk] = useState('');
-  const [viewing, setViewing] = useState(null);
-  const reportStatusMap = TRANSFER_REPORT_STATUS(t);
-  const uid = config?.bitgetReceiveUid;
 
   const submit = async (e) => {
     e.preventDefault();
@@ -161,26 +42,27 @@ export default function BitgetTransferSection({ subaccountId, config, reports, h
       setError(t('clientPayments.orderIsUid'));
       return;
     }
-    if (evidence.length === 0) {
+    if (evidence.length + keptFiles.length === 0) {
       setError(t('clientPayments.evidenceRequired'));
       return;
     }
     setSending(true);
     setError('');
-    setOk('');
     try {
       const fd = new FormData();
       fd.append('bitgetOrderNumber', form.bitgetOrderNumber.trim());
       // datetime-local es hora local del dispositivo → ISO (UTC) para el backend.
       fd.append('transactionAt', new Date(form.transactionAt).toISOString());
       evidence.forEach((f) => fd.append('files', f.file, f.file.name));
-      await api.post(`/client/api-subaccounts/${subaccountId}/payment-reports`, fd, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      setForm({ bitgetOrderNumber: '', transactionAt: '' });
-      setEvidence([]);
-      setOk(t('clientPayments.reportedOk'));
-      onReported?.();
+      const config = { headers: { 'Content-Type': 'multipart/form-data' } };
+      let data;
+      if (editing) {
+        fd.append('keepFileIds', JSON.stringify(keptFiles.map((f) => f.id)));
+        ({ data } = await api.put(`/client/payment-reports/${editing.id}`, fd, config));
+      } else {
+        ({ data } = await api.post(`/client/api-subaccounts/${subaccountId}/payment-reports`, fd, config));
+      }
+      onDone?.(data.report);
     } catch (err) {
       setError(translateBackendMessage(err.message, language));
     } finally {
@@ -188,7 +70,208 @@ export default function BitgetTransferSection({ subaccountId, config, reports, h
     }
   };
 
-  const showForm = uid && (hasUnpaidStatement || !guaranteeConfirmed);
+  return (
+    <form onSubmit={submit}>
+      {hasUnpaidStatement && !editing && (
+        <p style={{ fontSize: 12, color: 'var(--qlc-muted)', margin: '4px 0 0' }}>{t('clientPayments.appliesToStatement')}</p>
+      )}
+      <label className="qlc-label" htmlFor="bitget-order">
+        {t('clientPayments.orderNumber')}
+      </label>
+      <input
+        id="bitget-order"
+        className="qlc-input"
+        autoComplete="off"
+        maxLength={64}
+        value={form.bitgetOrderNumber}
+        onChange={(e) => setForm((f) => ({ ...f, bitgetOrderNumber: e.target.value }))}
+        placeholder={t('clientPayments.orderNumberPlaceholder')}
+        aria-describedby="bitget-order-help"
+        required
+      />
+      <p id="bitget-order-help" className="qlc-bt-field-help">{t('clientPayments.orderNumberHelp')}</p>
+      <label className="qlc-label" htmlFor="bitget-datetime">
+        {t('clientPayments.transactionAt')}
+      </label>
+      <input
+        id="bitget-datetime"
+        className="qlc-input"
+        type="datetime-local"
+        max={toLocalInput()}
+        value={form.transactionAt}
+        onChange={(e) => setForm((f) => ({ ...f, transactionAt: e.target.value }))}
+        required
+      />
+      <span className="qlc-label">{t('clientPayments.evidenceTitle')}</span>
+      {keptFiles.length > 0 && (
+        <ul className="qlc-bt-files" style={{ marginBottom: 8 }}>
+          {keptFiles.map((f) => (
+            <li key={f.id} className="qlc-bt-file">
+              <span className="qlc-bt-file-icon">{f.mimeType === 'application/pdf' ? 'PDF' : 'IMG'}</span>
+              <span className="qlc-bt-file-name" title={f.fileName}>
+                {f.fileName}
+              </span>
+              <button type="button" className="qlc-bt-file-remove" onClick={() => setKeptFiles((k) => k.filter((x) => x.id !== f.id))} disabled={sending}>
+                {t('clientPayments.evidenceRemove')}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      <FilePicker files={evidence} onChange={setEvidence} disabled={sending} maxFiles={MAX_FILES} keptCount={keptFiles.length} />
+      {error && <p className="qlc-field-error">{error}</p>}
+      <button className="qlc-btn primary" disabled={sending}>
+        {sending ? t('clientPayments.sending') : editing ? t('clientPayments.submitCorrection') : t('clientPayments.submit')}
+      </button>
+      {onCancel && (
+        <button type="button" className="qlc-btn ghost" style={{ width: '100%', marginTop: 8 }} onClick={onCancel} disabled={sending}>
+          {t('common.cancel')}
+        </button>
+      )}
+    </form>
+  );
+}
+
+/*
+ * DEPÓSITO DE TU GARANTÍA → TRANSFERENCIA INTERNA BITGET.
+ * El cliente ve (y copia) el UID de recepción GENERAL de QLC, transfiere
+ * desde SU propia cuenta de Bitget y después confirma la transferencia con
+ * N.º de orden + fecha/hora + evidencias. Una vez reportada NO se vuelve a
+ * mostrar el formulario vacío: se muestra el resumen "Transferencia
+ * reportada" con su estado; reportar otra transferencia es una acción
+ * explícita, y un reporte rechazado se CORRIGE (mismo registro).
+ */
+export default function BitgetTransferSection({ subaccountId, config, reports, hasUnpaidStatement, unpaidStatementId, guaranteeConfirmed, onReported }) {
+  const { t } = useLanguage();
+  const [mode, setMode] = useState(null); // null | 'new' | 'correct'
+  const [ok, setOk] = useState('');
+  const [viewing, setViewing] = useState(null);
+  // Reporte recién guardado: se muestra de inmediato (sin esperar al
+  // siguiente refresco) para que nunca aparezca el formulario vacío.
+  const [justReported, setJustReported] = useState(null);
+  const reportStatusMap = TRANSFER_REPORT_STATUS(t);
+  const uid = config?.bitgetReceiveUid;
+
+  let allReports = reports;
+  if (justReported) {
+    const serverCopy = reports.find((r) => r.id === justReported.id);
+    if (!serverCopy) allReports = [justReported, ...reports];
+    else if (serverCopy.status === 'RECHAZADO' && justReported.status !== 'RECHAZADO') {
+      allReports = reports.map((r) => (r.id === justReported.id ? justReported : r));
+    }
+  }
+
+  // Reportes del concepto que se está pagando ahora: el estado de cuenta sin
+  // pagar (si existe) o la garantía. `reports` viene ordenado desc.
+  const relevant = allReports.filter((r) =>
+    r.bitgetOrderNumber && (hasUnpaidStatement ? r.statementId === unpaidStatementId : !r.statementId)
+  );
+  const latest = relevant[0] || null;
+  const latestInReview = latest && IN_REVIEW.includes(latest.status) ? latest : null;
+  const latestRejected = latest?.status === 'RECHAZADO' ? latest : null;
+  const paymentDone = !hasUnpaidStatement && guaranteeConfirmed;
+
+  const handleDone = (report) => {
+    if (report) setJustReported(report);
+    setMode(null);
+    setOk(t('clientPayments.reportedOk'));
+    setTimeout(() => setOk(''), 5000);
+    onReported?.(report);
+  };
+
+  const renderSummary = (r, rejected = false) => {
+    const st = statusOf(reportStatusMap, r.status);
+    return (
+      <div className={`qlc-report-summary${rejected ? ' is-rejected' : ''}`} role="status">
+        <div className="qlc-report-summary-title">{rejected ? `× ${t('clientPayments.reportRejectedTitle')}` : `✓ ${t('clientPayments.reportedTitle')}`}</div>
+        <dl>
+          <div>
+            <dt>{t('clientPayments.orderNumber')}</dt>
+            <dd>
+              <code>{r.bitgetOrderNumber}</code>
+            </dd>
+          </div>
+          <div>
+            <dt>{t('clientPayments.transactionAt')}</dt>
+            <dd>{r.transactionAt ? formatCdmxDateTime(r.transactionAt) : '—'}</dd>
+          </div>
+          <div>
+            <dt>{t('clientPayments.evidenceLabel')}</dt>
+            <dd>{t('clientPayments.filesCount').replace('{count}', r.evidenceFiles?.length || 0)}</dd>
+          </div>
+          <div>
+            <dt>{t('clientApiConnection.status')}</dt>
+            <dd>
+              <span className={`qlc-badge ${st.className}`}>{st.text}</span>
+            </dd>
+          </div>
+          {rejected && r.reviewNote && (
+            <div>
+              <dt>{t('clientPayments.rejectReason')}</dt>
+              <dd>{r.reviewNote}</dd>
+            </div>
+          )}
+        </dl>
+      </div>
+    );
+  };
+
+  let body;
+  if (!uid) {
+    body = <p style={{ fontSize: 13, color: 'var(--qlc-muted)' }}>{t('clientPayments.uidPending')}</p>;
+  } else if (mode === 'correct' && latestRejected) {
+    body = (
+      <TransferReportForm
+        subaccountId={subaccountId}
+        uid={uid}
+        editing={latestRejected}
+        hasUnpaidStatement={hasUnpaidStatement}
+        onDone={handleDone}
+        onCancel={() => setMode(null)}
+      />
+    );
+  } else if (mode === 'new') {
+    body = (
+      <TransferReportForm
+        subaccountId={subaccountId}
+        uid={uid}
+        hasUnpaidStatement={hasUnpaidStatement}
+        onDone={handleDone}
+        onCancel={latest ? () => setMode(null) : undefined}
+      />
+    );
+  } else if (latestInReview) {
+    body = (
+      <>
+        {renderSummary(latestInReview)}
+        <div className="qlc-report-summary-actions">
+          <button type="button" className="qlc-btn ghost" onClick={() => setMode('new')}>
+            {t('clientPayments.reportNewTransfer')}
+          </button>
+        </div>
+      </>
+    );
+  } else if (latestRejected && !paymentDone) {
+    body = (
+      <>
+        {renderSummary(latestRejected, true)}
+        <div className="qlc-report-summary-actions">
+          <button type="button" className="qlc-btn primary" onClick={() => setMode('correct')}>
+            {t('clientPayments.correctReport')}
+          </button>
+          <button type="button" className="qlc-btn ghost" onClick={() => setMode('new')}>
+            {t('clientPayments.reportNewTransfer')}
+          </button>
+        </div>
+      </>
+    );
+  } else if (paymentDone) {
+    body = <p style={{ fontSize: 13, color: 'var(--qlc-ok)' }}>✓ {t('clientPayments.guaranteeConfirmed')}</p>;
+  } else {
+    body = (
+      <TransferReportForm subaccountId={subaccountId} uid={uid} hasUnpaidStatement={hasUnpaidStatement} onDone={handleDone} />
+    );
+  }
 
   return (
     <section id="garantia" className="qlc-card qlc-card-span-all qlc-bitget">
@@ -215,59 +298,16 @@ export default function BitgetTransferSection({ subaccountId, config, reports, h
 
       <div className="qlc-bitget-form">
         <div className="qlc-kicker">{t('clientPayments.confirmTitle')}</div>
-        <p style={{ fontSize: 12, color: 'var(--qlc-muted)', margin: '0 0 6px' }}>{t('clientPayments.confirmText')}</p>
+        <p style={{ fontSize: 12, color: 'var(--qlc-muted)', margin: '0 0 8px' }}>{t('clientPayments.confirmText')}</p>
         {ok && <p style={{ fontSize: 13, color: 'var(--qlc-ok)' }}>{ok}</p>}
-        {error && <p className="qlc-field-error">{error}</p>}
-        {showForm ? (
-          <form onSubmit={submit}>
-            {hasUnpaidStatement && (
-              <p style={{ fontSize: 12, color: 'var(--qlc-muted)', margin: '4px 0 0' }}>{t('clientPayments.appliesToStatement')}</p>
-            )}
-            <label className="qlc-label" htmlFor="bitget-order">
-              {t('clientPayments.orderNumber')}
-            </label>
-            <input
-              id="bitget-order"
-              className="qlc-input"
-              autoComplete="off"
-              maxLength={64}
-              value={form.bitgetOrderNumber}
-              onChange={(e) => setForm((f) => ({ ...f, bitgetOrderNumber: e.target.value }))}
-              placeholder={t('clientPayments.orderNumberPlaceholder')}
-              aria-describedby="bitget-order-help"
-              required
-            />
-            <p id="bitget-order-help" className="qlc-bt-field-help">{t('clientPayments.orderNumberHelp')}</p>
-            <label className="qlc-label" htmlFor="bitget-datetime">
-              {t('clientPayments.transactionAt')}
-            </label>
-            <input
-              id="bitget-datetime"
-              className="qlc-input"
-              type="datetime-local"
-              max={nowLocalInput()}
-              value={form.transactionAt}
-              onChange={(e) => setForm((f) => ({ ...f, transactionAt: e.target.value }))}
-              required
-            />
-            <span className="qlc-label">{t('clientPayments.evidenceTitle')}</span>
-            <EvidencePicker files={evidence} onChange={setEvidence} disabled={sending} />
-            <button className="qlc-btn primary" disabled={sending}>
-              {sending ? t('clientPayments.sending') : t('clientPayments.submit')}
-            </button>
-          </form>
-        ) : uid ? (
-          <p style={{ fontSize: 13, color: 'var(--qlc-ok)' }}>✓ {t('clientPayments.guaranteeConfirmed')}</p>
-        ) : (
-          <p style={{ fontSize: 13, color: 'var(--qlc-muted)' }}>{t('clientPayments.uidPending')}</p>
-        )}
+        {body}
       </div>
 
-      {reports.length > 0 && (
+      {allReports.length > 0 && (
         <div className="qlc-bitget-history">
           <div style={{ fontSize: 12, color: 'var(--qlc-muted)' }}>{t('clientPayments.history')}</div>
           <ul className="qlc-plain-list" style={{ margin: 0 }}>
-            {reports.map((r) => {
+            {allReports.map((r) => {
               const st = statusOf(reportStatusMap, r.status);
               return (
                 <li key={r.id}>
@@ -292,6 +332,7 @@ export default function BitgetTransferSection({ subaccountId, config, reports, h
                             </span>
                           </>
                         )}
+                        {r.status === 'RECHAZADO' && r.reviewNote && <span style={{ color: 'var(--qlc-danger)' }}> · {r.reviewNote}</span>}
                       </>
                     ) : (
                       <>

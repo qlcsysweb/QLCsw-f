@@ -2,28 +2,27 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import api, { API_BASE_URL } from '../../services/api';
 import Modal from '../../components/Modal';
-import { API_CONNECTION_STATUS, PAYMENT_REPORT_STATUS, statusOf } from '../../utils/statusLabels';
+import { API_CONNECTION_STATUS, statusOf } from '../../utils/statusLabels';
 import { formatCdmxDate, formatDateOnly } from '../../utils/cdmxTime';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 import { getLocalizedModel } from '../../i18n/bilingualContent';
-import ParticipationModelSummary from '../../components/ParticipationModelSummary';
+import ParticipationModelSummary, { ParticipationModelDetails } from '../../components/ParticipationModelSummary';
 import StatementStatus, { StatementBadge } from '../../components/StatementStatus';
 import BitgetTransferSection from './BitgetTransferSection';
+import CapitalConfirmation from './CapitalConfirmation';
 import usePolling from '../../hooks/usePolling';
 
 // Detalle (solo lectura) del modelo único de participación — ya no hay
 // nada que elegir ni confirmar.
 function ModelDetailsModal({ model, onClose, t }) {
   return (
-    <Modal title={t('participationModel.title')} onClose={onClose} width={600} closeOnOverlayClick closeOnEscape>
+    <Modal title={t('participationModel.title')} onClose={onClose} width={820} closeOnOverlayClick closeOnEscape>
       <ParticipationModelSummary model={model} showTitle={false} />
       {model.description && (
-        <p style={{ color: 'var(--qlc-muted)', fontSize: 14, lineHeight: 1.6, marginTop: 14 }}>{model.description}</p>
+        <p style={{ color: 'var(--qlc-muted)', fontSize: 14, lineHeight: 1.6, margin: '14px 0' }}>{model.description}</p>
       )}
-      {model.detailsContent && (
-        <p style={{ fontSize: 13, color: 'var(--qlc-muted)', whiteSpace: 'pre-line', marginTop: 14 }}>{model.detailsContent}</p>
-      )}
+      <ParticipationModelDetails model={model} />
       <div className="qlc-form-actions">
         <button className="qlc-btn primary" onClick={onClose}>
           {t('clientSupport.close')}
@@ -60,11 +59,8 @@ export default function SubaccountDetailPage() {
   const scrolledToHash = useRef(false);
   // CORREGIR.xlsx CLIENTE 13 — reporte real de distribución de capital.
   const [distributionReports, setDistributionReports] = useState([]);
-  const [distributionForm, setDistributionForm] = useState({ note: '' });
-  const [reportingDistribution, setReportingDistribution] = useState(false);
 
   const apiStatusMap = API_CONNECTION_STATUS(t);
-  const paymentStatusMap = PAYMENT_REPORT_STATUS(t);
 
   const load = () => {
     api
@@ -196,29 +192,6 @@ export default function SubaccountDetailPage() {
     }
   };
 
-  // CORREGIR.xlsx CLIENTE 13 — reporte real de distribución de capital
-  // ("YA DISTRIBUÍ MI CAPITAL"), con el mismo patrón que el reporte de
-  // pago: nota opcional, revisado por QLC (nunca auto-aprobado). El sistema
-  // JAMÁS se conecta al exchange para validar el saldo. El monto ya NO lo
-  // escribe el cliente — el backend lo toma directo de requiredCapital.
-  const submitDistributionReport = async (e) => {
-    e.preventDefault();
-    if (subaccount.requiredCapital == null) return;
-    setReportingDistribution(true);
-    setError('');
-    try {
-      await api.post(`/client/api-subaccounts/${id}/capital-distribution-reports`, {
-        note: distributionForm.note || undefined,
-      });
-      flash(t('clientApiConnection.capitalReportedOk'));
-      setDistributionForm({ note: '' });
-      load();
-    } catch (err) {
-      setError(translateBackendMessage(err.message, language));
-    } finally {
-      setReportingDistribution(false);
-    }
-  };
 
   return (
     <div>
@@ -270,7 +243,7 @@ export default function SubaccountDetailPage() {
         {/* MODELO ÚNICO DE PARTICIPACIÓN — sin selector: se muestra directo. */}
         <div className="qlc-card">
           <ParticipationModelSummary model={participationModel} />
-          {participationModel && (participationModel.description || participationModel.detailsContent) && (
+          {participationModel && (
             <button className="qlc-btn ghost" style={{ marginTop: 12 }} onClick={() => setShowModelDetails(true)}>
               {t('clientModels.details')}
             </button>
@@ -279,80 +252,21 @@ export default function SubaccountDetailPage() {
 
         <div className="qlc-card">
           <h3 style={{ marginTop: 0 }}>{t('clientApiConnection.statusTitle')}</h3>
-          {/* CORRECCIÓN 14 (bloque de 20) — siempre debe verse un estado
-              claro, sea el valor fijo en USDT o el aviso de que todavía no
-              se ha configurado (nunca lo puede editar el cliente). */}
-          <p style={{ fontSize: 14 }}>
-            <strong>{t('clientApiConnection.requiredCapital')}:</strong>{' '}
-            {subaccount.requiredCapital != null ? (
-              `${subaccount.requiredCapital} USDT`
-            ) : (
-              <span style={{ color: 'var(--qlc-muted2)' }}>{t('clientApiConnection.requiredCapitalPending')}</span>
-            )}
-          </p>
-          {subaccount.clientReportedCapitalReady && (
-            <p style={{ fontSize: 12, color: 'var(--qlc-ok)' }}>✓ {t('clientApiConnection.capitalReported')}</p>
-          )}
-
-          {/* CORRECCIÓN (monto no editable por el cliente) — el monto ya no
-              lo escribe el cliente: siempre es el capital operativo
-              requerido que fijó el admin (requiredCapital). Mientras el
-              admin no lo configure, el reporte queda deshabilitado (antes
-              se permitía reportar cualquier monto aunque no hubiera
-              requiredCapital todavía — eso quedó revertido a propósito). */}
-          <form
-            onSubmit={submitDistributionReport}
-            style={{ marginTop: 12, marginBottom: 16, borderTop: '1px solid var(--qlc-line)', paddingTop: 12 }}
-          >
-            <h4 style={{ margin: '0 0 4px' }}>{t('clientApiConnection.reportDistributionTitle')}</h4>
-            <p style={{ fontSize: 12, color: 'var(--qlc-muted2)', marginTop: 0, marginBottom: 10 }}>
-              {t('clientApiConnection.requiredCapital')}:{' '}
-              {subaccount.requiredCapital != null ? `${subaccount.requiredCapital} USDT` : t('clientApiConnection.requiredCapitalPending')}
-            </p>
-            <label className="qlc-label">{t('clientPayments.amount')}</label>
-            <input
-              className="qlc-input"
-              value={subaccount.requiredCapital != null ? `${subaccount.requiredCapital} USDT` : t('clientApiConnection.requiredCapitalPending')}
-              disabled
-              readOnly
-              title={t('clientApiConnection.amountFixedByAdmin')}
+          {/* Capital operativo requerido: lo fija el ADMIN (solo lectura
+              para el cliente). El cliente confirma con una frase escrita que
+              lo tiene disponible — ver CapitalConfirmation. */}
+          <div style={{ marginBottom: 16 }}>
+            <h4 style={{ margin: '0 0 8px' }}>{t('clientApiConnection.reportDistributionTitle')}</h4>
+            <CapitalConfirmation
+              subaccountId={id}
+              requiredCapital={subaccount.requiredCapital}
+              reports={distributionReports}
+              onReported={() => {
+                flash(t('clientApiConnection.capitalReportedOk'));
+                load();
+              }}
             />
-            <label className="qlc-label">{t('clientApiConnection.distributionNote')}</label>
-            <input
-              className="qlc-input"
-              value={distributionForm.note}
-              onChange={(e) => setDistributionForm((f) => ({ ...f, note: e.target.value }))}
-            />
-            <button
-              className="qlc-btn primary"
-              style={{ marginTop: 10, width: '100%' }}
-              disabled={reportingDistribution || subaccount.requiredCapital == null}
-              title={subaccount.requiredCapital == null ? t('clientApiConnection.requiredCapitalPending') : undefined}
-            >
-              {reportingDistribution ? t('common.sending') : t('clientApiConnection.reportCapitalReady')}
-            </button>
-
-            {distributionReports.length > 0 && (
-              <div style={{ marginTop: 12 }}>
-                <div style={{ fontSize: 12, color: 'var(--qlc-muted)', marginBottom: 6 }}>
-                  {t('clientApiConnection.distributionHistory')}
-                </div>
-                <ul className="qlc-plain-list">
-                  {distributionReports.map((r) => {
-                    const st = statusOf(paymentStatusMap, r.status);
-                    return (
-                      <li key={r.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
-                        <span>
-                          {r.amount} USDT — {new Date(r.reportedAt).toLocaleDateString()}
-                        </span>
-                        <span className={`qlc-badge ${st.className}`}>{st.text}</span>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            )}
-          </form>
+          </div>
           <form onSubmit={saveApi}>
             <label className="qlc-label">{t('clientApiConnection.exchange')}</label>
             <input className="qlc-input" value={apiForm.exchangeName} onChange={(e) => setApiForm((f) => ({ ...f, exchangeName: e.target.value }))} placeholder={subaccount.exchangeName || 'Bitget'} />
@@ -475,6 +389,7 @@ export default function SubaccountDetailPage() {
           config={paymentConfig}
           reports={payments}
           hasUnpaidStatement={hasUnpaidStatement}
+          unpaidStatementId={hasUnpaidStatement ? latestStatement?.id : null}
           guaranteeConfirmed={guaranteeConfirmed}
           onReported={load}
         />

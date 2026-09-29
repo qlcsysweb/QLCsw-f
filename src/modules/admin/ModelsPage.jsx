@@ -5,7 +5,7 @@ import ConfirmSaveModal from '../../components/ConfirmSaveModal';
 import UnsavedChangesModal from '../../components/UnsavedChangesModal';
 import useUnsavedGuard from '../../components/useUnsavedGuard';
 import BilingualField from '../../components/BilingualField';
-import ParticipationModelSummary from '../../components/ParticipationModelSummary';
+import ParticipationModelSummary, { fillSplit } from '../../components/ParticipationModelSummary';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 
@@ -20,7 +20,7 @@ function ModelEditModal({ model, onClose, onSaved }) {
 
   const update = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
 
-  // El reparto (QLC 70% / Cliente 30%) es fijo del modelo único: aquí solo
+  // El reparto (QLC 50% / Cliente 50%) es fijo del modelo único: aquí solo
   // se editan sus textos.
   const doSave = async () => {
     setError('');
@@ -32,8 +32,6 @@ function ModelEditModal({ model, onClose, onSaved }) {
         taglineEn: form.taglineEn || null,
         description: form.description,
         descriptionEn: form.descriptionEn || null,
-        detailsContent: form.detailsContent || null,
-        detailsContentEn: form.detailsContentEn || null,
       });
       onSaved();
     } catch (err) {
@@ -45,7 +43,7 @@ function ModelEditModal({ model, onClose, onSaved }) {
   return (
     <Modal
       title={t('adminModels.editModalTitle')}
-      subtitle={t('adminModels.editModalSubtitle')}
+      subtitle={fillSplit(t('adminModels.editModalSubtitle'), model)}
       onClose={requestClose}
       width={760}
     >
@@ -77,14 +75,8 @@ function ModelEditModal({ model, onClose, onSaved }) {
           onEnChange={update('descriptionEn')}
           textarea
         />
-        <BilingualField
-          label={t('adminModels.detailsContent')}
-          esValue={form.detailsContent}
-          enValue={form.detailsContentEn}
-          onEsChange={update('detailsContent')}
-          onEnChange={update('detailsContentEn')}
-          textarea
-        />
+        {/* "Cómo funciona / ejemplos / características / ¿para quién?" se
+            construyen a partir del reparto real (Model.percentage). */}
         {error && <div className="qlc-field-error">{error}</div>}
 
         <div className="qlc-form-actions">
@@ -107,7 +99,7 @@ function ModelEditModal({ model, onClose, onSaved }) {
   );
 }
 
-// MODELO ÚNICO DE PARTICIPACIÓN (QLC 70% / Cliente 30%): no se pueden crear
+// MODELO ÚNICO DE PARTICIPACIÓN (QLC 50% / Cliente 50%): no se pueden crear
 // otros modelos; solo se editan los textos del único existente.
 export default function ModelsPage() {
   const { t } = useLanguage();
@@ -152,7 +144,7 @@ export default function ModelsPage() {
           <h1 style={{ margin: 0 }}>{t('adminModels.title')}</h1>
         </div>
       </div>
-      <p style={{ color: 'var(--qlc-muted)', maxWidth: 640 }}>{t('adminModels.intro')}</p>
+      <p style={{ color: 'var(--qlc-muted)', maxWidth: 640 }}>{fillSplit(t('adminModels.intro'), models[0])}</p>
 
       {message && <div className="qlc-card" style={{ borderColor: 'var(--qlc-ok-border)', marginBottom: 16 }}>{message}</div>}
 

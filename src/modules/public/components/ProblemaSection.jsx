@@ -50,7 +50,7 @@ export default function ProblemaSection({ text, media = () => [] }) {
             )}
           </p>
           <p style={{ color: 'var(--qlc-muted)', fontSize: 15, lineHeight: 1.6, marginBottom: 15 }}>
-            {text('problema', 'body_6', 'Desde 20 USDT.')}
+            {text('problema', 'body_6', 'Desde 100 USDT.')}
           </p>
           <p style={{ color: '#c7ccd2', fontSize: 15, lineHeight: 1.6, fontWeight: 600, marginBottom: 15 }}>
             {text('problema', 'body_7', 'Tu cuenta sigue siendo individual. Nuestra gestión es global.')}

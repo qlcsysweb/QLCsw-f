@@ -42,7 +42,7 @@ export default function CmsPage() {
       fields: [
         { key: 'eyebrow', label: t('adminCms.fieldEyebrow'), fallback: 'Institutional Copytrading Infrastructure' },
         { key: 'title_line1', label: t('adminCms.fieldTitleLine1'), fallback: 'Copytrading Institucional.' },
-        { key: 'title_line2', label: t('adminCms.fieldTitleLine2Highlight'), fallback: 'Accesible desde 20 USDT.' },
+        { key: 'title_line2', label: t('adminCms.fieldTitleLine2Highlight'), fallback: 'Accesible desde 100 USDT.' },
         { key: 'lead', label: t('adminCms.fieldDescription'), type: 'textarea', fallback: '' },
         { key: 'mini_platform_label', label: t('adminCms.fieldMiniPlatformLabel'), fallback: 'BITGET' },
         { key: 'mini_platform_value', label: t('adminCms.fieldMiniPlatformValue'), fallback: 'Elite Trader' },
@@ -100,7 +100,7 @@ export default function CmsPage() {
       kind: 'content',
       section: 'microposiciones',
       fields: [
-        { key: 'range', label: t('adminCms.fieldRange'), fallback: '20–400 USDT' },
+        { key: 'range', label: t('adminCms.fieldRange'), fallback: '100–2,000 USDT' },
         { key: 'lead', label: t('adminCms.fieldText'), type: 'textarea', fallback: '' },
       ],
       PreviewComponent: MicroposicionesSection,

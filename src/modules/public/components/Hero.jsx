@@ -4,6 +4,22 @@ import TrackRecordHighlights from './TrackRecordHighlights';
 import { useLanguage } from '../../../i18n/LanguageContext';
 import useSectionNav from '../useSectionNav';
 
+// "Accesible desde 100 USDT." (texto del CMS) → el monto va en su propia
+// línea ("Accesible desde" / "100 USDT.") para que nunca quede partido de
+// forma incómoda entre palabras. Si el texto no termina en un monto USDT se
+// muestra tal cual.
+function HeroAmountLine({ value }) {
+  const match = String(value).match(/^(.*?)\s*(\d[\d.,]*\s*USDT\.?)\s*$/i);
+  if (!match || !match[1]) return <span className="gradient">{value}</span>;
+  return (
+    <>
+      <span className="gradient">{match[1]}</span>
+      <br />
+      <span className="gradient hero-amount">{match[2]}</span>
+    </>
+  );
+}
+
 export default function Hero({ text, media = () => [], trackRecord }) {
   const { t } = useLanguage();
   const goToSection = useSectionNav();
@@ -17,7 +33,7 @@ export default function Hero({ text, media = () => [], trackRecord }) {
           <h1>
             {text('hero', 'title_line1', 'Copytrading Institucional.')}
             <br />
-            <span className="gradient">{text('hero', 'title_line2', 'Accesible desde 20 USDT.')}</span>
+            <HeroAmountLine value={text('hero', 'title_line2', 'Accesible desde 100 USDT.')} />
           </h1>
           <p className="lead">
             {text(

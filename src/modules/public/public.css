@@ -738,53 +738,34 @@
   white-space: nowrap;
 }
 
-/* Modelo único de participación: descripción + reparto QLC/Cliente. */
-.qlc-public .model-single {
+/* Modelo único de participación: encabezado (tagline + descripción | reparto
+   grande) y detalle en tarjetas (ver .qlc-pmd en theme.css). */
+.qlc-public .model-head {
   display: grid;
-  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
-  gap: 14px;
-  margin-top: 36px;
-  align-items: stretch;
-}
-.qlc-public .model-card {
-  position: relative;
-  padding: 28px;
-  border: 1px solid var(--line);
+  grid-template-columns: minmax(0, 1.6fr) minmax(260px, 1fr);
+  gap: 18px;
+  align-items: center;
+  margin-top: 24px;
+  padding: 22px 26px;
+  border: 1px solid rgba(0, 168, 255, 0.34);
   border-radius: 20px;
   background: #0b1016;
-}
-.qlc-public .model-split-card {
-  display: flex;
-  align-items: center;
-}
-.qlc-public .model-split-card .qlc-pm {
-  width: 100%;
-}
-.qlc-public .model-split-card .qlc-pm-split dd {
-  font-size: 40px;
-}
-.qlc-public .model-card .model-details {
-  white-space: pre-line;
-  font-size: 12px;
-  margin-bottom: 0;
-}
-.qlc-public .model-card.featured {
-  border-color: rgba(0, 168, 255, 0.34);
   box-shadow: 0 20px 70px rgba(0, 168, 255, 0.07);
 }
-.qlc-public .model-no {
-  font-size: 10px;
-  letter-spacing: 0.18em;
-  color: var(--qlc-blue2);
-  text-transform: uppercase;
+.qlc-public .model-head-copy h3 {
+  font-size: 22px;
+  margin: 0 0 6px;
 }
-.qlc-public .model-card h3 {
-  font-size: 23px;
-  margin: 14px 0 8px;
-}
-.qlc-public .model-card p {
+.qlc-public .model-head-copy p {
+  margin: 0;
   color: var(--qlc-muted);
   font-size: 13px;
+}
+.qlc-public .model-head-split .qlc-pm-split dd {
+  font-size: 40px;
+}
+.qlc-public .qlc-pmd {
+  margin-top: 14px;
 }
 .qlc-public .note {
   font-size: 12px;
@@ -990,7 +971,7 @@
   .qlc-public .contact-clean {
     grid-template-columns: 1fr;
   }
-  .qlc-public .model-single {
+  .qlc-public .model-head {
     grid-template-columns: 1fr;
   }
   .qlc-public .security-grid {
@@ -1208,13 +1189,16 @@
   .qlc-public .feature-list,
   .qlc-public .pillars,
   .qlc-public .security-grid,
-  .qlc-public .model-single,
   .qlc-public .micro-hero,
   .qlc-public .connection {
     margin-top: 24px;
   }
-  .qlc-public .model-card {
-    padding: 22px;
+  .qlc-public .model-head {
+    margin-top: 16px;
+    padding: 16px 20px;
+  }
+  .qlc-public .model-head-split .qlc-pm-split dd {
+    font-size: 32px;
   }
   .qlc-public .feature-item {
     min-height: 0;
