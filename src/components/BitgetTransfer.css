@@ -206,6 +206,12 @@
   color: #c9d5de;
 }
 
+.qlc-bt-field-help {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: var(--qlc-muted2);
+}
+
 /* Zona de evidencia */
 .qlc-bt-drop {
   margin-top: 6px;
@@ -318,58 +324,222 @@
   backdrop-filter: blur(6px);
   overscroll-behavior: contain;
 }
+/* Modal ANCHO: aprovecha el ancho (pasos en fila, 2 columnas) para quedar
+   bajo y caber completo en laptops de poca altura. El overflow-y es solo un
+   respaldo para viewports físicamente muy pequeños. */
 .qlc-bt-modal {
-  width: min(560px, 100%);
+  width: min(980px, 100%);
   max-height: calc(100vh - 32px);
   max-height: calc(100dvh - 32px);
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 24px;
-  border-radius: 22px;
+  padding: 22px 26px;
+  border-radius: 20px;
   border: 1px solid rgba(91, 212, 255, 0.22);
   background: radial-gradient(circle at 85% 0%, rgba(0, 168, 255, 0.12), transparent 45%),
     linear-gradient(180deg, #0b1620, #070b10);
   box-shadow: 0 30px 100px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(47, 214, 181, 0.05);
   color: var(--qlc-text);
 }
-.qlc-bt-modal h2 {
-  font-size: 22px;
+.qlc-bt-modal-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.qlc-bt-modal-head .qlc-bt-badge {
+  flex: none;
+  align-self: flex-start;
+  margin-top: 4px;
+}
+/* Especificidad mayor que ".qlc-public h2" (estilo de títulos de sección de
+   la página pública), que de lo contrario lo agrandaba a ~42px. */
+.qlc-bt-modal .qlc-bt-modal-head h2 {
+  margin: 0;
+  font-size: clamp(18px, 1.7vw, 22px);
+  line-height: 1.2;
   letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.qlc-bt-modal-actions {
-  margin-top: 20px;
+.qlc-bt-modal .qlc-bt-sub {
+  margin-top: 2px;
 }
-.qlc-bt-modal-actions .qlc-btn {
-  width: 100%;
+
+/* Pasos en una fila */
+.qlc-bt-steps--row {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+.qlc-bt-steps--row .qlc-bt-step {
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--qlc-line);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* Datos + ventajas en dos columnas */
+.qlc-bt-modal-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 12px;
+  margin-top: 12px;
+  align-items: stretch;
+}
+.qlc-bt-modal-grid .qlc-bt-data,
+.qlc-bt-modal-grid .qlc-bt-adv {
+  margin-top: 0;
+}
+
+/* Pie: confirmación compacta + botón a la derecha */
+.qlc-bt-modal-foot {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 12px;
+}
+.qlc-bt-confirm--inline {
+  flex: 1;
+  min-width: 0;
+  margin-top: 0;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 10px 14px;
+}
+.qlc-bt-confirm-icon {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 800;
+  font-style: italic;
+  color: #04121b;
+  background: var(--qlc-blue2);
+  margin-top: 1px;
+}
+.qlc-bt-confirm--inline p {
+  margin-top: 2px;
+}
+.qlc-bt-modal-ok {
+  flex: none;
+  min-width: 150px;
   min-height: 44px;
   font-size: 14px;
 }
-@media (max-height: 760px) {
+
+/* Laptops de poca altura (1366×768, 1280×720, 1024×600…): se compactan
+   espacios y tipografía de forma controlada, sin volverla ilegible. */
+@media (max-height: 800px) and (min-width: 721px) {
   .qlc-bt-modal {
-    padding: 18px 20px;
+    padding: 18px 22px;
   }
-  .qlc-bt-steps {
+  .qlc-bt-steps--row {
     margin-top: 12px;
-    gap: 8px;
+    gap: 10px;
   }
-  .qlc-bt-data,
-  .qlc-bt-adv,
-  .qlc-bt-confirm {
+  .qlc-bt-steps--row .qlc-bt-step {
+    padding: 10px 12px;
+  }
+  .qlc-bt-modal-grid,
+  .qlc-bt-modal-foot {
     margin-top: 10px;
+  }
+  .qlc-bt-modal .qlc-bt-data,
+  .qlc-bt-modal .qlc-bt-adv {
     padding: 10px 14px;
   }
-  .qlc-bt-modal-actions {
-    margin-top: 14px;
+  .qlc-bt-modal .qlc-bt-uid {
+    margin-top: 8px;
+    padding-top: 8px;
   }
 }
-@media (max-width: 520px) {
+@media (max-height: 640px) and (min-width: 721px) {
+  .qlc-bt-modal-overlay {
+    padding: 10px;
+  }
+  .qlc-bt-modal {
+    max-height: calc(100vh - 20px);
+    max-height: calc(100dvh - 20px);
+    padding: 14px 18px;
+  }
+  .qlc-bt-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 17px;
+  }
+  .qlc-bt-modal .qlc-bt-sub,
+  .qlc-bt-modal .qlc-bt-step p,
+  .qlc-bt-modal .qlc-bt-adv ul,
+  .qlc-bt-modal .qlc-bt-confirm p,
+  .qlc-bt-modal .qlc-bt-data dl > div {
+    font-size: 12px;
+  }
+  .qlc-bt-modal .qlc-bt-step strong {
+    font-size: 13px;
+  }
+  .qlc-bt-steps--row .qlc-bt-step {
+    padding: 8px 10px;
+  }
+  .qlc-bt-modal .qlc-bt-data,
+  .qlc-bt-modal .qlc-bt-adv,
+  .qlc-bt-confirm--inline {
+    padding: 8px 12px;
+  }
+  .qlc-bt-modal .qlc-bt-data-title {
+    margin-bottom: 6px;
+  }
+  .qlc-bt-modal .qlc-bt-uid-value {
+    font-size: 18px;
+  }
+  .qlc-bt-modal-ok {
+    min-height: 38px;
+  }
+}
+
+/* Tablet vertical / ventanas angostas: pasos siguen en fila si caben; las
+   dos columnas y el pie pasan a una columna. */
+@media (max-width: 860px) {
+  .qlc-bt-modal-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+/* Móvil real: todo en una columna. */
+@media (max-width: 720px) {
   .qlc-bt-modal {
     padding: 18px 16px;
     border-radius: 18px;
   }
-  .qlc-bt-modal h2 {
+  .qlc-bt-modal-head {
+    flex-wrap: wrap;
+  }
+  .qlc-bt-modal-head .qlc-bt-head-text {
+    flex-basis: calc(100% - 56px);
+  }
+  .qlc-bt-modal .qlc-bt-modal-head h2 {
+    white-space: normal;
     font-size: 19px;
   }
+  .qlc-bt-modal-head .qlc-bt-badge {
+    margin: 0 0 0 56px;
+  }
+  .qlc-bt-steps--row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+  .qlc-bt-modal-foot {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .qlc-bt-modal-ok {
+    width: 100%;
+  }
+}
+@media (max-width: 520px) {
   .qlc-bt-copy {
     width: 100%;
   }

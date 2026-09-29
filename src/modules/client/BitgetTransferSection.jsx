@@ -155,6 +155,12 @@ export default function BitgetTransferSection({ subaccountId, config, reports, h
   const submit = async (e) => {
     e.preventDefault();
     if (!form.bitgetOrderNumber.trim() || !form.transactionAt) return;
+    // UID ≠ N.º de orden: el UID es el dato de QLC que el cliente copió para
+    // transferir; el N.º de orden lo genera Bitget DESPUÉS de transferir.
+    if (uid && form.bitgetOrderNumber.trim() === String(uid).trim()) {
+      setError(t('clientPayments.orderIsUid'));
+      return;
+    }
     if (evidence.length === 0) {
       setError(t('clientPayments.evidenceRequired'));
       return;
@@ -228,8 +234,10 @@ export default function BitgetTransferSection({ subaccountId, config, reports, h
               value={form.bitgetOrderNumber}
               onChange={(e) => setForm((f) => ({ ...f, bitgetOrderNumber: e.target.value }))}
               placeholder={t('clientPayments.orderNumberPlaceholder')}
+              aria-describedby="bitget-order-help"
               required
             />
+            <p id="bitget-order-help" className="qlc-bt-field-help">{t('clientPayments.orderNumberHelp')}</p>
             <label className="qlc-label" htmlFor="bitget-datetime">
               {t('clientPayments.transactionAt')}
             </label>

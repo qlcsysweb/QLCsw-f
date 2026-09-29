@@ -76,6 +76,8 @@ const KNOWN_MESSAGES = {
   'Uno de los archivos no es una imagen o PDF válido.': 'One of the files is not a valid image or PDF.',
   'No se pudo guardar la evidencia en el almacenamiento de documentos. Intenta nuevamente.': 'The evidence could not be saved to document storage. Please try again.',
   'Archivo de evidencia no encontrado': 'Evidence file not found',
+  'Ese número es el UID de recepción de QLC, no el N.º de orden. Ingresa el número de orden que te dio Bitget.':
+    "That number is QLC's receiving UID, not the order No. Enter the order number Bitget gave you.",
   'El PDF del estado de cuenta supera el límite de 15 MB.': 'The statement PDF exceeds the 15 MB limit.',
   'No se pudo procesar el PDF adjunto.': 'The attached PDF could not be processed.',
   'No se pudo guardar el PDF del estado de cuenta en Google Drive. Intenta nuevamente.': 'The statement PDF could not be saved to Google Drive. Please try again.',

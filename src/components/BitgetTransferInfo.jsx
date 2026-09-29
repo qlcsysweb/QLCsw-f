@@ -12,7 +12,8 @@ import './BitgetTransfer.css';
  * backend. Si no hay uno configurado se muestra "pendiente" — nunca se
  * inventa un valor.
  */
-export function BitgetSteps() {
+// layout="row": los 3 pasos en una fila (modal ancho en laptop/desktop).
+export function BitgetSteps({ layout = 'column' }) {
   const { t } = useLanguage();
   const steps = [
     [t('clientPayments.step1Title'), t('clientPayments.step1Text')],
@@ -20,7 +21,7 @@ export function BitgetSteps() {
     [t('clientPayments.step3Title'), t('clientPayments.step3Text')],
   ];
   return (
-    <ol className="qlc-bt-steps">
+    <ol className={`qlc-bt-steps${layout === 'row' ? ' qlc-bt-steps--row' : ''}`}>
       {steps.map(([title, text], i) => (
         <li key={title} className="qlc-bt-step">
           <span className="qlc-bt-step-num" aria-hidden="true">

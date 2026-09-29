@@ -22,16 +22,16 @@ export function formatDateOnly(date) {
   return `${day}/${month}/${year}`;
 }
 
+// Formato visible: "DD/MM/YYYY, HH:mm" (sin sufijo de zona horaria, a
+// pedido de QLC). La hora sigue calculándose en America/Mexico_City.
 export function formatCdmxDateTime(date) {
-  return (
-    new Intl.DateTimeFormat('es-MX', {
-      timeZone: TIME_ZONE,
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-    }).format(date instanceof Date ? date : new Date(date)) + ' CDMX'
-  );
+  return new Intl.DateTimeFormat('es-MX', {
+    timeZone: TIME_ZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).format(date instanceof Date ? date : new Date(date));
 }

@@ -123,6 +123,10 @@ export default function TransferReportList({ reports, receiveUid, showClient = f
                         '—'
                       )}
                     </dd>
+                    <dt>{t('adminPayments.status')}</dt>
+                    <dd>
+                      <span className={`qlc-badge ${st.className}`}>{st.text}</span>
+                    </dd>
                   </>
                 ) : (
                   <>
