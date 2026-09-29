@@ -23,7 +23,6 @@ import CmsPage from './modules/admin/cms/CmsPage';
 import TrackRecordPage from './modules/admin/TrackRecordPage';
 import GoogleDriveSettingsPage from './modules/admin/settings/GoogleDriveSettingsPage';
 import EmailSettingsPage from './modules/admin/settings/EmailSettingsPage';
-import SecuritySettingsPage from './modules/admin/settings/SecuritySettingsPage';
 import PlatformSettingsPage from './modules/admin/PlatformSettingsPage';
 import AdminGuidesPage from './modules/admin/GuidesPage';
 import ProcessStepsPage from './modules/admin/ProcessStepsPage';
@@ -79,7 +78,6 @@ function AppRoutes() {
               <Route path="settings/drive" element={<GoogleDriveSettingsPage />} />
               <Route path="settings/email" element={<EmailSettingsPage />} />
               <Route path="settings/platform" element={<PlatformSettingsPage />} />
-              <Route path="settings/security" element={<SecuritySettingsPage />} />
               <Route path="settings/process-steps" element={<ProcessStepsPage />} />
               <Route path="appointments" element={<AdminAppointmentsPage />} />
               <Route path="support" element={<AdminSupportPage />} />

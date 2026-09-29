@@ -802,52 +802,7 @@ textarea {
   gap: 22px;
   scroll-margin-top: 20px;
 }
-.qlc-bitget-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px 12px;
-  margin-bottom: 6px;
-}
-.qlc-bitget-head h3 {
-  margin: 0;
-}
-.qlc-bitget-intro {
-  color: var(--qlc-muted);
-  font-size: 13px;
-  margin: 0 0 14px;
-}
-.qlc-bitget-uid {
-  border: 1px solid var(--qlc-ok-border);
-  background: rgba(0, 168, 255, 0.06);
-  border-radius: 14px;
-  padding: 14px;
-}
-.qlc-bitget-uid-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px;
-}
-.qlc-bitget-uid-value {
-  flex: 1 1 180px;
-  min-width: 0;
-  font-size: clamp(18px, 2.4vw, 24px);
-  font-weight: 750;
-  letter-spacing: 0.06em;
-  font-variant-numeric: tabular-nums;
-  overflow-wrap: anywhere;
-  color: var(--qlc-text);
-}
-.qlc-bitget-steps {
-  margin: 14px 0 0;
-  padding-left: 18px;
-  font-size: 13px;
-  color: var(--qlc-muted);
-  display: grid;
-  gap: 4px;
-}
+/* Encabezado, pasos, datos/UID, ventajas y evidencia: components/BitgetTransfer.css */
 .qlc-bitget-form {
   border-left: 1px solid var(--qlc-line);
   padding-left: 22px;
@@ -856,7 +811,7 @@ textarea {
 .qlc-bitget-form h4 {
   margin: 0 0 4px;
 }
-.qlc-bitget-form .qlc-btn {
+.qlc-bitget-form form > .qlc-btn.primary {
   width: 100%;
   margin-top: 14px;
 }
@@ -888,11 +843,6 @@ textarea {
     padding-left: 0;
     border-top: 1px solid var(--qlc-line);
     padding-top: 14px;
-  }
-}
-@media (max-width: 480px) {
-  .qlc-bitget-uid-row .qlc-btn {
-    width: 100%;
   }
 }
 
@@ -970,6 +920,50 @@ textarea {
   margin: 0;
   overflow-wrap: anywhere;
   min-width: 0;
+}
+/* Modal "Eliminar cliente": cliente afectado bien visible. */
+.qlc-delete-target {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--qlc-danger-border);
+  background: rgba(255, 110, 110, 0.06);
+  font-size: 14px;
+}
+.qlc-delete-target span {
+  color: var(--qlc-muted);
+}
+.qlc-btn.danger.qlc-btn-destructive {
+  background: #b3261e;
+  border-color: #d64036;
+  color: #fff;
+}
+.qlc-btn.danger.qlc-btn-destructive:hover:not(:disabled) {
+  background: #c8352c;
+}
+/* Evidencias de una transferencia reportada (admin): nombre + Ver/descargar. */
+.qlc-evidence-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+.qlc-evidence-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.qlc-evidence-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 /* Fila hash/orden + botón Copiar — envuelve en pantallas angostas sin que el
    código largo empuje el botón fuera de la tarjeta. */

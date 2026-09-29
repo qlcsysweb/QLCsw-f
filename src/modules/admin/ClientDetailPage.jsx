@@ -72,9 +72,7 @@ export default function ClientDetailPage() {
   const [message, setMessage] = useState('');
   const [confirmDeactivate, setConfirmDeactivate] = useState(false);
   const [confirmDeleteDoc, setConfirmDeleteDoc] = useState(null);
-  const [confirmDeleteWarn, setConfirmDeleteWarn] = useState(false);
   const [confirmDeleteClient, setConfirmDeleteClient] = useState(false);
-  const [deleteSecurityPassword, setDeleteSecurityPassword] = useState('');
   const [deleteError, setDeleteError] = useState('');
   const [deleting, setDeleting] = useState(false);
   const [creatingSubaccount, setCreatingSubaccount] = useState(false);
@@ -187,14 +185,13 @@ export default function ClientDetailPage() {
     await toggleActive(false);
   };
 
-  // CORREGIR.xlsx ADMIN 06: la eliminación exige la contraseña de
-  // seguridad exclusiva (solo el administrador general puede tenerla) —
-  // validada siempre en backend, nunca solo aquí.
+  // Eliminación sin contraseña adicional: el backend autoriza con la sesión
+  // (token) + rol ADMIN + permiso de administrador general.
   const deleteClientAccount = async () => {
     setDeleting(true);
     setDeleteError('');
     try {
-      const { data } = await api.delete(`/admin/clients/${id}`, { data: { securityPassword: deleteSecurityPassword } });
+      const { data } = await api.delete(`/admin/clients/${id}`);
       // El backend nunca afirma que la carpeta de Drive se borró si no se
       // confirmó de verdad — se lleva ese estado real a la lista de
       // clientes para que el admin lo vea, en vez de perderlo al navegar.
@@ -383,7 +380,7 @@ export default function ClientDetailPage() {
           )}
           <button
             className="qlc-btn danger"
-            onClick={() => setConfirmDeleteWarn(true)}
+            onClick={() => setConfirmDeleteClient(true)}
             disabled={client.user?.isActive}
             title={client.user?.isActive ? t('adminClientDetail.deleteClientMustDeactivateFirst') : undefined}
           >
@@ -671,60 +668,41 @@ export default function ClientDetailPage() {
         />
       )}
 
-      {/* Confirmación 1 de 2: advertencia completa de lo que se va a borrar,
-          sin la contraseña todavía — igual patrón que AdminsPage/ConfirmModal
-          twoStep, pero en dos pasos separados porque el paso 2 real (abajo)
-          necesita además la contraseña de seguridad del administrador
-          general. */}
-      {confirmDeleteWarn && (
-        <ConfirmModal
-          title={t('adminClientDetail.deleteClientTitle')}
-          message={t('adminClientDetail.deleteClientMessage').replace('{name}', `${client.firstName} ${client.lastName}`)}
-          confirmLabel={t('adminClientDetail.deleteClient')}
-          onClose={() => setConfirmDeleteWarn(false)}
-          onConfirm={() => {
-            setConfirmDeleteWarn(false);
-            setConfirmDeleteClient(true);
-          }}
-        />
-      )}
-
+      {/* Confirmación visual única (sin contraseña adicional): la
+          autorización real la hace el backend con la sesión del admin. */}
       {confirmDeleteClient && (
         <Modal
           title={t('adminClientDetail.deleteClientTitle')}
           onClose={() => {
+            if (deleting) return;
             setConfirmDeleteClient(false);
-            setDeleteSecurityPassword('');
             setDeleteError('');
           }}
-          width={440}
+          width={460}
         >
           <p style={{ color: 'var(--qlc-muted)', fontSize: 14, lineHeight: 1.6, marginTop: 0 }}>
-            {t('adminClientDetail.deleteClientPasswordPrompt')}
+            {t('adminClientDetail.deleteClientMessage')}
           </p>
-          <p style={{ color: 'var(--qlc-gold)', fontSize: 13, fontWeight: 600 }}>{t('modals.cannotBeUndone')}</p>
-          <label className="qlc-label">{t('adminClientDetail.securityPasswordLabel')}</label>
-          <input
-            className="qlc-input"
-            type="password"
-            value={deleteSecurityPassword}
-            onChange={(e) => setDeleteSecurityPassword(e.target.value)}
-            autoFocus
-          />
+          <div className="qlc-delete-target">
+            <span>{t('adminClientDetail.deleteClientTarget')}</span>
+            <strong>
+              {client.firstName} {client.lastName}
+            </strong>
+          </div>
+          <p style={{ color: 'var(--qlc-danger)', fontSize: 13, fontWeight: 600 }}>{t('modals.cannotBeUndone')}</p>
           {deleteError && <div className="qlc-field-error">{deleteError}</div>}
           <div className="qlc-form-actions">
             <button
               className="qlc-btn ghost"
               onClick={() => {
                 setConfirmDeleteClient(false);
-                setDeleteSecurityPassword('');
                 setDeleteError('');
               }}
               disabled={deleting}
             >
               {t('modals.cancel')}
             </button>
-            <button className="qlc-btn danger" onClick={deleteClientAccount} disabled={deleting || !deleteSecurityPassword}>
+            <button className="qlc-btn danger qlc-btn-destructive" onClick={deleteClientAccount} disabled={deleting}>
               {deleting ? t('modals.processing') : t('adminClientDetail.deleteClient')}
             </button>
           </div>

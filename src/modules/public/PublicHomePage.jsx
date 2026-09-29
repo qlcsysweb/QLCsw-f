@@ -6,6 +6,7 @@ import { resolveViewId, HOME_ID } from './useSectionNav';
 import { getCookie, setCookie } from '../../utils/cookies';
 import DailyLanguagePrompt from '../../i18n/DailyLanguagePrompt';
 import AntiScamModal from '../../components/AntiScamModal';
+import BitgetTransferModal from '../../components/BitgetTransferModal';
 import PublicNav from './components/PublicNav';
 import Hero from './components/Hero';
 import ModeloSection from './components/ModeloSection';
@@ -47,6 +48,7 @@ export default function PublicHomePage() {
   const [showScamModal, setShowScamModal] = useState(
     () => getCookie(LANGUAGE_PROMPT_COOKIE) === todayString()
   );
+  const [showBitgetModal, setShowBitgetModal] = useState(false);
 
   const shownId = resolveViewId(location.pathname, location.hash);
   const stageRef = useRef(null);
@@ -112,7 +114,18 @@ export default function PublicHomePage() {
   return (
     <div className="qlc-public qlc-public-app">
       {showLanguagePrompt && <DailyLanguagePrompt onDone={handleLanguagePromptDone} />}
-      {showScamModal && <AntiScamModal onClose={() => setShowScamModal(false)} />}
+      {/* Secuencia de ingreso (una vez por visita, no al cambiar de sección):
+          idioma (1 vez al día) → aviso antiestafa → transferencia interna
+          Bitget → página. */}
+      {showScamModal && (
+        <AntiScamModal
+          onClose={() => {
+            setShowScamModal(false);
+            setShowBitgetModal(true);
+          }}
+        />
+      )}
+      {showBitgetModal && <BitgetTransferModal onClose={() => setShowBitgetModal(false)} />}
       <PublicNav activeId={shownId} />
       <main className="qlc-stage" ref={stageRef}>
         <div

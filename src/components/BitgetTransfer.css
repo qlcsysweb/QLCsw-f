@@ -1,0 +1,376 @@
+/* TRANSFERENCIA INTERNA BITGET — bloques compartidos por la sección de la
+   subcuenta (BitgetTransferSection) y el modal informativo de ingreso
+   (BitgetTransferModal). Verde/turquesa = transferencia, azul = información. */
+:root {
+  --qlc-bt-teal: #2fd6b5;
+  --qlc-bt-teal-bg: rgba(47, 214, 181, 0.07);
+  --qlc-bt-teal-border: rgba(47, 214, 181, 0.32);
+}
+
+.qlc-bt-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+.qlc-bt-icon {
+  flex: none;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  color: var(--qlc-bt-teal);
+  background: var(--qlc-bt-teal-bg);
+  border: 1px solid var(--qlc-bt-teal-border);
+}
+.qlc-bt-head-text {
+  flex: 1;
+  min-width: 0;
+}
+.qlc-bt-head-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+.qlc-bt-head-row h2,
+.qlc-bt-head-row h3 {
+  margin: 0;
+}
+.qlc-bt-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--qlc-bt-teal);
+  background: var(--qlc-bt-teal-bg);
+  border: 1px solid var(--qlc-bt-teal-border);
+}
+.qlc-bt-sub {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--qlc-muted);
+}
+
+/* Pasos */
+.qlc-bt-steps {
+  list-style: none;
+  margin: 18px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+.qlc-bt-step {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.qlc-bt-step-num {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: #04121b;
+  background: linear-gradient(135deg, var(--qlc-bt-teal), #14a58a);
+}
+.qlc-bt-step strong {
+  display: block;
+  font-size: 14px;
+}
+.qlc-bt-step p {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--qlc-muted);
+}
+
+/* Datos de transferencia */
+.qlc-bt-data {
+  margin-top: 18px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--qlc-line);
+  background: rgba(255, 255, 255, 0.025);
+}
+.qlc-bt-data-title {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--qlc-muted);
+  margin-bottom: 10px;
+}
+.qlc-bt-data dl {
+  margin: 0;
+  display: grid;
+  gap: 6px;
+}
+.qlc-bt-data dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+}
+.qlc-bt-data dt {
+  color: var(--qlc-muted);
+}
+.qlc-bt-data dd {
+  margin: 0;
+  font-weight: 600;
+  text-align: right;
+}
+.qlc-bt-uid {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--qlc-line);
+}
+.qlc-bt-uid-label {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--qlc-muted);
+  margin-bottom: 6px;
+}
+.qlc-bt-uid-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.qlc-bt-uid-value {
+  flex: 1 1 160px;
+  min-width: 0;
+  font-size: clamp(18px, 2.2vw, 22px);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--qlc-text);
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+.qlc-bt-uid-pending {
+  font-size: 13px;
+  color: var(--qlc-warn);
+}
+.qlc-bt-copy {
+  flex: none;
+}
+
+/* Ventajas (verde/turquesa) */
+.qlc-bt-adv {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--qlc-bt-teal-border);
+  background: var(--qlc-bt-teal-bg);
+}
+.qlc-bt-adv-title {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--qlc-bt-teal);
+}
+.qlc-bt-adv ul {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  font-size: 13px;
+  color: #c9d5de;
+  display: grid;
+  gap: 3px;
+}
+
+/* Confirmación (azul) */
+.qlc-bt-confirm {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--qlc-ok-border);
+  background: rgba(0, 168, 255, 0.07);
+}
+.qlc-bt-confirm-title {
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--qlc-blue2);
+}
+.qlc-bt-confirm p {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: #c9d5de;
+}
+
+/* Zona de evidencia */
+.qlc-bt-drop {
+  margin-top: 6px;
+  border: 1.5px dashed rgba(91, 212, 255, 0.35);
+  border-radius: 14px;
+  padding: 18px 14px;
+  text-align: center;
+  background: rgba(0, 168, 255, 0.04);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.qlc-bt-drop.is-over {
+  border-color: var(--qlc-blue2);
+  background: rgba(0, 168, 255, 0.1);
+}
+.qlc-bt-drop p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--qlc-muted);
+}
+.qlc-bt-drop .qlc-btn {
+  margin-top: 8px;
+}
+.qlc-bt-drop-hint {
+  margin-top: 8px !important;
+  font-size: 11px !important;
+  color: var(--qlc-muted2) !important;
+}
+.qlc-bt-files {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.qlc-bt-file {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  border-radius: 10px;
+  border: 1px solid var(--qlc-line);
+  background: rgba(255, 255, 255, 0.02);
+  font-size: 12px;
+  min-width: 0;
+}
+.qlc-bt-file-thumb {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 6px;
+  object-fit: cover;
+  border: 1px solid var(--qlc-line);
+}
+.qlc-bt-file-icon {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--qlc-blue2);
+  border: 1px solid var(--qlc-ok-border);
+}
+.qlc-bt-file-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.qlc-bt-file-name::before {
+  content: '✓ ';
+  color: var(--qlc-bt-teal);
+}
+.qlc-bt-file-size {
+  flex: none;
+  color: var(--qlc-muted2);
+}
+.qlc-bt-file-remove {
+  flex: none;
+  background: none;
+  border: 1px solid var(--qlc-line);
+  color: var(--qlc-muted);
+  border-radius: 8px;
+  padding: 2px 8px;
+  font-size: 11px;
+  cursor: pointer;
+}
+.qlc-bt-file-remove:hover {
+  color: var(--qlc-danger);
+  border-color: var(--qlc-danger-border);
+}
+.qlc-bt-evidence-links {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+}
+
+/* ---------- MODAL INFORMATIVO ---------- */
+.qlc-bt-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(2, 5, 9, 0.78);
+  backdrop-filter: blur(6px);
+  overscroll-behavior: contain;
+}
+.qlc-bt-modal {
+  width: min(560px, 100%);
+  max-height: calc(100vh - 32px);
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 24px;
+  border-radius: 22px;
+  border: 1px solid rgba(91, 212, 255, 0.22);
+  background: radial-gradient(circle at 85% 0%, rgba(0, 168, 255, 0.12), transparent 45%),
+    linear-gradient(180deg, #0b1620, #070b10);
+  box-shadow: 0 30px 100px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(47, 214, 181, 0.05);
+  color: var(--qlc-text);
+}
+.qlc-bt-modal h2 {
+  font-size: 22px;
+  letter-spacing: -0.01em;
+}
+.qlc-bt-modal-actions {
+  margin-top: 20px;
+}
+.qlc-bt-modal-actions .qlc-btn {
+  width: 100%;
+  min-height: 44px;
+  font-size: 14px;
+}
+@media (max-height: 760px) {
+  .qlc-bt-modal {
+    padding: 18px 20px;
+  }
+  .qlc-bt-steps {
+    margin-top: 12px;
+    gap: 8px;
+  }
+  .qlc-bt-data,
+  .qlc-bt-adv,
+  .qlc-bt-confirm {
+    margin-top: 10px;
+    padding: 10px 14px;
+  }
+  .qlc-bt-modal-actions {
+    margin-top: 14px;
+  }
+}
+@media (max-width: 520px) {
+  .qlc-bt-modal {
+    padding: 18px 16px;
+    border-radius: 18px;
+  }
+  .qlc-bt-modal h2 {
+    font-size: 19px;
+  }
+  .qlc-bt-copy {
+    width: 100%;
+  }
+}

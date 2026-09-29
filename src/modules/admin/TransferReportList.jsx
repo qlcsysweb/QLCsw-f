@@ -81,10 +81,12 @@ export default function TransferReportList({ reports, receiveUid, showClient = f
                     </dd>
                   </>
                 )}
-                {receiveUid && r.bitgetOrderNumber && (
+                {/* UID que el cliente tenía a la vista al reportar (guardado en
+                    el reporte); los reportes anteriores muestran el vigente. */}
+                {(r.receiveUid || receiveUid) && r.bitgetOrderNumber && (
                   <>
-                    <dt>{t('adminPayments.receiveUid')}</dt>
-                    <dd><code>{receiveUid}</code></dd>
+                    <dt>{t('adminPayments.receiveUidUsed')}</dt>
+                    <dd><code>{r.receiveUid || receiveUid}</code></dd>
                   </>
                 )}
                 {r.bitgetOrderNumber ? (
@@ -98,6 +100,29 @@ export default function TransferReportList({ reports, receiveUid, showClient = f
                     </dd>
                     <dt>{t('adminPayments.transactionAt')}</dt>
                     <dd>{r.transactionAt ? formatCdmxDateTime(r.transactionAt) : '—'}</dd>
+                    <dt>{t('adminPayments.reportedAt')}</dt>
+                    <dd>{formatCdmxDateTime(r.reportedAt)}</dd>
+                    <dt>{t('adminPayments.evidence')}</dt>
+                    <dd>
+                      {r.evidenceFiles?.length ? (
+                        <ul className="qlc-evidence-list">
+                          {r.evidenceFiles.map((f) => (
+                            <li key={f.id}>
+                              <span className="qlc-evidence-name" title={f.fileName}>{f.fileName}</span>
+                              <button
+                                type="button"
+                                className="qlc-btn ghost qlc-copy-btn"
+                                onClick={() => setViewingProof({ url: `/admin/payment-reports/${r.id}/files/${f.id}`, fileName: f.fileName })}
+                              >
+                                {t('adminPayments.viewEvidence')}
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        '—'
+                      )}
+                    </dd>
                   </>
                 ) : (
                   <>
