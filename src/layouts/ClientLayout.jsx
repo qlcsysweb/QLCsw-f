@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth, BITGET_MODAL_FLAG } from '../context/AuthContext';
+import BitgetTransferModal from '../components/BitgetTransferModal';
 import api from '../services/api';
 import QlcLogo from '../components/QlcLogo';
 import { useLanguage } from '../i18n/LanguageContext';
@@ -14,6 +15,22 @@ export default function ClientLayout() {
   const navigate = useNavigate();
   const [unread, setUnread] = useState(0);
   const [unreadMessages, setUnreadMessages] = useState(0);
+  // Modal "Transferencia interna Bitget": solo justo después de iniciar sesión.
+  const [showBitgetModal, setShowBitgetModal] = useState(() => {
+    try {
+      return sessionStorage.getItem(BITGET_MODAL_FLAG) === '1';
+    } catch {
+      return false;
+    }
+  });
+  const closeBitgetModal = () => {
+    try {
+      sessionStorage.removeItem(BITGET_MODAL_FLAG);
+    } catch {
+      // sin sessionStorage no hay nada que limpiar
+    }
+    setShowBitgetModal(false);
+  };
 
   // CORRECCIÓN 15 (bloque de 20) — Notificaciones va primero en el menú,
   // antes de cualquier otra opción funcional (se renderiza aparte, ver
@@ -96,6 +113,7 @@ export default function ClientLayout() {
       <main className="qlc-admin-content">
         <Outlet />
       </main>
+      {showBitgetModal && <BitgetTransferModal onClose={closeBitgetModal} />}
     </div>
   );
 }
