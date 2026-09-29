@@ -1078,6 +1078,16 @@ const es = {
     markAllRead: 'Marcar todas como leídas',
     none: 'Sin notificaciones.',
     newBadge: 'Nuevo',
+    selectAll: 'Seleccionar todo',
+    deselectAll: 'Quitar selección',
+    selectOne: 'Seleccionar: {title}',
+    selectedCount: '{count} seleccionada(s)',
+    deleteSelected: 'Eliminar seleccionadas',
+    deleteOne: 'Eliminar notificación',
+    deleteTitle: 'Eliminar notificaciones',
+    deleteConfirmOne: '¿Eliminar esta notificación? Esta acción no se puede deshacer.',
+    deleteConfirmMany: '¿Eliminar las {count} notificaciones seleccionadas? Esta acción no se puede deshacer.',
+    deleteConfirmBtn: 'Eliminar',
   },
 
   // Plantillas bilingües para notificaciones generadas por el sistema
@@ -2814,6 +2824,16 @@ const en = {
     markAllRead: 'Mark all as read',
     none: 'No notifications.',
     newBadge: 'New',
+    selectAll: 'Select all',
+    deselectAll: 'Clear selection',
+    selectOne: 'Select: {title}',
+    selectedCount: '{count} selected',
+    deleteSelected: 'Delete selected',
+    deleteOne: 'Delete notification',
+    deleteTitle: 'Delete notifications',
+    deleteConfirmOne: 'Delete this notification? This action cannot be undone.',
+    deleteConfirmMany: 'Delete the {count} selected notifications? This action cannot be undone.',
+    deleteConfirmBtn: 'Delete',
   },
 
   notificationTemplates: {

@@ -78,6 +78,7 @@ const KNOWN_MESSAGES = {
   'Archivo de evidencia no encontrado': 'Evidence file not found',
   'La frase de confirmación no coincide con ninguna de las declaraciones indicadas.': 'The confirmation phrase does not match either of the authorized declarations.',
   'Ya confirmaste tu capital operativo para esta subcuenta.': 'You already confirmed your operating capital for this subaccount.',
+  'Selecciona al menos una notificación.': 'Select at least one notification.',
   'Escribe la frase de confirmación.': 'Type the confirmation phrase.',
   'Solo se puede corregir un reporte rechazado.': 'Only a rejected report can be corrected.',
   'Formato de archivo no permitido. Solo JPG, PNG, WEBP o PDF.': 'File format not allowed. Only JPG, PNG, WEBP or PDF.',
