@@ -55,9 +55,11 @@ export default function ClientLayout() {
   // las páginas del cliente, porque vive en el layout) se actualiza solo.
   usePolling(loadUnread, 8000);
 
+  // Al cerrar sesión se vuelve al inicio de la página pública (admin y
+  // cliente). Se navega primero para que la ruta protegida no redirija al login.
   const handleLogout = async () => {
+    navigate('/', { replace: true });
     await logout();
-    navigate('/login', { replace: true });
   };
 
   return (

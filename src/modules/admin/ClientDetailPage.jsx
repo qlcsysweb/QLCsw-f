@@ -76,7 +76,6 @@ export default function ClientDetailPage() {
   const [deleteError, setDeleteError] = useState('');
   const [deleting, setDeleting] = useState(false);
   const [creatingSubaccount, setCreatingSubaccount] = useState(false);
-  const [newIdentifier, setNewIdentifier] = useState('');
   // "Desconectadas" es el estado de la conexión API (CONECTADA/no) — un eje
   // totalmente distinto de ACTIVA/INACTIVA (estado de la subcuenta misma).
   const [showDisconnectedSubaccounts, setShowDisconnectedSubaccounts] = useState(false);
@@ -85,7 +84,6 @@ export default function ClientDetailPage() {
   const [activateTarget, setActivateTarget] = useState(null);
   const [pendingRequests, setPendingRequests] = useState([]);
   const [approveCreateTarget, setApproveCreateTarget] = useState(null);
-  const [approveIdentifier, setApproveIdentifier] = useState('');
   const [approveCapital, setApproveCapital] = useState('');
   const [approveDeactivateTarget, setApproveDeactivateTarget] = useState(null);
   const [rejectTarget, setRejectTarget] = useState(null);
@@ -118,7 +116,7 @@ export default function ClientDetailPage() {
   // Actualización sin refresh manual: si el cliente solicita una subcuenta,
   // reporta un pago, sube algo, etc., esta ficha lo refleja sola. Seguro
   // porque `client` no alimenta ningún formulario en edición
-  // (newIdentifier, approveCapital, etc. son estado aparte que
+  // (approveCapital, etc. son estado aparte que
   // esto nunca sobreescribe).
   usePolling(load, 8000);
 
@@ -199,7 +197,6 @@ export default function ClientDetailPage() {
 
   const openApproveCreate = (request) => {
     setApproveCreateTarget(request);
-    setApproveIdentifier('');
     setApproveCapital('');
     setRequestActionError('');
   };
@@ -208,7 +205,6 @@ export default function ClientDetailPage() {
     setRequestActionError('');
     try {
       await api.post(`/admin/subaccount-requests/${approveCreateTarget.id}/approve-create`, {
-        ...(approveIdentifier ? { identifier: approveIdentifier } : {}),
         ...(approveCapital ? { requiredCapital: Number(approveCapital) } : {}),
       });
       setApproveCreateTarget(null);
@@ -267,8 +263,7 @@ export default function ClientDetailPage() {
     setCreatingSubaccount(true);
     setError('');
     try {
-      await api.post(`/admin/clients/${id}/api-subaccounts`, newIdentifier ? { identifier: newIdentifier } : {});
-      setNewIdentifier('');
+      await api.post(`/admin/clients/${id}/api-subaccounts`, {});
       flash(t('adminClientDetail.subaccountCreated'));
       load();
     } catch (err) {
@@ -418,13 +413,8 @@ export default function ClientDetailPage() {
         badge={
           canAddSubaccount && (
             <span style={{ display: 'flex', gap: 8 }} onClick={(e) => e.stopPropagation()}>
-              <input
-                className="qlc-input"
-                style={{ width: 160 }}
-                placeholder={t('adminClientDetail.identifierPlaceholder')}
-                value={newIdentifier}
-                onChange={(e) => setNewIdentifier(e.target.value)}
-              />
+              {/* El identificador interno ya no se pide aquí: se captura
+                  (obligatorio) en la sección API Key de cada subcuenta. */}
               <button className="qlc-btn primary" disabled={creatingSubaccount} onClick={createSubaccount}>
                 {creatingSubaccount ? t('common.saving') : t('adminClientDetail.newSubaccount')}
               </button>
@@ -716,13 +706,6 @@ export default function ClientDetailPage() {
           width={440}
         >
           <p style={{ color: 'var(--qlc-muted)', fontSize: 13, marginTop: 0 }}>{t('adminClientDetail.approveCreateHint')}</p>
-          <label className="qlc-label">{t('adminClientDetail.identifierPlaceholder')}</label>
-          <input
-            className="qlc-input"
-            value={approveIdentifier}
-            onChange={(e) => setApproveIdentifier(e.target.value)}
-            placeholder="PCB-1-A-1"
-          />
           <label className="qlc-label">{t('adminClientDetail.revealCapitalLabel')}</label>
           <input
             className="qlc-input"

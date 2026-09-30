@@ -607,6 +607,15 @@ const es = {
     label: 'Fecha y hora actual en Ciudad de México y en UTC',
   },
 
+  adminIdentifierSearch: {
+    label: 'Buscar subcuenta por identificador interno',
+    placeholder: 'Escribe el identificador, ej. PCB-1-A-1',
+    none: 'Ninguna subcuenta tiene ese identificador.',
+    subaccount: 'Subcuenta',
+    inactive: 'inactiva',
+    openClient: 'Ver cliente',
+  },
+
   adminSupport: {
     downloadPdf: 'Ver / descargar PDF',
     closedArchiveTitle: 'Sesiones de chat cerradas',
@@ -764,6 +773,8 @@ const es = {
   },
 
   adminClientDetail: {
+    internalIdentifier: 'Identificador interno (ej. PCB-1-A-1)',
+    internalIdentifierHint: 'Obligatorio. Se guarda junto con la API Key de esta subcuenta y puedes cambiarlo cuando quieras. Es un control interno: el cliente no lo ve.',
     kicker: 'FICHA DE CLIENTE',
     backToClients: '← Volver a clientes',
     deactivate: 'Desactivar',
@@ -854,7 +865,7 @@ const es = {
     approveAction: 'Aprobar',
     approveDeactivateTitle: '¿Aprobar la desactivación de esta subcuenta?',
     approveCreateTitle: 'Aprobar nueva subcuenta',
-    approveCreateHint: 'Puedes asignar el identificador y el capital operativo requerido ahora, o dejarlos en blanco y configurarlos después desde la ficha de la subcuenta.',
+    approveCreateHint: 'Puedes asignar ahora el capital operativo requerido o dejarlo en blanco. El identificador interno se captura (obligatorio) en la sección API Key de la subcuenta.',
     rejectRequestTitle: 'Rechazar solicitud',
     reviewNoteLabelOptional: 'Motivo (opcional, se le mostrará al cliente)',
     requestApproved: 'Solicitud aprobada correctamente.',
@@ -1592,6 +1603,7 @@ const es = {
   },
 
   clientSubaccounts: {
+    numberedLabel: 'Subcuenta #{n}',
     kicker: 'SUBCUENTAS / API',
     title: 'Tus subcuentas',
     intro: 'Cada subcuenta/API tiene su propio modelo, proceso de activación, pagos y estados de cuenta.',
@@ -2466,6 +2478,15 @@ const en = {
     label: 'Current date and time in Mexico City and UTC',
   },
 
+  adminIdentifierSearch: {
+    label: 'Search subaccount by internal identifier',
+    placeholder: 'Type the identifier, e.g. PCB-1-A-1',
+    none: 'No subaccount has that identifier.',
+    subaccount: 'Subaccount',
+    inactive: 'inactive',
+    openClient: 'View client',
+  },
+
   adminSupport: {
     downloadPdf: 'View / download PDF',
     closedArchiveTitle: 'Closed chat sessions',
@@ -2623,6 +2644,8 @@ const en = {
   },
 
   adminClientDetail: {
+    internalIdentifier: 'Internal identifier (e.g. PCB-1-A-1)',
+    internalIdentifierHint: 'Required. It is saved together with this subaccount\'s API Key and you can change it at any time. It is an internal control: the client does not see it.',
     kicker: 'CLIENT RECORD',
     backToClients: '← Back to clients',
     deactivate: 'Deactivate',
@@ -2713,7 +2736,7 @@ const en = {
     approveAction: 'Approve',
     approveDeactivateTitle: 'Approve the deactivation of this subaccount?',
     approveCreateTitle: 'Approve new subaccount',
-    approveCreateHint: 'You can assign the identifier and required operating capital now, or leave them blank and set them up later from the subaccount record.',
+    approveCreateHint: 'You can assign the required operating capital now or leave it blank. The internal identifier is entered (required) in the subaccount\'s API Key section.',
     rejectRequestTitle: 'Reject request',
     reviewNoteLabelOptional: 'Reason (optional, shown to the client)',
     requestApproved: 'Request approved successfully.',
@@ -3446,6 +3469,7 @@ const en = {
   },
 
   clientSubaccounts: {
+    numberedLabel: 'Subaccount #{n}',
     kicker: 'SUBACCOUNTS / API',
     title: 'Your subaccounts',
     intro: 'Each subaccount/API has its own model, activation process, payments and statements.',

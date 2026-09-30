@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
 import { useLanguage } from '../../i18n/LanguageContext';
+import SubaccountIdentifierSearch from '../../components/SubaccountIdentifierSearch';
 
 /*
  * GESTIÓN DINÁMICA DE SUBCUENTAS §8 — herramienta de solo lectura para que
@@ -30,6 +31,8 @@ export default function SubaccountAuditPage() {
       <div className="qlc-kicker">{t('adminSubaccountAudit.kicker')}</div>
       <h1 style={{ marginTop: 0 }}>{t('adminSubaccountAudit.title')}</h1>
       <p style={{ color: 'var(--qlc-muted)', fontSize: 13, maxWidth: 720 }}>{t('adminSubaccountAudit.intro')}</p>
+
+      <SubaccountIdentifierSearch />
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
         <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, cursor: 'pointer' }}>

@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { SUPPORT_CASE_STATUS, CHAT_SESSION_STATUS, APPOINTMENT_STATUS, statusOf } from '../../utils/statusLabels';
 import { formatDateOnly, formatCdmxDateTime, appointmentUtcInstant } from '../../utils/cdmxTime';
 import { useLanguage } from '../../i18n/LanguageContext';
+import { clientSubaccountLabel } from '../../utils/subaccountLabel';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 import usePolling from '../../hooks/usePolling';
 import CaseMessagesModal, { CaseMessagesButton } from '../../components/CaseMessagesModal';
@@ -429,7 +430,7 @@ export default function SupportPage() {
                 <option value="">{t('clientAppointments.selectAccount')}</option>
                 {subaccounts.map((s) => (
                   <option key={s.id} value={s.id}>
-                    {s.isPrincipal ? t('clientSubaccounts.principalLabel') : s.identifier || t('clientSubaccounts.unassignedIdentifier')}
+                    {clientSubaccountLabel(s, t)}
                   </option>
                 ))}
               </select>
@@ -521,7 +522,7 @@ export default function SupportPage() {
                       )}
                       {a.apiSubaccount && (
                         <span style={{ color: 'var(--qlc-muted2)' }}>
-                          {' '}· {a.apiSubaccount.isPrincipal ? t('clientSubaccounts.principalLabel') : a.apiSubaccount.identifier}
+                          {' '}· {clientSubaccountLabel(a.apiSubaccount, t)}
                         </span>
                       )}
                     </span>

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import api from '../../services/api';
 import { formatCdmxDate, formatDateOnly } from '../../utils/cdmxTime';
 import { useLanguage } from '../../i18n/LanguageContext';
+import { clientSubaccountLabel } from '../../utils/subaccountLabel';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 import usePolling from '../../hooks/usePolling';
 import StatementStatus from '../../components/StatementStatus';
@@ -117,7 +118,7 @@ export default function DashboardPage() {
           <StatementStatus status={statement.status} expiresAt={statement.expiresAt} onExpire={load} serverOffsetMs={serverOffsetMs} large />
           <span className="qlc-stat-hint">
             {t(`statementStatus.${STATEMENT_HINT_KEYS[statement.status] || 'notGeneratedHint'}`)}
-            {statement.identifier && statementNeedsPayment ? ` · ${statement.identifier}` : ''}
+            {statementNeedsPayment && (statement.isPrincipal || statement.slotIndex != null) ? ` · ${clientSubaccountLabel(statement, t)}` : ''}
           </span>
           {statement.pendingCount > 1 && (
             <span className="qlc-stat-hint">{t('statementStatus.pendingCount').replace('{count}', statement.pendingCount)}</span>

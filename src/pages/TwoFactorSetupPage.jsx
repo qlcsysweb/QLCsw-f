@@ -109,7 +109,15 @@ export default function TwoFactorSetupPage() {
         )}
 
         <p className="qlc-login-sub" style={{ marginTop: 18, marginBottom: 0 }}>
-          <button type="button" className="qlc-btn ghost" onClick={logout}>
+          <button
+            type="button"
+            className="qlc-btn ghost"
+            onClick={async () => {
+              // Igual que en los paneles: al cerrar sesión, al inicio público.
+              navigate('/', { replace: true });
+              await logout();
+            }}
+          >
             {t('twoFactorSetup.logout')}
           </button>
         </p>

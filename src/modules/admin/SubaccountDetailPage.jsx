@@ -114,6 +114,9 @@ export default function AdminSubaccountDetailPage() {
       if (found) {
         setApiForm((f) => ({
           ...f,
+          // Identificador interno: se precarga con el vigente, salvo que el
+          // admin lo esté editando (el sondeo no pisa lo que escribe).
+          identifier: f.identifierEdited ? f.identifier : found.identifier || '',
           status: found.status,
           requiredCapital: found.requiredCapital ?? '',
           ipRequired: Boolean(found.ipRequired),
@@ -201,7 +204,9 @@ export default function AdminSubaccountDetailPage() {
     e.preventDefault();
     const payload = { status: apiForm.status, ipRequired: apiForm.ipRequired };
     const summary = [];
-    if (apiForm.identifier) { payload.identifier = apiForm.identifier; summary.push([t('adminClientDetail.identifier'), apiForm.identifier]); }
+    // Obligatorio: siempre se envía (el backend también lo exige).
+    payload.identifier = apiForm.identifier.trim();
+    summary.push([t('adminClientDetail.internalIdentifier'), payload.identifier]);
     if (apiForm.exchangeName) { payload.exchangeName = apiForm.exchangeName; summary.push(['Exchange', apiForm.exchangeName]); }
     if (apiForm.apiKey) { payload.apiKey = apiForm.apiKey; summary.push(['API Key', t('adminClientDetail.willChangeValue')]); }
     if (apiForm.apiSecret) { payload.apiSecret = apiForm.apiSecret; summary.push(['Secret Key', t('adminClientDetail.willChangeValue')]); }
@@ -219,7 +224,7 @@ export default function AdminSubaccountDetailPage() {
     if (!pendingApiSave) return;
     try {
       await api.patch(`/admin/api-subaccounts/${id}`, pendingApiSave.payload);
-      setApiForm((f) => ({ ...f, identifier: '', apiKey: '', apiSecret: '', apiPassphrase: '', connectionReason: '' }));
+      setApiForm((f) => ({ ...f, identifierEdited: false, apiKey: '', apiSecret: '', apiPassphrase: '', connectionReason: '' }));
       setPendingApiSave(null);
       flash(t('adminClientDetail.apiConnectionUpdated'));
       load();
@@ -337,8 +342,22 @@ export default function AdminSubaccountDetailPage() {
             </div>
           )}
           <form onSubmit={requestSaveApi}>
-            <label className="qlc-label">{t('adminClientDetail.identifier')}</label>
-            <input className="qlc-input" value={apiForm.identifier} onChange={(e) => setApiForm((f) => ({ ...f, identifier: e.target.value }))} placeholder={subaccount.identifier || 'PCB-1-A-1'} />
+            {/* IDENTIFICADOR INTERNO — obligatorio, editable y guardado junto con
+                la API Key. Control interno de QLC: el cliente no lo ve. */}
+            <label className="qlc-label" htmlFor="internal-identifier">
+              {t('adminClientDetail.internalIdentifier')} *
+            </label>
+            <input
+              id="internal-identifier"
+              className="qlc-input"
+              value={apiForm.identifier}
+              onChange={(e) => setApiForm((f) => ({ ...f, identifier: e.target.value, identifierEdited: true }))}
+              placeholder="PCB-1-A-1"
+              maxLength={60}
+              required
+              aria-required="true"
+            />
+            <p style={{ fontSize: 11, color: 'var(--qlc-muted)', margin: '4px 0 0' }}>{t('adminClientDetail.internalIdentifierHint')}</p>
             <label className="qlc-label">{t('adminClientDetail.requiredCapital')}</label>
             <input className="qlc-input" type="number" step="0.01" value={apiForm.requiredCapital} onChange={(e) => setApiForm((f) => ({ ...f, requiredCapital: e.target.value }))} placeholder="100" min="0" />
             <p style={{ fontSize: 11, color: 'var(--qlc-muted)', margin: '4px 0 0' }}>{t('adminClientDetail.requiredCapitalHint')}</p>

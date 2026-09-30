@@ -6,6 +6,7 @@ import { ACCOUNT_STATUS, statusOf } from '../../utils/statusLabels';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 import usePolling from '../../hooks/usePolling';
+import SubaccountIdentifierSearch from '../../components/SubaccountIdentifierSearch';
 
 // NOMENCLATURA ÚNICA §7/§8 — "username" es la nomenclatura única que el
 // ADMIN asigna al registrar manualmente a un cliente: obligatoria, máximo
@@ -309,6 +310,8 @@ export default function ClientsListPage() {
           {t('adminClientsList.newClient')}
         </button>
       </div>
+
+      <SubaccountIdentifierSearch />
 
       {driveDeletionResult && (
         <div

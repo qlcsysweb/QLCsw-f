@@ -5,6 +5,7 @@ import Modal from '../../components/Modal';
 import { API_CONNECTION_STATUS, statusOf } from '../../utils/statusLabels';
 import { formatCdmxDate, formatDateOnly } from '../../utils/cdmxTime';
 import { useLanguage } from '../../i18n/LanguageContext';
+import { clientSubaccountLabel } from '../../utils/subaccountLabel';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 import { getLocalizedModel } from '../../i18n/bilingualContent';
 import ParticipationModelSummary, { ParticipationModelDetails } from '../../components/ParticipationModelSummary';
@@ -202,7 +203,7 @@ export default function SubaccountDetailPage() {
       <div className="qlc-page-header" style={{ marginTop: 10 }}>
         <div>
           <div className="qlc-kicker">{t('clientSubaccountDetail.kicker')}</div>
-          <h1 style={{ margin: 0 }}>{subaccount.identifier || t('clientSubaccounts.unassignedIdentifier')}</h1>
+          <h1 style={{ margin: 0 }}>{clientSubaccountLabel(subaccount, t)}</h1>
         </div>
         <span className={`qlc-badge ${status.className}`}>{status.text}</span>
       </div>

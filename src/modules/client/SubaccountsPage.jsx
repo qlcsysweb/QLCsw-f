@@ -4,6 +4,7 @@ import api from '../../services/api';
 import Modal from '../../components/Modal';
 import { API_CONNECTION_STATUS, statusOf } from '../../utils/statusLabels';
 import { useLanguage } from '../../i18n/LanguageContext';
+import { clientSubaccountLabel } from '../../utils/subaccountLabel';
 import { formatParticipationSplit } from '../../components/ParticipationModelSummary';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 import usePolling from '../../hooks/usePolling';
@@ -136,7 +137,7 @@ export default function SubaccountsPage() {
                     <span className={`qlc-badge ${status.className}`}>{status.text}</span>
                   </div>
                   <p style={{ color: 'var(--qlc-muted)', fontSize: 12, marginTop: 4, marginBottom: 4 }}>
-                    {t('clientSubaccounts.operatorUser')}: {s.identifier || t('clientSubaccounts.unassignedIdentifier')}
+                    {clientSubaccountLabel(s, t)}
                   </p>
                   <p style={{ color: 'var(--qlc-muted)', fontSize: 13, marginBottom: 4 }}>
                     {t('clientSubaccounts.model')}: {formatParticipationSplit(s.clientModel?.model, t)}
@@ -183,7 +184,7 @@ export default function SubaccountsPage() {
                 <li key={r.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, paddingBottom: 8 }}>
                   <span style={{ fontSize: 13 }}>
                     {r.type === 'CREATE' ? t('clientSubaccounts.requestTypeCreate') : t('clientSubaccounts.requestTypeDeactivate')}
-                    {r.apiSubaccount && ` — ${r.apiSubaccount.identifier || `#${r.apiSubaccount.slotIndex}`}`}
+                    {r.apiSubaccount && ` — ${clientSubaccountLabel(r.apiSubaccount, t)}`}
                     <div style={{ fontSize: 11, color: 'var(--qlc-muted2)' }}>{new Date(r.requestedAt).toLocaleString()}</div>
                     {r.reviewNote && <div style={{ fontSize: 11, color: 'var(--qlc-muted2)' }}>{r.reviewNote}</div>}
                   </span>
@@ -232,7 +233,7 @@ export default function SubaccountsPage() {
       {deactivateTarget && (
         <Modal
           title={t('clientSubaccounts.requestDeactivation')}
-          subtitle={deactivateTarget.identifier || `#${deactivateTarget.slotIndex}`}
+          subtitle={clientSubaccountLabel(deactivateTarget, t)}
           onClose={() => {
             setDeactivateTarget(null);
             setDeactivateReason('');

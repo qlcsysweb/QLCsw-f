@@ -1647,3 +1647,32 @@ span.qlc-time-mx:not(:only-child) {
   font-size: 13px;
   color: var(--qlc-text);
 }
+
+/* Buscador de subcuenta por identificador interno (admin). */
+.qlc-ident-search {
+  margin-bottom: 18px;
+}
+.qlc-ident-search .qlc-input {
+  max-width: 420px;
+}
+.qlc-ident-search-empty {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--qlc-muted2);
+}
+.qlc-ident-search-results {
+  margin-top: 10px;
+}
+.qlc-ident-search-results li {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--qlc-line);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.qlc-ident-search-results li .qlc-btn {
+  margin-left: auto;
+}
