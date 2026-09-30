@@ -194,6 +194,8 @@ export default function SupportPage() {
   const [openingChat, setOpeningChat] = useState(null);
   // Caso que el cliente quiere borrar de su vista (confirmación).
   const [deletingCase, setDeletingCase] = useState(null);
+  // Cita que el cliente quiere borrar de "Mis citas" (QLC la conserva).
+  const [deletingAppt, setDeletingAppt] = useState(null);
 
   // Formulario de cita — vinculado SIEMPRE a un caso del propio cliente
   // (CASO #XXXX → Solicitar cita). Se abre desde el caso (preseleccionado)
@@ -526,8 +528,24 @@ export default function SupportPage() {
                         </span>
                       )}
                     </span>
-                    <span className={`qlc-badge ${statusOf(appointmentStatusMap, a.status).className}`}>
-                      {statusOf(appointmentStatusMap, a.status).text}
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span className={`qlc-badge ${statusOf(appointmentStatusMap, a.status).className}`}>
+                        {statusOf(appointmentStatusMap, a.status).text}
+                      </span>
+                      {/* Se puede borrar si ya no está pendiente ni por atender. */}
+                      {a.status !== 'PENDING' && !(a.status === 'AUTORIZADA' && !chatWindowOpen) && (
+                        <button
+                          type="button"
+                          className="qlc-btn ghost qlc-case-delete qlc-icon-only"
+                          onClick={() => setDeletingAppt(a)}
+                          title={t('clientAppointments.deleteAppointment')}
+                          aria-label={t('clientAppointments.deleteAppointment')}
+                        >
+                          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                          <path fill="currentColor" d="M9 3h6l1 2h4v2H4V5h4l1-2Zm-3 6h12l-1 12H7L6 9Zm4 2v8h2v-8h-2Zm4 0v8h2v-8h-2Z" />
+                        </svg>
+                        </button>
+                      )}
                     </span>
                   </div>
                   {a.status === 'AUTORIZADA' && (
@@ -547,6 +565,21 @@ export default function SupportPage() {
           </ul>
         )}
       </div>
+
+      {deletingAppt && (
+        <ConfirmModal
+          title={t('clientAppointments.deleteTitle')}
+          message={t('clientAppointments.deleteMessage')
+            .replace('{date}', formatDateOnly(deletingAppt.requestedDate))
+            .replace('{time}', `${deletingAppt.requestedTime} UTC`)}
+          confirmLabel={t('clientSupport.deleteCase')}
+          onClose={() => setDeletingAppt(null)}
+          onConfirm={async () => {
+            await api.delete(`/client/appointments/${deletingAppt.id}`);
+            load();
+          }}
+        />
+      )}
 
       {deletingCase && (
         <ConfirmModal

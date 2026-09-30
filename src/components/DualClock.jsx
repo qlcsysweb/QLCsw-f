@@ -13,7 +13,9 @@ function formatParts(date, timeZone, locale) {
   return { weekday: weekday.replace('.', ''), day, time };
 }
 
-export default function DualClock() {
+// `zones`: qué relojes mostrar ('CDMX', 'UTC'). El admin ve ambos; el
+// cliente, solo UTC.
+export default function DualClock({ zones = ['CDMX', 'UTC'] }) {
   const { t, language } = useLanguage();
   const [now, setNow] = useState(() => new Date());
 
@@ -34,10 +36,10 @@ export default function DualClock() {
   const rows = [
     { label: 'CDMX', ...formatParts(now, 'America/Mexico_City', locale) },
     { label: 'UTC', ...formatParts(now, 'UTC', locale) },
-  ];
+  ].filter((r) => zones.includes(r.label));
 
   return (
-    <div className="qlc-dual-clock" aria-label={t('clock.label')}>
+    <div className="qlc-dual-clock" aria-label={zones.length === 1 ? t('clock.labelUtc') : t('clock.label')}>
       {rows.map((r) => (
         <div key={r.label} className="qlc-dual-clock-row">
           <span className="qlc-dual-clock-zone">{r.label}</span>

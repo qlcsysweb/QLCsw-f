@@ -4,6 +4,7 @@ import { useAuth, BITGET_MODAL_FLAG } from '../context/AuthContext';
 import BitgetTransferModal from '../components/BitgetTransferModal';
 import api from '../services/api';
 import QlcLogo from '../components/QlcLogo';
+import DualClock from '../components/DualClock';
 import { useLanguage } from '../i18n/LanguageContext';
 import LanguageSwitcherCompact from '../i18n/LanguageSwitcherCompact';
 import usePolling from '../hooks/usePolling';
@@ -69,6 +70,8 @@ export default function ClientLayout() {
           <QlcLogo alt="QLC" />
           <span>{t('clientNav.brand')}</span>
         </div>
+        {/* El cliente trabaja en UTC (citas, chat): solo se muestra esa hora. */}
+        <DualClock zones={['UTC']} />
         <nav>
           <NavLink
             to="/client/notifications"

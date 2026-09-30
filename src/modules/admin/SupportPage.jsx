@@ -7,7 +7,7 @@ import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 import usePolling from '../../hooks/usePolling';
 import CaseMessagesModal, { CaseMessagesButton } from '../../components/CaseMessagesModal';
-import { formatCdmxDateTime } from '../../utils/cdmxTime';
+import { formatDateOnly, appointmentMexicoTime } from '../../utils/cdmxTime';
 import DocumentViewerModal from '../../components/DocumentViewerModal';
 import { ChatMessages, ChatFileButton, chatOpensAt, chatOpensLabel } from '../../components/ChatParts';
 
@@ -186,34 +186,42 @@ function ChatPanel({ session, onClose }) {
   );
 }
 
-// ARCHIVO DE SESIONES CERRADAS — cada chat finalizado queda guardado; se
-// busca por N.º de caso y se abre en solo lectura (con sus archivos y PDF).
-function ClosedSessionsArchive({ onOpen }) {
-  const { t } = useLanguage();
+// ARCHIVO DE SOPORTE — todo queda guardado (casos cerrados, su mensajería y
+// los chats de sus citas). Solo se muestra el buscador: al escribir el N.º de
+// caso aparece el caso (con su mensajería) y los chats de sus citas.
+function CaseArchiveSearch({ onOpenChat, onOpenCase }) {
+  const { t, language } = useLanguage();
   const [query, setQuery] = useState('');
-  const [sessions, setSessions] = useState(null);
-  const [searched, setSearched] = useState('');
+  const [result, setResult] = useState(null);
+  const [error, setError] = useState('');
+  const [searching, setSearching] = useState(false);
+  const supportCaseStatusMap = SUPPORT_CASE_STATUS(t);
+  const chatSessionStatusMap = CHAT_SESSION_STATUS(t);
 
-  const search = (caseNumber = '') => {
-    const params = caseNumber ? { caseNumber } : {};
-    api.get('/admin/chat-sessions/closed', { params }).then(({ data }) => {
-      setSessions(data.sessions);
-      setSearched(caseNumber);
-    });
+  const search = async (e) => {
+    e.preventDefault();
+    const caseNumber = query.trim().replace(/^#/, '');
+    if (!caseNumber) return;
+    setSearching(true);
+    setError('');
+    setResult(null);
+    try {
+      const { data } = await api.get('/admin/support-cases/lookup', { params: { caseNumber } });
+      setResult(data);
+    } catch (err) {
+      setError(translateBackendMessage(err.message, language));
+    } finally {
+      setSearching(false);
+    }
   };
-  useEffect(() => search(''), []);
+
+  const c = result?.case;
+  const cStatus = c ? statusOf(supportCaseStatusMap, c.status) : null;
 
   return (
     <div className="qlc-card" style={{ marginBottom: 20 }}>
-      <h3 style={{ marginTop: 0 }}>{t('adminSupport.closedArchiveTitle')}</h3>
-      <p style={{ fontSize: 12, color: 'var(--qlc-muted2)', marginTop: 0 }}>{t('adminSupport.closedArchiveIntro')}</p>
-      <form
-        className="qlc-archive-search"
-        onSubmit={(e) => {
-          e.preventDefault();
-          search(query.trim().replace(/^#/, ''));
-        }}
-      >
+      <h3 style={{ marginTop: 0 }}>{t('adminSupport.archiveTitle')}</h3>
+      <form className="qlc-archive-search" onSubmit={search}>
         <input
           className="qlc-input"
           inputMode="numeric"
@@ -222,48 +230,77 @@ function ClosedSessionsArchive({ onOpen }) {
           placeholder={t('adminSupport.searchByCase')}
           aria-label={t('adminSupport.searchByCase')}
         />
-        <button className="qlc-btn primary">{t('adminSupport.search')}</button>
-        {searched && (
+        <button className="qlc-btn primary" disabled={searching || !query.trim()}>
+          {searching ? t('common.loading') : t('adminSupport.search')}
+        </button>
+        {result && (
           <button
             type="button"
             className="qlc-btn ghost"
             onClick={() => {
               setQuery('');
-              search('');
+              setResult(null);
             }}
           >
             {t('adminSupport.clearSearch')}
           </button>
         )}
       </form>
-      {sessions === null ? (
-        <p style={{ fontSize: 12, color: 'var(--qlc-muted2)' }}>{t('common.loading')}</p>
-      ) : sessions.length === 0 ? (
-        <div className="qlc-empty">{searched ? t('adminSupport.noClosedForCase').replace('{number}', searched) : t('adminSupport.noClosedSessions')}</div>
-      ) : (
-        <ul className="qlc-plain-list">
-          {sessions.map((s) => (
-            <li key={s.id} className="qlc-archive-item">
-              <span>
-                {s.appointment?.supportCase ? (
-                  <strong>
-                    {t('adminSupport.caseNumber')}#{s.appointment.supportCase.caseNumber}
-                  </strong>
-                ) : (
-                  <strong>—</strong>
-                )}{' '}
-                · {s.client?.firstName} {s.client?.lastName}
-                <span style={{ color: 'var(--qlc-muted2)', fontSize: 12 }}>
-                  {' '}· {s.startedAt ? formatCdmxDateTime(s.startedAt) : t('adminSupport.notStarted')} · {s._count?.messages ?? 0}{' '}
-                  {t('adminSupport.messagesCount')}
-                </span>
-              </span>
-              <button className="qlc-btn ghost" onClick={() => onOpen(s)}>
-                {t('adminSupport.openChat')}
-              </button>
-            </li>
-          ))}
-        </ul>
+      {error && <div className="qlc-empty">{error}</div>}
+      {c && (
+        <div className="qlc-archive-result">
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
+            <strong>
+              <span style={{ color: 'var(--qlc-muted2)', fontWeight: 400 }}>
+                {t('adminSupport.caseNumber')}#{c.caseNumber}
+              </span>{' '}
+              {c.subject}
+            </strong>
+            <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              {c.clientHiddenAt && <span className="qlc-badge muted">{t('adminSupport.hiddenByClient')}</span>}
+              <span className={`qlc-badge ${cStatus.className}`}>{cStatus.text}</span>
+            </span>
+          </div>
+          <p style={{ color: 'var(--qlc-muted)', fontSize: 13, margin: '6px 0' }}>{c.message}</p>
+          <div style={{ fontSize: 12, color: 'var(--qlc-muted2)', marginBottom: 8 }}>
+            {c.client?.firstName} {c.client?.lastName}
+          </div>
+          <div className="qlc-case-actions">
+            <CaseMessagesButton hasUnread={c.hasUnread} unreadCount={c.unreadMessages} onClick={() => onOpenCase(c)} />
+          </div>
+
+          <h4 style={{ margin: '14px 0 6px' }}>{t('adminSupport.caseChats')}</h4>
+          {result.chatSessions.length === 0 ? (
+            <div className="qlc-empty">{t('adminSupport.noCaseChats')}</div>
+          ) : (
+            <ul className="qlc-plain-list">
+              {result.chatSessions.map((session) => {
+                const sStatus = statusOf(chatSessionStatusMap, session.status);
+                return (
+                  <li key={session.id} className="qlc-archive-item">
+                    <span>
+                      <span className={`qlc-badge ${sStatus.className}`}>{sStatus.text}</span>{' '}
+                      {session.appointment && (
+                        <span>
+                          {formatDateOnly(session.appointment.requestedDate)} · {session.appointment.requestedTime} UTC (
+                          {appointmentMexicoTime(session.appointment.requestedDate, session.appointment.requestedTime).time}{' '}
+                          {t('adminAppointments.mexicoTime')})
+                        </span>
+                      )}
+                      <span style={{ color: 'var(--qlc-muted2)', fontSize: 12 }}>
+                        {' '}· {session.startedAt ? '' : `${t('adminSupport.notStarted')} · `}
+                        {session._count?.messages ?? 0} {t('adminSupport.messagesCount')}
+                      </span>
+                    </span>
+                    <button className="qlc-btn ghost" onClick={() => onOpenChat(session)}>
+                      {t('adminSupport.openChat')}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
       )}
     </div>
   );
@@ -277,6 +314,8 @@ export default function SupportPage() {
   const [activeChat, setActiveChat] = useState(null);
   // Caso cuya mensajería interna está abierta en el modal.
   const [openCaseId, setOpenCaseId] = useState(null);
+  // Caso abierto desde el buscador (cerrado: ya no está en la lista principal).
+  const [archivedCase, setArchivedCase] = useState(null);
 
   const supportCaseStatusMap = SUPPORT_CASE_STATUS(t);
   const chatSessionStatusMap = CHAT_SESSION_STATUS(t);
@@ -311,14 +350,26 @@ export default function SupportPage() {
   useEffect(() => {
     const caseId = searchParams.get('case');
     if (!caseId || cases.length === 0) return;
-    const target = cases.find((c) => c.id === caseId);
+    const target = cases.find((c) => c.id === caseId && c.status !== 'CLOSED');
     if (target) {
       setOpenCaseId(target.id);
-      searchParams.delete('case');
-      setSearchParams(searchParams, { replace: true });
+    } else {
+      api
+        .get('/admin/support-cases/lookup', { params: { id: caseId } })
+        .then(({ data }) => {
+          setArchivedCase(data.case);
+          setOpenCaseId(data.case.id);
+        })
+        .catch(() => {});
     }
+    searchParams.delete('case');
+    setSearchParams(searchParams, { replace: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cases]);
+
+  // Los casos CERRADOS quedan archivados: se consultan con el buscador.
+  const activeCases = cases.filter((c) => c.status !== 'CLOSED');
+  const openCase = cases.find((c) => c.id === openCaseId) || (archivedCase?.id === openCaseId ? archivedCase : null);
 
   const updateStatus = async (id, status) => {
     await api.patch(`/admin/support-cases/${id}`, { status });
@@ -352,12 +403,18 @@ export default function SupportPage() {
         </div>
       )}
 
-      <ClosedSessionsArchive onOpen={setActiveChat} />
+      <CaseArchiveSearch
+        onOpenChat={setActiveChat}
+        onOpenCase={(c) => {
+          setArchivedCase(c);
+          setOpenCaseId(c.id);
+        }}
+      />
 
-      {cases.length === 0 ? (
+      {activeCases.length === 0 ? (
         <div className="qlc-empty">{t('adminSupport.noCases')}</div>
       ) : (
-        cases.map((c) => {
+        activeCases.map((c) => {
           const cStatus = statusOf(supportCaseStatusMap, c.status);
           return (
             <div className="qlc-card" key={c.id} style={{ marginBottom: 12 }}>
@@ -395,12 +452,13 @@ export default function SupportPage() {
         })
       )}
 
-      {openCaseId && cases.find((c) => c.id === openCaseId) && (
+      {openCase && (
         <CaseMessagesModal
           apiBase="/admin"
-          supportCase={cases.find((c) => c.id === openCaseId)}
+          supportCase={openCase}
           onClose={() => {
             setOpenCaseId(null);
+            setArchivedCase(null);
             load();
           }}
         />

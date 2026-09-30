@@ -42,11 +42,11 @@ export default function CapitalConfirmation({ subaccountId, requiredCapital, rep
   const phraseOk = isValidDeclaration(confirmation);
   const matches = hasCapital && phraseOk;
 
-  // Confirmación vigente para el capital ACTUAL (si el admin cambia el
-  // capital, se pide una confirmación nueva con el monto nuevo).
-  const current = hasCapital
-    ? reports.find((r) => r.status !== 'RECHAZADO' && Number(r.amount) === Number(requiredCapital))
-    : null;
+  // "Capital reportado" solo mientras QLC revisa la confirmación. Una vez
+  // APROBADA (o rechazada) el formulario vuelve a quedar en ceros para que el
+  // cliente pueda enviar un reporte nuevo cuando sea necesario; el historial
+  // conserva todas las confirmaciones anteriores.
+  const current = reports.find((r) => r.status === 'PENDING' || r.status === 'EN_REVISION') || null;
   const lastRejected = !current && reports[0]?.status === 'RECHAZADO' ? reports[0] : null;
 
   const submit = async (e) => {

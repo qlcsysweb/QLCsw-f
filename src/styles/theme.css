@@ -1676,3 +1676,16 @@ span.qlc-time-mx:not(:only-child) {
 .qlc-ident-search-results li .qlc-btn {
   margin-left: auto;
 }
+
+/* Botón solo con icono (papelera en "Mis citas"). */
+.qlc-icon-only {
+  padding: 6px 8px;
+  min-width: 0;
+}
+/* Resultado del buscador de casos (admin). */
+.qlc-archive-result {
+  margin-top: 8px;
+  padding: 12px;
+  border: 1px solid var(--qlc-line);
+  border-radius: 12px;
+}

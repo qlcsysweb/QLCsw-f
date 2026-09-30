@@ -604,6 +604,7 @@ const es = {
   },
 
   clock: {
+    labelUtc: 'Fecha y hora actual en UTC',
     label: 'Fecha y hora actual en Ciudad de México y en UTC',
   },
 
@@ -617,14 +618,13 @@ const es = {
   },
 
   adminSupport: {
+    archiveTitle: 'Buscar caso por número',
+    caseChats: 'Chats de las citas de este caso',
+    noCaseChats: 'Este caso no tiene chats de cita.',
     downloadPdf: 'Ver / descargar PDF',
-    closedArchiveTitle: 'Sesiones de chat cerradas',
-    closedArchiveIntro: 'Cada chat finalizado queda guardado con sus mensajes y archivos. Búscalo por su número de caso.',
     searchByCase: 'N.º de caso (ej. 12)',
     search: 'Buscar',
     clearSearch: 'Ver todas',
-    noClosedForCase: 'No hay sesiones cerradas para el caso #{number}.',
-    noClosedSessions: 'Todavía no hay sesiones cerradas.',
     notStarted: 'sin iniciar',
     messagesCount: 'mensaje(s)',
     hiddenByClient: 'Borrado por el cliente',
@@ -1278,6 +1278,9 @@ const es = {
   },
 
   clientAppointments: {
+    deleteAppointment: 'Borrar cita',
+    deleteTitle: 'Borrar cita',
+    deleteMessage: '¿Borrar la cita del {date} a las {time} de tu lista?',
     kicker: 'CITAS',
     title: 'Citas',
     availability: 'Disponibilidad',
@@ -2475,6 +2478,7 @@ const en = {
   },
 
   clock: {
+    labelUtc: 'Current date and time in UTC',
     label: 'Current date and time in Mexico City and UTC',
   },
 
@@ -2488,14 +2492,13 @@ const en = {
   },
 
   adminSupport: {
+    archiveTitle: 'Search case by number',
+    caseChats: 'Appointment chats for this case',
+    noCaseChats: 'This case has no appointment chats.',
     downloadPdf: 'View / download PDF',
-    closedArchiveTitle: 'Closed chat sessions',
-    closedArchiveIntro: 'Every finished chat is saved with its messages and files. Search it by case number.',
     searchByCase: 'Case No. (e.g. 12)',
     search: 'Search',
     clearSearch: 'Show all',
-    noClosedForCase: 'There are no closed sessions for case #{number}.',
-    noClosedSessions: 'There are no closed sessions yet.',
     notStarted: 'not started',
     messagesCount: 'message(s)',
     hiddenByClient: 'Deleted by the client',
@@ -3144,6 +3147,9 @@ const en = {
   },
 
   clientAppointments: {
+    deleteAppointment: 'Delete appointment',
+    deleteTitle: 'Delete appointment',
+    deleteMessage: 'Delete the appointment on {date} at {time} from your list?',
     kicker: 'APPOINTMENTS',
     title: 'Appointments',
     availability: 'Availability',
