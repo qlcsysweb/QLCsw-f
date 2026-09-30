@@ -58,6 +58,7 @@ export function resolveNotificationLink(notification, role) {
     }
     if (p.caseId) return { path: `/admin/support?case=${p.caseId}` };
     if (p.appointmentId) return { path: `/admin/appointments?appointmentId=${p.appointmentId}` };
+    if (p.prospectId) return { path: `/admin/prospects?prospectId=${p.prospectId}` };
     if (p.clientId) return { path: `/admin/clients/${p.clientId}` };
     if (ADMIN_GENERAL_PATHS[templateKey]) return { path: ADMIN_GENERAL_PATHS[templateKey] };
     return null;

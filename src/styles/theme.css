@@ -1551,3 +1551,8 @@ textarea {
 span.qlc-time-mx:not(:only-child) {
   display: inline;
 }
+
+/* Fila resaltada al llegar desde una notificación (p. ej. nuevo prospecto). */
+.qlc-row-highlight > td {
+  background: rgba(0, 168, 255, 0.12);
+}

@@ -165,7 +165,7 @@ export default function NotificationsList({ scope }) {
                   <strong>{title}</strong>
                   {!n.isRead && <span className="qlc-badge ok">{t('clientNotifications.newBadge')}</span>}
                 </div>
-                <p style={{ color: 'var(--qlc-muted)', fontSize: 13, margin: '6px 0 0' }}>{message}</p>
+                <p style={{ color: 'var(--qlc-muted)', fontSize: 13, margin: '6px 0 0', whiteSpace: 'pre-line' }}>{message}</p>
                 <div style={{ fontSize: 11, color: 'var(--qlc-muted2)', marginTop: 6 }}>
                   {new Date(n.createdAt).toLocaleString()}
                 </div>

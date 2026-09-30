@@ -34,7 +34,10 @@ export default function CapitalConfirmation({ subaccountId, requiredCapital, rep
   const statusMap = PAYMENT_REPORT_STATUS(t);
 
   const hasCapital = requiredCapital != null && Number(requiredCapital) > 0;
-  const matches = hasCapital && isValidDeclaration(confirmation);
+  // El cliente puede escribir la frase aunque el capital siga pendiente; solo
+  // el ENVÍO espera a que el ADMIN asigne el capital (el backend lo exige).
+  const phraseOk = isValidDeclaration(confirmation);
+  const matches = hasCapital && phraseOk;
 
   // Confirmación vigente para el capital ACTUAL (si el admin cambia el
   // capital, se pide una confirmación nueva con el monto nuevo).
@@ -120,17 +123,18 @@ export default function CapitalConfirmation({ subaccountId, requiredCapital, rep
             className="qlc-input"
             value={confirmation}
             onChange={(e) => setConfirmation(e.target.value)}
-            disabled={!hasCapital || sending}
-            placeholder={hasCapital ? t('clientApiConnection.confirmationPlaceholder') : ''}
+            disabled={sending}
+            placeholder={t('clientApiConnection.confirmationPlaceholder')}
             autoComplete="off"
             spellCheck={false}
-            aria-invalid={confirmation !== '' && !matches}
+            aria-invalid={confirmation !== '' && !phraseOk}
           />
-          {confirmation !== '' && !matches && <p className="qlc-capital-mismatch">{t('clientApiConnection.confirmationMismatch')}</p>}
+          {confirmation !== '' && !phraseOk && <p className="qlc-capital-mismatch">{t('clientApiConnection.confirmationMismatch')}</p>}
+          {phraseOk && !hasCapital && <p className="qlc-capital-help" role="status">✓ {t('clientApiConnection.phraseOkCapitalPending')}</p>}
           <label className="qlc-label" htmlFor="capital-note">
             {t('clientApiConnection.distributionNote')}
           </label>
-          <input id="capital-note" className="qlc-input" value={note} onChange={(e) => setNote(e.target.value)} disabled={!hasCapital || sending} />
+          <input id="capital-note" className="qlc-input" value={note} onChange={(e) => setNote(e.target.value)} disabled={sending} />
           {error && <p className="qlc-field-error">{error}</p>}
           <button
             className="qlc-btn primary"

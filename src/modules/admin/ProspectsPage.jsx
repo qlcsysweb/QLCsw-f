@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import api from '../../services/api';
 import { PROSPECT_STATUS, statusOf } from '../../utils/statusLabels';
 import { useLanguage } from '../../i18n/LanguageContext';
@@ -26,10 +27,13 @@ function CopyEmailButton({ email, t }) {
   );
 }
 
-function ProspectRow({ p, onUpdateStatus, onDelete, t, prospectStatusMap }) {
+function ProspectRow({ p, onUpdateStatus, onDelete, t, prospectStatusMap, highlighted }) {
   const status = statusOf(prospectStatusMap, p.status, 'NUEVO');
   return (
-    <tr>
+    <tr
+      id={`prospect-${p.id}`}
+      className={highlighted ? 'qlc-row-highlight' : undefined}
+    >
       <td>
         {p.firstName} {p.lastName || ''}
         {/* Mensaje que escribió la persona en "Solicitar información". */}
@@ -75,6 +79,11 @@ export default function ProspectsPage() {
   const [prospects, setProspects] = useState([]);
   const [counts, setCounts] = useState({ total: 0, registered: 0, unregistered: 0 });
   const [confirmDelete, setConfirmDelete] = useState(null);
+  // Desde la notificación "Nuevo prospecto" se llega con ?prospectId=… : esa
+  // fila se resalta y se desplaza a la vista (abriendo "Ya registrados" si
+  // la persona ya se registró como cliente).
+  const [searchParams] = useSearchParams();
+  const highlightId = searchParams.get('prospectId');
 
   const prospectStatusMap = PROSPECT_STATUS(t);
 
@@ -105,6 +114,14 @@ export default function ProspectsPage() {
 
   const unregistered = prospects.filter((p) => !p.isRegistered);
   const registered = prospects.filter((p) => p.isRegistered);
+  const highlightInRegistered = Boolean(highlightId) && registered.some((p) => p.id === highlightId);
+
+  // Lleva a la vista la fila del prospecto de la notificación.
+  useEffect(() => {
+    if (!highlightId || !prospects.length) return;
+    const timer = setTimeout(() => document.getElementById(`prospect-${highlightId}`)?.scrollIntoView({ block: 'center' }), 150);
+    return () => clearTimeout(timer);
+  }, [highlightId, prospects.length]);
 
   return (
     <div>
@@ -146,7 +163,7 @@ export default function ProspectsPage() {
               </thead>
               <tbody>
                 {unregistered.map((p) => (
-                  <ProspectRow key={p.id} p={p} onUpdateStatus={updateStatus} onDelete={setConfirmDelete} t={t} prospectStatusMap={prospectStatusMap} />
+                  <ProspectRow key={p.id} p={p} onUpdateStatus={updateStatus} onDelete={setConfirmDelete} t={t} prospectStatusMap={prospectStatusMap} highlighted={p.id === highlightId} />
                 ))}
               </tbody>
             </table>
@@ -155,9 +172,10 @@ export default function ProspectsPage() {
       </section>
 
       <CollapsibleSection
+        key={highlightInRegistered ? 'open' : 'closed'}
         title={t('adminProspects.registeredTitle')}
         summary={`${registered.length} ${t('adminProspects.alreadyRegistered')}`}
-        defaultOpen={false}
+        defaultOpen={highlightInRegistered}
       >
         <p style={{ color: 'var(--qlc-muted, #8a8f98)', marginTop: 0 }}>{t('adminProspects.registeredIntro')}</p>
         {registered.length === 0 ? (
@@ -176,7 +194,7 @@ export default function ProspectsPage() {
               </thead>
               <tbody>
                 {registered.map((p) => (
-                  <ProspectRow key={p.id} p={p} onUpdateStatus={updateStatus} onDelete={setConfirmDelete} t={t} prospectStatusMap={prospectStatusMap} />
+                  <ProspectRow key={p.id} p={p} onUpdateStatus={updateStatus} onDelete={setConfirmDelete} t={t} prospectStatusMap={prospectStatusMap} highlighted={p.id === highlightId} />
                 ))}
               </tbody>
             </table>
