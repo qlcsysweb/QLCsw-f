@@ -14,7 +14,7 @@ import usePolling from '../../hooks/usePolling';
 // única forma de fijarla en la creación; no hay forma de cambiarla luego.
 function CreateClientModal({ onClose, onCreated }) {
   const { t, language } = useLanguage();
-  const [form, setForm] = useState({ username: '', firstName: '', lastName: '', email: '', password: '', nationality: '' });
+  const [form, setForm] = useState({ username: '', firstName: '', lastName: '', email: '', password: '' });
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -54,8 +54,6 @@ function CreateClientModal({ onClose, onCreated }) {
           <input className="qlc-input" value={form.firstName} onChange={update('firstName')} required />
           <label className="qlc-label">{t('adminClientsList.lastName')}</label>
           <input className="qlc-input" value={form.lastName} onChange={update('lastName')} required />
-          <label className="qlc-label">{t('adminClientsList.nationality')}</label>
-          <input className="qlc-input" value={form.nationality} onChange={update('nationality')} />
           <label className="qlc-label">{t('adminClientsList.email')}</label>
           <input className="qlc-input" type="email" value={form.email} onChange={update('email')} required />
           <label className="qlc-label">{t('adminClientsList.initialPassword')}</label>

@@ -17,6 +17,18 @@ import SeguridadSection from '../../public/components/SeguridadSection';
 import SobreQlcSection from '../../public/components/SobreQlcSection';
 import ContactoSection from '../../public/components/ContactoSection';
 import PublicFooter from '../../public/components/PublicFooter';
+import { LEGAL_SECTION, LegalDocumentView, legalFallbackBody, legalFallbackTitle } from '../../../components/LegalDocument';
+
+// Vista previa de los documentos legales con el mismo componente que usan
+// las páginas públicas /privacidad y /terminos.
+function PrivacyPreview({ text }) {
+  const { t } = useLanguage();
+  return <LegalDocumentView text={text} t={t} doc="privacy" />;
+}
+function TermsPreview({ text }) {
+  const { t } = useLanguage();
+  return <LegalDocumentView text={text} t={t} doc="terms" />;
+}
 
 export default function CmsPage() {
   const { t } = useLanguage();
@@ -174,6 +186,30 @@ export default function CmsPage() {
         { key: 'disclaimer', label: t('adminCms.fieldRiskDisclaimer'), type: 'textarea', rows: 4, fallback: '' },
       ],
       PreviewComponent: PublicFooter,
+    },
+    {
+      key: 'legal_privacy',
+      label: t('adminCms.legalPrivacyLabel'),
+      description: t('adminCms.legalPrivacyDesc'),
+      kind: 'content',
+      section: LEGAL_SECTION,
+      fields: [
+        { key: 'privacy_title', label: t('adminCms.fieldTitle'), fallback: legalFallbackTitle(t, 'privacy') },
+        { key: 'privacy_body', label: t('adminCms.fieldLegalBody'), type: 'textarea', rows: 18, fallback: legalFallbackBody(t, 'privacy') },
+      ],
+      PreviewComponent: PrivacyPreview,
+    },
+    {
+      key: 'legal_terms',
+      label: t('adminCms.legalTermsLabel'),
+      description: t('adminCms.legalTermsDesc'),
+      kind: 'content',
+      section: LEGAL_SECTION,
+      fields: [
+        { key: 'terms_title', label: t('adminCms.fieldTitle'), fallback: legalFallbackTitle(t, 'terms') },
+        { key: 'terms_body', label: t('adminCms.fieldLegalBody'), type: 'textarea', rows: 18, fallback: legalFallbackBody(t, 'terms') },
+      ],
+      PreviewComponent: TermsPreview,
     },
   ];
 

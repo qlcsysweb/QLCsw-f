@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
-import { formatCdmxDate } from '../../utils/cdmxTime';
+import { formatCdmxDate, formatDateOnly } from '../../utils/cdmxTime';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 import usePolling from '../../hooks/usePolling';
@@ -142,8 +142,8 @@ export default function DashboardPage() {
         <div className="qlc-card" style={{ marginTop: 16 }}>
           <h3 style={{ marginTop: 0 }}>{t('clientDashboard.nextAppointment')}</h3>
           <p style={{ fontSize: 13, color: 'var(--qlc-muted)' }}>
-            {formatCdmxDate(dashboard.nextAppointment.requestedDate)} ·{' '}
-            {dashboard.nextAppointment.requestedTime} —{' '}
+            {formatDateOnly(dashboard.nextAppointment.requestedDate)} ·{' '}
+            {dashboard.nextAppointment.requestedTime} UTC —{' '}
             <span className={`qlc-badge ${appointmentStatus.className}`}>
               {appointmentStatus.dot} {t(`status.appointment.${appointmentStatus.text}`)}
             </span>

@@ -15,7 +15,9 @@
 
 const es = {
   cdmxNotice:
-    'Todos los horarios mostrados en este calendario corresponden a la hora de Ciudad de México, México, zona horaria en la que opera nuestro equipo de soporte.',
+    'Todos los horarios de citas están en UTC (Tiempo Universal Coordinado).',
+  adminUtcNotice:
+    'Las citas se agendan en UTC. Junto a cada hora UTC se muestra su equivalente en hora de México (UTC-6).',
 
   antiScam: {
     noticeKicker: '🚨 AVISO IMPORTANTE — QLC',
@@ -372,6 +374,11 @@ const es = {
     contactoDesc: 'Título, subtítulo y llamada a la acción de registro.',
     footerLabel: 'FOOTER',
     footerDesc: 'Tagline y aviso de riesgo / disclaimer.',
+    legalPrivacyLabel: 'AVISO DE PRIVACIDAD',
+    legalPrivacyDesc: 'Texto completo del Aviso de Privacidad: página /privacidad y pantalla de aceptación del registro.',
+    legalTermsLabel: 'TÉRMINOS Y CONDICIONES',
+    legalTermsDesc: 'Texto completo de los Términos y Condiciones: página /terminos y pantalla de aceptación del registro.',
+    fieldLegalBody: 'Texto completo (deja una línea en blanco entre párrafos)',
     fieldEyebrow: 'Etiqueta superior',
     fieldTitleLine1: 'Título — línea 1',
     fieldTitleLine2Highlight: 'Título — línea 2 (resaltada)',
@@ -617,7 +624,9 @@ const es = {
     kicker: 'CITAS',
     title: 'Citas y disponibilidad',
     weeklyAvailability: 'Disponibilidad semanal',
-    availabilityIntro: 'Define los días y horarios en los que los clientes y prospectos pueden solicitar citas.',
+    availabilityIntro: 'Define los días y horarios (en UTC) en los que los clientes pueden solicitar citas. Debajo de cada hora ves su equivalente en hora de México.',
+    mexicoTime: 'hora de México',
+    to: 'Hasta',
     from: 'de',
     notAvailable: 'No disponible',
     availabilityUpdated: 'Disponibilidad actualizada.',
@@ -730,7 +739,6 @@ const es = {
 
   adminClientDetail: {
     kicker: 'FICHA DE CLIENTE',
-    nationality: 'Nacionalidad',
     backToClients: '← Volver a clientes',
     deactivate: 'Desactivar',
     activateAccount: 'Activar cuenta',
@@ -906,7 +914,6 @@ const es = {
     editClient: 'Editar cliente',
     firstName: 'Nombre',
     lastName: 'Apellidos',
-    nationality: 'Nacionalidad (opcional)',
     email: 'Email',
     initialPassword: 'Contraseña inicial',
     newPasswordOptional: 'Nueva contraseña (opcional)',
@@ -1134,6 +1141,18 @@ const es = {
     appointment_confirmed: {
       title: 'Tu cita fue confirmada',
       message: 'Tu cita fue confirmada para el {date} a las {time}. ¡No lo olvides!',
+    },
+    appointment_confirmed_utc: {
+      title: 'Tu cita fue confirmada',
+      message: 'Tu cita fue confirmada para el {date} a las {time} UTC. ¡No lo olvides!',
+    },
+    appointment_requested_utc: {
+      title: 'Nueva solicitud de cita',
+      message: '{clientName} solicitó una cita para el {dateMx} a las {timeMx} hora de México ({date} {time} UTC).',
+    },
+    appointment_requested_self_utc: {
+      title: 'Tu cita ha sido creada con éxito',
+      message: 'Tu solicitud de cita para el {date} a las {time} UTC fue enviada y espera la respuesta de QLC.',
     },
     appointment_rejected: {
       title: 'Tu cita fue rechazada',
@@ -1489,7 +1508,6 @@ const es = {
   clientProfile: {
     kicker: 'MI PERFIL',
     email: 'Email',
-    nationality: 'Nacionalidad',
     accountStatus: 'Estado de cuenta',
     clientSince: 'Cliente desde',
   },
@@ -1745,7 +1763,6 @@ const es = {
     subtitle: 'Regístrate directamente como cliente QLC. Tu cuenta y tu capital permanecen siempre en tu propio exchange.',
     firstName: 'Nombre',
     lastName: 'Apellidos',
-    nationality: 'Nacionalidad',
     email: 'Correo',
     password: 'Contraseña',
     continue: 'Continuar',
@@ -1827,7 +1844,9 @@ const es = {
 
 const en = {
   cdmxNotice:
-    'All times shown in this calendar correspond to Mexico City, Mexico time, the time zone in which our support team operates.',
+    'All appointment times are in UTC (Coordinated Universal Time).',
+  adminUtcNotice:
+    'Appointments are scheduled in UTC. Each UTC time is shown with its Mexico time equivalent (UTC-6).',
 
   antiScam: {
     noticeKicker: '🚨 IMPORTANT NOTICE — QLC',
@@ -2184,6 +2203,11 @@ const en = {
     contactoDesc: 'Title, subtitle and registration call to action.',
     footerLabel: 'FOOTER',
     footerDesc: 'Tagline and risk disclaimer.',
+    legalPrivacyLabel: 'PRIVACY NOTICE',
+    legalPrivacyDesc: 'Full Privacy Notice text: /privacidad page and the registration acceptance screen.',
+    legalTermsLabel: 'TERMS AND CONDITIONS',
+    legalTermsDesc: 'Full Terms and Conditions text: /terminos page and the registration acceptance screen.',
+    fieldLegalBody: 'Full text (leave a blank line between paragraphs)',
     fieldEyebrow: 'Top label',
     fieldTitleLine1: 'Title — line 1',
     fieldTitleLine2Highlight: 'Title — line 2 (highlighted)',
@@ -2429,7 +2453,9 @@ const en = {
     kicker: 'APPOINTMENTS',
     title: 'Appointments and availability',
     weeklyAvailability: 'Weekly availability',
-    availabilityIntro: 'Define the days and times when clients and prospects can request appointments.',
+    availabilityIntro: 'Define the days and times (in UTC) when clients can request appointments. Below each time you can see its Mexico time equivalent.',
+    mexicoTime: 'Mexico time',
+    to: 'To',
     from: 'from',
     notAvailable: 'Not available',
     availabilityUpdated: 'Availability updated.',
@@ -2542,7 +2568,6 @@ const en = {
 
   adminClientDetail: {
     kicker: 'CLIENT RECORD',
-    nationality: 'Nationality',
     backToClients: '← Back to clients',
     deactivate: 'Deactivate',
     activateAccount: 'Activate account',
@@ -2718,7 +2743,6 @@ const en = {
     editClient: 'Edit client',
     firstName: 'First name',
     lastName: 'Last name',
-    nationality: 'Nationality (optional)',
     email: 'Email',
     initialPassword: 'Initial password',
     newPasswordOptional: 'New password (optional)',
@@ -2941,6 +2965,18 @@ const en = {
     appointment_confirmed: {
       title: 'Your appointment was confirmed',
       message: 'Your appointment was confirmed for {date} at {time}. Don\'t forget!',
+    },
+    appointment_confirmed_utc: {
+      title: 'Your appointment was confirmed',
+      message: 'Your appointment was confirmed for {date} at {time} UTC. Don\'t forget!',
+    },
+    appointment_requested_utc: {
+      title: 'New appointment request',
+      message: '{clientName} requested an appointment for {dateMx} at {timeMx} Mexico time ({date} {time} UTC).',
+    },
+    appointment_requested_self_utc: {
+      title: 'Your appointment has been created',
+      message: 'Your appointment request for {date} at {time} UTC was sent and is awaiting QLC\'s response.',
     },
     appointment_rejected: {
       title: 'Your appointment was rejected',
@@ -3296,7 +3332,6 @@ const en = {
   clientProfile: {
     kicker: 'MY PROFILE',
     email: 'Email',
-    nationality: 'Nationality',
     accountStatus: 'Account status',
     clientSince: 'Client since',
   },
@@ -3552,7 +3587,6 @@ const en = {
     subtitle: 'Sign up directly as a QLC client. Your account and your capital always remain on your own exchange.',
     firstName: 'First name',
     lastName: 'Last name',
-    nationality: 'Nationality',
     email: 'Email',
     password: 'Password',
     continue: 'Continue',

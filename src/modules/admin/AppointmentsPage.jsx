@@ -4,7 +4,7 @@ import api from '../../services/api';
 import ConfirmModal from '../../components/ConfirmModal';
 import CollapsibleSection from '../../components/CollapsibleSection';
 import { APPOINTMENT_STATUS, statusOf } from '../../utils/statusLabels';
-import { formatDateOnly } from '../../utils/cdmxTime';
+import { formatDateOnly, appointmentMexicoTime, utcTimeToMexico } from '../../utils/cdmxTime';
 import { useLanguage } from '../../i18n/LanguageContext';
 import usePolling from '../../hooks/usePolling';
 
@@ -32,7 +32,7 @@ function AvailabilityEditor() {
     setSlots((prev) => {
       const exists = prev.find((s) => s.dayOfWeek === dayOfWeek);
       if (exists) return prev.filter((s) => s.dayOfWeek !== dayOfWeek);
-      return [...prev, { dayOfWeek, startTime: '09:00', endTime: '17:00', isActive: true }];
+      return [...prev, { dayOfWeek, startTime: '16:00', endTime: '23:00', isActive: true }];
     });
   };
 
@@ -76,18 +76,27 @@ function AvailabilityEditor() {
             {slot ? (
               <>
                 <span style={{ fontSize: 12, color: 'var(--qlc-muted2)' }}>{t('adminAppointments.from')}</span>
-                <input
-                  className="qlc-input"
-                  type="time"
-                  value={slot.startTime}
-                  onChange={(e) => updateTime(dayOfWeek, 'startTime', e.target.value)}
-                />
-                <input
-                  className="qlc-input"
-                  type="time"
-                  value={slot.endTime}
-                  onChange={(e) => updateTime(dayOfWeek, 'endTime', e.target.value)}
-                />
+                {/* Horas en UTC; debajo, su equivalente en hora de México. */}
+                <div>
+                  <input
+                    className="qlc-input"
+                    type="time"
+                    value={slot.startTime}
+                    onChange={(e) => updateTime(dayOfWeek, 'startTime', e.target.value)}
+                    aria-label={`${label} — ${t('adminAppointments.from')} (UTC)`}
+                  />
+                  <span className="qlc-time-mx">UTC · {utcTimeToMexico(slot.startTime)} {t('adminAppointments.mexicoTime')}</span>
+                </div>
+                <div>
+                  <input
+                    className="qlc-input"
+                    type="time"
+                    value={slot.endTime}
+                    onChange={(e) => updateTime(dayOfWeek, 'endTime', e.target.value)}
+                    aria-label={`${label} — ${t('adminAppointments.to')} (UTC)`}
+                  />
+                  <span className="qlc-time-mx">UTC · {utcTimeToMexico(slot.endTime)} {t('adminAppointments.mexicoTime')}</span>
+                </div>
               </>
             ) : (
               <span style={{ fontSize: 12, color: 'var(--qlc-muted2)', gridColumn: 'span 3' }}>
@@ -162,7 +171,7 @@ export default function AppointmentsPage() {
       <div className="qlc-kicker">{t('adminAppointments.kicker')}</div>
       <h1 style={{ marginTop: 0 }}>{t('adminAppointments.title')}</h1>
 
-      <p style={{ fontSize: 12, color: 'var(--qlc-muted2)', maxWidth: 640 }}>{t('cdmxNotice')}</p>
+      <p style={{ fontSize: 12, color: 'var(--qlc-muted2)', maxWidth: 640 }}>{t('adminUtcNotice')}</p>
 
       <AvailabilityEditor />
 
@@ -225,7 +234,19 @@ export default function AppointmentsPage() {
                         : '—'}
                     </td>
                     <td>{formatDateOnly(a.requestedDate)}</td>
-                    <td>{a.requestedTime}</td>
+                    <td>
+                      {/* Hora de México (la del equipo) + la hora UTC agendada. */}
+                      {(() => {
+                        const mx = appointmentMexicoTime(a.requestedDate, a.requestedTime);
+                        return (
+                          <>
+                            <strong>{mx.time}</strong> {t('adminAppointments.mexicoTime')}
+                            {mx.date !== formatDateOnly(a.requestedDate) && <span className="qlc-time-mx"> ({mx.date})</span>}
+                            <div className="qlc-time-mx">{a.requestedTime} UTC</div>
+                          </>
+                        );
+                      })()}
+                    </td>
                     <td>
                       <span className={`qlc-badge ${s.className}`}>{s.text}</span>
                     </td>

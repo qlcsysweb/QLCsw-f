@@ -35,3 +35,25 @@ export function formatCdmxDateTime(date) {
     hour12: false,
   }).format(date instanceof Date ? date : new Date(date));
 }
+
+// CITAS EN UTC — las citas se guardan y se muestran al cliente en UTC. Al
+// ADMIN se le muestra además la hora de México (UTC-6 fijo: México no usa
+// horario de verano desde 2022). `date` es la fecha-calendario de la cita
+// (medianoche UTC) y `time` la hora "HH:MM" en UTC.
+export function appointmentUtcInstant(date, time) {
+  const dateOnly = (date instanceof Date ? date.toISOString() : String(date)).slice(0, 10);
+  return new Date(`${dateOnly}T${time}:00Z`);
+}
+
+export function appointmentMexicoTime(date, time) {
+  const iso = new Date(appointmentUtcInstant(date, time).getTime() - 6 * 60 * 60 * 1000).toISOString();
+  return { date: `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.slice(0, 4)}`, time: iso.slice(11, 16) };
+}
+
+// "HH:MM" UTC de disponibilidad → "HH:MM" en México (solo la hora).
+export function utcTimeToMexico(time) {
+  const [h, m] = String(time).split(':').map(Number);
+  if (Number.isNaN(h)) return '';
+  const mins = (((h * 60 + (m || 0) - 360) % 1440) + 1440) % 1440;
+  return `${String(Math.floor(mins / 60)).padStart(2, '0')}:${String(mins % 60).padStart(2, '0')}`;
+}

@@ -38,6 +38,8 @@ const CLIENT_GENERAL_PATHS = {
   appointment_confirmed: '/client/support',
   appointment_rejected: '/client/support',
   appointment_requested_self: '/client/support',
+  appointment_requested_self_utc: '/client/support',
+  appointment_confirmed_utc: '/client/support',
   case_created_self: '/client/support',
   welcome: '/client',
 };

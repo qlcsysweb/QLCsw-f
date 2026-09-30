@@ -1539,3 +1539,15 @@ textarea {
   font-style: italic;
   color: var(--qlc-muted2);
 }
+
+/* Citas — hora equivalente (México / UTC) bajo la hora principal. */
+.qlc-time-mx {
+  display: block;
+  margin-top: 3px;
+  font-size: 11px;
+  color: var(--qlc-muted2);
+  white-space: nowrap;
+}
+span.qlc-time-mx:not(:only-child) {
+  display: inline;
+}

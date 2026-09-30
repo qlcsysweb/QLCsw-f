@@ -373,11 +373,6 @@ export default function ClientDetailPage() {
               </>
             )}
           </div>
-          {client.nationality && (
-            <div style={{ color: 'var(--qlc-muted)', fontSize: 13 }}>
-              {t('adminClientDetail.nationality')}: {client.nationality}
-            </div>
-          )}
         </div>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
           <span className={`qlc-badge ${clientAccStatus.className}`}>{clientAccStatus.text}</span>

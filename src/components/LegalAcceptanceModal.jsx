@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useLanguage } from '../i18n/LanguageContext';
+import { useLegalDoc, LegalText } from './LegalDocument';
 import './AntiScamModal.css';
 import './LegalAcceptanceModal.css';
 
@@ -14,7 +15,8 @@ export function PrivacyNoticeModal({ onAccept }) {
   const { t } = useLanguage();
   const [expanded, setExpanded] = useState(false);
   const [checked, setChecked] = useState(false);
-  const fullText = t('registerLegal.privacyFullText');
+  // Texto vigente editable desde el CMS (mismo que /privacidad).
+  const { body: fullText } = useLegalDoc('privacy');
 
   return (
     <div className="qlc-scam-overlay" role="dialog" aria-modal="true" aria-label={t('registerLegal.privacyTitle')}>
@@ -28,7 +30,7 @@ export function PrivacyNoticeModal({ onAccept }) {
 
         {expanded && (
           <div className="qlc-legal-fulltext">
-            {Array.isArray(fullText) && fullText.map((paragraph, i) => <p key={i}>{paragraph}</p>)}
+            <LegalText body={fullText} />
           </div>
         )}
 
@@ -57,7 +59,8 @@ export function TermsAndConditionsModal({ onAccept, onBack, loading }) {
   const [expanded, setExpanded] = useState(false);
   const [termsChecked, setTermsChecked] = useState(false);
   const [apiChecked, setApiChecked] = useState(false);
-  const fullText = t('registerLegal.termsFullText');
+  // Texto vigente editable desde el CMS (mismo que /terminos).
+  const { body: fullText } = useLegalDoc('terms');
   const canContinue = termsChecked && apiChecked;
 
   return (
@@ -72,7 +75,7 @@ export function TermsAndConditionsModal({ onAccept, onBack, loading }) {
 
         {expanded && (
           <div className="qlc-legal-fulltext">
-            {Array.isArray(fullText) && fullText.map((paragraph, i) => <p key={i}>{paragraph}</p>)}
+            <LegalText body={fullText} />
           </div>
         )}
 

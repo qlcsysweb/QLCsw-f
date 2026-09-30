@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { SUPPORT_CASE_STATUS, CHAT_SESSION_STATUS, APPOINTMENT_STATUS, statusOf } from '../../utils/statusLabels';
-import { formatDateOnly, formatCdmxDateTime } from '../../utils/cdmxTime';
+import { formatDateOnly, formatCdmxDateTime, appointmentUtcInstant } from '../../utils/cdmxTime';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 import usePolling from '../../hooks/usePolling';
@@ -13,13 +13,9 @@ import CaseMessagesModal, { CaseMessagesButton } from '../../components/CaseMess
 // no navega entre dos módulos independientes. El flujo real es
 // CASO → CITA (desde ese mismo caso) → CHAT, todo en una sola pantalla.
 
-// Misma zona horaria/offset fijo que usa el backend (utils/appointmentSlots.js)
-// para calcular si la cita agendada ya llegó — CDMX no observa horario de
-// verano desde 2022, por eso el offset fijo "-06:00" es seguro aquí.
-function appointmentInstant(requestedDate, requestedTime) {
-  const dateOnly = String(requestedDate).slice(0, 10);
-  return new Date(`${dateOnly}T${requestedTime}:00-06:00`);
-}
+// Las citas están en UTC (igual que el backend, utils/appointmentSlots.js):
+// así se calcula si la cita agendada ya llegó.
+const appointmentInstant = appointmentUtcInstant;
 
 function ChatPanel({ session, onClose }) {
   const { user } = useAuth();
@@ -392,7 +388,7 @@ export default function SupportPage() {
               onChange={(e) => setApptForm((f) => ({ ...f, requestedDate: e.target.value, requestedTime: '' }))}
               required
             />
-            <label className="qlc-label">{t('clientAppointments.time')}</label>
+            <label className="qlc-label">{t('clientAppointments.time')} (UTC)</label>
             {!apptForm.requestedDate ? (
               <p style={{ fontSize: 12, color: 'var(--qlc-muted2)' }}>{t('clientAppointments.selectDateFirst')}</p>
             ) : availableSlots === null ? (
@@ -409,7 +405,7 @@ export default function SupportPage() {
                 <option value="">{t('clientAppointments.selectTime')}</option>
                 {availableSlots.map((slot) => (
                   <option key={slot} value={slot}>
-                    {slot}
+                    {slot} UTC
                   </option>
                 ))}
               </select>
@@ -459,7 +455,7 @@ export default function SupportPage() {
                 <li key={a.id} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
                     <span>
-                      {formatDateOnly(a.requestedDate)} · {a.requestedTime}
+                      {formatDateOnly(a.requestedDate)} · {a.requestedTime} UTC
                       {a.supportCase && (
                         <span style={{ color: 'var(--qlc-muted2)' }}>
                           {' '}· {t('clientAppointments.relatedCase')}:{' '}
@@ -486,7 +482,7 @@ export default function SupportPage() {
                       onClick={() => enterChat(a.id)}
                       title={chatWindowOpen ? '' : t('clientAppointments.chatNotYetAvailable')}
                     >
-                      {openingChat === a.id ? t('common.loading') : chatWindowOpen ? t('clientAppointments.enterChat') : t('clientAppointments.chatScheduledFor').replace('{time}', a.requestedTime)}
+                      {openingChat === a.id ? t('common.loading') : chatWindowOpen ? t('clientAppointments.enterChat') : t('clientAppointments.chatScheduledFor').replace('{time}', `${a.requestedTime} UTC`)}
                     </button>
                   )}
                 </li>
