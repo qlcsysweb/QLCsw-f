@@ -9,11 +9,8 @@ import { ACCOUNT_STATUS, API_CONNECTION_STATUS, statusOf } from '../../utils/sta
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 import { formatParticipationSplit } from '../../components/ParticipationModelSummary';
-import { formatCdmxDateTime } from '../../utils/cdmxTime';
 import usePolling from '../../hooks/usePolling';
 import CollapsibleSection from '../../components/CollapsibleSection';
-import FilePicker from '../../components/FilePicker';
-import MessageAttachments from '../../components/MessageAttachments';
 
 // CORRECCIÓN 7 (bloque de 20) — fila reutilizable para no duplicar el JSX
 // entre subcuentas activas/principal e inactivas.
@@ -101,11 +98,6 @@ export default function ClientDetailPage() {
   const [usernameDraft, setUsernameDraft] = useState('');
   const [assigningUsername, setAssigningUsername] = useState(false);
   const [usernameError, setUsernameError] = useState('');
-  // CORREGIR.xlsx ADMIN 14 — mensajería manual admin→cliente.
-  const [messages, setMessages] = useState([]);
-  const [messageForm, setMessageForm] = useState({ title: '', message: '' });
-  const [sendingMessage, setSendingMessage] = useState(false);
-  const [messageFiles, setMessageFiles] = useState([]);
   // Vista previa autenticada (Blob, nunca la URL directa del backend) — ver
   // components/DocumentViewerModal.jsx, compartido con el panel del cliente.
   const [previewDoc, setPreviewDoc] = useState(null);
@@ -118,7 +110,6 @@ export default function ClientDetailPage() {
       .get(`/admin/clients/${id}`)
       .then(({ data }) => setClient(data.client))
       .catch((err) => setError(translateBackendMessage(err.message, language)));
-    api.get(`/admin/clients/${id}/messages`).then(({ data }) => setMessages(data.messages));
     api
       .get('/admin/subaccount-requests', { params: { status: 'PENDING' } })
       .then(({ data }) => setPendingRequests(data.requests.filter((r) => r.clientId === id)));
@@ -126,36 +117,10 @@ export default function ClientDetailPage() {
   useEffect(load, [id]);
   // Actualización sin refresh manual: si el cliente solicita una subcuenta,
   // reporta un pago, sube algo, etc., esta ficha lo refleja sola. Seguro
-  // porque `client`/`messages` no alimentan ningún formulario en edición
-  // (newIdentifier, messageForm, approveCapital, etc. son estado aparte que
+  // porque `client` no alimenta ningún formulario en edición
+  // (newIdentifier, approveCapital, etc. son estado aparte que
   // esto nunca sobreescribe).
   usePolling(load, 8000);
-
-  const sendMessage = async (e) => {
-    e.preventDefault();
-    setSendingMessage(true);
-    try {
-      // Guarda el mensaje + notificación interna y envía el correo al email
-      // real del cliente en la misma acción; si el correo falla, el mensaje
-      // interno queda guardado igual y se avisa aquí al admin.
-      // multipart: asunto + mensaje + adjuntos opcionales.
-      const fd = new FormData();
-      fd.append('title', messageForm.title);
-      fd.append('message', messageForm.message);
-      messageFiles.forEach((f) => fd.append('files', f.file, f.file.name));
-      const { data } = await api.post(`/admin/clients/${id}/messages`, fd, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      setMessageForm({ title: '', message: '' });
-      setMessageFiles([]);
-      flash(data.message?.emailSent ? t('adminMessages.sentOk') : t('adminMessages.sentOkEmailFailed'));
-      load();
-    } catch (err) {
-      setError(translateBackendMessage(err.message, language));
-    } finally {
-      setSendingMessage(false);
-    }
-  };
 
   const flash = (msg) => {
     setMessage(msg);
@@ -593,76 +558,6 @@ export default function ClientDetailPage() {
               subir documentos desde la ficha del cliente: solo visualiza y
               descarga. La carga de documentos sigue existiendo, pero es
               exclusiva del cliente desde su propio panel. */}
-        </div>
-
-        {/* CORREGIR.xlsx ADMIN 14 — mensajería manual admin→cliente. */}
-        <div className="qlc-card">
-          <h3 style={{ marginTop: 0 }}>{t('adminMessages.title')}</h3>
-          <form onSubmit={sendMessage}>
-            <label className="qlc-label">{t('adminMessages.subject')}</label>
-            <input
-              className="qlc-input"
-              value={messageForm.title}
-              onChange={(e) => setMessageForm((f) => ({ ...f, title: e.target.value }))}
-              required
-            />
-            <label className="qlc-label">{t('adminMessages.content')}</label>
-            <textarea
-              className="qlc-textarea"
-              rows={3}
-              value={messageForm.message}
-              onChange={(e) => setMessageForm((f) => ({ ...f, message: e.target.value }))}
-              required
-            />
-            {/* Adjuntos opcionales (imágenes/PDF): se guardan en Drive y el
-                cliente los ve dentro de su mensaje. */}
-            <span className="qlc-label">{t('files.attachments')}</span>
-            <FilePicker
-              files={messageFiles}
-              onChange={setMessageFiles}
-              disabled={sendingMessage}
-              maxFiles={5}
-              maxBytes={10 * 1024 * 1024}
-              pickLabel={t('files.pick')}
-            />
-            <button className="qlc-btn primary" style={{ marginTop: 10 }} disabled={sendingMessage}>
-              {sendingMessage ? t('common.sending') : t('adminMessages.send')}
-            </button>
-          </form>
-
-          {messages.length > 0 && (
-            <div style={{ marginTop: 14, borderTop: '1px solid var(--qlc-line)', paddingTop: 12 }}>
-              <div style={{ fontSize: 12, color: 'var(--qlc-muted)', marginBottom: 6 }}>{t('adminMessages.history')}</div>
-              <ul className="qlc-plain-list">
-                {messages.map((m) => {
-                  const fromClient = m.sender?.role === 'CLIENT';
-                  return (
-                    <li key={m.id} className="qlc-message-item" style={{ borderLeft: `3px solid ${fromClient ? 'var(--qlc-blue3)' : 'var(--qlc-line)'}`, paddingLeft: 10 }}>
-                      <div className="qlc-message-head">
-                        <strong>{m.title}</strong>
-                        {fromClient ? (
-                          <span className="qlc-badge info">{t('adminMessages.fromClient')}</span>
-                        ) : (
-                          <span
-                            className={`qlc-badge ${m.emailSent ? 'ok' : 'danger'}`}
-                            title={m.emailSent ? undefined : m.emailError || t('adminMessages.emailFailedHint')}
-                          >
-                            {m.emailSent ? `✉ ${t('adminMessages.emailSent')}` : `! ${t('adminMessages.emailFailed')}`}
-                          </span>
-                        )}
-                      </div>
-                      <div style={{ color: 'var(--qlc-muted2)' }}>{formatCdmxDateTime(m.createdAt)}</div>
-                      <div style={{ color: 'var(--qlc-muted2)', overflowWrap: 'anywhere' }}>{m.message}</div>
-                      <MessageAttachments attachments={m.attachments} baseUrl={`/admin/clients/${id}/messages/${m.id}`} />
-                      {!fromClient && !m.emailSent && m.emailError && (
-                        <div style={{ color: 'var(--qlc-danger)', fontSize: 11 }}>{m.emailError}</div>
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          )}
         </div>
       </div>
 

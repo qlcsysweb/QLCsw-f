@@ -6,6 +6,9 @@ import { PAYMENT_REPORT_STATUS, statusOf } from '../../utils/statusLabels';
 import { formatCdmxDateTime } from '../../utils/cdmxTime';
 
 export const formatCapital = (value) => String(Number(value));
+// Capital operativo mínimo de QLC: aplica si el ADMIN no asignó un monto
+// propio a la subcuenta (igual que el backend).
+export const DEFAULT_REQUIRED_CAPITAL = 100;
 
 // Declaraciones FIJAS autorizadas — mismas que valida el backend
 // (client/apiSubaccountController.CAPITAL_DECLARATIONS), que es la fuente de

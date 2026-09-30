@@ -595,7 +595,30 @@ const es = {
     deleteMustDeactivateFirst: 'Primero debes desactivar a este administrador antes de poder eliminarlo.',
   },
 
+  chatFiles: {
+    attach: 'Adjuntar archivo',
+    hint: 'Puedes enviar imágenes (JPG, PNG, WEBP) o PDF de hasta 10 MB.',
+    uploading: 'Subiendo…',
+    tooBig: 'El archivo puede pesar como máximo 10 MB.',
+    opensAt: 'El chat se habilita a la hora de la cita: {time}.',
+  },
+
+  clock: {
+    label: 'Fecha y hora actual en Ciudad de México y en UTC',
+  },
+
   adminSupport: {
+    downloadPdf: 'Ver / descargar PDF',
+    closedArchiveTitle: 'Sesiones de chat cerradas',
+    closedArchiveIntro: 'Cada chat finalizado queda guardado con sus mensajes y archivos. Búscalo por su número de caso.',
+    searchByCase: 'N.º de caso (ej. 12)',
+    search: 'Buscar',
+    clearSearch: 'Ver todas',
+    noClosedForCase: 'No hay sesiones cerradas para el caso #{number}.',
+    noClosedSessions: 'Todavía no hay sesiones cerradas.',
+    notStarted: 'sin iniciar',
+    messagesCount: 'mensaje(s)',
+    hiddenByClient: 'Borrado por el cliente',
     kicker: 'SOPORTE',
     title: 'Casos de soporte y chat',
     chatWith: 'Chat con',
@@ -621,6 +644,9 @@ const es = {
   },
 
   adminAppointments: {
+    deleteAppointment: 'Borrar',
+    deleteTitle: 'Borrar cita',
+    deleteMessage: 'La cita se quitará de esta lista. No se elimina del sistema: el cliente conserva su historial y el chat asociado queda archivado en Soporte.',
     kicker: 'CITAS',
     title: 'Citas y disponibilidad',
     weeklyAvailability: 'Disponibilidad semanal',
@@ -814,7 +840,7 @@ const es = {
     backToClient: '← Volver a la ficha del cliente',
     revealCapitalLabel: 'Capital operativo requerido (USDT)',
     requiredCapital: 'Capital operativo requerido (USDT)',
-    requiredCapitalHint: 'El cliente lo verá en "Reportar distribución de capital" y deberá confirmarlo. Sin este dato no puede confirmar.',
+    requiredCapitalHint: 'El cliente lo verá en "Reportar distribución de capital" y deberá confirmarlo. Si lo dejas vacío, se aplica el mínimo de 100 USDT.',
     activateSubaccount: 'Activar',
     deactivateSubaccount: 'Desactivar',
     subaccountActivated: 'Subcuenta activada correctamente.',
@@ -1272,6 +1298,9 @@ const es = {
   },
 
   clientSupport: {
+    deleteCase: 'Borrar',
+    deleteCaseTitle: 'Borrar caso',
+    deleteCaseMessage: '¿Borrar el caso #{number} de tu lista? Dejarás de verlo aquí junto con sus citas.',
     kicker: 'SOPORTE',
     title: 'Soporte y Citas',
     chatTitle: 'Chat de soporte',
@@ -2425,7 +2454,30 @@ const en = {
     deleteMustDeactivateFirst: 'You must deactivate this administrator before you can delete them.',
   },
 
+  chatFiles: {
+    attach: 'Attach file',
+    hint: 'You can send images (JPG, PNG, WEBP) or PDF files up to 10 MB.',
+    uploading: 'Uploading…',
+    tooBig: 'The file can be at most 10 MB.',
+    opensAt: 'The chat opens at the appointment time: {time}.',
+  },
+
+  clock: {
+    label: 'Current date and time in Mexico City and UTC',
+  },
+
   adminSupport: {
+    downloadPdf: 'View / download PDF',
+    closedArchiveTitle: 'Closed chat sessions',
+    closedArchiveIntro: 'Every finished chat is saved with its messages and files. Search it by case number.',
+    searchByCase: 'Case No. (e.g. 12)',
+    search: 'Search',
+    clearSearch: 'Show all',
+    noClosedForCase: 'There are no closed sessions for case #{number}.',
+    noClosedSessions: 'There are no closed sessions yet.',
+    notStarted: 'not started',
+    messagesCount: 'message(s)',
+    hiddenByClient: 'Deleted by the client',
     kicker: 'SUPPORT',
     title: 'Support cases and chat',
     chatWith: 'Chat with',
@@ -2451,6 +2503,9 @@ const en = {
   },
 
   adminAppointments: {
+    deleteAppointment: 'Delete',
+    deleteTitle: 'Delete appointment',
+    deleteMessage: 'The appointment will be removed from this list. It is not deleted from the system: the client keeps their history and the related chat stays archived in Support.',
     kicker: 'APPOINTMENTS',
     title: 'Appointments and availability',
     weeklyAvailability: 'Weekly availability',
@@ -2644,7 +2699,7 @@ const en = {
     backToClient: '← Back to client record',
     revealCapitalLabel: 'Required operating capital (USDT)',
     requiredCapital: 'Required operating capital (USDT)',
-    requiredCapitalHint: 'The client will see it under "Report capital distribution" and must confirm it. Without this value they cannot confirm.',
+    requiredCapitalHint: 'The client will see it under "Report capital distribution" and must confirm it. If left empty, the 100 USDT minimum applies.',
     activateSubaccount: 'Activate',
     deactivateSubaccount: 'Deactivate',
     subaccountActivated: 'Subaccount activated successfully.',
@@ -3097,6 +3152,9 @@ const en = {
   },
 
   clientSupport: {
+    deleteCase: 'Delete',
+    deleteCaseTitle: 'Delete case',
+    deleteCaseMessage: 'Delete case #{number} from your list? You will no longer see it here, along with its appointments.',
     kicker: 'SUPPORT',
     title: 'Support and Appointments',
     chatTitle: 'Support chat',

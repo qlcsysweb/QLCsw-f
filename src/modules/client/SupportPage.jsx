@@ -8,6 +8,8 @@ import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 import usePolling from '../../hooks/usePolling';
 import CaseMessagesModal, { CaseMessagesButton } from '../../components/CaseMessagesModal';
+import ConfirmModal from '../../components/ConfirmModal';
+import { ChatMessages, ChatFileButton, chatOpensAt, chatOpensLabel } from '../../components/ChatParts';
 
 // CORRECCIÓN 16 (bloque de 20) — Soporte y Citas unificados: el cliente ya
 // no navega entre dos módulos independientes. El flujo real es
@@ -55,9 +57,25 @@ function ChatPanel({ session, onClose }) {
     return () => clearInterval(timer);
   }, [current]);
 
+  // El chat solo se puede iniciar a la hora de la cita (UTC); el servidor
+  // también lo exige.
+  const opensAt = chatOpensAt(current);
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    if (current?.status !== 'SCHEDULED' || !opensAt || Date.now() >= opensAt.getTime()) return;
+    const timer = setInterval(() => setNow(Date.now()), 15000);
+    return () => clearInterval(timer);
+  }, [current?.status, opensAt?.getTime()]);
+  const tooEarly = Boolean(opensAt) && now < opensAt.getTime();
+
   const start = async () => {
-    await api.post(`/client/chat/${session.id}/start`);
-    refresh();
+    setSendError('');
+    try {
+      await api.post(`/client/chat/${session.id}/start`);
+      refresh();
+    } catch (err) {
+      setSendError(translateBackendMessage(err.message, language));
+    }
   };
 
   const send = async (e) => {
@@ -91,9 +109,15 @@ function ChatPanel({ session, onClose }) {
             <p style={{ fontSize: 13, color: 'var(--qlc-muted)' }}>
               {t('clientSupport.appointmentAuthorized').replace('{minutes}', current.durationMinutes)}
             </p>
-            <button className="qlc-btn primary" onClick={start}>
+            {tooEarly && (
+              <p style={{ fontSize: 13, color: 'var(--qlc-gold)' }}>
+                {t('chatFiles.opensAt').replace('{time}', chatOpensLabel(current, t))}
+              </p>
+            )}
+            <button className="qlc-btn primary" onClick={start} disabled={tooEarly}>
               {t('clientSupport.startChat')}
             </button>
+            {sendError && <div className="qlc-field-error" style={{ marginTop: 8 }}>{sendError}</div>}
           </div>
         )}
 
@@ -103,18 +127,19 @@ function ChatPanel({ session, onClose }) {
               {t('clientSupport.timeRemaining')}: {minutes}:{String(seconds).padStart(2, '0')}
             </div>
             <div style={{ flex: 1, overflowY: 'auto', border: '1px solid var(--qlc-line)', borderRadius: 10, padding: 10 }}>
-              {messages.length === 0 ? (
-                <div className="qlc-empty">{t('clientSupport.noMessages')}</div>
-              ) : (
-                messages.map((m) => (
-                  <div key={m.id} style={{ marginBottom: 8, fontSize: 13 }}>
-                    <strong>{m.senderUserId === user.id ? t('clientSupport.you') : 'QLC'}:</strong> {m.content}
-                  </div>
-                ))
-              )}
+              <ChatMessages
+                messages={messages}
+                currentUserId={user.id}
+                youLabel={t('clientSupport.you')}
+                otherLabel="QLC"
+                apiBase="/client"
+                sessionId={session.id}
+                emptyLabel={t('clientSupport.noMessages')}
+              />
             </div>
             {sendError && <div className="qlc-field-error" style={{ marginTop: 8 }}>{sendError}</div>}
             <form onSubmit={send} style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+              <ChatFileButton apiBase="/client" sessionId={session.id} onSent={refresh} onError={setSendError} />
               <input
                 className="qlc-input"
                 value={content}
@@ -123,13 +148,29 @@ function ChatPanel({ session, onClose }) {
               />
               <button className="qlc-btn primary">{t('clientSupport.send')}</button>
             </form>
+            <p className="qlc-chat-file-hint">{t('chatFiles.hint')}</p>
           </>
         )}
 
         {current?.status === 'CLOSED' && (
-          <div className="qlc-empty" style={{ marginTop: 20 }}>
-            {t('clientSupport.chatEnded')}
-          </div>
+          <>
+            <div className="qlc-empty" style={{ marginTop: 12 }}>
+              {t('clientSupport.chatEnded')}
+            </div>
+            {messages.length > 0 && (
+              <div style={{ flex: 1, overflowY: 'auto', border: '1px solid var(--qlc-line)', borderRadius: 10, padding: 10, marginTop: 10 }}>
+                <ChatMessages
+                  messages={messages}
+                  currentUserId={user.id}
+                  youLabel={t('clientSupport.you')}
+                  otherLabel="QLC"
+                  apiBase="/client"
+                  sessionId={session.id}
+                  emptyLabel=""
+                />
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
@@ -150,6 +191,8 @@ export default function SupportPage() {
   // Caso cuya mensajería interna está abierta en el modal.
   const [openCaseId, setOpenCaseId] = useState(null);
   const [openingChat, setOpeningChat] = useState(null);
+  // Caso que el cliente quiere borrar de su vista (confirmación).
+  const [deletingCase, setDeletingCase] = useState(null);
 
   // Formulario de cita — vinculado SIEMPRE a un caso del propio cliente
   // (CASO #XXXX → Solicitar cita). Se abre desde el caso (preseleccionado)
@@ -330,6 +373,18 @@ export default function SupportPage() {
                       </button>
                     )}
                     <CaseMessagesButton hasUnread={c.hasUnread} unreadCount={c.unreadMessages} onClick={() => setOpenCaseId(c.id)} />
+                    <button
+                      type="button"
+                      className="qlc-btn ghost qlc-case-delete"
+                      onClick={() => setDeletingCase(c)}
+                      title={t('clientSupport.deleteCase')}
+                      aria-label={`${t('clientSupport.deleteCase')} #${c.caseNumber}`}
+                    >
+                      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                        <path fill="currentColor" d="M9 3h6l1 2h4v2H4V5h4l1-2Zm-3 6h12l-1 12H7L6 9Zm4 2v8h2v-8h-2Zm4 0v8h2v-8h-2Z" />
+                      </svg>
+                      {t('clientSupport.deleteCase')}
+                    </button>
                   </div>
                 </li>
               ))}
@@ -491,6 +546,19 @@ export default function SupportPage() {
           </ul>
         )}
       </div>
+
+      {deletingCase && (
+        <ConfirmModal
+          title={t('clientSupport.deleteCaseTitle')}
+          message={t('clientSupport.deleteCaseMessage').replace('{number}', deletingCase.caseNumber)}
+          confirmLabel={t('clientSupport.deleteCase')}
+          onClose={() => setDeletingCase(null)}
+          onConfirm={async () => {
+            await api.delete(`/client/support-cases/${deletingCase.id}`);
+            load();
+          }}
+        />
+      )}
 
       {openCaseId && cases.find((c) => c.id === openCaseId) && (
         <CaseMessagesModal

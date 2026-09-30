@@ -10,7 +10,7 @@ import { getLocalizedModel } from '../../i18n/bilingualContent';
 import ParticipationModelSummary, { ParticipationModelDetails } from '../../components/ParticipationModelSummary';
 import StatementStatus, { StatementBadge } from '../../components/StatementStatus';
 import BitgetTransferSection from './BitgetTransferSection';
-import CapitalConfirmation from './CapitalConfirmation';
+import CapitalConfirmation, { DEFAULT_REQUIRED_CAPITAL } from './CapitalConfirmation';
 import usePolling from '../../hooks/usePolling';
 
 // Detalle (solo lectura) del modelo único de participación — ya no hay
@@ -259,7 +259,7 @@ export default function SubaccountDetailPage() {
             <h4 style={{ margin: '0 0 8px' }}>{t('clientApiConnection.reportDistributionTitle')}</h4>
             <CapitalConfirmation
               subaccountId={id}
-              requiredCapital={subaccount.requiredCapital}
+              requiredCapital={subaccount.requiredCapital ?? DEFAULT_REQUIRED_CAPITAL}
               reports={distributionReports}
               onReported={() => {
                 flash(t('clientApiConnection.capitalReportedOk'));

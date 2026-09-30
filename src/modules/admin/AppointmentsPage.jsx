@@ -122,6 +122,8 @@ export default function AppointmentsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [appointments, setAppointments] = useState([]);
   const [confirmReject, setConfirmReject] = useState(null);
+  // Cita que el admin quiere borrar de su lista (se conserva archivada).
+  const [confirmDelete, setConfirmDelete] = useState(null);
   const [openingChat, setOpeningChat] = useState(null);
   const [highlightId, setHighlightId] = useState(null);
 
@@ -266,6 +268,21 @@ export default function AppointmentsPage() {
                           {openingChat === a.id ? t('common.loading') : t('clientAppointments.enterChat')}
                         </button>
                       )}
+                      {/* Borrar: solo si ya se respondió (una PENDIENTE se autoriza o rechaza primero). */}
+                      {a.status !== 'PENDING' && (
+                        <button
+                          type="button"
+                          className="qlc-btn ghost qlc-case-delete"
+                          onClick={() => setConfirmDelete(a)}
+                          title={t('adminAppointments.deleteAppointment')}
+                          aria-label={t('adminAppointments.deleteAppointment')}
+                        >
+                          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                            <path fill="currentColor" d="M9 3h6l1 2h4v2H4V5h4l1-2Zm-3 6h12l-1 12H7L6 9Zm4 2v8h2v-8h-2Zm4 0v8h2v-8h-2Z" />
+                          </svg>
+                          {t('adminAppointments.deleteAppointment')}
+                        </button>
+                      )}
                     </td>
                   </tr>
                 );
@@ -273,6 +290,19 @@ export default function AppointmentsPage() {
             </tbody>
           </table>
         </div>
+      )}
+
+      {confirmDelete && (
+        <ConfirmModal
+          title={t('adminAppointments.deleteTitle')}
+          message={t('adminAppointments.deleteMessage')}
+          confirmLabel={t('adminAppointments.deleteAppointment')}
+          onClose={() => setConfirmDelete(null)}
+          onConfirm={async () => {
+            await api.delete(`/admin/appointments/${confirmDelete.id}`);
+            load();
+          }}
+        />
       )}
 
       {confirmReject && (

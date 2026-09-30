@@ -8,6 +8,8 @@ import { translateBackendMessage } from '../../i18n/backendMessages';
 import usePolling from '../../hooks/usePolling';
 import CaseMessagesModal, { CaseMessagesButton } from '../../components/CaseMessagesModal';
 import { formatCdmxDateTime } from '../../utils/cdmxTime';
+import DocumentViewerModal from '../../components/DocumentViewerModal';
+import { ChatMessages, ChatFileButton, chatOpensAt, chatOpensLabel } from '../../components/ChatParts';
 
 function ChatPanel({ session, onClose }) {
   const { user } = useAuth();
@@ -17,6 +19,7 @@ function ChatPanel({ session, onClose }) {
   const [current, setCurrent] = useState(session);
   const [remaining, setRemaining] = useState(null);
   const [sendError, setSendError] = useState('');
+  const [viewingPdf, setViewingPdf] = useState(false);
 
   const refresh = () =>
     api.get(`/admin/chat/${session.id}`).then(({ data }) => {
@@ -43,9 +46,24 @@ function ChatPanel({ session, onClose }) {
     return () => clearInterval(timer);
   }, [current]);
 
+  // Solo a partir de la hora de la cita (UTC); el servidor también lo exige.
+  const opensAt = chatOpensAt(current);
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    if (current?.status !== 'SCHEDULED' || !opensAt || Date.now() >= opensAt.getTime()) return;
+    const timer = setInterval(() => setNow(Date.now()), 15000);
+    return () => clearInterval(timer);
+  }, [current?.status, opensAt?.getTime()]);
+  const tooEarly = Boolean(opensAt) && now < opensAt.getTime();
+
   const start = async () => {
-    await api.post(`/admin/chat/${session.id}/start`);
-    refresh();
+    setSendError('');
+    try {
+      await api.post(`/admin/chat/${session.id}/start`);
+      refresh();
+    } catch (err) {
+      setSendError(translateBackendMessage(err.message, language));
+    }
   };
 
   const send = async (e) => {
@@ -75,6 +93,11 @@ function ChatPanel({ session, onClose }) {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h2 style={{ margin: 0 }}>
             {t('adminSupport.chatWith')} {current.client?.firstName} {current.client?.lastName}
+            {current.appointment?.supportCase && (
+              <span style={{ fontSize: 13, color: 'var(--qlc-muted2)', fontWeight: 400 }}>
+                {' '}· {t('adminSupport.caseNumber')}#{current.appointment.supportCase.caseNumber}
+              </span>
+            )}
           </h2>
           <div style={{ display: 'flex', gap: 8 }}>
             {current?.status !== 'CLOSED' && (
@@ -90,9 +113,15 @@ function ChatPanel({ session, onClose }) {
 
         {current?.status === 'SCHEDULED' && (
           <div style={{ marginTop: 16 }}>
-            <button className="qlc-btn primary" onClick={start}>
+            {tooEarly && (
+              <p style={{ fontSize: 13, color: 'var(--qlc-gold)', marginTop: 0 }}>
+                {t('chatFiles.opensAt').replace('{time}', chatOpensLabel(current, t, { mexico: true }))}
+              </p>
+            )}
+            <button className="qlc-btn primary" onClick={start} disabled={tooEarly}>
               {t('adminSupport.startChat')} ({current.durationMinutes} min)
             </button>
+            {sendError && <div className="qlc-field-error" style={{ marginTop: 8 }}>{sendError}</div>}
           </div>
         )}
 
@@ -102,18 +131,19 @@ function ChatPanel({ session, onClose }) {
               {t('adminSupport.timeRemaining')}: {minutes}:{String(seconds).padStart(2, '0')}
             </div>
             <div style={{ flex: 1, overflowY: 'auto', border: '1px solid var(--qlc-line)', borderRadius: 10, padding: 10 }}>
-              {messages.length === 0 ? (
-                <div className="qlc-empty">{t('adminSupport.noMessages')}</div>
-              ) : (
-                messages.map((m) => (
-                  <div key={m.id} style={{ marginBottom: 8, fontSize: 13 }}>
-                    <strong>{m.senderUserId === user.id ? t('adminSupport.youAdmin') : t('adminSupport.client')}:</strong> {m.content}
-                  </div>
-                ))
-              )}
+              <ChatMessages
+                messages={messages}
+                currentUserId={user.id}
+                youLabel={t('adminSupport.youAdmin')}
+                otherLabel={t('adminSupport.client')}
+                apiBase="/admin"
+                sessionId={session.id}
+                emptyLabel={t('adminSupport.noMessages')}
+              />
             </div>
             {sendError && <div className="qlc-field-error" style={{ marginTop: 8 }}>{sendError}</div>}
             <form onSubmit={send} style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+              <ChatFileButton apiBase="/admin" sessionId={session.id} onSent={refresh} onError={setSendError} />
               <input
                 className="qlc-input"
                 value={content}
@@ -125,12 +155,116 @@ function ChatPanel({ session, onClose }) {
           </>
         )}
 
+        {/* Sesión cerrada: queda archivada con toda la conversación y sus
+            archivos (solo lectura) + PDF. */}
         {current?.status === 'CLOSED' && (
-          <div className="qlc-empty" style={{ marginTop: 20 }}>
-            {t('adminSupport.chatEnded')}
-          </div>
+          <>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap', margin: '12px 0 8px' }}>
+              <span className="qlc-badge muted">{t('adminSupport.chatEnded')}</span>
+              <button type="button" className="qlc-btn ghost" onClick={() => setViewingPdf(true)}>
+                {t('adminSupport.downloadPdf')}
+              </button>
+            </div>
+            <div style={{ flex: 1, overflowY: 'auto', border: '1px solid var(--qlc-line)', borderRadius: 10, padding: 10 }}>
+              <ChatMessages
+                messages={messages}
+                currentUserId={user.id}
+                youLabel={t('adminSupport.youAdmin')}
+                otherLabel={t('adminSupport.client')}
+                apiBase="/admin"
+                sessionId={session.id}
+                emptyLabel={t('adminSupport.noMessages')}
+              />
+            </div>
+          </>
+        )}
+        {viewingPdf && (
+          <DocumentViewerModal url={`/admin/chat/${session.id}/pdf`} fileName={`chat-${session.id}.pdf`} onClose={() => setViewingPdf(false)} />
         )}
       </div>
+    </div>
+  );
+}
+
+// ARCHIVO DE SESIONES CERRADAS — cada chat finalizado queda guardado; se
+// busca por N.º de caso y se abre en solo lectura (con sus archivos y PDF).
+function ClosedSessionsArchive({ onOpen }) {
+  const { t } = useLanguage();
+  const [query, setQuery] = useState('');
+  const [sessions, setSessions] = useState(null);
+  const [searched, setSearched] = useState('');
+
+  const search = (caseNumber = '') => {
+    const params = caseNumber ? { caseNumber } : {};
+    api.get('/admin/chat-sessions/closed', { params }).then(({ data }) => {
+      setSessions(data.sessions);
+      setSearched(caseNumber);
+    });
+  };
+  useEffect(() => search(''), []);
+
+  return (
+    <div className="qlc-card" style={{ marginBottom: 20 }}>
+      <h3 style={{ marginTop: 0 }}>{t('adminSupport.closedArchiveTitle')}</h3>
+      <p style={{ fontSize: 12, color: 'var(--qlc-muted2)', marginTop: 0 }}>{t('adminSupport.closedArchiveIntro')}</p>
+      <form
+        className="qlc-archive-search"
+        onSubmit={(e) => {
+          e.preventDefault();
+          search(query.trim().replace(/^#/, ''));
+        }}
+      >
+        <input
+          className="qlc-input"
+          inputMode="numeric"
+          value={query}
+          onChange={(e) => setQuery(e.target.value.replace(/[^\d#]/g, ''))}
+          placeholder={t('adminSupport.searchByCase')}
+          aria-label={t('adminSupport.searchByCase')}
+        />
+        <button className="qlc-btn primary">{t('adminSupport.search')}</button>
+        {searched && (
+          <button
+            type="button"
+            className="qlc-btn ghost"
+            onClick={() => {
+              setQuery('');
+              search('');
+            }}
+          >
+            {t('adminSupport.clearSearch')}
+          </button>
+        )}
+      </form>
+      {sessions === null ? (
+        <p style={{ fontSize: 12, color: 'var(--qlc-muted2)' }}>{t('common.loading')}</p>
+      ) : sessions.length === 0 ? (
+        <div className="qlc-empty">{searched ? t('adminSupport.noClosedForCase').replace('{number}', searched) : t('adminSupport.noClosedSessions')}</div>
+      ) : (
+        <ul className="qlc-plain-list">
+          {sessions.map((s) => (
+            <li key={s.id} className="qlc-archive-item">
+              <span>
+                {s.appointment?.supportCase ? (
+                  <strong>
+                    {t('adminSupport.caseNumber')}#{s.appointment.supportCase.caseNumber}
+                  </strong>
+                ) : (
+                  <strong>—</strong>
+                )}{' '}
+                · {s.client?.firstName} {s.client?.lastName}
+                <span style={{ color: 'var(--qlc-muted2)', fontSize: 12 }}>
+                  {' '}· {s.startedAt ? formatCdmxDateTime(s.startedAt) : t('adminSupport.notStarted')} · {s._count?.messages ?? 0}{' '}
+                  {t('adminSupport.messagesCount')}
+                </span>
+              </span>
+              <button className="qlc-btn ghost" onClick={() => onOpen(s)}>
+                {t('adminSupport.openChat')}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
@@ -218,6 +352,8 @@ export default function SupportPage() {
         </div>
       )}
 
+      <ClosedSessionsArchive onOpen={setActiveChat} />
+
       {cases.length === 0 ? (
         <div className="qlc-empty">{t('adminSupport.noCases')}</div>
       ) : (
@@ -232,7 +368,10 @@ export default function SupportPage() {
                   </span>{' '}
                   {c.subject}
                 </strong>
-                <span className={`qlc-badge ${cStatus.className}`}>{cStatus.text}</span>
+                <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                  {c.clientHiddenAt && <span className="qlc-badge muted">{t('adminSupport.hiddenByClient')}</span>}
+                  <span className={`qlc-badge ${cStatus.className}`}>{cStatus.text}</span>
+                </span>
               </div>
               <p style={{ color: 'var(--qlc-muted)', fontSize: 13 }}>{c.message}</p>
               <div style={{ fontSize: 12, color: 'var(--qlc-muted2)', marginBottom: 8 }}>

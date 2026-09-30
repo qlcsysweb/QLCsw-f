@@ -1556,3 +1556,94 @@ span.qlc-time-mx:not(:only-child) {
 .qlc-row-highlight > td {
   background: rgba(0, 168, 255, 0.12);
 }
+
+/* Chat de citas — mensajes con archivos adjuntos. */
+.qlc-chat-msg {
+  margin-bottom: 8px;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.qlc-chat-msg .qlc-att-list {
+  margin-top: 6px;
+}
+.qlc-chat-file-btn {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 42px;
+  padding-inline: 10px;
+}
+.qlc-chat-file-hint {
+  margin: 6px 0 0;
+  font-size: 11px;
+  color: var(--qlc-muted2);
+}
+
+/* Soporte (admin) — archivo de sesiones cerradas con buscador por caso. */
+.qlc-archive-search {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.qlc-archive-search .qlc-input {
+  flex: 1 1 180px;
+  max-width: 260px;
+}
+.qlc-archive-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--qlc-line);
+}
+
+/* Botón "Borrar" con icono (casos del cliente, citas del admin). */
+.qlc-case-delete {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.qlc-case-delete:hover:not(:disabled),
+.qlc-case-delete:focus-visible {
+  color: var(--qlc-danger);
+  border-color: var(--qlc-danger-border);
+}
+
+/* Reloj CDMX / UTC en el menú lateral del admin. */
+.qlc-dual-clock {
+  display: grid;
+  gap: 4px;
+  margin: -6px 0 14px;
+  padding: 8px 10px;
+  border: 1px solid var(--qlc-line);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.22);
+  font-variant-numeric: tabular-nums;
+}
+.qlc-dual-clock-row {
+  display: grid;
+  grid-template-columns: 38px 1fr auto;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--qlc-muted);
+}
+.qlc-dual-clock-zone {
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--qlc-blue2);
+}
+.qlc-dual-clock-date {
+  text-transform: capitalize;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.qlc-dual-clock-time {
+  font-size: 13px;
+  color: var(--qlc-text);
+}
