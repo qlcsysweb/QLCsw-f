@@ -10,6 +10,7 @@ import { translateBackendMessage } from '../../i18n/backendMessages';
 import { getLocalizedModel } from '../../i18n/bilingualContent';
 import ParticipationModelSummary, { ParticipationModelDetails } from '../../components/ParticipationModelSummary';
 import StatementStatus, { StatementBadge } from '../../components/StatementStatus';
+import StatementDetails from './StatementDetails';
 import BitgetTransferSection from './BitgetTransferSection';
 import CapitalConfirmation, { DEFAULT_REQUIRED_CAPITAL } from './CapitalConfirmation';
 import usePolling from '../../hooks/usePolling';
@@ -240,9 +241,13 @@ export default function SubaccountDetailPage() {
         </div>
       )}
 
-      <div className="qlc-detail-grid">
+      {/* En pantallas anchas: Modelo y Estado de cuenta juntos a la izquierda,
+          "Estado de conexión" (la tarjeta más alta) a la derecha, y la
+          Transferencia Bitget debajo a todo el ancho. En móvil, una columna
+          en el orden del código. */}
+      <div className="qlc-subaccount-layout">
         {/* MODELO ÚNICO DE PARTICIPACIÓN — sin selector: se muestra directo. */}
-        <div className="qlc-card">
+        <div className="qlc-card qlc-area-model">
           <ParticipationModelSummary model={participationModel} />
           {participationModel && (
             <button className="qlc-btn ghost" style={{ marginTop: 12 }} onClick={() => setShowModelDetails(true)}>
@@ -251,7 +256,7 @@ export default function SubaccountDetailPage() {
           )}
         </div>
 
-        <div className="qlc-card">
+        <div className="qlc-card qlc-area-connection">
           <h3 style={{ marginTop: 0 }}>{t('clientApiConnection.statusTitle')}</h3>
           {/* Capital operativo requerido: lo fija el ADMIN (solo lectura
               para el cliente). El cliente confirma con una frase escrita que
@@ -337,17 +342,12 @@ export default function SubaccountDetailPage() {
           )}
         </div>
 
-        <div className={`qlc-card${statementStatus === 'PENDIENTE_DE_PAGO' ? ' qlc-card-attention' : ''}`}>
+        <div className={`qlc-card qlc-area-statement${statementStatus === 'PENDIENTE_DE_PAGO' ? ' qlc-card-attention' : ''}`}>
           <div className="qlc-statement-card-head">
             <h3>{t('statementStatus.title')}</h3>
             <StatementStatus status={statementStatus} expiresAt={currentStatement?.expiresAt} onExpire={load} />
           </div>
-          {latestStatement && (
-            <p className="qlc-statement-meta">
-              {formatDateOnly(latestStatement.periodStart)} – {formatDateOnly(latestStatement.periodEnd)}
-              {Number(latestStatement.commission) > 0 ? ` · ${latestStatement.commission} USDT` : ''}
-            </p>
-          )}
+          {latestStatement && <StatementDetails statement={latestStatement} />}
           <div className="qlc-statement-actions">
             {latestStatement?.hasPdf && (
               <a className="qlc-btn ghost" href={`${API_BASE_URL}/client/statements/${latestStatement.id}/download`} target="_blank" rel="noreferrer">
@@ -365,7 +365,7 @@ export default function SubaccountDetailPage() {
               <div style={{ fontSize: 12, color: 'var(--qlc-muted)' }}>{t('statementStatus.previous')}</div>
               <ul className="qlc-plain-list qlc-statement-history" style={{ margin: 0 }}>
                 {statements.slice(1).map((s) => (
-                  <li key={s.id}>
+                  <li key={s.id} className="qlc-statement-history-item">
                     <span>
                       {formatDateOnly(s.periodStart)} – {formatDateOnly(s.periodEnd)}
                       {s.hasPdf && (
@@ -378,6 +378,10 @@ export default function SubaccountDetailPage() {
                       )}
                     </span>
                     <StatementBadge status={s.status} />
+                    <details className="qlc-statement-more">
+                      <summary>{t('statementStatus.viewDetails')}</summary>
+                      <StatementDetails statement={s} />
+                    </details>
                   </li>
                 ))}
               </ul>
@@ -385,15 +389,17 @@ export default function SubaccountDetailPage() {
           )}
         </div>
 
-        <BitgetTransferSection
-          subaccountId={id}
-          config={paymentConfig}
-          reports={payments}
-          hasUnpaidStatement={hasUnpaidStatement}
-          unpaidStatementId={hasUnpaidStatement ? latestStatement?.id : null}
-          guaranteeConfirmed={guaranteeConfirmed}
-          onReported={load}
-        />
+        <div className="qlc-area-transfer">
+          <BitgetTransferSection
+            subaccountId={id}
+            config={paymentConfig}
+            reports={payments}
+            hasUnpaidStatement={hasUnpaidStatement}
+            unpaidStatementId={hasUnpaidStatement ? latestStatement?.id : null}
+            guaranteeConfirmed={guaranteeConfirmed}
+            onReported={load}
+          />
+        </div>
       </div>
 
       {showModelDetails && participationModel && (

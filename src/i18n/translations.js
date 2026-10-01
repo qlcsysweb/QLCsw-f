@@ -1692,6 +1692,7 @@ const es = {
   },
 
   statementStatus: {
+    viewDetails: 'Ver detalle',
     title: 'Estado de cuenta',
     timeLeft: 'Tiempo restante:',
     notGeneratedHint: 'Aún no se ha generado un estado de cuenta.',
@@ -3599,6 +3600,7 @@ const en = {
   },
 
   statementStatus: {
+    viewDetails: 'View details',
     title: 'Account statement',
     timeLeft: 'Time left:',
     notGeneratedHint: 'No statement has been generated yet.',

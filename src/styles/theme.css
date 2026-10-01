@@ -1773,3 +1773,92 @@ span.qlc-time-mx:not(:only-child) {
 .qlc-proposal-line.ok {
   color: var(--qlc-ok);
 }
+
+/* Estado de cuenta (cliente) — los datos que captura el admin. */
+.qlc-statement-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px 14px;
+  margin: 10px 0 0;
+}
+.qlc-statement-grid div {
+  min-width: 0;
+}
+.qlc-statement-grid dt {
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--qlc-muted2);
+}
+.qlc-statement-grid dd {
+  margin: 2px 0 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--qlc-text);
+  overflow-wrap: anywhere;
+}
+.qlc-statement-note {
+  margin-top: 10px;
+  font-size: 12px;
+}
+.qlc-statement-note strong {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--qlc-muted2);
+}
+.qlc-statement-note p {
+  margin: 2px 0 0;
+  color: var(--qlc-muted);
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+.qlc-statement-history-item {
+  flex-wrap: wrap;
+}
+.qlc-statement-more {
+  flex-basis: 100%;
+  font-size: 12px;
+}
+.qlc-statement-more summary {
+  cursor: pointer;
+  color: var(--qlc-blue2);
+}
+
+/* Subcuenta (cliente) — dos columnas: a la izquierda Modelo y Estado de cuenta
+   (juntos, sin hueco), a la derecha Estado de conexión; la Transferencia
+   Bitget va debajo a todo el ancho. En móvil, una columna. */
+.qlc-subaccount-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+.qlc-subaccount-layout > * {
+  min-width: 0;
+}
+@media (min-width: 900px) {
+  .qlc-subaccount-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    /* La fila 2 absorbe el alto sobrante de la columna derecha. */
+    grid-template-rows: auto 1fr auto;
+  }
+  .qlc-area-model {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .qlc-area-statement {
+    grid-column: 1;
+    grid-row: 2;
+    align-self: start;
+  }
+  .qlc-area-connection {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+  .qlc-area-transfer {
+    grid-column: 1 / -1;
+    grid-row: 3;
+  }
+}
