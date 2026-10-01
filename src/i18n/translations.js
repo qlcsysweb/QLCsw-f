@@ -597,7 +597,7 @@ const es = {
 
   chatFiles: {
     attach: 'Adjuntar archivo',
-    hint: 'Puedes enviar imágenes (JPG, PNG, WEBP) o PDF de hasta 10 MB.',
+    hint: 'Puedes enviar fotos (JPG, PNG, WEBP) y documentos (PDF, Word, Excel, PowerPoint, TXT o CSV) de hasta 10 MB.',
     uploading: 'Subiendo…',
     tooBig: 'El archivo puede pesar como máximo 10 MB.',
     opensAt: 'El chat se habilita a la hora de la cita: {time}.',
@@ -2509,7 +2509,7 @@ const en = {
 
   chatFiles: {
     attach: 'Attach file',
-    hint: 'You can send images (JPG, PNG, WEBP) or PDF files up to 10 MB.',
+    hint: 'You can send photos (JPG, PNG, WEBP) and documents (PDF, Word, Excel, PowerPoint, TXT or CSV) up to 10 MB.',
     uploading: 'Uploading…',
     tooBig: 'The file can be at most 10 MB.',
     opensAt: 'The chat opens at the appointment time: {time}.',

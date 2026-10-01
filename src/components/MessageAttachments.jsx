@@ -3,6 +3,12 @@ import api from '../services/api';
 import { useLanguage } from '../i18n/LanguageContext';
 import DocumentViewerModal from './DocumentViewerModal';
 
+// Etiqueta corta del formato para los archivos que no son imagen (PDF, DOCX…).
+function fileBadge(fileName) {
+  const ext = String(fileName || '').split('.').pop();
+  return ext && ext.length <= 5 ? ext.toUpperCase() : 'DOC';
+}
+
 // Miniatura de una imagen adjunta: se pide como blob con la sesión (nunca la
 // URL directa del backend/Drive) y se libera al desmontar.
 function Thumb({ url, alt }) {
@@ -44,7 +50,11 @@ export default function MessageAttachments({ attachments = [], baseUrl }) {
           const isImage = a.mimeType?.startsWith('image/');
           return (
             <li key={a.id} className="qlc-att-item">
-              {isImage ? <Thumb url={url} alt={a.fileName} /> : <span className="qlc-att-thumb qlc-att-pdf">PDF</span>}
+              {isImage ? (
+                <Thumb url={url} alt={a.fileName} />
+              ) : (
+                <span className="qlc-att-thumb qlc-att-pdf">{fileBadge(a.fileName)}</span>
+              )}
               <span className="qlc-att-name" title={a.fileName}>
                 {a.fileName}
               </span>

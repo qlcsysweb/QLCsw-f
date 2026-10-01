@@ -7,11 +7,12 @@ import { appointmentUtcInstant, appointmentMexicoTime } from '../utils/cdmxTime'
 
 /*
  * Piezas compartidas del chat de citas (cliente y admin): lista de mensajes
- * con archivos adjuntos y botón para enviar un archivo (imagen o PDF, 10 MB).
+ * con archivos adjuntos y botón para enviar un archivo (foto o documento, 10 MB).
  * Los archivos se sirven por la API autenticada (`${apiBase}/chat/:id/files/
  * :messageId`), nunca por un enlace directo de Drive.
  */
-const CHAT_FILE_TYPES = 'image/jpeg,image/png,image/webp,application/pdf';
+// Fotos y documentos (el servidor confirma el tipo con el contenido real).
+const CHAT_FILE_TYPES = '.jpg,.jpeg,.png,.webp,.pdf,.docx,.xlsx,.pptx,.txt,.csv';
 const MAX_CHAT_FILE_BYTES = 10 * 1024 * 1024;
 
 export function ChatMessages({ messages, currentUserId, youLabel, otherLabel, apiBase, sessionId, emptyLabel }) {
