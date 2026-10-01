@@ -601,6 +601,7 @@ const es = {
     uploading: 'Subiendo…',
     tooBig: 'El archivo puede pesar como máximo 10 MB.',
     opensAt: 'El chat se habilita a la hora de la cita: {time}.',
+    remaining: 'Faltan {time}.',
   },
 
   clock: {
@@ -2475,6 +2476,7 @@ const en = {
     uploading: 'Uploading…',
     tooBig: 'The file can be at most 10 MB.',
     opensAt: 'The chat opens at the appointment time: {time}.',
+    remaining: '{time} remaining.',
   },
 
   clock: {

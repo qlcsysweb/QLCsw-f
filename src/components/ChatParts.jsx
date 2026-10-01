@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import api from '../services/api';
 import { useLanguage } from '../i18n/LanguageContext';
 import { translateBackendMessage } from '../i18n/backendMessages';
@@ -98,4 +98,37 @@ export function chatOpensLabel(session, t, { mexico = false } = {}) {
   if (!mexico) return `${a.requestedTime} UTC`;
   const mx = appointmentMexicoTime(a.requestedDate, a.requestedTime);
   return `${mx.time} ${t('adminAppointments.mexicoTime')} (${a.requestedTime} UTC)`;
+}
+
+// APERTURA DEL CHAT — se habilita exactamente a la hora de la cita (UTC).
+// Usa la hora del SERVIDOR (serverOffsetMs = hora del servidor − hora del
+// equipo) para que un reloj de la PC adelantado o atrasado no cambie el
+// momento de apertura; se actualiza cada segundo y al volver a la pestaña.
+export function useChatOpening(session, serverOffsetMs = 0) {
+  const opensAt = chatOpensAt(session);
+  const target = opensAt ? opensAt.getTime() : null;
+  const [now, setNow] = useState(() => Date.now() + serverOffsetMs);
+  useEffect(() => {
+    const tick = () => setNow(Date.now() + serverOffsetMs);
+    tick();
+    if (session?.status !== 'SCHEDULED' || !target) return undefined;
+    const timer = setInterval(tick, 1000);
+    document.addEventListener('visibilitychange', tick);
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener('visibilitychange', tick);
+    };
+  }, [session?.status, target, serverOffsetMs]);
+  const remainingMs = target ? Math.max(0, target - now) : 0;
+  return { opensAt, tooEarly: Boolean(target) && now < target, remainingMs };
+}
+
+// "1:05:09" o "25:31" — tiempo que falta para que se habilite el chat.
+export function formatRemaining(ms) {
+  const total = Math.ceil(ms / 1000);
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = total % 60;
+  const pad = (n) => String(n).padStart(2, '0');
+  return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
 }

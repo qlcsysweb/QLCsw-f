@@ -9,7 +9,7 @@ import usePolling from '../../hooks/usePolling';
 import CaseMessagesModal, { CaseMessagesButton } from '../../components/CaseMessagesModal';
 import { formatDateOnly, appointmentMexicoTime } from '../../utils/cdmxTime';
 import DocumentViewerModal from '../../components/DocumentViewerModal';
-import { ChatMessages, ChatFileButton, chatOpensAt, chatOpensLabel } from '../../components/ChatParts';
+import { ChatMessages, ChatFileButton, chatOpensLabel, useChatOpening, formatRemaining } from '../../components/ChatParts';
 
 function ChatPanel({ session, onClose }) {
   const { user } = useAuth();
@@ -21,10 +21,13 @@ function ChatPanel({ session, onClose }) {
   const [sendError, setSendError] = useState('');
   const [viewingPdf, setViewingPdf] = useState(false);
 
+  // Diferencia entre la hora del servidor y la del equipo (ver useChatOpening).
+  const [serverOffset, setServerOffset] = useState(0);
   const refresh = () =>
     api.get(`/admin/chat/${session.id}`).then(({ data }) => {
       setCurrent(data.session);
       setMessages(data.messages);
+      if (data.serverTime) setServerOffset(Date.parse(data.serverTime) - Date.now());
     });
 
   useEffect(() => {
@@ -47,14 +50,7 @@ function ChatPanel({ session, onClose }) {
   }, [current]);
 
   // Solo a partir de la hora de la cita (UTC); el servidor también lo exige.
-  const opensAt = chatOpensAt(current);
-  const [now, setNow] = useState(Date.now());
-  useEffect(() => {
-    if (current?.status !== 'SCHEDULED' || !opensAt || Date.now() >= opensAt.getTime()) return;
-    const timer = setInterval(() => setNow(Date.now()), 15000);
-    return () => clearInterval(timer);
-  }, [current?.status, opensAt?.getTime()]);
-  const tooEarly = Boolean(opensAt) && now < opensAt.getTime();
+  const { tooEarly, remainingMs } = useChatOpening(current, serverOffset);
 
   const start = async () => {
     setSendError('');
@@ -115,7 +111,8 @@ function ChatPanel({ session, onClose }) {
           <div style={{ marginTop: 16 }}>
             {tooEarly && (
               <p style={{ fontSize: 13, color: 'var(--qlc-gold)', marginTop: 0 }}>
-                {t('chatFiles.opensAt').replace('{time}', chatOpensLabel(current, t, { mexico: true }))}
+                {t('chatFiles.opensAt').replace('{time}', chatOpensLabel(current, t, { mexico: true }))}{' '}
+                <strong>{t('chatFiles.remaining').replace('{time}', formatRemaining(remainingMs))}</strong>
               </p>
             )}
             <button className="qlc-btn primary" onClick={start} disabled={tooEarly}>
