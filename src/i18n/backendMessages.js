@@ -58,6 +58,8 @@ const KNOWN_MESSAGES = {
   'El archivo no corresponde a su formato o está dañado.': 'The file does not match its format or is damaged.',
   'Evento no encontrado': 'Event not found',
   'Reporte no encontrado': 'Report not found',
+  'El estado de cuenta actual no se puede borrar.': 'The current statement cannot be deleted.',
+  'Solo puedes borrar estados de cuenta ya pagados.': 'You can only delete statements that are already paid.',
   'Este reporte sigue en revisión; podrás borrarlo cuando QLC lo revise.': 'This report is still under review; you can delete it once QLC reviews it.',
   'Usuario o contraseña incorrectos': 'Incorrect username or password',
   'Demasiados intentos de inicio de sesión. Intenta más tarde.': 'Too many login attempts. Please try again later.',

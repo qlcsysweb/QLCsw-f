@@ -14,6 +14,7 @@ import StatementDetails from './StatementDetails';
 import BitgetTransferSection from './BitgetTransferSection';
 import CapitalConfirmation, { DEFAULT_REQUIRED_CAPITAL } from './CapitalConfirmation';
 import usePolling from '../../hooks/usePolling';
+import ConfirmModal from '../../components/ConfirmModal';
 
 // Detalle (solo lectura) del modelo único de participación — ya no hay
 // nada que elegir ni confirmar.
@@ -55,6 +56,8 @@ export default function SubaccountDetailPage() {
   const [savingApi, setSavingApi] = useState(false);
   const [payments, setPayments] = useState([]);
   const [statements, setStatements] = useState([]);
+  // Estado de cuenta anterior que el cliente quiere borrar de su historial.
+  const [removingStatement, setRemovingStatement] = useState(null);
   const [currentStatement, setCurrentStatement] = useState(null);
   const [paymentConfig, setPaymentConfig] = useState(null);
   const location = useLocation();
@@ -167,6 +170,8 @@ export default function SubaccountDetailPage() {
   const statementStatus = currentStatement?.status || 'NO_GENERADO';
   const hasUnpaidStatement = statementStatus === 'PENDIENTE_DE_PAGO' || statementStatus === 'VENCIDO_SIN_PAGAR';
   const latestStatement = statements[0] || null;
+  // "Estados de cuenta anteriores": todos menos el actual y los que el cliente borró.
+  const previousStatements = statements.slice(1).filter((s) => !s.clientHidden);
 
   const saveApi = async (e) => {
     e.preventDefault();
@@ -361,11 +366,11 @@ export default function SubaccountDetailPage() {
               </a>
             )}
           </div>
-          {statements.length > 1 && (
+          {previousStatements.length > 0 && (
             <div style={{ marginTop: 14 }}>
               <div style={{ fontSize: 12, color: 'var(--qlc-muted)' }}>{t('statementStatus.previous')}</div>
               <ul className="qlc-plain-list qlc-statement-history" style={{ margin: 0 }}>
-                {statements.slice(1).map((s) => (
+                {previousStatements.map((s) => (
                   <li key={s.id} className="qlc-statement-history-item">
                     <span>
                       {formatDateOnly(s.periodStart)} – {formatDateOnly(s.periodEnd)}
@@ -378,7 +383,22 @@ export default function SubaccountDetailPage() {
                         </>
                       )}
                     </span>
-                    <StatementBadge status={s.status} />
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                      <StatementBadge status={s.status} />
+                      {s.status === 'PAGADO' && (
+                        <button
+                          type="button"
+                          className="qlc-btn ghost qlc-case-delete qlc-icon-only"
+                          onClick={() => setRemovingStatement(s)}
+                          title={t('statementStatus.deleteFromHistory')}
+                          aria-label={t('statementStatus.deleteFromHistory')}
+                        >
+                          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                          <path fill="currentColor" d="M9 3h6l1 2h4v2H4V5h4l1-2Zm-3 6h12l-1 12H7L6 9Zm4 2v8h2v-8h-2Zm4 0v8h2v-8h-2Z" />
+                        </svg>
+                        </button>
+                      )}
+                    </span>
                     <details className="qlc-statement-more">
                       <summary>{t('statementStatus.viewDetails')}</summary>
                       <StatementDetails statement={s} />
@@ -390,6 +410,20 @@ export default function SubaccountDetailPage() {
           )}
         </div>
 
+        {removingStatement && (
+          <ConfirmModal
+            title={t('statementStatus.deleteFromHistoryTitle')}
+            message={t('statementStatus.deleteFromHistoryMessage')
+              .replace('{period}', `${formatDateOnly(removingStatement.periodStart)} – ${formatDateOnly(removingStatement.periodEnd)}`)}
+            confirmLabel={t('statementStatus.deleteFromHistory')}
+            onClose={() => setRemovingStatement(null)}
+            onConfirm={async () => {
+              await api.delete(`/client/statements/${removingStatement.id}`);
+              load();
+            }}
+          />
+        )}
+
         <div className="qlc-area-transfer">
           <BitgetTransferSection
             subaccountId={id}
@@ -399,6 +433,7 @@ export default function SubaccountDetailPage() {
             unpaidStatementId={hasUnpaidStatement ? latestStatement?.id : null}
             guaranteeConfirmed={guaranteeConfirmed}
             onReported={load}
+            onRemoved={load}
           />
         </div>
       </div>

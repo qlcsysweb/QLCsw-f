@@ -1385,6 +1385,9 @@ const es = {
   },
 
   clientPayments: {
+    deleteFromHistory: 'Borrar del historial',
+    deleteFromHistoryTitle: 'Borrar transferencia del historial',
+    deleteFromHistoryMessage: '¿Borrar de tu historial la transferencia del {date}? Ya fue revisada por QLC; solo dejará de mostrarse en tu historial.',
     sectionKicker: 'DEPÓSITO DE TU GARANTÍA',
     bitgetTitle: 'Transferencia interna Bitget',
     bitgetIntro: 'Envía tus USDT desde tu cuenta de Bitget al UID de recepción de QLC.',
@@ -1699,6 +1702,9 @@ const es = {
   },
 
   statementStatus: {
+    deleteFromHistory: 'Borrar del historial',
+    deleteFromHistoryTitle: 'Borrar estado de cuenta del historial',
+    deleteFromHistoryMessage: '¿Borrar de tu historial el estado de cuenta del periodo {period}? Ya está pagado; solo dejará de mostrarse en tu historial.',
     viewDetails: 'Ver detalle',
     title: 'Estado de cuenta',
     timeLeft: 'Tiempo restante:',
@@ -3300,6 +3306,9 @@ const en = {
   },
 
   clientPayments: {
+    deleteFromHistory: 'Delete from history',
+    deleteFromHistoryTitle: 'Delete transfer from history',
+    deleteFromHistoryMessage: 'Delete the transfer of {date} from your history? It has already been reviewed by QLC; it will only stop being shown in your history.',
     sectionKicker: 'YOUR GUARANTEE DEPOSIT',
     bitgetTitle: 'Bitget internal transfer',
     bitgetIntro: "Send your USDT from your Bitget account to QLC's receiving UID.",
@@ -3614,6 +3623,9 @@ const en = {
   },
 
   statementStatus: {
+    deleteFromHistory: 'Delete from history',
+    deleteFromHistoryTitle: 'Delete statement from history',
+    deleteFromHistoryMessage: 'Delete the statement for the period {period} from your history? It is already paid; it will only stop being shown in your history.',
     viewDetails: 'View details',
     title: 'Account statement',
     timeLeft: 'Time left:',

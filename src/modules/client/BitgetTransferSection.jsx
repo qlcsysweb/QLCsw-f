@@ -5,6 +5,7 @@ import { translateBackendMessage } from '../../i18n/backendMessages';
 import { TRANSFER_REPORT_STATUS, statusOf } from '../../utils/statusLabels';
 import { formatCdmxDate, formatCdmxDateTime } from '../../utils/cdmxTime';
 import DocumentViewerModal from '../../components/DocumentViewerModal';
+import ConfirmModal from '../../components/ConfirmModal';
 import FilePicker from '../../components/FilePicker';
 import { BitgetSteps, BitgetTransferData, BitgetAdvantages } from '../../components/BitgetTransferInfo';
 
@@ -141,11 +142,13 @@ function TransferReportForm({ subaccountId, uid, editing, hasUnpaidStatement, on
  * reportada" con su estado; reportar otra transferencia es una acción
  * explícita, y un reporte rechazado se CORRIGE (mismo registro).
  */
-export default function BitgetTransferSection({ subaccountId, config, reports, hasUnpaidStatement, unpaidStatementId, guaranteeConfirmed, onReported }) {
+export default function BitgetTransferSection({ subaccountId, config, reports, hasUnpaidStatement, unpaidStatementId, guaranteeConfirmed, onReported, onRemoved }) {
   const { t } = useLanguage();
   const [mode, setMode] = useState(null); // null | 'new' | 'correct'
   const [ok, setOk] = useState('');
   const [viewing, setViewing] = useState(null);
+  // Transferencia revisada que el cliente quiere borrar de su historial.
+  const [removing, setRemoving] = useState(null);
   // Reporte recién guardado: se muestra de inmediato (sin esperar al
   // siguiente refresco) para que nunca aparezca el formulario vacío.
   const [justReported, setJustReported] = useState(null);
@@ -170,6 +173,9 @@ export default function BitgetTransferSection({ subaccountId, config, reports, h
   const latestInReview = latest && IN_REVIEW.includes(latest.status) ? latest : null;
   const latestRejected = latest?.status === 'RECHAZADO' ? latest : null;
   const paymentDone = !hasUnpaidStatement && guaranteeConfirmed;
+  // Historial visible: sin los que el cliente borró (siguen contando arriba
+  // para el estado del pago).
+  const historyReports = allReports.filter((r) => !r.clientHidden);
 
   const handleDone = (report) => {
     if (report) setJustReported(report);
@@ -303,11 +309,11 @@ export default function BitgetTransferSection({ subaccountId, config, reports, h
         {body}
       </div>
 
-      {allReports.length > 0 && (
+      {historyReports.length > 0 && (
         <div className="qlc-bitget-history">
           <div style={{ fontSize: 12, color: 'var(--qlc-muted)' }}>{t('clientPayments.history')}</div>
           <ul className="qlc-plain-list" style={{ margin: 0 }}>
-            {allReports.map((r) => {
+            {historyReports.map((r) => {
               const st = statusOf(reportStatusMap, r.status);
               return (
                 <li key={r.id}>
@@ -353,7 +359,22 @@ export default function BitgetTransferSection({ subaccountId, config, reports, h
                       </>
                     )}
                   </span>
-                  <span className={`qlc-badge ${st.className}`}>{st.text}</span>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                    <span className={`qlc-badge ${st.className}`}>{st.text}</span>
+                    {(r.status === 'APROBADO' || r.status === 'RECHAZADO') && (
+                      <button
+                        type="button"
+                        className="qlc-btn ghost qlc-case-delete qlc-icon-only"
+                        onClick={() => setRemoving(r)}
+                        title={t('clientPayments.deleteFromHistory')}
+                        aria-label={t('clientPayments.deleteFromHistory')}
+                      >
+                        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                          <path fill="currentColor" d="M9 3h6l1 2h4v2H4V5h4l1-2Zm-3 6h12l-1 12H7L6 9Zm4 2v8h2v-8h-2Zm4 0v8h2v-8h-2Z" />
+                        </svg>
+                      </button>
+                    )}
+                  </span>
                 </li>
               );
             })}
@@ -361,6 +382,22 @@ export default function BitgetTransferSection({ subaccountId, config, reports, h
         </div>
       )}
       {viewing && <DocumentViewerModal url={viewing.url} fileName={viewing.fileName} onClose={() => setViewing(null)} />}
+      {removing && (
+        <ConfirmModal
+          title={t('clientPayments.deleteFromHistoryTitle')}
+          message={t('clientPayments.deleteFromHistoryMessage').replace(
+            '{date}',
+            formatCdmxDateTime(removing.transactionAt || removing.reportedAt)
+          )}
+          confirmLabel={t('clientPayments.deleteFromHistory')}
+          onClose={() => setRemoving(null)}
+          onConfirm={async () => {
+            await api.delete(`/client/payment-reports/${removing.id}`);
+            setJustReported(null);
+            onRemoved?.();
+          }}
+        />
+      )}
     </section>
   );
 }
