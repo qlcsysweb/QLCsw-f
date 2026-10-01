@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { LanguageProvider, useLanguage } from './i18n/LanguageContext';
+import UpdateBanner from './components/UpdateBanner';
 import WelcomeLanguageGate from './i18n/WelcomeLanguageGate';
 import ProtectedRoute from './routes/ProtectedRoute';
 import LoginPage from './pages/LoginPage';
@@ -120,6 +121,7 @@ export default function App() {
     <BrowserRouter>
       <LanguageProvider>
         <AppRoutes />
+        <UpdateBanner />
       </LanguageProvider>
     </BrowserRouter>
   );

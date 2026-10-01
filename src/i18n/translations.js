@@ -604,6 +604,11 @@ const es = {
     remaining: 'Faltan {time}.',
   },
 
+  updateBanner: {
+    text: 'Hay una nueva versión de QLC disponible.',
+    reload: 'Actualizar',
+  },
+
   clock: {
     labelUtc: 'Fecha y hora actual en UTC',
     label: 'Fecha y hora actual en Ciudad de México y en UTC',
@@ -2477,6 +2482,11 @@ const en = {
     tooBig: 'The file can be at most 10 MB.',
     opensAt: 'The chat opens at the appointment time: {time}.',
     remaining: '{time} remaining.',
+  },
+
+  updateBanner: {
+    text: 'A new version of QLC is available.',
+    reload: 'Update',
   },
 
   clock: {
