@@ -107,6 +107,9 @@ export default function AdminSubaccountDetailPage() {
   const apiStatusMap = API_CONNECTION_STATUS(t);
   const paymentStatusMap = PAYMENT_REPORT_STATUS(t);
 
+  // Evento del historial de conexión que el admin quiere borrar.
+  const [deletingEvent, setDeletingEvent] = useState(null);
+
   const load = () => {
     api.get(`/admin/clients/${clientId}`).then(({ data }) => {
       const found = data.client.apiSubaccounts.find((s) => s.id === id);
@@ -428,12 +431,25 @@ export default function AdminSubaccountDetailPage() {
               <h4 style={{ margin: '0 0 8px' }}>{t('adminClientDetail.connectionHistory')}</h4>
               <ul className="qlc-plain-list">
                 {subaccount.connectionEvents.map((ev) => (
-                  <li key={ev.id} style={{ fontSize: 12, color: 'var(--qlc-muted)' }}>
-                    <span className={`qlc-badge ${ev.eventType === 'DISCONNECTED' ? 'danger' : 'ok'}`}>
-                      {t(`adminClientDetail.connectionEvent${ev.eventType}`)}
-                    </span>{' '}
-                    {formatCdmxDate(ev.occurredAt)}
-                    {ev.reason && ` — ${ev.reason}`}
+                  <li key={ev.id} className="qlc-history-item">
+                    <span>
+                      <span className={`qlc-badge ${ev.eventType === 'DISCONNECTED' ? 'danger' : 'ok'}`}>
+                        {t(`adminClientDetail.connectionEvent${ev.eventType}`)}
+                      </span>{' '}
+                      {formatCdmxDate(ev.occurredAt)}
+                      {ev.reason && ` — ${ev.reason}`}
+                    </span>
+                    <button
+                      type="button"
+                      className="qlc-btn ghost qlc-case-delete qlc-icon-only"
+                      onClick={() => setDeletingEvent(ev)}
+                      title={t('adminClientDetail.deleteHistoryEvent')}
+                      aria-label={t('adminClientDetail.deleteHistoryEvent')}
+                    >
+                      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                        <path fill="currentColor" d="M9 3h6l1 2h4v2H4V5h4l1-2Zm-3 6h12l-1 12H7L6 9Zm4 2v8h2v-8h-2Zm4 0v8h2v-8h-2Z" />
+                      </svg>
+                    </button>
                   </li>
                 ))}
               </ul>
@@ -646,6 +662,21 @@ export default function AdminSubaccountDetailPage() {
           </form>
         </div>
       </div>
+
+      {deletingEvent && (
+        <ConfirmModal
+          title={t('adminClientDetail.deleteHistoryEventTitle')}
+          message={t('adminClientDetail.deleteHistoryEventMessage')
+            .replace('{event}', t(`adminClientDetail.connectionEvent${deletingEvent.eventType}`))
+            .replace('{date}', formatCdmxDate(deletingEvent.occurredAt))}
+          confirmLabel={t('adminClientDetail.deleteHistoryEvent')}
+          onClose={() => setDeletingEvent(null)}
+          onConfirm={async () => {
+            await api.delete(`/admin/api-subaccounts/${id}/connection-events/${deletingEvent.id}`);
+            load();
+          }}
+        />
+      )}
 
       {confirmMarkPaid && (
         <ConfirmModal

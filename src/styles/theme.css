@@ -1862,3 +1862,17 @@ span.qlc-time-mx:not(:only-child) {
     grid-row: 3;
   }
 }
+
+/* Historial de conexión (admin) — evento + papelera alineada a la derecha. */
+.qlc-history-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--qlc-muted);
+}
+.qlc-history-item > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}

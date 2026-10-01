@@ -787,6 +787,9 @@ const es = {
   },
 
   adminClientDetail: {
+    deleteHistoryEvent: 'Borrar del historial',
+    deleteHistoryEventTitle: 'Borrar evento del historial',
+    deleteHistoryEventMessage: '¿Borrar el evento "{event}" del {date} del historial de conexión? Dejará de mostrarse al administrador y al cliente.',
     internalIdentifier: 'Identificador interno (ej. PCB-1-A-1)',
     internalIdentifierHint: 'Obligatorio. Se guarda junto con la API Key de esta subcuenta y puedes cambiarlo cuando quieras. Es un control interno: el cliente no lo ve.',
     kicker: 'FICHA DE CLIENTE',
@@ -2700,6 +2703,9 @@ const en = {
   },
 
   adminClientDetail: {
+    deleteHistoryEvent: 'Delete from history',
+    deleteHistoryEventTitle: 'Delete history event',
+    deleteHistoryEventMessage: 'Delete the "{event}" event of {date} from the connection history? It will no longer be shown to the administrator or the client.',
     internalIdentifier: 'Internal identifier (e.g. PCB-1-A-1)',
     internalIdentifierHint: 'Required. It is saved together with this subaccount\'s API Key and you can change it at any time. It is an internal control: the client does not see it.',
     kicker: 'CLIENT RECORD',
