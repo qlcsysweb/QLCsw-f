@@ -4,6 +4,7 @@ import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 import { PAYMENT_REPORT_STATUS, statusOf } from '../../utils/statusLabels';
 import { formatCdmxDateTime } from '../../utils/cdmxTime';
+import ConfirmModal from '../../components/ConfirmModal';
 
 export const formatCapital = (value) => String(Number(value));
 // Capital operativo mínimo de QLC: aplica si el ADMIN no asignó un monto
@@ -28,12 +29,16 @@ const isValidDeclaration = (s) => Object.values(CAPITAL_DECLARATIONS).includes(n
  * cliente, que el admin revisa después. Una vez enviada, se muestra el
  * estado ("Capital reportado") en vez de volver a pedir la frase.
  */
-export default function CapitalConfirmation({ subaccountId, requiredCapital, reports, onReported }) {
+// Solo los reportes ya revisados por QLC se pueden borrar del historial.
+const REVIEWED = ['APROBADO', 'RECHAZADO'];
+
+export default function CapitalConfirmation({ subaccountId, requiredCapital, reports, onReported, onRemoved }) {
   const { t, language } = useLanguage();
   const [confirmation, setConfirmation] = useState('');
   const [note, setNote] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
+  const [removing, setRemoving] = useState(null);
   const statusMap = PAYMENT_REPORT_STATUS(t);
 
   const hasCapital = requiredCapital != null && Number(requiredCapital) > 0;
@@ -161,12 +166,42 @@ export default function CapitalConfirmation({ subaccountId, requiredCapital, rep
                   <span>
                     {formatCapital(r.amount)} USDT — {formatCdmxDateTime(r.reportedAt)}
                   </span>
-                  <span className={`qlc-badge ${st.className}`}>{st.text}</span>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                    <span className={`qlc-badge ${st.className}`}>{st.text}</span>
+                    {REVIEWED.includes(r.status) && (
+                      <button
+                        type="button"
+                        className="qlc-btn ghost qlc-case-delete qlc-icon-only"
+                        onClick={() => setRemoving(r)}
+                        title={t('clientApiConnection.deleteDistributionReport')}
+                        aria-label={t('clientApiConnection.deleteDistributionReport')}
+                      >
+                        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                          <path fill="currentColor" d="M9 3h6l1 2h4v2H4V5h4l1-2Zm-3 6h12l-1 12H7L6 9Zm4 2v8h2v-8h-2Zm4 0v8h2v-8h-2Z" />
+                        </svg>
+                      </button>
+                    )}
+                  </span>
                 </li>
               );
             })}
           </ul>
         </div>
+      )}
+
+      {removing && (
+        <ConfirmModal
+          title={t('clientApiConnection.deleteDistributionReportTitle')}
+          message={t('clientApiConnection.deleteDistributionReportMessage')
+            .replace('{amount}', formatCapital(removing.amount))
+            .replace('{date}', formatCdmxDateTime(removing.reportedAt))}
+          confirmLabel={t('clientApiConnection.deleteDistributionReport')}
+          onClose={() => setRemoving(null)}
+          onConfirm={async () => {
+            await api.delete(`/client/api-subaccounts/${subaccountId}/capital-distribution-reports/${removing.id}`);
+            onRemoved?.();
+          }}
+        />
       )}
     </div>
   );

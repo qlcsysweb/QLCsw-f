@@ -1506,6 +1506,9 @@ const es = {
   },
 
   clientApiConnection: {
+    deleteDistributionReport: 'Borrar del historial',
+    deleteDistributionReportTitle: 'Borrar reporte del historial',
+    deleteDistributionReportMessage: '¿Borrar de tu historial el reporte de {amount} USDT del {date}? Ya fue revisado por QLC; solo dejará de mostrarse en tu historial.',
     kicker: 'CONEXIÓN API',
     title: 'Conexión con el exchange',
     disclaimer:
@@ -3418,6 +3421,9 @@ const en = {
   },
 
   clientApiConnection: {
+    deleteDistributionReport: 'Delete from history',
+    deleteDistributionReportTitle: 'Delete report from history',
+    deleteDistributionReportMessage: 'Delete the {amount} USDT report of {date} from your history? It has already been reviewed by QLC; it will only stop being shown in your history.',
     kicker: 'API CONNECTION',
     title: 'Exchange connection',
     disclaimer:

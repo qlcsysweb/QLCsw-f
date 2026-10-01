@@ -267,6 +267,7 @@ export default function SubaccountDetailPage() {
               subaccountId={id}
               requiredCapital={subaccount.requiredCapital ?? DEFAULT_REQUIRED_CAPITAL}
               reports={distributionReports}
+              onRemoved={load}
               onReported={() => {
                 flash(t('clientApiConnection.capitalReportedOk'));
                 load();

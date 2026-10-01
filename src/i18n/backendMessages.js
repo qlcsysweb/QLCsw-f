@@ -57,6 +57,8 @@ const KNOWN_MESSAGES = {
   'Formato no permitido. Puedes enviar fotos (JPG, PNG, WEBP) o documentos (PDF, Word, Excel, PowerPoint, TXT o CSV).': 'Format not allowed. You can send photos (JPG, PNG, WEBP) or documents (PDF, Word, Excel, PowerPoint, TXT or CSV).',
   'El archivo no corresponde a su formato o está dañado.': 'The file does not match its format or is damaged.',
   'Evento no encontrado': 'Event not found',
+  'Reporte no encontrado': 'Report not found',
+  'Este reporte sigue en revisión; podrás borrarlo cuando QLC lo revise.': 'This report is still under review; you can delete it once QLC reviews it.',
   'Usuario o contraseña incorrectos': 'Incorrect username or password',
   'Demasiados intentos de inicio de sesión. Intenta más tarde.': 'Too many login attempts. Please try again later.',
   'Sesión no encontrada': 'Session not found',
