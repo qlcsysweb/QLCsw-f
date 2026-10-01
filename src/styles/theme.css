@@ -1748,3 +1748,28 @@ span.qlc-time-mx:not(:only-child) {
   font-weight: 700;
   line-height: 22px;
 }
+
+/* Citas — reagendar: aviso al cliente y horario propuesto por QLC. */
+.qlc-reschedule-box {
+  padding: 10px 12px;
+  border: 1px solid var(--qlc-warn-border);
+  border-radius: 10px;
+  background: rgba(200, 155, 60, 0.07);
+  font-size: 13px;
+}
+.qlc-reschedule-box p {
+  margin: 0 0 6px;
+  color: var(--qlc-text);
+}
+.qlc-reschedule-box p:first-child {
+  color: var(--qlc-warn);
+  font-weight: 700;
+}
+.qlc-proposal-line {
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--qlc-warn);
+}
+.qlc-proposal-line.ok {
+  color: var(--qlc-ok);
+}

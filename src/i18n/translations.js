@@ -659,6 +659,14 @@ const es = {
   },
 
   adminAppointments: {
+    proposeTime: 'Proponer otro horario',
+    proposeTitle: 'Proponer otro horario',
+    proposeIntro: 'No puedes atender la cita del {date} a las {time}. Elige un horario libre para proponérselo al cliente; la solicitud queda rechazada y el cliente podrá aceptar el nuevo horario.',
+    proposeSend: 'Enviar propuesta',
+    proposed: 'Propuesto',
+    proposalPending: 'esperando respuesta del cliente',
+    proposalDeclined: 'el cliente no lo aceptó',
+    proposalAccepted: 'Reagendada: el cliente aceptó el horario propuesto',
     deleteAppointment: 'Borrar',
     deleteTitle: 'Borrar cita',
     deleteMessage: 'La cita se quitará de esta lista. No se elimina del sistema: el cliente conserva su historial y el chat asociado queda archivado en Soporte.',
@@ -1161,6 +1169,22 @@ const es = {
   // notificaciones antiguas sin templateKey siguen mostrando su texto
   // literal guardado en NeonDB (nunca se pierden ni se alteran).
   notificationTemplates: {
+    appointment_rejected_reschedule: {
+      title: 'No podemos atenderte en ese horario',
+      message: 'No podemos atenderte el {date} a las {time} UTC. Por favor reagenda tu cita desde Soporte.',
+    },
+    appointment_reschedule_proposed: {
+      title: 'Te proponemos otro horario para tu cita',
+      message: 'No podemos atenderte el {date} a las {time} UTC. QLC te propone el {newDate} a las {newTime} UTC. Entra a Soporte para aceptarlo.',
+    },
+    appointment_proposal_accepted: {
+      title: 'Propuesta de horario aceptada',
+      message: '{clientName} aceptó la cita del {dateMx} a las {timeMx} hora de México ({date} {time} UTC).',
+    },
+    appointment_proposal_declined: {
+      title: 'Propuesta de horario no aceptada',
+      message: '{clientName} no aceptó el horario propuesto ({dateMx} {timeMx} hora de México · {date} {time} UTC).',
+    },
     payment_status_updated: {
       title: 'Actualización de tu transferencia reportada',
       message: 'Tu transferencia interna Bitget (orden {orderNumber}) fue marcada como: {status}',
@@ -1284,6 +1308,14 @@ const es = {
   },
 
   clientAppointments: {
+    cannotAttend: 'QLC no puede atenderte en ese horario.',
+    pleaseReschedule: 'Por favor reagenda tu cita eligiendo otro horario.',
+    reschedule: 'Reagendar cita',
+    qlcProposes: 'QLC te propone este horario:',
+    acceptProposal: 'Aceptar horario',
+    declineProposal: 'No me funciona',
+    proposalAcceptedMsg: '¡Listo! Tu cita quedó confirmada en el horario propuesto.',
+    proposalDeclinedMsg: 'Entendido. Puedes solicitar otra cita cuando quieras.',
     deleteAppointment: 'Borrar cita',
     deleteTitle: 'Borrar cita',
     deleteMessage: '¿Borrar la cita del {date} a las {time} de tu lista?',
@@ -2539,6 +2571,14 @@ const en = {
   },
 
   adminAppointments: {
+    proposeTime: 'Propose another time',
+    proposeTitle: 'Propose another time',
+    proposeIntro: 'You cannot attend the appointment on {date} at {time}. Choose a free time to propose to the client; the request is rejected and the client can accept the new time.',
+    proposeSend: 'Send proposal',
+    proposed: 'Proposed',
+    proposalPending: 'waiting for the client',
+    proposalDeclined: 'the client did not accept it',
+    proposalAccepted: 'Rescheduled: the client accepted the proposed time',
     deleteAppointment: 'Delete',
     deleteTitle: 'Delete appointment',
     deleteMessage: 'The appointment will be removed from this list. It is not deleted from the system: the client keeps their history and the related chat stays archived in Support.',
@@ -3036,6 +3076,22 @@ const en = {
   },
 
   notificationTemplates: {
+    appointment_rejected_reschedule: {
+      title: 'We cannot attend you at that time',
+      message: 'We cannot attend you on {date} at {time} UTC. Please reschedule your appointment from Support.',
+    },
+    appointment_reschedule_proposed: {
+      title: 'We propose another time for your appointment',
+      message: 'We cannot attend you on {date} at {time} UTC. QLC proposes {newDate} at {newTime} UTC. Go to Support to accept it.',
+    },
+    appointment_proposal_accepted: {
+      title: 'Proposed time accepted',
+      message: '{clientName} accepted the appointment on {dateMx} at {timeMx} Mexico time ({date} {time} UTC).',
+    },
+    appointment_proposal_declined: {
+      title: 'Proposed time not accepted',
+      message: '{clientName} did not accept the proposed time ({dateMx} {timeMx} Mexico time · {date} {time} UTC).',
+    },
     payment_status_updated: {
       title: 'Update on your reported transfer',
       message: 'Your Bitget internal transfer (order {orderNumber}) was marked as: {status}',
@@ -3159,6 +3215,14 @@ const en = {
   },
 
   clientAppointments: {
+    cannotAttend: 'QLC cannot attend you at that time.',
+    pleaseReschedule: 'Please reschedule your appointment by choosing another time.',
+    reschedule: 'Reschedule appointment',
+    qlcProposes: 'QLC proposes this time:',
+    acceptProposal: 'Accept time',
+    declineProposal: "It doesn't work for me",
+    proposalAcceptedMsg: 'Done! Your appointment is confirmed at the proposed time.',
+    proposalDeclinedMsg: 'Understood. You can request another appointment whenever you want.',
     deleteAppointment: 'Delete appointment',
     deleteTitle: 'Delete appointment',
     deleteMessage: 'Delete the appointment on {date} at {time} from your list?',

@@ -37,6 +37,8 @@ const CLIENT_GENERAL_PATHS = {
   appointment_status_updated: '/client/support',
   appointment_confirmed: '/client/support',
   appointment_rejected: '/client/support',
+  appointment_rejected_reschedule: '/client/support',
+  appointment_reschedule_proposed: '/client/support',
   appointment_requested_self: '/client/support',
   appointment_requested_self_utc: '/client/support',
   appointment_confirmed_utc: '/client/support',

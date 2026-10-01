@@ -193,6 +193,9 @@ export default function SupportPage() {
   const [deletingCase, setDeletingCase] = useState(null);
   // Cita que el cliente quiere borrar de "Mis citas" (QLC la conserva).
   const [deletingAppt, setDeletingAppt] = useState(null);
+  // Error al responder una propuesta de horario de QLC.
+  const [proposalError, setProposalError] = useState('');
+  const [respondingId, setRespondingId] = useState(null);
 
   // Formulario de cita — vinculado SIEMPRE a un caso del propio cliente
   // (CASO #XXXX → Solicitar cita). Se abre desde el caso (preseleccionado)
@@ -315,6 +318,22 @@ export default function SupportPage() {
       setApptError(translateBackendMessage(err.message, language));
     } finally {
       setOpeningChat(null);
+    }
+  };
+
+  // Acepta (o no) el horario que QLC propuso al no poder atender el pedido.
+  const respondProposal = async (appointment, accept) => {
+    setProposalError('');
+    setRespondingId(appointment.id);
+    try {
+      await api.post(`/client/appointments/${appointment.id}/proposal`, { accept });
+      setApptMessage(accept ? t('clientAppointments.proposalAcceptedMsg') : t('clientAppointments.proposalDeclinedMsg'));
+      setTimeout(() => setApptMessage(''), 4000);
+      load();
+    } catch (err) {
+      setProposalError(translateBackendMessage(err.message, language));
+    } finally {
+      setRespondingId(null);
     }
   };
 
@@ -499,6 +518,7 @@ export default function SupportPage() {
           </button>
         </div>
         {apptMessage && <div style={{ color: 'var(--qlc-ok)', fontSize: 12, marginBottom: 10 }}>{apptMessage}</div>}
+        {proposalError && <div className="qlc-field-error" style={{ marginBottom: 10 }}>{proposalError}</div>}
         {appointments.length === 0 ? (
           <div className="qlc-empty">{t('clientAppointments.noAppointments')}</div>
         ) : (
@@ -530,7 +550,7 @@ export default function SupportPage() {
                         {statusOf(appointmentStatusMap, a.status).text}
                       </span>
                       {/* Se puede borrar si ya no está pendiente ni por atender. */}
-                      {a.status !== 'PENDING' && !(a.status === 'AUTORIZADA' && !chatWindowOpen) && (
+                      {a.status !== 'PENDING' && a.proposalStatus !== 'PENDING' && !(a.status === 'AUTORIZADA' && !chatWindowOpen) && (
                         <button
                           type="button"
                           className="qlc-btn ghost qlc-case-delete qlc-icon-only"
@@ -545,6 +565,50 @@ export default function SupportPage() {
                       )}
                     </span>
                   </div>
+                  {/* Rechazada: QLC no puede atender ese horario → reagendar,
+                      o aceptar el horario que QLC propone. */}
+                  {a.status === 'RECHAZADA' && (
+                    <div className="qlc-reschedule-box" role="status">
+                      <p>{t('clientAppointments.cannotAttend')}</p>
+                      {a.proposalStatus === 'PENDING' ? (
+                        <>
+                          <p>
+                            {t('clientAppointments.qlcProposes')}{' '}
+                            <strong>
+                              {formatDateOnly(a.proposedDate)} · {a.proposedTime} UTC
+                            </strong>
+                          </p>
+                          <div className="qlc-case-actions">
+                            <button
+                              type="button"
+                              className="qlc-btn primary"
+                              disabled={respondingId === a.id}
+                              onClick={() => respondProposal(a, true)}
+                            >
+                              {t('clientAppointments.acceptProposal')}
+                            </button>
+                            <button
+                              type="button"
+                              className="qlc-btn ghost"
+                              disabled={respondingId === a.id}
+                              onClick={() => respondProposal(a, false)}
+                            >
+                              {t('clientAppointments.declineProposal')}
+                            </button>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <p>{t('clientAppointments.pleaseReschedule')}</p>
+                          {openCases.some((c) => c.id === a.supportCase?.id) && (
+                            <button type="button" className="qlc-btn ghost" onClick={() => openScheduling(a.supportCase.caseNumber)}>
+                              {t('clientAppointments.reschedule')}
+                            </button>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  )}
                   {a.status === 'AUTORIZADA' && (
                     <button
                       className={`qlc-btn ${chatWindowOpen ? 'primary' : 'danger'}`}

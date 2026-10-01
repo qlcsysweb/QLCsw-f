@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../../services/api';
 import ConfirmModal from '../../components/ConfirmModal';
+import ProposeTimeModal from './ProposeTimeModal';
 import CollapsibleSection from '../../components/CollapsibleSection';
 import { APPOINTMENT_STATUS, statusOf } from '../../utils/statusLabels';
 import { formatDateOnly, appointmentMexicoTime, utcTimeToMexico } from '../../utils/cdmxTime';
@@ -124,6 +125,8 @@ export default function AppointmentsPage() {
   const [confirmReject, setConfirmReject] = useState(null);
   // Cita que el admin quiere borrar de su lista (se conserva archivada).
   const [confirmDelete, setConfirmDelete] = useState(null);
+  // Cita para la que el admin propone otro horario.
+  const [proposing, setProposing] = useState(null);
   const [openingChat, setOpeningChat] = useState(null);
   const [highlightId, setHighlightId] = useState(null);
 
@@ -248,6 +251,15 @@ export default function AppointmentsPage() {
                           </>
                         );
                       })()}
+                      {/* Horario propuesto por QLC al rechazar (y su respuesta). */}
+                      {a.proposedTime && a.proposalStatus !== 'ACCEPTED' && (
+                        <div className="qlc-proposal-line">
+                          {t('adminAppointments.proposed')}: {formatDateOnly(a.proposedDate)} ·{' '}
+                          {appointmentMexicoTime(a.proposedDate, a.proposedTime).time} {t('adminAppointments.mexicoTime')} ({a.proposedTime} UTC) —{' '}
+                          {a.proposalStatus === 'PENDING' ? t('adminAppointments.proposalPending') : t('adminAppointments.proposalDeclined')}
+                        </div>
+                      )}
+                      {a.proposalStatus === 'ACCEPTED' && <div className="qlc-proposal-line ok">{t('adminAppointments.proposalAccepted')}</div>}
                     </td>
                     <td>
                       <span className={`qlc-badge ${s.className}`}>{s.text}</span>
@@ -261,7 +273,16 @@ export default function AppointmentsPage() {
                           <button className="qlc-btn ghost" onClick={() => setConfirmReject(a)}>
                             {t('adminAppointments.reject')}
                           </button>
+                          <button className="qlc-btn ghost" onClick={() => setProposing(a)}>
+                            {t('adminAppointments.proposeTime')}
+                          </button>
                         </>
+                      )}
+                      {/* Rechazada sin propuesta pendiente: aún se puede proponer un horario. */}
+                      {a.status === 'RECHAZADA' && a.proposalStatus !== 'PENDING' && (
+                        <button className="qlc-btn ghost" onClick={() => setProposing(a)}>
+                          {t('adminAppointments.proposeTime')}
+                        </button>
                       )}
                       {a.status === 'AUTORIZADA' && (
                         <button className="qlc-btn ghost" disabled={openingChat === a.id} onClick={() => enterChat(a.id)}>
@@ -290,6 +311,17 @@ export default function AppointmentsPage() {
             </tbody>
           </table>
         </div>
+      )}
+
+      {proposing && (
+        <ProposeTimeModal
+          appointment={proposing}
+          onClose={() => setProposing(null)}
+          onDone={() => {
+            setProposing(null);
+            load();
+          }}
+        />
       )}
 
       {confirmDelete && (
