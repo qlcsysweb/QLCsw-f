@@ -1716,3 +1716,35 @@ span.qlc-time-mx:not(:only-child) {
     text-align: center;
   }
 }
+
+/* Guías — diagrama de flujo vertical (pasos encadenados con flecha ↓). */
+.qlc-guide-content ol.qlc-guide-flow {
+  list-style: none;
+  padding: 0;
+  margin: 4px 0 14px;
+  display: grid;
+  justify-items: center;
+  text-align: center;
+}
+.qlc-guide-content ol.qlc-guide-flow li {
+  width: min(100%, 460px);
+  padding: 8px 12px;
+  border: 1px solid var(--qlc-line);
+  border-radius: 10px;
+  background: rgba(91, 212, 255, 0.05);
+  color: var(--qlc-text);
+}
+.qlc-guide-content ol.qlc-guide-flow li + li {
+  position: relative;
+  margin-top: 26px;
+}
+.qlc-guide-content ol.qlc-guide-flow li + li::before {
+  content: '↓';
+  position: absolute;
+  left: 50%;
+  top: -24px;
+  transform: translateX(-50%);
+  color: var(--qlc-blue2);
+  font-weight: 700;
+  line-height: 22px;
+}
