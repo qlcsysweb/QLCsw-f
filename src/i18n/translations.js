@@ -605,8 +605,9 @@ const es = {
   },
 
   updateBanner: {
-    text: 'Hay una nueva versión de QLC disponible.',
+    text: 'Hay una nueva versión de QLC disponible. Pulsa "Actualizar" para borrar la versión anterior y ver los cambios.',
     reload: 'Actualizar',
+    updating: 'Actualizando…',
   },
 
   clock: {
@@ -2521,8 +2522,9 @@ const en = {
   },
 
   updateBanner: {
-    text: 'A new version of QLC is available.',
+    text: 'A new version of QLC is available. Press "Update" to clear the previous version and see the changes.',
     reload: 'Update',
+    updating: 'Updating…',
   },
 
   clock: {
