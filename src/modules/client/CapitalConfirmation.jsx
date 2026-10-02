@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import api from '../../services/api';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
@@ -32,13 +32,20 @@ const isValidDeclaration = (s) => Object.values(CAPITAL_DECLARATIONS).includes(n
 // Solo los reportes ya revisados por QLC se pueden borrar del historial.
 const REVIEWED = ['APROBADO', 'RECHAZADO'];
 
-export default function CapitalConfirmation({ subaccountId, requiredCapital, reports, onReported, onRemoved }) {
+export default function CapitalConfirmation({ subaccountId, requiredCapital, reports, current: serverCurrent = null, onReported, onRemoved }) {
   const { t, language } = useLanguage();
   const [confirmation, setConfirmation] = useState('');
   const [note, setNote] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
   const [removing, setRemoving] = useState(null);
+  // Bloqueo síncrono contra doble submit (el estado `sending` de React se
+  // aplica en el siguiente render; la ref corta el segundo clic/Enter al
+  // instante). El backend igualmente garantiza un único registro.
+  const submittingRef = useRef(false);
+  // Registro devuelto por el POST: se muestra de inmediato, sin esperar al
+  // siguiente refresco, para que nunca reaparezca el formulario vacío.
+  const [justReported, setJustReported] = useState(null);
   const statusMap = PAYMENT_REPORT_STATUS(t);
 
   const hasCapital = requiredCapital != null && Number(requiredCapital) > 0;
@@ -47,29 +54,35 @@ export default function CapitalConfirmation({ subaccountId, requiredCapital, rep
   const phraseOk = isValidDeclaration(confirmation);
   const matches = hasCapital && phraseOk;
 
-  // "Capital reportado" solo mientras QLC revisa la confirmación. Una vez
-  // APROBADA (o rechazada) el formulario vuelve a quedar en ceros para que el
-  // cliente pueda enviar un reporte nuevo cuando sea necesario; el historial
-  // conserva todas las confirmaciones anteriores.
-  const current = reports.find((r) => r.status === 'PENDING' || r.status === 'EN_REVISION') || null;
+  // REGISTRO VIGENTE — lo decide el backend (`current`): la confirmación en
+  // revisión, o la APROBADA para el mismo capital requerido. Mientras exista,
+  // se muestra en lugar del formulario: el cliente no puede generar otra
+  // confirmación del mismo requerimiento. Solo tras un rechazo, o si el admin
+  // fija un capital requerido distinto, vuelve el formulario (operación nueva).
+  const current =
+    serverCurrent || (justReported && !reports.some((r) => r.id === justReported.id && r.status === 'RECHAZADO') ? justReported : null);
   const lastRejected = !current && reports[0]?.status === 'RECHAZADO' ? reports[0] : null;
+  const approved = current?.status === 'APROBADO';
 
   const submit = async (e) => {
     e.preventDefault();
-    if (!matches) return;
+    if (!matches || submittingRef.current) return;
+    submittingRef.current = true;
     setSending(true);
     setError('');
     try {
-      await api.post(`/client/api-subaccounts/${subaccountId}/capital-distribution-reports`, {
+      const { data } = await api.post(`/client/api-subaccounts/${subaccountId}/capital-distribution-reports`, {
         confirmation: confirmation.trim(),
         note: note.trim() || undefined,
       });
+      setJustReported(data.report || null);
       setConfirmation('');
       setNote('');
       onReported?.();
     } catch (err) {
       setError(translateBackendMessage(err.message, language));
     } finally {
+      submittingRef.current = false;
       setSending(false);
     }
   };
@@ -87,9 +100,15 @@ export default function CapitalConfirmation({ subaccountId, requiredCapital, rep
 
       {current ? (
         <div className="qlc-capital-done" role="status">
-          <div className="qlc-capital-done-title">✓ {t('clientApiConnection.capitalReportedTitle')}</div>
-          <p>{t('clientApiConnection.capitalReportedText')}</p>
+          <div className="qlc-capital-done-title">
+            ✓ {approved ? t('clientApiConnection.capitalApprovedTitle') : t('clientApiConnection.capitalReportedTitle')}
+          </div>
+          <p>{approved ? t('clientApiConnection.capitalApprovedText') : t('clientApiConnection.capitalReportedText')}</p>
           <dl>
+            <div>
+              <dt>{t('clientApiConnection.requiredCapital')}</dt>
+              <dd>{formatCapital(current.amount)} USDT</dd>
+            </div>
             <div>
               <dt>{t('clientApiConnection.confirmationDate')}</dt>
               <dd>{formatCdmxDateTime(current.reportedAt)}</dd>

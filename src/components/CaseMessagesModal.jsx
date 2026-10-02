@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import Modal from './Modal';
+import { LoadingBars } from './LoadingScreen';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../i18n/LanguageContext';
@@ -200,7 +201,9 @@ export default function CaseMessagesModal({ apiBase, supportCase, onClose, onReq
 
         <section className="qlc-case-thread" ref={scrollRef} aria-live="polite">
           {messages === null ? (
-            <p className="qlc-case-empty">{t('common.loading')}</p>
+            <div className="qlc-case-empty" style={{ display: 'flex', justifyContent: 'center' }}>
+              <LoadingBars size="sm" />
+            </div>
           ) : messages.length === 0 ? (
             <p className="qlc-case-empty">{t('caseMessaging.noMessages')}</p>
           ) : (

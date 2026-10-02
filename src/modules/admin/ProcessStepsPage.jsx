@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import api from '../../services/api';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
+import LoadingScreen from '../../components/LoadingScreen';
 
 /*
  * CORREGIR.xlsx CLIENTE 07 — "Tu proceso paso a paso" administrable desde
@@ -147,7 +148,7 @@ export default function ProcessStepsPage() {
         <div className="qlc-card">
           <h3 style={{ marginTop: 0 }}>{t('adminProcessSteps.currentSteps')}</h3>
           {!steps ? (
-            <div className="qlc-empty">{t('common.loading')}</div>
+            <LoadingScreen compact />
           ) : (
             <ul className="qlc-plain-list">
               {steps.map((s) => (

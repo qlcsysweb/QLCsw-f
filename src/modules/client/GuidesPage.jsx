@@ -3,6 +3,7 @@ import api from '../../services/api';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 import usePolling from '../../hooks/usePolling';
+import LoadingScreen from '../../components/LoadingScreen';
 
 // CORRECCIÓN 1/6/20/21 — Guías de Uso: biblioteca de contenido HTML
 // editable desde ADMIN → Guías de Uso. El PDF (si está configurado) se
@@ -42,7 +43,7 @@ export default function ClientGuidesPage() {
   usePolling(load, 20000);
 
   if (error) return <div className="qlc-empty">{error}</div>;
-  if (!guides) return <div className="qlc-empty">{t('common.loading')}</div>;
+  if (!guides) return <LoadingScreen />;
 
   const active = guides.find((g) => g.id === activeId);
   const title = active ? (language === 'en' && active.titleEn ? active.titleEn : active.titleEs) : '';

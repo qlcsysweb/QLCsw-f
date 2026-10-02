@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import api from '../../services/api';
 import ConfirmModal from '../../components/ConfirmModal';
 import DocumentViewerModal from '../../components/DocumentViewerModal';
+import LoadingScreen from '../../components/LoadingScreen';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 import { formatCdmxDateTime } from '../../utils/cdmxTime';
@@ -46,7 +47,7 @@ export default function DocumentsPage() {
     setTimeout(() => setMessage(''), 4000);
   };
 
-  if (!documents) return <div className="qlc-empty">{t('common.loading')}</div>;
+  if (!documents) return <LoadingScreen />;
 
   const identity = documents.find((d) => d.category === IDENTITY_CATEGORY) || null;
   const otherDocuments = documents.filter((d) => d.category !== IDENTITY_CATEGORY);

@@ -1,13 +1,14 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import LoadingScreen from '../components/LoadingScreen';
 
 export default function ProtectedRoute({ role }) {
   const { user, loading, authError, refresh } = useAuth();
 
   if (loading) {
     return (
-      <div style={{ display: 'grid', placeItems: 'center', height: '100vh', color: '#9ca9b7' }}>
-        Cargando…
+      <div style={{ display: 'grid', placeItems: 'center', height: '100vh' }}>
+        <LoadingScreen />
       </div>
     );
   }

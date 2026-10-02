@@ -3,6 +3,7 @@ import api from '../../services/api';
 import BilingualField from '../../components/BilingualField';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
+import LoadingScreen from '../../components/LoadingScreen';
 
 export default function TrackRecordPage() {
   const { t, language } = useLanguage();
@@ -21,7 +22,7 @@ export default function TrackRecordPage() {
     load();
   }, []);
 
-  if (!form) return <div className="qlc-empty">{t('common.loading')}</div>;
+  if (!form) return <LoadingScreen />;
 
   const update = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
 

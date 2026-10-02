@@ -19,6 +19,12 @@ const KNOWN_MESSAGES = {
   'La fecha y hora de la transacción no es válida': 'The transaction date and time is not valid',
   'La fecha y hora de la transacción no puede estar en el futuro.': 'The transaction date and time cannot be in the future.',
   'Ese número de orden ya fue reportado.': 'That order number has already been reported.',
+  'Este reporte ya fue finalizado; no se puede modificar su borrador.': 'This report has already been finalized; its draft can no longer be changed.',
+  'Este reporte ya fue finalizado.': 'This report has already been finalized.',
+  'Solo se puede eliminar un borrador de estado de cuenta.': 'Only a statement draft can be deleted.',
+  'Un borrador de estado de cuenta no se puede marcar como pagado.': 'A statement draft cannot be marked as paid.',
+  'Ya existe un estado de cuenta para esta subcuenta/API en ese mismo periodo.': 'A statement already exists for this subaccount/API for that same period.',
+  'Indica la fecha "hasta" del periodo.': 'Enter the period "to" date.',
   'Esta subcuenta fue desactivada.': 'This subaccount was deactivated.',
   'El UID de Bitget solo puede contener números': 'The Bitget UID may only contain numbers',
   'Esta subcuenta/API ya tiene un estado de cuenta sin pagar. Confirma su pago antes de generar uno nuevo.':

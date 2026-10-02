@@ -347,6 +347,80 @@ textarea {
   font-size: 13px;
 }
 
+/* Animación de carga (barras de volumen) — reemplaza el texto "Cargando…"
+   en pantallas que esperan la primera respuesta del API. */
+.qlc-loading-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 70px 20px;
+  min-height: 50vh;
+}
+.qlc-loading-screen-compact {
+  padding: 30px 20px;
+  min-height: 0;
+}
+.qlc-loading-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 7px;
+  height: 46px;
+}
+.qlc-loading-bars-sm {
+  height: 22px;
+  gap: 4px;
+}
+.qlc-loading-bars span {
+  display: block;
+  width: 7px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, var(--qlc-blue2), var(--qlc-blue3));
+  box-shadow: 0 0 10px rgba(0, 168, 255, 0.35);
+  transform-origin: bottom;
+  animation: qlc-loading-bounce 1.1s ease-in-out infinite;
+}
+.qlc-loading-bars-sm span {
+  width: 4px;
+  border-radius: 2px;
+}
+.qlc-loading-bars span:nth-child(1) {
+  height: 42%;
+  animation-delay: 0s;
+}
+.qlc-loading-bars span:nth-child(2) {
+  height: 68%;
+  animation-delay: 0.1s;
+}
+.qlc-loading-bars span:nth-child(3) {
+  height: 100%;
+  animation-delay: 0.2s;
+}
+.qlc-loading-bars span:nth-child(4) {
+  height: 58%;
+  animation-delay: 0.3s;
+}
+.qlc-loading-bars span:nth-child(5) {
+  height: 82%;
+  animation-delay: 0.4s;
+}
+@keyframes qlc-loading-bounce {
+  0%,
+  100% {
+    transform: scaleY(0.35);
+    opacity: 0.55;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .qlc-loading-bars span {
+    animation: none;
+    opacity: 0.85;
+  }
+}
+
 .qlc-toast {
   position: fixed;
   bottom: 24px;

@@ -7,6 +7,7 @@ import { clientSubaccountLabel } from '../../utils/subaccountLabel';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 import usePolling from '../../hooks/usePolling';
 import StatementStatus from '../../components/StatementStatus';
+import LoadingScreen from '../../components/LoadingScreen';
 
 const STATEMENT_HINT_KEYS = {
   NO_GENERADO: 'notGeneratedHint',
@@ -53,7 +54,7 @@ export default function DashboardPage() {
   usePolling(load, 8000);
 
   if (error) return <div className="qlc-empty">{error}</div>;
-  if (!dashboard) return <div className="qlc-empty">{t('common.loading')}</div>;
+  if (!dashboard) return <LoadingScreen />;
 
   const statement = dashboard.statement || { status: 'NO_GENERADO' };
   // Iluminación azul QLC solo mientras hay un estado de cuenta PENDIENTE DE PAGO.

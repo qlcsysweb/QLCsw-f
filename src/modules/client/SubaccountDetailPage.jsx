@@ -12,6 +12,7 @@ import ParticipationModelSummary, { ParticipationModelDetails } from '../../comp
 import StatementStatus, { StatementBadge } from '../../components/StatementStatus';
 import StatementDetails from './StatementDetails';
 import BitgetTransferSection from './BitgetTransferSection';
+import LoadingScreen from '../../components/LoadingScreen';
 import CapitalConfirmation, { DEFAULT_REQUIRED_CAPITAL } from './CapitalConfirmation';
 import usePolling from '../../hooks/usePolling';
 import ConfirmModal from '../../components/ConfirmModal';
@@ -64,6 +65,8 @@ export default function SubaccountDetailPage() {
   const scrolledToHash = useRef(false);
   // CORREGIR.xlsx CLIENTE 13 — reporte real de distribución de capital.
   const [distributionReports, setDistributionReports] = useState([]);
+  // Confirmación de capital VIGENTE (la decide el backend).
+  const [distributionCurrent, setDistributionCurrent] = useState(null);
 
   const apiStatusMap = API_CONNECTION_STATUS(t);
 
@@ -97,7 +100,10 @@ export default function SubaccountDetailPage() {
           .catch(() => {});
         api
           .get(`/client/api-subaccounts/${id}/capital-distribution-reports`)
-          .then(({ data }) => setDistributionReports(data.reports))
+          .then(({ data }) => {
+            setDistributionReports(data.reports);
+            setDistributionCurrent(data.current || null);
+          })
           .catch(() => {});
       })
       .catch((err) => {
@@ -122,6 +128,7 @@ export default function SubaccountDetailPage() {
     setCurrentStatement(null);
     setPaymentConfig(null);
     setDistributionReports([]);
+    setDistributionCurrent(null);
     setUnavailable(null);
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -159,7 +166,7 @@ export default function SubaccountDetailPage() {
     );
   }
 
-  if (!subaccount) return <div className="qlc-empty">{t('common.loading')}</div>;
+  if (!subaccount) return <LoadingScreen />;
 
   const status = statusOf(apiStatusMap, subaccount.status, 'PENDIENTE');
   // Modelo único de participación (asignado automáticamente por el backend).
@@ -272,6 +279,7 @@ export default function SubaccountDetailPage() {
               subaccountId={id}
               requiredCapital={subaccount.requiredCapital ?? DEFAULT_REQUIRED_CAPITAL}
               reports={distributionReports}
+              current={distributionCurrent}
               onRemoved={load}
               onReported={() => {
                 flash(t('clientApiConnection.capitalReportedOk'));

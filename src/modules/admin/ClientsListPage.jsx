@@ -7,6 +7,7 @@ import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 import usePolling from '../../hooks/usePolling';
 import SubaccountIdentifierSearch from '../../components/SubaccountIdentifierSearch';
+import LoadingScreen from '../../components/LoadingScreen';
 
 // NOMENCLATURA ÚNICA §7/§8 — "username" es la nomenclatura única que el
 // ADMIN asigna al registrar manualmente a un cliente: obligatoria, máximo
@@ -369,7 +370,7 @@ export default function ClientsListPage() {
       />
 
       {loading ? (
-        <div className="qlc-empty">{t('adminClientsList.loading')}</div>
+        <LoadingScreen compact />
       ) : items.length === 0 ? (
         <div className="qlc-empty">{t('adminClientsList.none')}</div>
       ) : (

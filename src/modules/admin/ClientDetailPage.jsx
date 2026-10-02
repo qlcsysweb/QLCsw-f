@@ -11,6 +11,7 @@ import { translateBackendMessage } from '../../i18n/backendMessages';
 import { formatParticipationSplit } from '../../components/ParticipationModelSummary';
 import usePolling from '../../hooks/usePolling';
 import CollapsibleSection from '../../components/CollapsibleSection';
+import LoadingScreen from '../../components/LoadingScreen';
 
 // CORRECCIÓN 7 (bloque de 20) — fila reutilizable para no duplicar el JSX
 // entre subcuentas activas/principal e inactivas.
@@ -274,7 +275,7 @@ export default function ClientDetailPage() {
   };
 
   if (error) return <div className="qlc-empty">{error}</div>;
-  if (!client) return <div className="qlc-empty">{t('adminClientDetail.loadingClient')}</div>;
+  if (!client) return <LoadingScreen />;
 
   const clientAccStatus = statusOf(accountStatusMap, client.status);
   const subaccounts = client.apiSubaccounts || [];

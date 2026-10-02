@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import api from '../../services/api';
 import { useLanguage } from '../../i18n/LanguageContext';
 import SubaccountIdentifierSearch from '../../components/SubaccountIdentifierSearch';
+import LoadingScreen from '../../components/LoadingScreen';
 
 /*
  * GESTIÓN DINÁMICA DE SUBCUENTAS §8 — herramienta de solo lectura para que
@@ -21,7 +22,7 @@ export default function SubaccountAuditPage() {
     api.get('/admin/subaccounts/audit').then(({ data }) => setSubaccounts(data.subaccounts));
   }, []);
 
-  if (!subaccounts) return <div className="qlc-empty">{t('common.loading')}</div>;
+  if (!subaccounts) return <LoadingScreen />;
 
   const rows = onlyCandidates ? subaccounts.filter((s) => s.candidateForRemoval) : subaccounts;
   const candidateCount = subaccounts.filter((s) => s.candidateForRemoval).length;

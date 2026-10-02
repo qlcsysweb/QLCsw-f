@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import api from '../../services/api';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
@@ -33,9 +33,13 @@ function TransferReportForm({ subaccountId, uid, editing, hasUnpaidStatement, on
   const [evidence, setEvidence] = useState([]);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
+  // Bloqueo síncrono contra doble clic/Enter (el backend además rechaza un
+  // N.º de orden ya reportado con 409, aunque lleguen dos requests a la vez).
+  const submittingRef = useRef(false);
 
   const submit = async (e) => {
     e.preventDefault();
+    if (submittingRef.current) return;
     if (!form.bitgetOrderNumber.trim() || !form.transactionAt) return;
     // UID ≠ N.º de orden: el UID es el dato de QLC que el cliente copió para
     // transferir; el N.º de orden lo genera Bitget DESPUÉS de transferir.
@@ -47,6 +51,7 @@ function TransferReportForm({ subaccountId, uid, editing, hasUnpaidStatement, on
       setError(t('clientPayments.evidenceRequired'));
       return;
     }
+    submittingRef.current = true;
     setSending(true);
     setError('');
     try {
@@ -67,6 +72,7 @@ function TransferReportForm({ subaccountId, uid, editing, hasUnpaidStatement, on
     } catch (err) {
       setError(translateBackendMessage(err.message, language));
     } finally {
+      submittingRef.current = false;
       setSending(false);
     }
   };

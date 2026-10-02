@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import Modal from './Modal';
+import LoadingScreen from './LoadingScreen';
 import api from '../services/api';
 import { triggerBlobDownload } from '../utils/downloadFile';
 import { translateBackendMessage } from '../i18n/backendMessages';
@@ -78,7 +79,7 @@ export default function DocumentViewerModal({ url, fileName, onClose }) {
 
   return (
     <Modal title={fileName || t('clientDocuments.viewerTitle')} onClose={handleClose} width={820} closeOnOverlayClick closeOnEscape>
-      {state === 'loading' && <div className="qlc-empty">{t('clientDocuments.viewerLoading')}</div>}
+      {state === 'loading' && <LoadingScreen compact />}
 
       {state === 'error' && (
         <div className="qlc-card" style={{ borderColor: 'var(--qlc-danger-border)' }}>

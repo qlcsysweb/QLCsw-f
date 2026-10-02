@@ -3,6 +3,7 @@ import api from '../../services/api';
 import ConfirmModal from '../../components/ConfirmModal';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
+import LoadingScreen from '../../components/LoadingScreen';
 
 /*
  * DATOS DE PAGO GENERALES — UID de recepción Bitget de QLC + instrucciones.
@@ -53,7 +54,7 @@ export default function PaymentConfigurationCard() {
       <h3 style={{ marginTop: 0 }}>{t('adminPayments.configTitle')}</h3>
       <p style={{ fontSize: 12, color: 'var(--qlc-muted)', marginTop: 0 }}>{t('adminPayments.configHint')}</p>
       {!form ? (
-        <div className="qlc-empty">{error || t('common.loading')}</div>
+        error ? <div className="qlc-empty">{error}</div> : <LoadingScreen compact />
       ) : (
         <form
           onSubmit={(e) => {

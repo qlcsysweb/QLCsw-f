@@ -4,6 +4,7 @@ import ConfirmModal from '../../components/ConfirmModal';
 import PaymentConfigurationCard from './PaymentConfigurationCard';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
+import LoadingScreen from '../../components/LoadingScreen';
 
 // CORRECCIÓN 4 / REVERSIÓN B: el antiguo "PDF informativo" (adjunto
 // automático al correo de bienvenida de un prospecto) fue eliminado por
@@ -98,7 +99,7 @@ export default function PlatformSettingsPage() {
     load();
   }, []);
 
-  if (!settings) return <div className="qlc-empty">{t('adminPlatformSettings.loading')}</div>;
+  if (!settings) return <LoadingScreen />;
 
   const flash = (msg) => {
     setMessage(msg);

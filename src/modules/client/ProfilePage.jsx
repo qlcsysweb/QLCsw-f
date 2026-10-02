@@ -3,6 +3,7 @@ import api from '../../services/api';
 import { ACCOUNT_STATUS, statusOf } from '../../utils/statusLabels';
 import { useLanguage } from '../../i18n/LanguageContext';
 import usePolling from '../../hooks/usePolling';
+import LoadingScreen from '../../components/LoadingScreen';
 
 // CORRECCIÓN 6/17/18: sin teléfono, sin username — solo nombre, apellidos,
 // correo (identificador único) y estado de cuenta.
@@ -18,7 +19,7 @@ export default function ProfilePage() {
   // cambia el estado de cuenta o el nombre, se refleja sin F5.
   usePolling(load, 15000);
 
-  if (!profile) return <div className="qlc-empty">{t('common.loading')}</div>;
+  if (!profile) return <LoadingScreen />;
 
   const accountStatusMap = ACCOUNT_STATUS(t);
 

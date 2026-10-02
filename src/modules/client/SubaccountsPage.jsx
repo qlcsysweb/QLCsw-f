@@ -8,6 +8,7 @@ import { clientSubaccountLabel } from '../../utils/subaccountLabel';
 import { formatParticipationSplit } from '../../components/ParticipationModelSummary';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 import usePolling from '../../hooks/usePolling';
+import LoadingScreen from '../../components/LoadingScreen';
 
 const REQUEST_STATUS_CLASS = { PENDING: 'warn', APPROVED: 'ok', REJECTED: 'danger' };
 
@@ -88,7 +89,7 @@ export default function SubaccountsPage() {
     }
   };
 
-  if (!subaccounts) return <div className="qlc-empty">{t('common.loading')}</div>;
+  if (!subaccounts) return <LoadingScreen />;
 
   return (
     <div>

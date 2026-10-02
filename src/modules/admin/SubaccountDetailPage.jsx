@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api, { API_BASE_URL } from '../../services/api';
-import { API_CONNECTION_STATUS, PAYMENT_REPORT_STATUS, statusOf } from '../../utils/statusLabels';
+import { API_CONNECTION_STATUS, statusOf } from '../../utils/statusLabels';
 import { formatCdmxDate, formatCdmxDateTime, formatDateOnly } from '../../utils/cdmxTime';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
@@ -9,11 +9,36 @@ import { formatParticipationSplit } from '../../components/ParticipationModelSum
 import StatementStatus, { StatementBadge } from '../../components/StatementStatus';
 import ConfirmModal from '../../components/ConfirmModal';
 import TransferReportList from './TransferReportList';
+import CapitalDistributionCard from './CapitalDistributionCard';
 import usePolling from '../../hooks/usePolling';
+import LoadingScreen from '../../components/LoadingScreen';
 
 // Orden alineado al flujo real del cliente (ver
 // backend/src/utils/subaccountProvisioning.js).
 const CONDITION_ORDER = ['PAYMENT', 'FUNDS', 'API', 'ACTIVATION'];
+
+const EMPTY_STATEMENT_FORM = {
+  periodStart: '', periodEnd: '', startingBalance: '', endingBalance: '', resultAmount: '', resultPercentage: '', volatility: '', netResult: '', commission: '0', activityNotes: '', adminNotes: '',
+};
+// BORRADOR guardado → valores del formulario (fechas-calendario sin zona
+// horaria, igual que formatDateOnly).
+const dateInput = (value) => (value ? String(value).slice(0, 10) : '');
+const numInput = (value) => (value === null || value === undefined ? '' : String(Number(value)));
+function statementFormFromDraft(draft) {
+  return {
+    periodStart: dateInput(draft.periodStart),
+    periodEnd: dateInput(draft.periodEnd),
+    startingBalance: numInput(draft.startingBalance),
+    endingBalance: numInput(draft.endingBalance),
+    resultAmount: numInput(draft.resultAmount),
+    resultPercentage: numInput(draft.resultPercentage),
+    volatility: draft.volatility || '',
+    netResult: numInput(draft.netResult),
+    commission: numInput(draft.commission) || '0',
+    activityNotes: draft.activityNotes || '',
+    adminNotes: draft.adminNotes || '',
+  };
+}
 
 function ConditionRow({ condition, onUpdate, t }) {
   const [saving, setSaving] = useState(false);
@@ -83,6 +108,9 @@ export default function AdminSubaccountDetailPage() {
   const [payments, setPayments] = useState([]);
   const [statements, setStatements] = useState([]);
   const [currentStatement, setCurrentStatement] = useState(null);
+  // BORRADOR del estado de cuenta (uno por subcuenta, invisible para el cliente).
+  const [statementDraft, setStatementDraft] = useState(null);
+  const [confirmDeleteDraft, setConfirmDeleteDraft] = useState(false);
   // UID de recepción GENERAL (solo lectura aquí; se edita en Configuración · Plataforma).
   const [receiveUid, setReceiveUid] = useState('');
   const [confirmMarkPaid, setConfirmMarkPaid] = useState(null);
@@ -96,19 +124,33 @@ export default function AdminSubaccountDetailPage() {
   // segunda confirmación explícita antes de guardar: este estado guarda el
   // resumen de lo que se va a cambiar mientras se espera esa confirmación.
   const [pendingApiSave, setPendingApiSave] = useState(null);
-  const [statementForm, setStatementForm] = useState({
-    periodStart: '', periodEnd: '', startingBalance: '', endingBalance: '', resultAmount: '', resultPercentage: '', volatility: '', netResult: '', commission: '0', activityNotes: '', adminNotes: '',
-  });
+  const [statementForm, setStatementFormState] = useState(EMPTY_STATEMENT_FORM);
+  // Mientras el admin edita, el sondeo no reemplaza el formulario con el borrador guardado.
+  const statementDirty = useRef(false);
+  const setStatementForm = (updater) => {
+    statementDirty.current = true;
+    setStatementFormState(updater);
+  };
   const [creatingStatement, setCreatingStatement] = useState(false);
+  // Bloqueo síncrono contra doble submit en Guardar borrador / Finalizar.
+  const statementBusy = useRef(false);
   // PDF del estado de cuenta que el admin carga (se envía al cliente).
   const [statementPdf, setStatementPdf] = useState(null);
   const statementPdfRef = useRef(null);
 
   const apiStatusMap = API_CONNECTION_STATUS(t);
-  const paymentStatusMap = PAYMENT_REPORT_STATUS(t);
 
   // Evento del historial de conexión que el admin quiere borrar.
   const [deletingEvent, setDeletingEvent] = useState(null);
+
+  const applyStatements = (data) => {
+    setStatements(data.statements);
+    setCurrentStatement(data.current);
+    setStatementDraft(data.draft || null);
+    // El borrador persistido se precarga en el formulario (solo si el admin
+    // no está escribiendo en este momento).
+    if (data.draft && !statementDirty.current) setStatementFormState(statementFormFromDraft(data.draft));
+  };
 
   const load = () => {
     api.get(`/admin/clients/${clientId}`).then(({ data }) => {
@@ -129,10 +171,7 @@ export default function AdminSubaccountDetailPage() {
     });
     api.get(`/admin/api-subaccounts/${id}/secrets`).then(({ data }) => setSecrets(data.secrets));
     api.get('/admin/payment-reports', { params: { apiSubaccountId: id } }).then(({ data }) => setPayments(data.reports));
-    api.get(`/admin/api-subaccounts/${id}/statements`).then(({ data }) => {
-      setStatements(data.statements);
-      setCurrentStatement(data.current);
-    });
+    api.get(`/admin/api-subaccounts/${id}/statements`).then(({ data }) => applyStatements(data));
     api
       .get('/admin/payment-configuration')
       .then(({ data }) => setReceiveUid(data.paymentData?.bitgetReceiveUid || ''))
@@ -147,6 +186,9 @@ export default function AdminSubaccountDetailPage() {
     setPayments([]);
     setStatements([]);
     setCurrentStatement(null);
+    setStatementDraft(null);
+    statementDirty.current = false;
+    setStatementFormState(EMPTY_STATEMENT_FORM);
     setDistributionReports([]);
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -167,10 +209,7 @@ export default function AdminSubaccountDetailPage() {
       if (found) setSubaccount(found);
     });
     api.get('/admin/payment-reports', { params: { apiSubaccountId: id } }).then(({ data }) => setPayments(data.reports));
-    api.get(`/admin/api-subaccounts/${id}/statements`).then(({ data }) => {
-      setStatements(data.statements);
-      setCurrentStatement(data.current);
-    });
+    api.get(`/admin/api-subaccounts/${id}/statements`).then(({ data }) => applyStatements(data));
     api
       .get('/admin/capital-distribution-reports', { params: { apiSubaccountId: id } })
       .then(({ data }) => setDistributionReports(data.reports));
@@ -182,7 +221,7 @@ export default function AdminSubaccountDetailPage() {
     setTimeout(() => setMessage(''), 3000);
   };
 
-  if (!subaccount) return <div className="qlc-empty">{t('adminClientDetail.loadingClient')}</div>;
+  if (!subaccount) return <LoadingScreen />;
 
   const updateCondition = async (type, status) => {
     await api.patch(`/admin/api-subaccounts/${id}/process/${type}`, { status });
@@ -237,12 +276,6 @@ export default function AdminSubaccountDetailPage() {
     }
   };
 
-  const reviewDistribution = async (reportId, status) => {
-    await api.patch(`/admin/capital-distribution-reports/${reportId}`, { status });
-    flash(t('adminClientDetail.paymentReviewed'));
-    load();
-  };
-
   // CORRECCIÓN 5: "desde" se autocompleta en el backend a partir del fin del
   // periodo anterior de esta subcuenta/API — solo se envía si todavía no
   // existe ningún estado de cuenta previo (primer periodo).
@@ -251,12 +284,42 @@ export default function AdminSubaccountDetailPage() {
     ? statements.reduce((max, s) => (new Date(s.periodEnd) > new Date(max) ? s.periodEnd : max), statements[0].periodEnd)
     : null;
 
+  // GUARDAR BORRADOR — UPDATE del único borrador de la subcuenta (lo crea la
+  // primera vez). Sin PDF ni Drive: el PDF definitivo solo se sube al finalizar.
+  const saveStatementDraft = async () => {
+    if (statementBusy.current) return;
+    statementBusy.current = true;
+    setCreatingStatement(true);
+    setError('');
+    try {
+      const payload = {};
+      Object.entries(statementForm).forEach(([key, value]) => {
+        if (key === 'periodStart' && hasPreviousStatement) return;
+        if (value !== '' && value !== null && value !== undefined) payload[key] = value;
+      });
+      const { data } = await api.put(`/admin/api-subaccounts/${id}/statements/draft`, payload);
+      statementDirty.current = false;
+      setStatementDraft(data.draft);
+      setStatementFormState(statementFormFromDraft(data.draft));
+      flash(t('statementStatus.draftSaved'));
+    } catch (err) {
+      setError(translateBackendMessage(err.message, language));
+    } finally {
+      statementBusy.current = false;
+      setCreatingStatement(false);
+    }
+  };
+
+  // FINALIZAR — el backend convierte el borrador (si existe) en el estado de
+  // cuenta emitido: mismo registro, nunca uno nuevo.
   const createStatement = async (e) => {
     e.preventDefault();
+    if (statementBusy.current) return;
     if (!statementPdf) {
       setError(t('statementStatus.pdfRequired'));
       return;
     }
+    statementBusy.current = true;
     setCreatingStatement(true);
     setError('');
     try {
@@ -272,15 +335,27 @@ export default function AdminSubaccountDetailPage() {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       flash(data.emailSent ? t('statementStatus.generatedWithEmail') : t('statementStatus.generatedNoEmail'));
-      setStatementForm({ periodStart: '', periodEnd: '', startingBalance: '', endingBalance: '', resultAmount: '', resultPercentage: '', volatility: '', netResult: '', commission: '0', activityNotes: '', adminNotes: '' });
+      statementDirty.current = false;
+      setStatementDraft(null);
+      setStatementFormState(EMPTY_STATEMENT_FORM);
       setStatementPdf(null);
       if (statementPdfRef.current) statementPdfRef.current.value = '';
       load();
     } catch (err) {
       setError(translateBackendMessage(err.message, language));
     } finally {
+      statementBusy.current = false;
       setCreatingStatement(false);
     }
+  };
+
+  const deleteStatementDraft = async () => {
+    await api.delete(`/admin/statements/${statementDraft.id}/draft`);
+    statementDirty.current = false;
+    setStatementDraft(null);
+    setStatementFormState(EMPTY_STATEMENT_FORM);
+    flash(t('statementStatus.draftDeleted'));
+    load();
   };
 
   const markStatementPaid = async () => {
@@ -470,61 +545,7 @@ export default function AdminSubaccountDetailPage() {
           <TransferReportList reports={payments} receiveUid={receiveUid} onChanged={load} />
         </div>
 
-        <div className="qlc-card">
-          <h3 style={{ marginTop: 0 }}>
-            {t('adminClientDetail.distributionReports')} ({distributionReports.length})
-          </h3>
-          {/* Declaración del CLIENTE (no una verificación automática del
-              exchange): capital requerido al confirmar, fecha y la frase. */}
-          {distributionReports.length ? (
-            <ul className="qlc-plain-list qlc-transfer-list">
-              {distributionReports.map((r) => {
-                const s = statusOf(paymentStatusMap, r.status, 'PENDING');
-                return (
-                  <li key={r.id} className="qlc-transfer-item">
-                    <dl className="qlc-transfer-data">
-                      <dt>{t('adminClientDetail.requiredCapital')}</dt>
-                      <dd>{Number(r.amount)} USDT</dd>
-                      <dt>{t('adminClientDetail.clientConfirmation')}</dt>
-                      <dd>
-                        {r.declaration ? t('adminClientDetail.clientConfirmed') : '—'}{' '}
-                        <span className={`qlc-badge ${s.className}`}>{s.text}</span>
-                      </dd>
-                      {r.declaration && (
-                        <>
-                          <dt>{t('adminClientDetail.declaration')}</dt>
-                          <dd>“{r.declaration}”</dd>
-                        </>
-                      )}
-                      {r.confirmationLanguage && (
-                        <>
-                          <dt>{t('adminClientDetail.confirmationLanguage')}</dt>
-                          <dd>{r.confirmationLanguage}</dd>
-                        </>
-                      )}
-                      <dt>{t('adminClientDetail.confirmationDate')}</dt>
-                      <dd>{formatCdmxDateTime(r.reportedAt)}</dd>
-                      {r.note && (
-                        <>
-                          <dt>{t('adminClientDetail.note')}</dt>
-                          <dd>{r.note}</dd>
-                        </>
-                      )}
-                    </dl>
-                    {(r.status === 'PENDING' || r.status === 'EN_REVISION') && (
-                      <div className="qlc-transfer-actions">
-                        <button className="qlc-btn primary" onClick={() => reviewDistribution(r.id, 'APROBADO')}>{t('adminClientDetail.confirm')}</button>
-                        <button className="qlc-btn ghost" onClick={() => reviewDistribution(r.id, 'RECHAZADO')}>{t('adminClientDetail.reject')}</button>
-                      </div>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          ) : (
-            <div className="qlc-empty">{t('adminClientDetail.noDistributionReports')}</div>
-          )}
-        </div>
+        <CapitalDistributionCard reports={distributionReports} onChanged={load} onMessage={flash} />
 
         <div className={`qlc-card qlc-card-span-all${statementStatus === 'PENDIENTE_DE_PAGO' ? ' qlc-card-attention' : ''}`}>
           <div className="qlc-statement-card-head">
@@ -573,10 +594,18 @@ export default function AdminSubaccountDetailPage() {
             </div>
           )}
           <form onSubmit={createStatement} style={{ borderTop: '1px solid var(--qlc-line)', paddingTop: 14, marginTop: 14 }}>
-            <h4 style={{ margin: '0 0 4px' }}>{t('statementStatus.generateTitle')}</h4>
+            <h4 style={{ margin: '0 0 4px', display: 'flex', alignItems: 'center', gap: 8 }}>
+              {t('statementStatus.generateTitle')}
+              {statementDraft && <span className="qlc-badge muted">{t('statementStatus.draftBadge')}</span>}
+            </h4>
             <p style={{ fontSize: 12, color: 'var(--qlc-muted)', margin: 0 }}>
               {hasUnpaidStatement ? t('statementStatus.blockedUnpaid') : t('statementStatus.generateHint')}
             </p>
+            {statementDraft && (
+              <p style={{ fontSize: 12, color: 'var(--qlc-muted)', margin: '4px 0 0' }}>
+                {t('statementStatus.draftHint').replace('{date}', formatCdmxDateTime(statementDraft.generatedAt))}
+              </p>
+            )}
             <fieldset disabled={hasUnpaidStatement || creatingStatement} className="qlc-plain-fieldset">
             <div className="qlc-statement-form-grid">
               {hasPreviousStatement ? (
@@ -655,9 +684,19 @@ export default function AdminSubaccountDetailPage() {
               }}
             />
             <p style={{ fontSize: 11, color: 'var(--qlc-muted2)', margin: '4px 0 0' }}>{t('statementStatus.pdfHint')}</p>
-            <button className="qlc-btn primary" style={{ marginTop: 12, width: '100%' }}>
-              {creatingStatement ? t('common.saving') : t('statementStatus.generate')}
-            </button>
+            <div className="qlc-form-actions" style={{ marginTop: 12, flexWrap: 'wrap' }}>
+              <button type="button" className="qlc-btn ghost" onClick={saveStatementDraft}>
+                {t('statementStatus.saveDraft')}
+              </button>
+              <button type="submit" className="qlc-btn primary">
+                {creatingStatement ? t('common.saving') : statementDraft ? t('statementStatus.finalize') : t('statementStatus.generate')}
+              </button>
+              {statementDraft && (
+                <button type="button" className="qlc-btn danger" onClick={() => setConfirmDeleteDraft(true)}>
+                  {t('statementStatus.deleteDraft')}
+                </button>
+              )}
+            </div>
             </fieldset>
           </form>
         </div>
@@ -675,6 +714,16 @@ export default function AdminSubaccountDetailPage() {
             await api.delete(`/admin/api-subaccounts/${id}/connection-events/${deletingEvent.id}`);
             load();
           }}
+        />
+      )}
+
+      {confirmDeleteDraft && statementDraft && (
+        <ConfirmModal
+          title={t('statementStatus.deleteDraftTitle')}
+          message={t('statementStatus.deleteDraftMessage')}
+          confirmLabel={t('statementStatus.deleteDraft')}
+          onClose={() => setConfirmDeleteDraft(false)}
+          onConfirm={deleteStatementDraft}
         />
       )}
 

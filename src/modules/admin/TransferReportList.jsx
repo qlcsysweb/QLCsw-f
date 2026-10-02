@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
 import { useLanguage } from '../../i18n/LanguageContext';
@@ -37,7 +37,12 @@ export default function TransferReportList({ reports, receiveUid, showClient = f
   const statusMap = TRANSFER_REPORT_STATUS(t);
   const { copy, isCopied } = useCopyToClipboard();
 
+  // Bloqueo síncrono: una acción a la vez (evita dobles clics antes de que
+  // `busyId` se refleje en el render). El backend también es idempotente.
+  const busyRef = useRef(false);
   const run = async (report, fn) => {
+    if (busyRef.current) return;
+    busyRef.current = true;
     setBusyId(report.id);
     setError('');
     try {
@@ -46,6 +51,7 @@ export default function TransferReportList({ reports, receiveUid, showClient = f
     } catch (err) {
       setError(translateBackendMessage(err.message, language));
     } finally {
+      busyRef.current = false;
       setBusyId(null);
     }
   };
