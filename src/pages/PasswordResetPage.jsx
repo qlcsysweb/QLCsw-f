@@ -6,13 +6,6 @@ import { useLanguage } from '../i18n/LanguageContext';
 import { translateBackendMessage } from '../i18n/backendMessages';
 import './LoginPage.css';
 
-/*
- * RESTABLECER CONTRASEÑA desde el inicio de sesión, con Google Authenticator:
- * 1) correo → Siguiente  2) código de 6 dígitos → Verificar
- * 3) contraseña nueva + confirmación → Guardar.
- * El backend valida correo + código y emite un token temporal de un solo uso
- * (10 min) para el paso 3; nunca revela si un correo existe.
- */
 const STEPS = ['email', 'code', 'password', 'done'];
 
 export default function PasswordResetPage() {
