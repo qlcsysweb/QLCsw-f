@@ -10,9 +10,26 @@ const ACTIVE = ['PENDING', 'EN_REVISION'];
 
 // Datos de UNA confirmación de capital (declaración del CLIENTE, nunca una
 // verificación automática del exchange).
-function CapitalRecord({ report, t, statusMap }) {
+function CapitalRecord({ report, t, statusMap, onHide }) {
   const s = statusOf(statusMap, report.status, 'PENDING');
   return (
+    <>
+      {/* Solo un reporte ya revisado se puede borrar del historial. */}
+      {onHide && !ACTIVE.includes(report.status) && (
+        <div className="qlc-history-del-row">
+          <button
+            type="button"
+            className="qlc-btn ghost qlc-trash-btn qlc-icon-only"
+            onClick={() => onHide(report)}
+            title={t('adminClientDetail.hideCapitalReport')}
+            aria-label={t('adminClientDetail.hideCapitalReport')}
+          >
+            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+              <path fill="currentColor" d="M9 3h6l1 2h4v2H4V5h4l1-2Zm-3 6h12l-1 12H7L6 9Zm4 2v8h2v-8h-2Zm4 0v8h2v-8h-2Z" />
+            </svg>
+          </button>
+        </div>
+      )}
     <dl className="qlc-transfer-data">
       <dt>{t('adminClientDetail.requiredCapital')}</dt>
       <dd>{Number(report.amount)} USDT</dd>
@@ -47,6 +64,7 @@ function CapitalRecord({ report, t, statusMap }) {
         {report.reviewNote && !ACTIVE.includes(report.status) && <span style={{ color: 'var(--qlc-muted2)' }}> · {report.reviewNote}</span>}
       </dd>
     </dl>
+    </>
   );
 }
 
@@ -67,10 +85,16 @@ export default function CapitalDistributionCard({ reports, onChanged, onMessage 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [confirmDiscard, setConfirmDiscard] = useState(false);
+  // Reporte revisado que el admin quiere borrar del historial.
+  const [hiding, setHiding] = useState(null);
   const busyRef = useRef(false);
 
-  const current = reports[0] || null;
-  const history = reports.slice(1);
+  // Los que el admin borró del historial no se muestran (siguen en la BD). Un
+  // reporte en revisión nunca se puede borrar, así que el registro actual por
+  // revisar siempre sigue visible.
+  const visibleReports = reports.filter((r) => !r.adminHiddenAt);
+  const current = visibleReports[0] || null;
+  const history = visibleReports.slice(1);
   const isActive = current && ACTIVE.includes(current.status);
   const isDraft = current?.status === 'EN_REVISION';
 
@@ -121,7 +145,7 @@ export default function CapitalDistributionCard({ reports, onChanged, onMessage 
         <>
           <div style={{ fontSize: 12, color: 'var(--qlc-muted)', marginBottom: 6 }}>{t('adminClientDetail.currentRecord')}</div>
           <div className="qlc-transfer-item">
-            <CapitalRecord report={current} t={t} statusMap={statusMap} />
+            <CapitalRecord report={current} t={t} statusMap={statusMap} onHide={setHiding} />
             {isActive && (
               <>
                 <label className="qlc-label" htmlFor="capital-review-note">
@@ -171,7 +195,7 @@ export default function CapitalDistributionCard({ reports, onChanged, onMessage 
                   <ul className="qlc-plain-list qlc-transfer-list">
                     {history.map((r) => (
                       <li key={r.id} className="qlc-transfer-item">
-                        <CapitalRecord report={r} t={t} statusMap={statusMap} />
+                        <CapitalRecord report={r} t={t} statusMap={statusMap} onHide={setHiding} />
                       </li>
                     ))}
                   </ul>
@@ -180,6 +204,20 @@ export default function CapitalDistributionCard({ reports, onChanged, onMessage 
             </div>
           )}
         </>
+      )}
+      {hiding && (
+        <ConfirmModal
+          title={t('adminClientDetail.hideCapitalReportTitle')}
+          message={t('adminClientDetail.hideCapitalReportMessage')
+            .replace('{amount}', String(Number(hiding.amount)))
+            .replace('{date}', formatCdmxDateTime(hiding.reportedAt))}
+          confirmLabel={t('adminClientDetail.hideCapitalReport')}
+          onClose={() => setHiding(null)}
+          onConfirm={async () => {
+            await api.delete(`/admin/capital-distribution-reports/${hiding.id}/history`);
+            onChanged?.();
+          }}
+        />
       )}
       {confirmDiscard && current && (
         <ConfirmModal

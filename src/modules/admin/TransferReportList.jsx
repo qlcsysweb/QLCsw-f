@@ -33,6 +33,8 @@ export default function TransferReportList({ reports, receiveUid, showClient = f
   const [rejectReason, setRejectReason] = useState('');
   const [viewingProof, setViewingProof] = useState(null);
   const [deleting, setDeleting] = useState(null);
+  // Transferencia revisada que el admin quiere borrar del historial.
+  const [hiding, setHiding] = useState(null);
   const [error, setError] = useState('');
   const statusMap = TRANSFER_REPORT_STATUS(t);
   const { copy, isCopied } = useCopyToClipboard();
@@ -56,13 +58,15 @@ export default function TransferReportList({ reports, receiveUid, showClient = f
     }
   };
 
-  if (!reports.length) return <div className="qlc-empty">{t('adminPayments.noReports')}</div>;
+  // Las que el admin borró del historial no se muestran (siguen en la BD).
+  const visibleReports = reports.filter((r) => !r.adminHiddenAt);
+  if (!visibleReports.length) return <div className="qlc-empty">{t('adminPayments.noReports')}</div>;
 
   return (
     <>
       {error && <p className="qlc-field-error">{error}</p>}
       <ul className="qlc-plain-list qlc-transfer-list">
-        {reports.map((r) => {
+        {visibleReports.map((r) => {
           const st = statusOf(statusMap, r.status);
           const action = nextAction(r, t);
           // Un pago de estado de cuenta ya confirmado es registro contable: no se borra.
@@ -73,7 +77,23 @@ export default function TransferReportList({ reports, receiveUid, showClient = f
             <li key={r.id} className="qlc-transfer-item">
               <div className="qlc-transfer-head">
                 <strong>{r.statementId ? t('adminPayments.conceptStatement') : t('adminPayments.conceptGuarantee')}</strong>
-                <span className={`qlc-badge ${st.className}`}>{st.text}</span>
+                <span className="qlc-history-head-right">
+                  <span className={`qlc-badge ${st.className}`}>{st.text}</span>
+                  {(r.status === 'APROBADO' || r.status === 'RECHAZADO') && (
+                    <button
+                      type="button"
+                      className="qlc-btn ghost qlc-trash-btn qlc-icon-only"
+                      disabled={busyId === r.id}
+                      onClick={() => setHiding(r)}
+                      title={t('adminPayments.hideFromHistory')}
+                      aria-label={t('adminPayments.hideFromHistory')}
+                    >
+                      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                        <path fill="currentColor" d="M9 3h6l1 2h4v2H4V5h4l1-2Zm-3 6h12l-1 12H7L6 9Zm4 2v8h2v-8h-2Zm4 0v8h2v-8h-2Z" />
+                      </svg>
+                    </button>
+                  )}
+                </span>
               </div>
               <dl className="qlc-transfer-data">
                 {showClient && (
@@ -259,6 +279,18 @@ export default function TransferReportList({ reports, receiveUid, showClient = f
           onClose={() => setDeleting(null)}
           onConfirm={async () => {
             await api.delete(`/admin/payment-reports/${deleting.id}`);
+            onChanged?.();
+          }}
+        />
+      )}
+      {hiding && (
+        <ConfirmModal
+          title={t('adminPayments.hideFromHistoryTitle')}
+          message={t('adminPayments.hideFromHistoryMessage').replace('{order}', hiding.bitgetOrderNumber || '—')}
+          confirmLabel={t('adminPayments.hideFromHistory')}
+          onClose={() => setHiding(null)}
+          onConfirm={async () => {
+            await api.delete(`/admin/payment-reports/${hiding.id}/history`);
             onChanged?.();
           }}
         />

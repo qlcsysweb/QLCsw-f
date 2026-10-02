@@ -142,6 +142,8 @@ export default function AdminSubaccountDetailPage() {
 
   // Evento del historial de conexión que el admin quiere borrar.
   const [deletingEvent, setDeletingEvent] = useState(null);
+  // Estado de cuenta anterior que el admin quiere borrar del historial.
+  const [hidingStatement, setHidingStatement] = useState(null);
 
   const applyStatements = (data) => {
     setStatements(data.statements);
@@ -516,7 +518,7 @@ export default function AdminSubaccountDetailPage() {
                     </span>
                     <button
                       type="button"
-                      className="qlc-btn ghost qlc-case-delete qlc-icon-only"
+                      className="qlc-btn ghost qlc-trash-btn qlc-icon-only"
                       onClick={() => setDeletingEvent(ev)}
                       title={t('adminClientDetail.deleteHistoryEvent')}
                       aria-label={t('adminClientDetail.deleteHistoryEvent')}
@@ -534,7 +536,7 @@ export default function AdminSubaccountDetailPage() {
 
         <div className="qlc-card">
           <h3 style={{ marginTop: 0 }}>
-            {t('adminPayments.reports')} ({payments.length})
+            {t('adminPayments.reports')} ({payments.filter((p) => !p.adminHiddenAt).length})
           </h3>
           {/* El UID de recepción es GENERAL (Configuración · Plataforma):
               aquí solo se muestra como referencia para revisar reportes. */}
@@ -570,11 +572,11 @@ export default function AdminSubaccountDetailPage() {
               </button>
             )}
           </div>
-          {statements.length > 1 && (
+          {statements.slice(1).some((s) => !s.adminHiddenAt) && (
             <div style={{ marginTop: 14 }}>
               <div style={{ fontSize: 12, color: 'var(--qlc-muted)' }}>{t('statementStatus.previous')}</div>
               <ul className="qlc-plain-list qlc-statement-history" style={{ margin: 0 }}>
-                {statements.slice(1).map((s) => (
+                {statements.slice(1).filter((s) => !s.adminHiddenAt).map((s) => (
                   <li key={s.id}>
                     <span>
                       {formatDateOnly(s.periodStart)} – {formatDateOnly(s.periodEnd)}
@@ -587,7 +589,22 @@ export default function AdminSubaccountDetailPage() {
                         </>
                       )}
                     </span>
-                    <StatementBadge status={s.status} />
+                    <span className="qlc-history-head-right">
+                      <StatementBadge status={s.status} />
+                      {s.status === 'PAGADO' && (
+                        <button
+                          type="button"
+                          className="qlc-btn ghost qlc-trash-btn qlc-icon-only"
+                          onClick={() => setHidingStatement(s)}
+                          title={t('statementStatus.deleteFromHistory')}
+                          aria-label={t('statementStatus.deleteFromHistory')}
+                        >
+                          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                            <path fill="currentColor" d="M9 3h6l1 2h4v2H4V5h4l1-2Zm-3 6h12l-1 12H7L6 9Zm4 2v8h2v-8h-2Zm4 0v8h2v-8h-2Z" />
+                          </svg>
+                        </button>
+                      )}
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -701,6 +718,22 @@ export default function AdminSubaccountDetailPage() {
           </form>
         </div>
       </div>
+
+      {hidingStatement && (
+        <ConfirmModal
+          title={t('statementStatus.deleteFromHistoryTitle')}
+          message={t('statementStatus.adminDeleteFromHistoryMessage').replace(
+            '{period}',
+            `${formatDateOnly(hidingStatement.periodStart)} – ${formatDateOnly(hidingStatement.periodEnd)}`
+          )}
+          confirmLabel={t('statementStatus.deleteFromHistory')}
+          onClose={() => setHidingStatement(null)}
+          onConfirm={async () => {
+            await api.delete(`/admin/statements/${hidingStatement.id}/history`);
+            load();
+          }}
+        />
+      )}
 
       {deletingEvent && (
         <ConfirmModal

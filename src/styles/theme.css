@@ -1950,3 +1950,29 @@ span.qlc-time-mx:not(:only-child) {
   min-width: 0;
   overflow-wrap: anywhere;
 }
+
+/* Papelera "Borrar del historial" — visible siempre (tono rojo suave) y más
+   intensa al pasar el cursor, para que se identifique de un vistazo. */
+.qlc-trash-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--qlc-danger);
+  border-color: var(--qlc-danger-border);
+  opacity: 0.85;
+}
+.qlc-trash-btn:hover:not(:disabled),
+.qlc-trash-btn:focus-visible {
+  opacity: 1;
+  background: rgba(255, 92, 92, 0.12);
+}
+.qlc-history-head-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.qlc-history-del-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 4px;
+}

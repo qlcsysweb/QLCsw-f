@@ -788,6 +788,9 @@ const es = {
   },
 
   adminClientDetail: {
+    hideCapitalReport: 'Borrar del historial',
+    hideCapitalReportTitle: 'Borrar reporte de capital del historial',
+    hideCapitalReportMessage: '¿Borrar del historial la confirmación de {amount} USDT del {date}? Ya está revisada: el proceso y lo que ve el cliente no cambian, solo deja de mostrarse aquí.',
     deleteHistoryEvent: 'Borrar del historial',
     deleteHistoryEventTitle: 'Borrar evento del historial',
     deleteHistoryEventMessage: '¿Borrar el evento "{event}" del {date} del historial de conexión? Dejará de mostrarse al administrador y al cliente.',
@@ -1028,6 +1031,9 @@ const es = {
   },
 
   adminPayments: {
+    hideFromHistory: 'Borrar del historial',
+    hideFromHistoryTitle: 'Borrar transferencia del historial',
+    hideFromHistoryMessage: '¿Borrar del historial la transferencia con N.º de orden {order}? Ya está revisada: el pago y lo que ve el cliente no cambian, solo deja de mostrarse aquí.',
     kicker: 'PAGOS / GARANTÍA',
     title: 'Transferencia interna Bitget',
     configTitle: 'Transferencia interna Bitget — configuración general',
@@ -1718,6 +1724,7 @@ const es = {
   },
 
   statementStatus: {
+    adminDeleteFromHistoryMessage: '¿Borrar del historial el estado de cuenta del periodo {period}? Ya está pagado: los pagos y lo que ve el cliente no cambian, solo deja de mostrarse aquí.',
     deleteFromHistory: 'Borrar del historial',
     deleteFromHistoryTitle: 'Borrar estado de cuenta del historial',
     deleteFromHistoryMessage: '¿Borrar de tu historial el estado de cuenta del periodo {period}? Ya está pagado; solo dejará de mostrarse en tu historial.',
@@ -2739,6 +2746,9 @@ const en = {
   },
 
   adminClientDetail: {
+    hideCapitalReport: 'Delete from history',
+    hideCapitalReportTitle: 'Delete capital report from history',
+    hideCapitalReportMessage: 'Delete the {amount} USDT confirmation of {date} from the history? It is already reviewed: the process and what the client sees do not change; it just stops being shown here.',
     deleteHistoryEvent: 'Delete from history',
     deleteHistoryEventTitle: 'Delete history event',
     deleteHistoryEventMessage: 'Delete the "{event}" event of {date} from the connection history? It will no longer be shown to the administrator or the client.',
@@ -2979,6 +2989,9 @@ const en = {
   },
 
   adminPayments: {
+    hideFromHistory: 'Delete from history',
+    hideFromHistoryTitle: 'Delete transfer from history',
+    hideFromHistoryMessage: 'Delete the transfer with order No. {order} from the history? It is already reviewed: the payment and what the client sees do not change; it just stops being shown here.',
     kicker: 'PAYMENTS / GUARANTEE',
     title: 'Bitget internal transfer',
     configTitle: 'Bitget internal transfer — general settings',
@@ -3664,6 +3677,7 @@ const en = {
   },
 
   statementStatus: {
+    adminDeleteFromHistoryMessage: 'Delete the statement for the period {period} from the history? It is already paid: payments and what the client sees do not change; it just stops being shown here.',
     deleteFromHistory: 'Delete from history',
     deleteFromHistoryTitle: 'Delete statement from history',
     deleteFromHistoryMessage: 'Delete the statement for the period {period} from your history? It is already paid; it will only stop being shown in your history.',
