@@ -8,17 +8,22 @@ import { translateBackendMessage } from '../i18n/backendMessages';
 import { PrivacyNoticeModal, TermsAndConditionsModal } from '../components/LegalAcceptanceModal';
 import './LoginPage.css';
 
-const normalizeCode = (raw) => String(raw || '').trim().replace(/[\s-]+/g, '').toUpperCase();
+// Acepta el código o la liga completa pegada ("…/registro?ref=CODIGO").
+const normalizeCode = (raw) => {
+  const text = String(raw || '').trim();
+  const fromLink = text.match(/[?&]ref=([^&#\s]+)/i);
+  return (fromLink ? decodeURIComponent(fromLink[1]) : text).replace(/[\s-]+/g, '').toUpperCase();
+};
 
-// REGISTRO POR INVITACIÓN — el registro externo exige un código de afiliado
-// válido (por enlace ?ref=CODIGO o escrito a mano). Sin invitación válida no
-// se muestra el formulario; el backend vuelve a validar el código al crear la
-// cuenta, así que quitar el ?ref o forzar el formulario no permite registrarse.
-//
-// Etapas: "gate" (pedir código) → "invite" (invitación válida) → "form" →
-// "privacy" → "terms". "invalid" cuando el código no sirve. Tras crear la
-// cuenta sigue el flujo de seguridad actual (2FA obligatorio en el primer
-// acceso, ver ProtectedRoute) — la invitación no lo omite.
+// REGISTRO POR INVITACIÓN (QLC Affiliate Program §3.1) — se conserva la
+// pantalla de registro actual (mismo diseño y campos) y se agrega el campo
+// OBLIGATORIO "Liga o código de afiliación", precargado desde la URL
+// (?ref=CODIGO). El código se valida contra el backend (existe y está
+// activo); si es inválido o está suspendido el registro queda bloqueado con
+// un mensaje claro. Antes de confirmar se muestra un aviso discreto sin datos
+// del afiliador. El backend vuelve a validar el código al crear la cuenta.
+// Tras el formulario siguen el Aviso de Privacidad y los Términos, y después
+// el flujo de seguridad actual (2FA obligatorio en el primer acceso).
 export default function RegisterPage() {
   const { register } = useAuth();
   const { t, language } = useLanguage();
@@ -27,9 +32,11 @@ export default function RegisterPage() {
   const refParam = normalizeCode(searchParams.get('ref'));
 
   const [codeInput, setCodeInput] = useState(refParam);
-  const [invite, setInvite] = useState(null); // { code, inviterFirstName }
-  const [checking, setChecking] = useState(Boolean(refParam));
-  const [stage, setStage] = useState(refParam ? 'checking' : 'gate');
+  // { code } cuando el código vigente del campo fue validado por el backend.
+  const [invite, setInvite] = useState(null);
+  const [codeError, setCodeError] = useState('');
+  const [checking, setChecking] = useState(false);
+  const [stage, setStage] = useState('form');
   const [form, setForm] = useState({ firstName: '', lastName: '', email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -40,42 +47,43 @@ export default function RegisterPage() {
 
   const validate = async (rawCode) => {
     const code = normalizeCode(rawCode);
-    if (!code) return;
+    if (!code) {
+      setInvite(null);
+      setCodeError(t('invite.gateText'));
+      return null;
+    }
+    if (invite?.code === code) return invite;
     setChecking(true);
-    setError('');
+    setCodeError('');
     try {
       const { data } = await api.get('/affiliate/validate', { params: { code } });
-      setInvite({ code: data.code, inviterFirstName: data.inviterFirstName });
-      setStage('invite');
+      const valid = { code: data.code };
+      setInvite(valid);
       if (searchParams.get('ref') !== data.code) setSearchParams({ ref: data.code }, { replace: true });
+      return valid;
     } catch (err) {
       setInvite(null);
-      setStage(err.status && err.status < 500 && err.status !== 429 ? 'invalid' : 'gate');
-      if (!(err.status && err.status < 500 && err.status !== 429)) setError(translateBackendMessage(err.message, language));
+      // 4xx = código inexistente, suspendido o inválido; otro error = red/servidor.
+      setCodeError(err.status && err.status < 500 && err.status !== 429 ? t('invite.invalidText') : translateBackendMessage(err.message, language));
+      return null;
     } finally {
       setChecking(false);
     }
   };
 
   useEffect(() => {
+    // Liga abierta: el código llega precargado y se valida de inmediato.
     if (refParam) validate(refParam);
-    // Solo al entrar con un enlace de invitación.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const resetToGate = () => {
-    setInvite(null);
-    setCodeInput('');
-    setError('');
-    setStage('gate');
-    setSearchParams({}, { replace: true });
-  };
-
   const update = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
 
-  const handleContinue = (e) => {
+  const handleContinue = async (e) => {
     e.preventDefault();
     setError('');
+    const valid = await validate(codeInput);
+    if (!valid) return;
     setStage('privacy');
   };
 
@@ -110,73 +118,46 @@ export default function RegisterPage() {
     return <TermsAndConditionsModal onAccept={completeRegistration} onBack={() => setStage('privacy')} loading={loading} />;
   }
 
-  const brand = (
-    <div className="qlc-login-brand">
-      <QlcLogo className="qlc-login-logo" animated alt="QLC" />
-      <span>QUANTUM LIQUIDITY CAPITAL</span>
-    </div>
-  );
-  const signInLink = (
-    <p className="qlc-login-sub" style={{ marginTop: 18, marginBottom: 0 }}>
-      {t('register.haveAccount')} <Link to="/login">{t('register.signIn')}</Link>
-    </p>
-  );
+  const codeIsCurrent = invite && invite.code === normalizeCode(codeInput);
 
-  let body;
-  if (stage === 'checking') {
-    body = (
-      <>
-        <div className="qlc-kicker">{t('invite.kicker')}</div>
-        <p className="qlc-login-sub" role="status">{t('invite.validating')}</p>
-      </>
-    );
-  } else if (stage === 'invalid') {
-    body = (
-      <>
-        <div className="qlc-kicker">{t('invite.kicker')}</div>
-        <h1>{t('invite.invalidTitle')}</h1>
-        <p className="qlc-login-sub">{t('invite.invalidText')}</p>
-        <button type="button" className="qlc-btn primary qlc-login-submit" onClick={resetToGate}>
-          {t('invite.tryAnother')}
-        </button>
-        {signInLink}
-      </>
-    );
-  } else if (stage === 'invite' && invite) {
-    body = (
-      <>
-        <div className="qlc-kicker">{t('invite.kicker')}</div>
-        <h1>{t('invite.validTitle')}</h1>
-        <p className="qlc-login-sub">✓ {t('invite.validText')}</p>
-        <div className="qlc-invite-code">
-          <span>{t('invite.codeShown')}</span>
-          <strong>{invite.code}</strong>
-          {invite.inviterFirstName && (
-            <small>
-              {t('invite.invitedBy')}: {invite.inviterFirstName}
-            </small>
-          )}
+  return (
+    <div className="qlc-login-screen">
+      <div className="qlc-login-box qlc-card">
+        <div className="qlc-login-brand">
+          <QlcLogo className="qlc-login-logo" animated alt="QLC" />
+          <span>QUANTUM LIQUIDITY CAPITAL</span>
         </div>
-        <button type="button" className="qlc-btn primary qlc-login-submit" onClick={() => setStage('form')}>
-          {t('invite.continue')}
-        </button>
-        <button type="button" className="qlc-btn ghost qlc-login-submit" onClick={resetToGate}>
-          {t('invite.changeCode')}
-        </button>
-        {signInLink}
-      </>
-    );
-  } else if (stage === 'form' && invite) {
-    body = (
-      <>
         <div className="qlc-kicker">{t('register.kicker')}</div>
         <h1>{t('register.title')}</h1>
-        <p className="qlc-login-sub">{t('register.subtitle')}</p>
-        <div className="qlc-invite-code is-compact">
-          <span>{t('invite.codeShown')}</span>
-          <strong>{invite.code}</strong>
-        </div>
+        <p className="qlc-login-sub">{t('invite.gateText')}</p>
+
         <form onSubmit={handleContinue}>
+          <label className="qlc-label" htmlFor="affiliate-code">
+            {t('invite.codeLabel')} *
+          </label>
+          <input
+            id="affiliate-code"
+            className="qlc-input"
+            value={codeInput}
+            onChange={(e) => {
+              setCodeInput(e.target.value);
+              setCodeError('');
+            }}
+            onBlur={() => codeInput.trim() && validate(codeInput)}
+            maxLength={300}
+            autoComplete="off"
+            spellCheck={false}
+            required
+            aria-required="true"
+            aria-invalid={Boolean(codeError)}
+            aria-describedby="affiliate-code-status"
+          />
+          <div id="affiliate-code-status" role="status" style={{ minHeight: 18, fontSize: 12, marginTop: -4, marginBottom: 6 }}>
+            {checking && <span style={{ color: 'var(--qlc-muted)' }}>{t('invite.validating')}</span>}
+            {!checking && codeIsCurrent && <span style={{ color: 'var(--qlc-ok)' }}>✓ {t('invite.validText')}</span>}
+            {!checking && codeError && <span className="qlc-field-error">{codeError}</span>}
+          </div>
+
           <label className="qlc-label">{t('register.firstName')}</label>
           <input className="qlc-input" value={form.firstName} onChange={update('firstName')} required />
           <label className="qlc-label">{t('register.lastName')}</label>
@@ -214,56 +195,23 @@ export default function RegisterPage() {
             </button>
           </div>
 
+          {/* Aviso discreto antes de confirmar, sin información del afiliador. */}
+          {codeIsCurrent && (
+            <p className="qlc-invite-code is-compact" style={{ margin: '14px 0 0' }}>
+              <span>{t('invite.notice')}</span>
+            </p>
+          )}
+
           {error && <div className="qlc-login-error">{error}</div>}
 
-          <button className="qlc-btn primary qlc-login-submit" type="submit" disabled={loading}>
-            {t('register.continue')}
+          <button className="qlc-btn primary qlc-login-submit" type="submit" disabled={loading || checking || !normalizeCode(codeInput)}>
+            {checking ? t('invite.validating') : t('register.continue')}
           </button>
-          {signInLink}
-        </form>
-      </>
-    );
-  } else {
-    // Sin invitación: pantalla "Registro por invitación". No hay "Omitir".
-    body = (
-      <>
-        <div className="qlc-kicker">{t('invite.kicker')}</div>
-        <h1>{t('invite.gateTitle')}</h1>
-        <p className="qlc-login-sub">{t('invite.gateText')}</p>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (!checking) validate(codeInput);
-          }}
-        >
-          <label className="qlc-label" htmlFor="affiliate-code">
-            {t('invite.codeLabel')}
-          </label>
-          <input
-            id="affiliate-code"
-            className="qlc-input"
-            value={codeInput}
-            onChange={(e) => setCodeInput(e.target.value.toUpperCase())}
-            maxLength={40}
-            autoComplete="off"
-            spellCheck={false}
-            required
-          />
-          {error && <div className="qlc-login-error">{error}</div>}
-          <button className="qlc-btn primary qlc-login-submit" type="submit" disabled={checking || !normalizeCode(codeInput)}>
-            {checking ? t('invite.validating') : t('invite.validate')}
-          </button>
-          {signInLink}
-        </form>
-      </>
-    );
-  }
 
-  return (
-    <div className="qlc-login-screen">
-      <div className="qlc-login-box qlc-card">
-        {brand}
-        {body}
+          <p className="qlc-login-sub" style={{ marginTop: 18, marginBottom: 0 }}>
+            {t('register.haveAccount')} <Link to="/login">{t('register.signIn')}</Link>
+          </p>
+        </form>
       </div>
     </div>
   );

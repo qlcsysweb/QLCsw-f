@@ -217,6 +217,11 @@ export default function SubaccountDetailPage() {
         <div>
           <div className="qlc-kicker">{t('clientSubaccountDetail.kicker')}</div>
           <h1 style={{ margin: 0 }}>{clientSubaccountLabel(subaccount, t)}</h1>
+          {subaccount.pcb && (
+            <div style={{ fontSize: 13, color: 'var(--qlc-muted)' }}>
+              PCB <code style={{ color: 'var(--qlc-blue2)' }}>{subaccount.pcb}</code>
+            </div>
+          )}
         </div>
         <span className={`qlc-badge ${status.className}`}>{status.text}</span>
       </div>

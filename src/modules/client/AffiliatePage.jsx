@@ -2,30 +2,155 @@ import { useEffect, useRef, useState } from 'react';
 import api from '../../services/api';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
-import { formatCdmxDate } from '../../utils/cdmxTime';
+import { formatCdmxDate, formatCdmxDateTime, formatDateOnly } from '../../utils/cdmxTime';
 import usePolling from '../../hooks/usePolling';
 import useCopyToClipboard from '../../hooks/useCopyToClipboard';
 import Modal from '../../components/Modal';
+import DocumentViewerModal from '../../components/DocumentViewerModal';
 import LoadingScreen from '../../components/LoadingScreen';
 
 const REF_BADGE = { ACTIVO: 'ok', EN_PROCESO: 'warn', INACTIVO: 'muted' };
+const CONNECTION_BADGE = { CONECTADA: 'ok', PENDIENTE: 'warn', DESCONECTADA: 'danger' };
+const MILESTONE_BADGE = { CONFIRMED: 'ok', PENDING: 'muted', REJECTED: 'danger' };
 const COMMISSION_BADGE = { PENDIENTE: 'warn', APROBADA: 'ok', PAGADA: 'ok', CANCELADA: 'muted' };
-const money = (n) => `${Number(n || 0).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDT`;
+const PAYMENT_BADGE = { PENDIENTE: 'warn', PROCESADO: 'warn', PAGADO: 'ok', RECHAZADO: 'danger' };
+const STATE_BADGE = { ACTIVO: 'ok', SUSPENDIDO: 'danger', SIN_LIGA: 'muted' };
+export const money = (n) => `${Number(n || 0).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDT`;
+
+// Una cuenta/API del referido: PCB, terminación de API Key (solo referencia
+// visual), estado administrativo, hitos, capital confirmado e historial
+// registrado por QLC. Nada de esto es una consulta a Bitget.
+function ReferralAccount({ account, t }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="qlc-aff-account">
+      <div className="qlc-aff-account-head">
+        <strong>{account.pcb || (account.principal ? t('affiliate.principal') : t('affiliate.pcbPending'))}</strong>
+        <span className="qlc-aff-api">
+          {t('affiliate.apiLabel')}: {account.apiKeyTail || t('affiliate.apiNotRegistered')}
+        </span>
+      </div>
+      <dl className="qlc-aff-dl">
+        <dt>{t('affiliate.connection')}</dt>
+        <dd>
+          <span className={`qlc-badge ${CONNECTION_BADGE[account.connectionStatus] || 'muted'}`}>
+            {t(`affiliate.connectionStatus.${account.connectionStatus}`)}
+          </span>
+        </dd>
+        {/* SALDO REGISTRADO por QLC (último estado de cuenta o capital
+            confirmado) con su fecha administrativa. Si no existe o superó la
+            antigüedad configurada: "Sin actualizar" (nunca un dato viejo
+            presentado como vigente, y nunca una consulta al exchange). */}
+        <dt>{t('affiliate.registeredBalance')}</dt>
+        <dd>
+          {account.registeredBalance?.fresh ? (
+            <>
+              <strong>{money(account.registeredBalance.amount)}</strong>
+              <div style={{ fontSize: 11, color: 'var(--qlc-muted2)' }}>
+                {t(`affiliate.balanceSource.${account.registeredBalance.source}`)} · {t('affiliate.lastUpdate')}:{' '}
+                {formatCdmxDateTime(account.registeredBalance.updatedAt)}
+              </div>
+            </>
+          ) : (
+            <>
+              <span className="qlc-badge muted">{t('affiliate.notUpdated')}</span>
+              {account.registeredBalance && (
+                <div style={{ fontSize: 11, color: 'var(--qlc-muted2)' }}>
+                  {t('affiliate.lastRecord')}: {formatCdmxDateTime(account.registeredBalance.updatedAt)}
+                </div>
+              )}
+            </>
+          )}
+        </dd>
+        <dt>{t('affiliate.confirmedCapital')}</dt>
+        <dd>
+          {account.confirmedCapital ? (
+            <>
+              <strong>{money(account.confirmedCapital.amount)}</strong>
+              <div style={{ fontSize: 11, color: 'var(--qlc-muted2)' }}>
+                {t('affiliate.lastUpdate')}: {formatCdmxDateTime(account.confirmedCapital.updatedAt)}
+              </div>
+            </>
+          ) : (
+            <span style={{ color: 'var(--qlc-muted2)' }}>{t('affiliate.noRecord')}</span>
+          )}
+        </dd>
+      </dl>
+      <ul className="qlc-aff-milestones">
+        {account.milestones.map((m) => (
+          <li key={m.type}>
+            <span>{t(`affiliate.milestone.${m.type}`)}</span>
+            <span className={`qlc-badge ${MILESTONE_BADGE[m.status] || 'muted'}`} title={m.updatedAt ? formatCdmxDate(m.updatedAt) : undefined}>
+              {t(`affiliate.milestoneStatus.${m.status}`)}
+            </span>
+          </li>
+        ))}
+      </ul>
+      <button type="button" className="qlc-btn ghost" onClick={() => setOpen((v) => !v)} aria-expanded={open}>
+        {open ? t('affiliate.accountHideHistory') : t('affiliate.accountHistory')}
+      </button>
+      {open && (
+        <div style={{ marginTop: 10 }}>
+          <div className="qlc-aff-section-title">{t('affiliate.accountHistoryTitle')}</div>
+          {account.history.length ? (
+            <div className="qlc-table-wrap">
+              <table className="qlc-table">
+                <thead>
+                  <tr>
+                    <th>{t('affiliate.payDate')}</th>
+                    <th>{t('affiliate.movementType')}</th>
+                    <th>{t('affiliate.result')}</th>
+                    <th>{t('affiliate.status')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {account.history.map((h, i) => (
+                    <tr key={`${h.type}-${h.date}-${i}`}>
+                      <td>{formatCdmxDate(h.date)}</td>
+                      <td>
+                        {t(`affiliate.movement.${h.type}`)}
+                        {h.periodStart && (
+                          <div style={{ fontSize: 11, color: 'var(--qlc-muted2)' }}>
+                            {formatDateOnly(h.periodStart)} – {formatDateOnly(h.periodEnd)}
+                          </div>
+                        )}
+                      </td>
+                      <td>{money(h.amount)}</td>
+                      <td>
+                        <span className="qlc-badge muted">
+                          {h.type === 'CIERRE_DE_PERIODO' ? t(`affiliate.statementStatus.${h.status}`) : t('affiliate.movementApproved')}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="qlc-empty">{t('affiliate.accountHistoryEmpty')}</div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 /*
- * PANEL DE PROMOTOR (cliente). Solo información de AFILIACIÓN con datos
- * reales del backend: enlace, código, QR, referidos DIRECTOS y comisiones
- * generadas para este cliente. Nunca saldos, capital, API, movimientos ni
- * datos privados de los referidos.
+ * AFFILIATE DASHBOARD (QLC Affiliate Program). Datos reales del backend,
+ * todos registrados/confirmados por QLC dentro de la plataforma.
  */
 export default function AffiliatePage() {
   const { t, language } = useLanguage();
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
-  const [activating, setActivating] = useState(false);
-  const activatingRef = useRef(false);
-  const [qr, setQr] = useState(null); // { link, qrDataUrl } | 'loading' | 'error'
-  const [showHistory, setShowHistory] = useState(false);
+  const [message, setMessage] = useState('');
+  const [busy, setBusy] = useState(false);
+  const busyRef = useRef(false);
+  const [uidInput, setUidInput] = useState('');
+  const [editingUid, setEditingUid] = useState(false);
+  const [qr, setQr] = useState(null);
+  const [showCommissions, setShowCommissions] = useState(false);
+  const [viewingProof, setViewingProof] = useState(null);
   const { copy, isCopied } = useCopyToClipboard();
 
   const load = () =>
@@ -40,31 +165,42 @@ export default function AffiliatePage() {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  // Un nuevo referido o una comisión aprobada aparecen sin F5 (solo lectura).
+  // Cambios del ADMIN (estado de API, capital, activación, comisiones, pagos)
+  // y nuevos referidos aparecen sin F5. Solo lectura de NeonDB.
   usePolling(load, 8000);
 
   if (!data) return error ? <div className="qlc-card">{error}</div> : <LoadingScreen />;
 
-  const { affiliate, program, stats, referrals, commissions } = data;
-  // El enlace se construye con el origen REAL del frontend que está usando el
-  // cliente (nunca un dominio fijo); el backend genera el QR del mismo enlace.
+  const { affiliate, program, stats, referrals, commissions, payments } = data;
   const link = affiliate.code ? `${window.location.origin}/registro?ref=${encodeURIComponent(affiliate.code)}` : null;
-  const active = affiliate.enabled && affiliate.code;
+  const showUidForm = !affiliate.bitgetUid || editingUid;
 
-  const activate = async () => {
-    if (activatingRef.current) return;
-    activatingRef.current = true;
-    setActivating(true);
+  const run = async (fn, ok) => {
+    if (busyRef.current) return;
+    busyRef.current = true;
+    setBusy(true);
     setError('');
     try {
-      await api.post('/client/affiliate/activate');
+      await fn();
+      if (ok) {
+        setMessage(ok);
+        setTimeout(() => setMessage(''), 3000);
+      }
       await load();
     } catch (err) {
       setError(translateBackendMessage(err.message, language));
     } finally {
-      activatingRef.current = false;
-      setActivating(false);
+      busyRef.current = false;
+      setBusy(false);
     }
+  };
+
+  const saveUid = (e) => {
+    e.preventDefault();
+    run(async () => {
+      await api.put('/client/affiliate/uid', { bitgetUid: uidInput.trim() });
+      setEditingUid(false);
+    }, t('affiliate.uidSaved'));
   };
 
   const openQr = async () => {
@@ -83,99 +219,203 @@ export default function AffiliatePage() {
     <div>
       <div className="qlc-page-header">
         <div>
-          <div className="qlc-kicker">{t('affiliate.kicker')}</div>
-          <h1 style={{ margin: 0 }}>{t('affiliate.title')}</h1>
+          <div className="qlc-kicker">{t('affiliate.nav')}</div>
+          <h1 style={{ margin: 0 }}>{t('affiliate.dashboard')}</h1>
         </div>
+        <span className={`qlc-badge ${STATE_BADGE[affiliate.state] || 'muted'}`}>
+          {affiliate.state === 'ACTIVO' ? t('affiliate.stateActive') : affiliate.state === 'SUSPENDIDO' ? t('affiliate.stateSuspended') : t('affiliate.stateNoLink')}
+        </span>
       </div>
+      <p style={{ color: 'var(--qlc-muted)', fontSize: 13, marginTop: -8 }}>{t('affiliate.intro')}</p>
+      {message && <div className="qlc-card" style={{ borderColor: 'var(--qlc-ok-border)', marginBottom: 16 }}>{message}</div>}
       {error && <div className="qlc-card" style={{ borderColor: 'var(--qlc-danger-border)', marginBottom: 16 }}>{error}</div>}
 
-      {active ? (
-        <section className="qlc-card qlc-aff-hero">
-          <div className="qlc-aff-hero-head">
-            <div className="qlc-kicker">{t('affiliate.kicker')}</div>
-            <span className={`qlc-badge ${program.enabled ? 'ok' : 'muted'}`}>
-              {program.enabled ? t('affiliate.statusActive') : t('affiliate.statusInactive')}
-            </span>
-          </div>
-          <div style={{ minWidth: 0 }}>
-            <h2 style={{ margin: '0 0 4px', fontSize: 20 }}>{t('affiliate.linkTitle')}</h2>
-            <p style={{ margin: 0, color: 'var(--qlc-muted)', fontSize: 13 }}>{t('affiliate.linkHint')}</p>
-            <div className="qlc-aff-link-row">
-              <code className="qlc-aff-link" title={link}>{link}</code>
-              <button type="button" className="qlc-btn primary" onClick={() => copy(link, 'aff-link')}>
-                {isCopied('aff-link') ? t('affiliate.copied') : t('affiliate.copy')}
-              </button>
-            </div>
-            {!program.enabled && <p style={{ fontSize: 12, color: 'var(--qlc-warn)', margin: '10px 0 0' }}>{t('affiliate.programInactive')}</p>}
-            <p style={{ fontSize: 11, color: 'var(--qlc-muted2)', margin: '12px 0 0' }}>{t('affiliate.directOnly')}</p>
-          </div>
-          <div className="qlc-aff-code-box">
-            <div>
-              <div className="qlc-aff-section-title">{t('affiliate.codeLabel')}</div>
-              <div className="qlc-aff-code">{affiliate.code}</div>
-            </div>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              <button type="button" className="qlc-btn ghost" onClick={openQr}>
-                {t('affiliate.viewQr')}
-              </button>
-              <button type="button" className="qlc-btn ghost" onClick={() => copy(affiliate.code, 'aff-code')}>
-                {isCopied('aff-code') ? t('affiliate.copied') : t('affiliate.copy')}
-              </button>
-            </div>
-          </div>
-        </section>
-      ) : (
-        <section className="qlc-card">
-          <div className="qlc-kicker">{t('affiliate.kicker')}</div>
-          {affiliate.disabledByAdmin ? (
-            <p style={{ color: 'var(--qlc-muted)', margin: '8px 0 0' }}>{t('affiliate.disabledByAdmin')}</p>
+      <section className="qlc-card qlc-aff-hero">
+        <div style={{ minWidth: 0 }}>
+          <div className="qlc-aff-section-title">{t('affiliate.myLink')}</div>
+          {affiliate.enabled && link ? (
+            <>
+              <p style={{ margin: 0, color: 'var(--qlc-muted)', fontSize: 13 }}>{t('affiliate.linkHint')}</p>
+              <div className="qlc-aff-link-row">
+                <code className="qlc-aff-link" title={link}>{link}</code>
+                <button type="button" className="qlc-btn primary" onClick={() => copy(link, 'aff-link')}>
+                  {isCopied('aff-link') ? t('affiliate.copied') : t('affiliate.copy')}
+                </button>
+              </div>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 10, alignItems: 'center' }}>
+                <span style={{ fontSize: 12, color: 'var(--qlc-muted)' }}>{t('affiliate.codeLabel')}:</span>
+                <code style={{ color: 'var(--qlc-blue2)' }}>{affiliate.code}</code>
+                <button type="button" className="qlc-btn ghost" onClick={openQr}>
+                  {t('affiliate.viewQr')}
+                </button>
+              </div>
+              {!program.enabled && <p style={{ fontSize: 12, color: 'var(--qlc-warn)', margin: '10px 0 0' }}>{t('affiliate.programInactive')}</p>}
+            </>
+          ) : affiliate.state === 'SUSPENDIDO' ? (
+            <p style={{ color: 'var(--qlc-muted)', margin: 0 }}>{t('affiliate.disabledByAdmin')}</p>
           ) : !program.enabled ? (
-            <p style={{ color: 'var(--qlc-muted)', margin: '8px 0 0' }}>{t('affiliate.programInactive')}</p>
+            <p style={{ color: 'var(--qlc-muted)', margin: 0 }}>{t('affiliate.programInactive')}</p>
           ) : (
             <>
-              <h2 style={{ margin: '6px 0 4px', fontSize: 20 }}>{t('affiliate.notActiveTitle')}</h2>
-              <p style={{ color: 'var(--qlc-muted)', margin: '0 0 14px', fontSize: 13 }}>{t('affiliate.notActiveText')}</p>
-              {affiliate.canActivate && (
-                <button type="button" className="qlc-btn primary" onClick={activate} disabled={activating}>
-                  {activating ? t('affiliate.activating') : t('affiliate.activate')}
-                </button>
-              )}
+              <p style={{ color: 'var(--qlc-muted)', margin: '0 0 12px', fontSize: 13 }}>{t('affiliate.notActiveText')}</p>
+              {!affiliate.bitgetUid && <p style={{ fontSize: 12, color: 'var(--qlc-warn)', margin: '0 0 10px' }}>{t('affiliate.uidRequired')}</p>}
+              <button
+                type="button"
+                className="qlc-btn primary"
+                disabled={busy || !affiliate.canActivate}
+                onClick={() => run(() => api.post('/client/affiliate/activate'))}
+              >
+                {busy ? t('affiliate.activating') : t('affiliate.createLink')}
+              </button>
             </>
           )}
-        </section>
-      )}
+        </div>
+
+        <div className="qlc-aff-code-box">
+          <div>
+            <div className="qlc-aff-section-title">{t('affiliate.uidTitle')}</div>
+            {showUidForm ? (
+              <form onSubmit={saveUid}>
+                <input
+                  className="qlc-input"
+                  inputMode="numeric"
+                  value={uidInput}
+                  onChange={(e) => setUidInput(e.target.value.replace(/\D/g, '').slice(0, 20))}
+                  placeholder={t('affiliate.uidPlaceholder')}
+                  required
+                />
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  <button type="submit" className="qlc-btn primary" disabled={busy || uidInput.trim().length < 5}>
+                    {t('affiliate.uidSave')}
+                  </button>
+                  {affiliate.bitgetUid && (
+                    <button type="button" className="qlc-btn ghost" onClick={() => setEditingUid(false)}>
+                      {t('common.cancel')}
+                    </button>
+                  )}
+                </div>
+              </form>
+            ) : (
+              <>
+                <div className="qlc-aff-code">{affiliate.bitgetUid}</div>
+                {affiliate.bitgetUidUpdatedAt && (
+                  <div style={{ fontSize: 11, color: 'var(--qlc-muted2)' }}>
+                    {t('affiliate.uidUpdated')}: {formatCdmxDateTime(affiliate.bitgetUidUpdatedAt)}
+                  </div>
+                )}
+                <button
+                  type="button"
+                  className="qlc-btn ghost"
+                  style={{ marginTop: 10 }}
+                  onClick={() => {
+                    setUidInput(affiliate.bitgetUid);
+                    setEditingUid(true);
+                  }}
+                >
+                  {t('affiliate.uidEdit')}
+                </button>
+              </>
+            )}
+          </div>
+          <p style={{ fontSize: 11, color: 'var(--qlc-muted2)', margin: 0 }}>{t('affiliate.uidHint')}</p>
+        </div>
+      </section>
 
       <div className="qlc-stat-grid">
         <div className="qlc-card qlc-stat-card">
-          <span className="qlc-stat-label">{t('affiliate.statReferred')}</span>
+          <span className="qlc-stat-label">{t('affiliate.myAffiliates')}</span>
           <span className="qlc-stat-value">{stats.referred}</span>
         </div>
         <div className="qlc-card qlc-stat-card">
-          <span className="qlc-stat-label">{t('affiliate.statActive')}</span>
+          <span className="qlc-stat-label">{t('affiliate.activeAffiliates')}</span>
           <span className="qlc-stat-value">{stats.active}</span>
-          <span className="qlc-stat-hint">{t('affiliate.statActiveHint')}</span>
+          <span className="qlc-stat-hint">{t('affiliate.activeHint')}</span>
+        </div>
+        <div className="qlc-card qlc-stat-card">
+          <span className="qlc-stat-label">{t('affiliate.pending')}</span>
+          <span className="qlc-stat-value" style={{ fontSize: 20 }}>{money(totals.PENDIENTE + totals.APROBADA)}</span>
+        </div>
+        <div className="qlc-card qlc-stat-card">
+          <span className="qlc-stat-label">{t('affiliate.paid')}</span>
+          <span className="qlc-stat-value" style={{ fontSize: 20 }}>{money(totals.PAGADA)}</span>
         </div>
       </div>
 
+      <section className="qlc-card" style={{ marginTop: 18 }}>
+        <h3 style={{ marginTop: 0 }}>{t('affiliate.referralsTitle')}</h3>
+        <p style={{ fontSize: 11, color: 'var(--qlc-muted2)', marginTop: -6 }}>{t('affiliate.registeredDataNote')}</p>
+        {referrals.length ? (
+          <ul className="qlc-aff-list qlc-aff-referrals">
+            {referrals.map((r) => (
+              <li key={r.key}>
+                <div className="qlc-aff-meta">
+                  <strong style={{ fontSize: 16, color: 'var(--qlc-text)' }}>{r.initials}</strong>
+                  <span className={`qlc-badge ${REF_BADGE[r.status] || 'muted'}`}>{t(`affiliate.refStatus.${r.status}`)}</span>
+                </div>
+                <div style={{ fontSize: 12, color: 'var(--qlc-muted)' }}>
+                  {t('affiliate.registered')}: {formatCdmxDate(r.registeredAt)}
+                </div>
+                {r.accounts.length ? (
+                  r.accounts.map((a, i) => <ReferralAccount key={a.pcb || `acc-${i}`} account={a} t={t} />)
+                ) : (
+                  <div className="qlc-empty">{t('affiliate.noAccounts')}</div>
+                )}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div className="qlc-empty">{t('affiliate.referralsEmpty')}</div>
+        )}
+      </section>
+
       <div className="qlc-aff-grid">
         <section className="qlc-card">
-          <h3 style={{ marginTop: 0 }}>{t('affiliate.referralsTitle')}</h3>
-          {referrals.length ? (
-            <ul className="qlc-aff-list">
-              {referrals.map((r) => (
-                <li key={r.key}>
-                  <strong>{r.name}</strong>
-                  <div className="qlc-aff-meta">
-                    <span>
-                      {t('affiliate.registered')}: {formatCdmxDate(r.registeredAt)}
-                    </span>
-                    <span className={`qlc-badge ${REF_BADGE[r.status] || 'muted'}`}>{t(`affiliate.refStatus.${r.status}`)}</span>
-                  </div>
-                </li>
-              ))}
-            </ul>
+          <h3 style={{ marginTop: 0 }}>{t('affiliate.paymentsTitle')}</h3>
+          {payments.length ? (
+            <div className="qlc-table-wrap">
+              <table className="qlc-table">
+                <thead>
+                  <tr>
+                    <th>{t('affiliate.payDate')}</th>
+                    <th>{t('affiliate.payPeriod')}</th>
+                    <th>{t('affiliate.payAmount')}</th>
+                    <th>{t('affiliate.payUid')}</th>
+                    <th>{t('affiliate.payStatusLabel')}</th>
+                    <th>{t('affiliate.payProof')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {payments.map((p) => (
+                    <tr key={p.id}>
+                      <td>{formatCdmxDateTime(p.paidAt || p.createdAt)}</td>
+                      <td>{p.periodLabel}</td>
+                      <td>{money(p.amount)}</td>
+                      <td>
+                        <code>{p.destinationUid || '—'}</code>
+                      </td>
+                      <td>
+                        <span className={`qlc-badge ${PAYMENT_BADGE[p.status]}`}>{t(`affiliate.paymentStatus.${p.status}`)}</span>
+                      </td>
+                      <td>
+                        {p.hasProof ? (
+                          <button
+                            type="button"
+                            className="qlc-link-btn"
+                            onClick={() => setViewingProof({ url: `/client/affiliate/payments/${p.id}/proof`, fileName: p.proofFileName || 'comprobante' })}
+                          >
+                            {t('affiliate.viewProof')}
+                          </button>
+                        ) : (
+                          p.reference || '—'
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           ) : (
-            <div className="qlc-empty">{t('affiliate.referralsEmpty')}</div>
+            <div className="qlc-empty">{t('affiliate.paymentsEmpty')}</div>
           )}
         </section>
 
@@ -195,10 +435,10 @@ export default function AffiliatePage() {
               <strong>{money(totals.PAGADA)}</strong>
             </div>
           </div>
-          <button type="button" className="qlc-btn ghost" onClick={() => setShowHistory((v) => !v)} aria-expanded={showHistory}>
-            {showHistory ? t('affiliate.hideHistory') : t('affiliate.viewHistory')}
+          <button type="button" className="qlc-btn ghost" onClick={() => setShowCommissions((v) => !v)} aria-expanded={showCommissions}>
+            {showCommissions ? t('affiliate.hideHistory') : t('affiliate.viewHistory')}
           </button>
-          {showHistory &&
+          {showCommissions &&
             (commissions.history.length ? (
               <ul className="qlc-plain-list" style={{ marginTop: 12 }}>
                 {commissions.history.map((c) => (
@@ -207,7 +447,7 @@ export default function AffiliatePage() {
                       <strong>{c.concept}</strong>
                       <br />
                       <span style={{ fontSize: 12, color: 'var(--qlc-muted)' }}>
-                        {c.referredName} · {formatCdmxDate(c.occurredAt)}
+                        {c.referredInitials} · {formatCdmxDate(c.occurredAt)}
                       </span>
                     </span>
                     <span style={{ display: 'inline-flex', gap: 8, alignItems: 'center' }}>
@@ -241,6 +481,7 @@ export default function AffiliatePage() {
           </div>
         </Modal>
       )}
+      {viewingProof && <DocumentViewerModal url={viewingProof.url} fileName={viewingProof.fileName} onClose={() => setViewingProof(null)} />}
     </div>
   );
 }

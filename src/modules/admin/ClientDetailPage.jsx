@@ -12,6 +12,7 @@ import { formatParticipationSplit } from '../../components/ParticipationModelSum
 import usePolling from '../../hooks/usePolling';
 import CollapsibleSection from '../../components/CollapsibleSection';
 import LoadingScreen from '../../components/LoadingScreen';
+import { AffiliateManagementPanel } from './AffiliateDetailPage';
 
 // CORRECCIÓN 7 (bloque de 20) — fila reutilizable para no duplicar el JSX
 // entre subcuentas activas/principal e inactivas.
@@ -120,6 +121,13 @@ export default function ClientDetailPage() {
   // (approveCapital, etc. son estado aparte que
   // esto nunca sobreescribe).
   usePolling(load, 8000);
+  // Llegada desde Affiliate Management (#qlc-affiliate-program): abre y
+  // muestra la sección del programa de este cliente.
+  useEffect(() => {
+    if (client && window.location.hash === '#qlc-affiliate-program') {
+      document.getElementById('qlc-affiliate-program')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [client?.id]);
 
   const flash = (msg) => {
     setMessage(msg);
@@ -511,6 +519,15 @@ export default function ClientDetailPage() {
           </table>
         )}
       </CollapsibleSection>
+
+      {/* QLC AFFILIATE PROGRAM — Affiliate Management de ESTE cliente
+          (gestión individual, documento §11): su liga, su afiliador directo
+          (nombre, liga y PCB), referidos, comisiones, pagos y auditoría. */}
+      <div id="qlc-affiliate-program">
+        <CollapsibleSection className="qlc-collapsible-mb" title={t('affiliate.nav')} defaultOpen={window.location.hash === '#qlc-affiliate-program'}>
+          <AffiliateManagementPanel clientId={client.id} embedded />
+        </CollapsibleSection>
+      </div>
 
       <div className="qlc-detail-grid">
         <div className="qlc-card">

@@ -10,6 +10,7 @@ import StatementStatus, { StatementBadge } from '../../components/StatementStatu
 import ConfirmModal from '../../components/ConfirmModal';
 import TransferReportList from './TransferReportList';
 import CapitalDistributionCard from './CapitalDistributionCard';
+import StatementAttachments from './StatementAttachments';
 import usePolling from '../../hooks/usePolling';
 import LoadingScreen from '../../components/LoadingScreen';
 
@@ -100,6 +101,37 @@ function SecretField({ label, value, t }) {
   );
 }
 
+// QLC AFFILIATE PROGRAM — vista previa de la distribución de la RENTABILIDAD
+// GENERADA que se registrará al emitir (el backend la recalcula y la guarda).
+function DistributionPreview({ resultAmount, distribution, t }) {
+  const profit = Number(resultAmount) > 0 ? Number(resultAmount) : 0;
+  const r2 = (n) => Math.round(n * 100) / 100;
+  const client = r2((profit * distribution.clientSharePct) / 100);
+  const affiliate = r2((profit * distribution.affiliateSharePct) / 100);
+  const qlc = r2(profit - client - affiliate);
+  return (
+    <div className="qlc-invite-code" style={{ marginTop: 12 }}>
+      <span>{t('statementStatus.distributionTitle')}</span>
+      {profit > 0 ? (
+        <small style={{ display: 'grid', gap: 2 }}>
+          <span>
+            {t('statementStatus.distClient')} ({distribution.clientSharePct}%): <strong>{client} USDT</strong>
+          </span>
+          <span>
+            {t('statementStatus.distQlc')} ({distribution.qlcSharePct}%): <strong>{qlc} USDT</strong>
+          </span>
+          <span>
+            {t('statementStatus.distAffiliate')} ({distribution.affiliateSharePct}%): <strong>{affiliate} USDT</strong>
+          </span>
+          {!distribution.hasReferrer && <span>{t('statementStatus.distNoAffiliate')}</span>}
+        </small>
+      ) : (
+        <small>{t('statementStatus.distNoProfit')}</small>
+      )}
+    </div>
+  );
+}
+
 export default function AdminSubaccountDetailPage() {
   const { clientId, id } = useParams();
   const { t, language } = useLanguage();
@@ -110,6 +142,8 @@ export default function AdminSubaccountDetailPage() {
   const [currentStatement, setCurrentStatement] = useState(null);
   // BORRADOR del estado de cuenta (uno por subcuenta, invisible para el cliente).
   const [statementDraft, setStatementDraft] = useState(null);
+  // Porcentajes vigentes del QLC Affiliate Program + si el cliente tiene afiliador directo.
+  const [statementDistribution, setStatementDistribution] = useState(null);
   const [confirmDeleteDraft, setConfirmDeleteDraft] = useState(false);
   // UID de recepción GENERAL (solo lectura aquí; se edita en Configuración · Plataforma).
   const [receiveUid, setReceiveUid] = useState('');
@@ -146,6 +180,7 @@ export default function AdminSubaccountDetailPage() {
   const [hidingStatement, setHidingStatement] = useState(null);
 
   const applyStatements = (data) => {
+    setStatementDistribution(data.distribution || null);
     setStatements(data.statements);
     setCurrentStatement(data.current);
     setStatementDraft(data.draft || null);
@@ -560,6 +595,14 @@ export default function AdminSubaccountDetailPage() {
               {Number(latestStatement.commission) > 0 ? ` · ${latestStatement.commission} USDT` : ''}
             </p>
           )}
+          {latestStatement?.clientResultAmount != null && (
+            <p className="qlc-statement-meta" style={{ fontSize: 12 }}>
+              {t('statementStatus.distClient')} ({Number(latestStatement.clientSharePct)}%): {Number(latestStatement.clientResultAmount)} USDT ·{' '}
+              {t('statementStatus.distQlc')} ({Number(latestStatement.qlcSharePct)}%): {Number(latestStatement.qlcCommissionAmount)} USDT ·{' '}
+              {t('statementStatus.distAffiliate')} ({Number(latestStatement.affiliateSharePct)}%): {Number(latestStatement.affiliateCommissionAmount)} USDT
+              {!latestStatement.affiliateReferrerClientId && Number(latestStatement.affiliateCommissionAmount) > 0 ? ` (${t('statementStatus.distNoAffiliateShort')})` : ''}
+            </p>
+          )}
           <div className="qlc-statement-actions">
             {latestStatement?.pdfDriveFileId && (
               <a className="qlc-btn ghost" href={`${API_BASE_URL}/admin/statements/${latestStatement.id}/download`} target="_blank" rel="noreferrer">
@@ -572,13 +615,14 @@ export default function AdminSubaccountDetailPage() {
               </button>
             )}
           </div>
+          {latestStatement && <StatementAttachments statement={latestStatement} onChanged={load} />}
           {statements.slice(1).some((s) => !s.adminHiddenAt) && (
             <div style={{ marginTop: 14 }}>
               <div style={{ fontSize: 12, color: 'var(--qlc-muted)' }}>{t('statementStatus.previous')}</div>
               <ul className="qlc-plain-list qlc-statement-history" style={{ margin: 0 }}>
                 {statements.slice(1).filter((s) => !s.adminHiddenAt).map((s) => (
                   <li key={s.id}>
-                    <span>
+                    <span style={{ minWidth: 0, flex: 1 }}>
                       {formatDateOnly(s.periodStart)} – {formatDateOnly(s.periodEnd)}
                       {s.pdfDriveFileId && (
                         <>
@@ -588,6 +632,7 @@ export default function AdminSubaccountDetailPage() {
                           </a>
                         </>
                       )}
+                      <StatementAttachments statement={s} onChanged={load} compact />
                     </span>
                     <span className="qlc-history-head-right">
                       <StatementBadge status={s.status} />
@@ -673,6 +718,7 @@ export default function AdminSubaccountDetailPage() {
                 <input className="qlc-input" type="number" step="0.01" value={statementForm.commission} onChange={(e) => setStatementForm((f) => ({ ...f, commission: e.target.value }))} />
               </div>
             </div>
+            {statementDistribution && <DistributionPreview resultAmount={statementForm.resultAmount} distribution={statementDistribution} t={t} />}
             <label className="qlc-label">{t('adminClientDetail.activityNotes')}</label>
             <textarea className="qlc-textarea" rows={2} value={statementForm.activityNotes} onChange={(e) => setStatementForm((f) => ({ ...f, activityNotes: e.target.value }))} />
             <label className="qlc-label">{t('adminClientDetail.adminNotes')}</label>

@@ -139,6 +139,11 @@ export default function SubaccountsPage() {
                   </div>
                   <p style={{ color: 'var(--qlc-muted)', fontSize: 12, marginTop: 4, marginBottom: 4 }}>
                     {clientSubaccountLabel(s, t)}
+                    {s.pcb && (
+                      <>
+                        {' · '}PCB <code style={{ color: 'var(--qlc-blue2)' }}>{s.pcb}</code>
+                      </>
+                    )}
                   </p>
                   <p style={{ color: 'var(--qlc-muted)', fontSize: 13, marginBottom: 4 }}>
                     {t('clientSubaccounts.model')}: {formatParticipationSplit(s.clientModel?.model, t)}
