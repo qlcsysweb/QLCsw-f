@@ -8,6 +8,7 @@ import BilingualField from '../../components/BilingualField';
 import ParticipationModelSummary, { fillSplit } from '../../components/ParticipationModelSummary';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
+import { useProfitDistribution } from '../../utils/profitDistribution';
 
 function ModelEditModal({ model, onClose, onSaved }) {
   const { t, language } = useLanguage();
@@ -103,6 +104,8 @@ function ModelEditModal({ model, onClose, onSaved }) {
 // otros modelos; solo se editan los textos del único existente.
 export default function ModelsPage() {
   const { t } = useLanguage();
+  // Reparto vigente cliente / QLC / promotor afiliador (re-render al cargar).
+  useProfitDistribution();
   const [models, setModels] = useState([]);
   const [note, setNote] = useState('');
   const [noteEn, setNoteEn] = useState('');

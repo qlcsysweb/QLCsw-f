@@ -6,6 +6,7 @@ import QlcLogo from '../components/QlcLogo';
 import { useLanguage } from '../i18n/LanguageContext';
 import { translateBackendMessage } from '../i18n/backendMessages';
 import { PrivacyNoticeModal, TermsAndConditionsModal } from '../components/LegalAcceptanceModal';
+import { suggestEmailFix } from '../utils/emailTypos';
 import './LoginPage.css';
 
 // Acepta el código o la liga completa pegada ("…/registro?ref=CODIGO").
@@ -41,6 +42,15 @@ export default function RegisterPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  // VERIFICACIÓN DEL CORREO — código de 6 dígitos enviado al correo escrito.
+  // `codeSentTo` = correo al que se envió (si el cliente lo cambia, hay que
+  // enviar un código nuevo). `cooldown` = segundos para poder reenviar.
+  const [emailCode, setEmailCode] = useState('');
+  const [codeSentTo, setCodeSentTo] = useState('');
+  const [sendingCode, setSendingCode] = useState(false);
+  const [codeInfo, setCodeInfo] = useState('');
+  const [cooldown, setCooldown] = useState(0);
+  const sendingRef = useRef(false);
   // Bloqueo síncrono contra doble submit (el backend además rechaza un
   // segundo registro del mismo correo con 409).
   const submittingRef = useRef(false);
@@ -79,11 +89,55 @@ export default function RegisterPage() {
 
   const update = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
 
+  useEffect(() => {
+    if (cooldown <= 0) return undefined;
+    const id = setTimeout(() => setCooldown((c) => c - 1), 1000);
+    return () => clearTimeout(id);
+  }, [cooldown]);
+
+  const emailTypoFix = suggestEmailFix(form.email);
+  const codeSentToCurrent = Boolean(codeSentTo) && codeSentTo === form.email.trim().toLowerCase();
+
+  const sendCode = async () => {
+    if (sendingRef.current || cooldown > 0) return;
+    setError('');
+    setCodeInfo('');
+    const valid = await validate(codeInput);
+    if (!valid) return;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
+      setError(t('register.emailInvalid'));
+      return;
+    }
+    sendingRef.current = true;
+    setSendingCode(true);
+    try {
+      await api.post('/auth/register/email-code', { email: form.email.trim(), affiliateCode: valid.code, language });
+      setCodeSentTo(form.email.trim().toLowerCase());
+      setEmailCode('');
+      setCodeInfo(t('register.codeSent').replace('{email}', form.email.trim()));
+      setCooldown(60);
+    } catch (err) {
+      setError(translateBackendMessage(err.message, language));
+    } finally {
+      sendingRef.current = false;
+      setSendingCode(false);
+    }
+  };
+
   const handleContinue = async (e) => {
     e.preventDefault();
     setError('');
     const valid = await validate(codeInput);
     if (!valid) return;
+    // El correo debe confirmarse con el código antes de continuar.
+    if (!codeSentToCurrent) {
+      setError(t('register.codeRequired'));
+      return;
+    }
+    if (!/^\d{6}$/.test(emailCode.trim())) {
+      setError(t('register.codeFormat'));
+      return;
+    }
     setStage('privacy');
   };
 
@@ -95,6 +149,8 @@ export default function RegisterPage() {
     try {
       await register({
         ...form,
+        email: form.email.trim(),
+        emailCode: emailCode.trim(),
         affiliateCode: invite.code,
         privacyAccepted: true,
         termsAccepted: true,
@@ -163,7 +219,61 @@ export default function RegisterPage() {
           <label className="qlc-label">{t('register.lastName')}</label>
           <input className="qlc-input" value={form.lastName} onChange={update('lastName')} required />
           <label className="qlc-label">{t('register.email')}</label>
-          <input className="qlc-input" type="email" value={form.email} onChange={update('email')} required />
+          <div style={{ display: 'flex', gap: 8 }}>
+            <input
+              className="qlc-input"
+              type="email"
+              value={form.email}
+              onChange={update('email')}
+              required
+              autoComplete="email"
+              style={{ margin: 0, flex: 1, minWidth: 0 }}
+            />
+            <button
+              type="button"
+              className="qlc-btn ghost"
+              style={{ flexShrink: 0 }}
+              onClick={sendCode}
+              disabled={sendingCode || cooldown > 0 || !form.email.trim()}
+            >
+              {sendingCode
+                ? t('register.sendingCode')
+                : cooldown > 0
+                  ? t('register.resendIn').replace('{s}', cooldown)
+                  : codeSentToCurrent
+                    ? t('register.resendCode')
+                    : t('register.sendCode')}
+            </button>
+          </div>
+          {emailTypoFix && (
+            <p style={{ fontSize: 12, color: 'var(--qlc-warn)', margin: '6px 0 0' }}>
+              {t('register.typoQuestion')}{' '}
+              <button type="button" className="qlc-link-btn" onClick={() => setForm((f) => ({ ...f, email: emailTypoFix }))}>
+                {emailTypoFix}
+              </button>
+              ?
+            </p>
+          )}
+          {codeInfo && codeSentToCurrent && <p style={{ fontSize: 12, color: 'var(--qlc-ok)', margin: '6px 0 0' }}>{codeInfo}</p>}
+          {codeSentToCurrent && (
+            <>
+              <label className="qlc-label" htmlFor="email-code">
+                {t('register.codeLabel')}
+              </label>
+              <input
+                id="email-code"
+                className="qlc-input"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                maxLength={6}
+                value={emailCode}
+                onChange={(e) => setEmailCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                placeholder="000000"
+                required
+                style={{ letterSpacing: '0.3em', fontVariantNumeric: 'tabular-nums' }}
+              />
+            </>
+          )}
           <label className="qlc-label">{t('register.password')}</label>
           <div style={{ position: 'relative' }}>
             <input

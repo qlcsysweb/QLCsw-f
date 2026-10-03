@@ -153,7 +153,7 @@ export default function AdminSubaccountDetailPage() {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
-  const [apiForm, setApiForm] = useState({ identifier: '', exchangeName: '', apiKey: '', apiSecret: '', apiPassphrase: '', status: 'PENDIENTE', requiredCapital: '', connectionReason: '', ipRequired: false, ipAddress: '' });
+  const [apiForm, setApiForm] = useState({ identifier: '', exchangeName: '', status: 'PENDIENTE', requiredCapital: '', ipRequired: false, ipAddress: '' });
   // CORRECCIÓN 6 (bloque de 20) — editar las credenciales API exige una
   // segunda confirmación explícita antes de guardar: este estado guarda el
   // resumen de lo que se va a cambiar mientras se espera esa confirmación.
@@ -287,11 +287,7 @@ export default function AdminSubaccountDetailPage() {
     payload.identifier = apiForm.identifier.trim();
     summary.push([t('adminClientDetail.internalIdentifier'), payload.identifier]);
     if (apiForm.exchangeName) { payload.exchangeName = apiForm.exchangeName; summary.push(['Exchange', apiForm.exchangeName]); }
-    if (apiForm.apiKey) { payload.apiKey = apiForm.apiKey; summary.push(['API Key', t('adminClientDetail.willChangeValue')]); }
-    if (apiForm.apiSecret) { payload.apiSecret = apiForm.apiSecret; summary.push(['Secret Key', t('adminClientDetail.willChangeValue')]); }
-    if (apiForm.apiPassphrase) { payload.apiPassphrase = apiForm.apiPassphrase; summary.push(['Passphrase', t('adminClientDetail.willChangeValue')]); }
     if (apiForm.requiredCapital !== '') { payload.requiredCapital = Number(apiForm.requiredCapital); summary.push([t('adminClientDetail.requiredCapital'), `${apiForm.requiredCapital} USDT`]); }
-    if (apiForm.connectionReason) { payload.connectionReason = apiForm.connectionReason; summary.push([t('adminClientDetail.connectionReason'), apiForm.connectionReason]); }
     payload.ipAddress = apiForm.ipRequired ? apiForm.ipAddress || null : null;
     summary.push([t('adminClientDetail.ipRequired'), apiForm.ipRequired ? t('common.yes') : t('common.no')]);
     if (apiForm.ipRequired && apiForm.ipAddress) summary.push(['IP', apiForm.ipAddress]);
@@ -303,7 +299,7 @@ export default function AdminSubaccountDetailPage() {
     if (!pendingApiSave) return;
     try {
       await api.patch(`/admin/api-subaccounts/${id}`, pendingApiSave.payload);
-      setApiForm((f) => ({ ...f, identifierEdited: false, apiKey: '', apiSecret: '', apiPassphrase: '', connectionReason: '' }));
+      setApiForm((f) => ({ ...f, identifierEdited: false }));
       setPendingApiSave(null);
       flash(t('adminClientDetail.apiConnectionUpdated'));
       load();
@@ -482,19 +478,10 @@ export default function AdminSubaccountDetailPage() {
               <option value="CONECTADA">{t('adminClientDetail.apiStatusConnected')}</option>
               <option value="DESCONECTADA">{t('adminClientDetail.apiStatusDisconnected')}</option>
             </select>
-            <label className="qlc-label">{t('adminClientDetail.connectionReason')}</label>
-            <input
-              className="qlc-input"
-              value={apiForm.connectionReason}
-              onChange={(e) => setApiForm((f) => ({ ...f, connectionReason: e.target.value }))}
-              placeholder={t('adminClientDetail.connectionReasonPlaceholder')}
-            />
-            <label className="qlc-label">API Key {subaccount.hasApiKey ? t('adminClientDetail.alreadyRegistered') : ''}</label>
-            <input className="qlc-input" value={apiForm.apiKey} onChange={(e) => setApiForm((f) => ({ ...f, apiKey: e.target.value }))} placeholder={t('adminClientDetail.leaveBlank')} />
-            <label className="qlc-label">Secret Key {subaccount.hasApiSecret ? t('adminClientDetail.alreadyRegistered') : ''}</label>
-            <input className="qlc-input" value={apiForm.apiSecret} onChange={(e) => setApiForm((f) => ({ ...f, apiSecret: e.target.value }))} placeholder={t('adminClientDetail.leaveBlank')} />
-            <label className="qlc-label">Passphrase {subaccount.hasApiPassphrase ? t('adminClientDetail.alreadyRegistered') : ''}</label>
-            <input className="qlc-input" value={apiForm.apiPassphrase} onChange={(e) => setApiForm((f) => ({ ...f, apiPassphrase: e.target.value }))} placeholder={t('adminClientDetail.leaveBlank')} />
+            {/* Motivo, API Key, Secret Key y Passphrase se retiraron de este
+                formulario a pedido de QLC: aquí el admin solo administra el
+                identificador, el capital requerido, el estado y la IP. Las
+                credenciales registradas se siguen viendo/copiando arriba. */}
 
             {/* CORRECCIÓN 6/18 (bloque de 20) — dato administrativo; nunca
                 se conecta ni valida contra el exchange. */}

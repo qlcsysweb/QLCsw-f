@@ -1,22 +1,26 @@
 import { useLanguage } from '../i18n/LanguageContext';
+import { getProfitDistribution, useProfitDistribution } from '../utils/profitDistribution';
 
-// Porcentajes del modelo único a partir de Model.percentage ("50/50").
-// Si el dato no viene (p. ej. mientras carga), se usa el reparto oficial.
+// REPARTO DE LA GANANCIA (QLC Affiliate Program): cliente / QLC / promotor
+// afiliador, tomado de la configuración vigente del backend (la misma que se
+// aplica en los estados de cuenta). Referencia oficial: 50 / 40 / 10.
+// `model` se conserva en la firma por compatibilidad con los llamadores.
+// eslint-disable-next-line no-unused-vars
 export function participationSplit(model) {
-  const match = String(model?.percentage || '').match(/^\s*(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)\s*$/);
-  return match ? { qlc: match[1], client: match[2] } : { qlc: '50', client: '50' };
+  const d = getProfitDistribution();
+  return { client: String(d.client), qlc: String(d.qlc), affiliate: String(d.affiliate) };
 }
 
-// Texto corto para tablas/listas: "QLC 50% · Cliente 50%".
+// Texto corto para tablas/listas: "Cliente 50% · QLC 40% · Promotor afiliador 10%".
 export function formatParticipationSplit(model, t) {
-  const { qlc, client } = participationSplit(model);
-  return `QLC ${qlc}% · ${t('participationModel.client')} ${client}%`;
+  const { qlc, client, affiliate } = participationSplit(model);
+  return `${t('participationModel.client')} ${client}% · QLC ${qlc}% · ${t('participationModel.affiliate')} ${affiliate}%`;
 }
 
-// Reemplaza {qlc} / {client} en textos traducidos con el reparto real.
+// Reemplaza {client} / {qlc} / {affiliate} en textos traducidos con el reparto real.
 export function fillSplit(text, model) {
-  const { qlc, client } = participationSplit(model);
-  return String(text).replaceAll('{qlc}', qlc).replaceAll('{client}', client);
+  const { qlc, client, affiliate } = participationSplit(model);
+  return String(text).replaceAll('{qlc}', qlc).replaceAll('{client}', client).replaceAll('{affiliate}', affiliate);
 }
 
 const fmt = (n) => (Number.isInteger(n) ? String(n) : n.toFixed(2));
@@ -24,16 +28,18 @@ const fmt = (n) => (Number.isInteger(n) ? String(n) : n.toFixed(2));
 // Ejemplos calculados con el porcentaje REAL del modelo (nunca cifras fijas):
 // la participación se aplica solo sobre la ganancia, nunca sobre el capital.
 export function participationExamples(model, capital = 100, profits = [20, 1]) {
-  const { qlc } = participationSplit(model);
-  const q = Number(qlc) / 100;
+  const { qlc, affiliate } = participationSplit(model);
+  const r2 = (n) => Math.round(n * 100) / 100;
   return profits.map((profit) => {
-    const qlcAmount = Math.round(profit * q * 100) / 100;
-    const clientAmount = Math.round((profit - qlcAmount) * 100) / 100;
+    const qlcAmount = r2((profit * Number(qlc)) / 100);
+    const affiliateAmount = r2((profit * Number(affiliate)) / 100);
+    const clientAmount = r2(profit - qlcAmount - affiliateAmount);
     return {
       profit: fmt(profit),
       qlcAmount: fmt(qlcAmount),
+      affiliateAmount: fmt(affiliateAmount),
       clientAmount: fmt(clientAmount),
-      finalCapital: fmt(Math.round((capital + clientAmount) * 100) / 100),
+      finalCapital: fmt(r2(capital + clientAmount)),
     };
   });
 }
@@ -44,18 +50,23 @@ export function participationExamples(model, capital = 100, profits = [20, 1]) {
  */
 export default function ParticipationModelSummary({ model, showTitle = true, className = '' }) {
   const { t } = useLanguage();
-  const { qlc, client } = participationSplit(model);
+  useProfitDistribution();
+  const { qlc, client, affiliate } = participationSplit(model);
   return (
     <div className={`qlc-pm ${className}`}>
       {showTitle && <div className="qlc-pm-title">{t('participationModel.title')}</div>}
       <dl className="qlc-pm-split">
         <div>
+          <dt>{t('participationModel.client')}</dt>
+          <dd>{client}%</dd>
+        </div>
+        <div>
           <dt>QLC</dt>
           <dd>{qlc}%</dd>
         </div>
         <div>
-          <dt>{t('participationModel.client')}</dt>
-          <dd>{client}%</dd>
+          <dt>{t('participationModel.affiliate')}</dt>
+          <dd>{affiliate}%</dd>
         </div>
       </dl>
     </div>
@@ -69,8 +80,9 @@ export default function ParticipationModelSummary({ model, showTitle = true, cla
  */
 export function ParticipationModelDetails({ model, capital = 100 }) {
   const { t } = useLanguage();
+  useProfitDistribution();
   const examples = participationExamples(model, capital);
-  const { qlc, client } = participationSplit(model);
+  const { qlc, client, affiliate } = participationSplit(model);
   return (
     <div className="qlc-pmd">
       <div className="qlc-pmd-card">
@@ -88,10 +100,13 @@ export function ParticipationModelDetails({ model, capital = 100 }) {
             </div>
             <div className="qlc-pmd-ex-split">
               <span>
+                {t('participationModel.client')} ({client}%) <strong>{ex.clientAmount} USDT</strong>
+              </span>
+              <span>
                 QLC ({qlc}%) <strong>{ex.qlcAmount} USDT</strong>
               </span>
               <span>
-                {t('participationModel.client')} ({client}%) <strong>{ex.clientAmount} USDT</strong>
+                {t('participationModel.affiliate')} ({affiliate}%) <strong>{ex.affiliateAmount} USDT</strong>
               </span>
               <span className="qlc-pmd-ex-final">
                 {t('participationModel.exampleFinal')} <strong>{ex.finalCapital} USDT</strong>

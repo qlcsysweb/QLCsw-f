@@ -1,6 +1,7 @@
 import SectionMedia from './SectionMedia';
 import ParticipationModelSummary, { ParticipationModelDetails, fillSplit } from '../../../components/ParticipationModelSummary';
 import { useLanguage } from '../../../i18n/LanguageContext';
+import { useProfitDistribution } from '../../../utils/profitDistribution';
 
 // MODELO ÚNICO DE PARTICIPACIÓN. Sin selector ni comparación: encabezado con
 // el reparto grande (Model.percentage, hoy 50/50) y el detalle en tarjetas
@@ -8,6 +9,8 @@ import { useLanguage } from '../../../i18n/LanguageContext';
 // Tagline/descripción se administran desde Admin → Modelo de participación.
 export default function ModelosSection({ models, text, media = () => [] }) {
   const { t } = useLanguage();
+  // Reparto vigente cliente / QLC / promotor afiliador (re-render al cargar).
+  useProfitDistribution();
   const model = models[0] || null;
   return (
     <section className="section alt" id="modelos">

@@ -20,6 +20,89 @@ export const money = (n) => `${Number(n || 0).toLocaleString('es-MX', { minimumF
 // Una cuenta/API del referido: PCB, terminación de API Key (solo referencia
 // visual), estado administrativo, hitos, capital confirmado e historial
 // registrado por QLC. Nada de esto es una consulta a Bitget.
+// COMISIONES INDIVIDUALES (por API o ajustes del referido): totales por
+// estado y su historial, dentro de la ficha de cada referido.
+function CommissionBlock({ commissions, t, title }) {
+  const [open, setOpen] = useState(false);
+  const { totals, history } = commissions;
+  return (
+    <div className="qlc-aff-commissions">
+      <div className="qlc-aff-section-title">{title}</div>
+      <div className="qlc-aff-totals">
+        <div>
+          <span className="qlc-stat-label">{t('affiliate.pending')}</span>
+          <strong>{money(totals.PENDIENTE)}</strong>
+        </div>
+        <div>
+          <span className="qlc-stat-label">{t('affiliate.approved')}</span>
+          <strong>{money(totals.APROBADA)}</strong>
+        </div>
+        <div>
+          <span className="qlc-stat-label">{t('affiliate.paid')}</span>
+          <strong>{money(totals.PAGADA)}</strong>
+        </div>
+      </div>
+      {history.length > 0 && (
+        <button type="button" className="qlc-btn ghost" onClick={() => setOpen((v) => !v)} aria-expanded={open}>
+          {open ? t('affiliate.hideHistory') : t('affiliate.viewHistory')}
+        </button>
+      )}
+      {open && (
+        <ul className="qlc-plain-list" style={{ marginTop: 10 }}>
+          {history.map((c) => (
+            <li key={c.id} className="qlc-history-item" style={{ flexWrap: 'wrap', gap: 6 }}>
+              <span style={{ minWidth: 0, fontSize: 12 }}>
+                <strong>{c.concept}</strong>
+                <br />
+                <span style={{ color: 'var(--qlc-muted)' }}>{formatCdmxDate(c.occurredAt)}</span>
+              </span>
+              <span style={{ display: 'inline-flex', gap: 8, alignItems: 'center' }}>
+                <strong>{money(c.amount)}</strong>
+                <span className={`qlc-badge ${COMMISSION_BADGE[c.status]}`}>{t(`affiliate.commissionStatus.${c.status}`)}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+// REFERIDO CONTRAÍBLE — encabezado compacto (iniciales, estado, fecha y
+// número de cuentas); al desplegarlo se ven sus cuentas/API con su estado,
+// saldo registrado, hitos, historial y comisiones. Ahorra espacio entre
+// referido y referido.
+function ReferralCard({ referral, t }) {
+  const [open, setOpen] = useState(false);
+  const r = referral;
+  const pending = r.accounts.reduce((sum, a) => sum + a.commissions.totals.PENDIENTE + a.commissions.totals.APROBADA, 0) + r.adjustments.totals.PENDIENTE + r.adjustments.totals.APROBADA;
+  return (
+    <li className={`qlc-aff-referral${open ? ' is-open' : ''}`}>
+      <button type="button" className="qlc-aff-referral-head" onClick={() => setOpen((v) => !v)} aria-expanded={open}>
+        <span className={`qlc-collapsible-chevron${open ? ' open' : ''}`} aria-hidden="true">
+          ▾
+        </span>
+        <strong className="qlc-aff-referral-initials">{r.initials}</strong>
+        <span className="qlc-aff-referral-meta">
+          {t('affiliate.registered')}: {formatCdmxDate(r.registeredAt)} · {r.accounts.length} {t('affiliate.accountsLabel')}
+          {pending > 0 ? ` · ${t('affiliate.pending')}: ${money(pending)}` : ''}
+        </span>
+        <span className={`qlc-badge ${REF_BADGE[r.status] || 'muted'}`}>{t(`affiliate.refStatus.${r.status}`)}</span>
+      </button>
+      {open && (
+        <div className="qlc-aff-referral-body">
+          {r.accounts.length ? (
+            r.accounts.map((a, i) => <ReferralAccount key={a.pcb || `acc-${i}`} account={a} t={t} />)
+          ) : (
+            <div className="qlc-empty">{t('affiliate.noAccounts')}</div>
+          )}
+          {r.adjustments.history.length > 0 && <CommissionBlock commissions={r.adjustments} t={t} title={t('affiliate.adjustmentsTitle')} />}
+        </div>
+      )}
+    </li>
+  );
+}
+
 function ReferralAccount({ account, t }) {
   const [open, setOpen] = useState(false);
   return (
@@ -86,6 +169,7 @@ function ReferralAccount({ account, t }) {
           </li>
         ))}
       </ul>
+      <CommissionBlock commissions={account.commissions} t={t} title={t('affiliate.accountCommissions')} />
       <button type="button" className="qlc-btn ghost" onClick={() => setOpen((v) => !v)} aria-expanded={open}>
         {open ? t('affiliate.accountHideHistory') : t('affiliate.accountHistory')}
       </button>
@@ -149,7 +233,6 @@ export default function AffiliatePage() {
   const [uidInput, setUidInput] = useState('');
   const [editingUid, setEditingUid] = useState(false);
   const [qr, setQr] = useState(null);
-  const [showCommissions, setShowCommissions] = useState(false);
   const [viewingProof, setViewingProof] = useState(null);
   const { copy, isCopied } = useCopyToClipboard();
 
@@ -345,22 +428,9 @@ export default function AffiliatePage() {
         <h3 style={{ marginTop: 0 }}>{t('affiliate.referralsTitle')}</h3>
         <p style={{ fontSize: 11, color: 'var(--qlc-muted2)', marginTop: -6 }}>{t('affiliate.registeredDataNote')}</p>
         {referrals.length ? (
-          <ul className="qlc-aff-list qlc-aff-referrals">
+          <ul className="qlc-aff-referral-list">
             {referrals.map((r) => (
-              <li key={r.key}>
-                <div className="qlc-aff-meta">
-                  <strong style={{ fontSize: 16, color: 'var(--qlc-text)' }}>{r.initials}</strong>
-                  <span className={`qlc-badge ${REF_BADGE[r.status] || 'muted'}`}>{t(`affiliate.refStatus.${r.status}`)}</span>
-                </div>
-                <div style={{ fontSize: 12, color: 'var(--qlc-muted)' }}>
-                  {t('affiliate.registered')}: {formatCdmxDate(r.registeredAt)}
-                </div>
-                {r.accounts.length ? (
-                  r.accounts.map((a, i) => <ReferralAccount key={a.pcb || `acc-${i}`} account={a} t={t} />)
-                ) : (
-                  <div className="qlc-empty">{t('affiliate.noAccounts')}</div>
-                )}
-              </li>
+              <ReferralCard key={r.key} referral={r} t={t} />
             ))}
           </ul>
         ) : (
@@ -368,7 +438,7 @@ export default function AffiliatePage() {
         )}
       </section>
 
-      <div className="qlc-aff-grid">
+      <div style={{ marginTop: 18 }}>
         <section className="qlc-card">
           <h3 style={{ marginTop: 0 }}>{t('affiliate.paymentsTitle')}</h3>
           {payments.length ? (
@@ -419,48 +489,6 @@ export default function AffiliatePage() {
           )}
         </section>
 
-        <section className="qlc-card">
-          <h3 style={{ marginTop: 0 }}>{t('affiliate.commissionsTitle')}</h3>
-          <div className="qlc-aff-totals">
-            <div>
-              <span className="qlc-stat-label">{t('affiliate.pending')}</span>
-              <strong>{money(totals.PENDIENTE)}</strong>
-            </div>
-            <div>
-              <span className="qlc-stat-label">{t('affiliate.approved')}</span>
-              <strong>{money(totals.APROBADA)}</strong>
-            </div>
-            <div>
-              <span className="qlc-stat-label">{t('affiliate.paid')}</span>
-              <strong>{money(totals.PAGADA)}</strong>
-            </div>
-          </div>
-          <button type="button" className="qlc-btn ghost" onClick={() => setShowCommissions((v) => !v)} aria-expanded={showCommissions}>
-            {showCommissions ? t('affiliate.hideHistory') : t('affiliate.viewHistory')}
-          </button>
-          {showCommissions &&
-            (commissions.history.length ? (
-              <ul className="qlc-plain-list" style={{ marginTop: 12 }}>
-                {commissions.history.map((c) => (
-                  <li key={c.id} className="qlc-history-item" style={{ flexWrap: 'wrap', gap: 6 }}>
-                    <span style={{ minWidth: 0 }}>
-                      <strong>{c.concept}</strong>
-                      <br />
-                      <span style={{ fontSize: 12, color: 'var(--qlc-muted)' }}>
-                        {c.referredInitials} · {formatCdmxDate(c.occurredAt)}
-                      </span>
-                    </span>
-                    <span style={{ display: 'inline-flex', gap: 8, alignItems: 'center' }}>
-                      <strong>{money(c.amount)}</strong>
-                      <span className={`qlc-badge ${COMMISSION_BADGE[c.status]}`}>{t(`affiliate.commissionStatus.${c.status}`)}</span>
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <div className="qlc-empty" style={{ marginTop: 12 }}>{t('affiliate.historyEmpty')}</div>
-            ))}
-        </section>
       </div>
 
       {qr && (
