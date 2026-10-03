@@ -311,6 +311,15 @@ export default function ClientDetailPage() {
           <div style={{ color: 'var(--qlc-muted)', fontSize: 13 }}>
             <a href={`mailto:${client.user?.email}`}>{client.user?.email}</a>
           </div>
+          {/* AFILIACIÓN — enlace al detalle de promotor (código, referidos
+              directos, comisiones) con datos reales del backend. */}
+          <div style={{ color: 'var(--qlc-muted)', fontSize: 13 }}>
+            {t('invite.adminSection')}:{' '}
+            <Link to={`/admin/affiliates/${client.id}`}>
+              {client.affiliateCode ? client.affiliateCode : t('adminAffiliates.view')}
+            </Link>
+            {client.referredByClientId ? '' : ` · ${t('adminAffiliates.noReferrer')}`}
+          </div>
           <div style={{ color: 'var(--qlc-muted)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }}>
             {t('adminClientDetail.usernameLabel')}:{' '}
             {client.username ? (

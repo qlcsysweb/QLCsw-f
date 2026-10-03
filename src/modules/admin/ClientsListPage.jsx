@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import api from '../../services/api';
 import ConfirmModal from '../../components/ConfirmModal';
@@ -14,24 +14,122 @@ import LoadingScreen from '../../components/LoadingScreen';
 // 30 caracteres, cualquier carácter, sin ejemplo sugerido (para no imponer
 // un formato) y NUNCA editable después de guardarse — este modal es la
 // única forma de fijarla en la creación; no hay forma de cambiarla luego.
+// AFILIACIÓN en el alta administrativa: "Sin afiliado" o "Con afiliado". Con
+// afiliado, el admin busca por código/nombre/correo y valida; se envía el
+// CÓDIGO (nunca un ID) y el backend resuelve y vuelve a validar al afiliador.
+function AffiliateSelector({ value, onChange }) {
+  const { t, language } = useLanguage();
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState([]);
+  const [checking, setChecking] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (value || query.trim().length < 2) {
+      setResults([]);
+      return undefined;
+    }
+    const id = setTimeout(() => {
+      api
+        .get('/admin/affiliates/lookup', { params: { q: query.trim() } })
+        .then(({ data }) => setResults(data.items))
+        .catch(() => setResults([]));
+    }, 250);
+    return () => clearTimeout(id);
+  }, [query, value]);
+
+  const validate = async (code) => {
+    setChecking(true);
+    setError('');
+    try {
+      const { data } = await api.get('/admin/affiliates/validate', { params: { code } });
+      onChange(data.affiliate);
+      setResults([]);
+    } catch (err) {
+      onChange(null);
+      setError(translateBackendMessage(err.message, language));
+    } finally {
+      setChecking(false);
+    }
+  };
+
+  if (value) {
+    return (
+      <div className="qlc-invite-code is-compact" style={{ marginTop: 8 }}>
+        <span>
+          ✓ {t('invite.adminSelected')}: {value.firstName} {value.lastName}
+        </span>
+        <strong>{value.code}</strong>
+        <button type="button" className="qlc-btn ghost" onClick={() => onChange(null)}>
+          {t('invite.changeCode')}
+        </button>
+      </div>
+    );
+  }
+  return (
+    <div style={{ marginTop: 8 }}>
+      <div style={{ display: 'flex', gap: 8 }}>
+        <input
+          className="qlc-input"
+          style={{ margin: 0 }}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder={t('invite.adminSearch')}
+          autoComplete="off"
+        />
+        <button type="button" className="qlc-btn ghost" style={{ flexShrink: 0 }} disabled={checking || !query.trim()} onClick={() => validate(query)}>
+          {t('invite.adminValidate')}
+        </button>
+      </div>
+      {results.length > 0 && (
+        <ul className="qlc-aff-results">
+          {results.map((r) => (
+            <li key={r.affiliateCode}>
+              <button type="button" onClick={() => validate(r.affiliateCode)}>
+                <strong>{r.affiliateCode}</strong> — {r.firstName} {r.lastName} · {r.email}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      {error && <div className="qlc-field-error">{error}</div>}
+    </div>
+  );
+}
+
 function CreateClientModal({ onClose, onCreated }) {
   const { t, language } = useLanguage();
   const [form, setForm] = useState({ username: '', firstName: '', lastName: '', email: '', password: '' });
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
+  const [withAffiliate, setWithAffiliate] = useState(false);
+  const [affiliate, setAffiliate] = useState(null);
+  // Bloqueo síncrono contra doble clic (el backend además rechaza un correo repetido).
+  const savingRef = useRef(false);
 
   const update = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
 
   const submit = async (e) => {
     e.preventDefault();
+    if (savingRef.current) return;
+    if (withAffiliate && !affiliate) {
+      setError(t('invite.adminRequired'));
+      return;
+    }
+    savingRef.current = true;
     setError('');
     setSaving(true);
     try {
-      await api.post('/admin/clients', form);
+      await api.post('/admin/clients', {
+        ...form,
+        withAffiliate,
+        affiliateCode: withAffiliate ? affiliate.code : undefined,
+      });
       onCreated();
     } catch (err) {
       setError(translateBackendMessage(err.message, language));
     } finally {
+      savingRef.current = false;
       setSaving(false);
     }
   };
@@ -67,6 +165,19 @@ function CreateClientModal({ onClose, onCreated }) {
             required
             minLength={8}
           />
+
+          <label className="qlc-label">{t('invite.adminSection')}</label>
+          <div className="qlc-aff-radio" role="radiogroup">
+            <label>
+              <input type="radio" name="affiliation" checked={!withAffiliate} onChange={() => { setWithAffiliate(false); setAffiliate(null); }} />
+              {t('invite.adminWithout')}
+            </label>
+            <label>
+              <input type="radio" name="affiliation" checked={withAffiliate} onChange={() => setWithAffiliate(true)} />
+              {t('invite.adminWith')}
+            </label>
+          </div>
+          {withAffiliate && <AffiliateSelector value={affiliate} onChange={setAffiliate} />}
 
           {error && <div className="qlc-field-error">{error}</div>}
 

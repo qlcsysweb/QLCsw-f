@@ -30,6 +30,8 @@ import AdminGuidesPage from './modules/admin/GuidesPage';
 import ProcessStepsPage from './modules/admin/ProcessStepsPage';
 import AdminNotificationsPage from './modules/admin/NotificationsPage';
 import SubaccountAuditPage from './modules/admin/SubaccountAuditPage';
+import AdminAffiliatesPage from './modules/admin/AffiliatesPage';
+import AdminAffiliateDetailPage from './modules/admin/AffiliateDetailPage';
 
 import ClientLayout from './layouts/ClientLayout';
 import ClientDashboardPage from './modules/client/DashboardPage';
@@ -40,6 +42,7 @@ import ClientDocumentsPage from './modules/client/DocumentsPage';
 import ClientSupportPage from './modules/client/SupportPage';
 import ClientNotificationsPage from './modules/client/NotificationsPage';
 import ClientGuidesPage from './modules/client/GuidesPage';
+import ClientAffiliatePage from './modules/client/AffiliatePage';
 
 function AppRoutes() {
   const { hasChosenLanguage } = useLanguage();
@@ -87,6 +90,8 @@ function AppRoutes() {
               <Route path="prospects" element={<ProspectsPage />} />
               <Route path="admins" element={<AdminsPage />} />
               <Route path="subaccounts-audit" element={<SubaccountAuditPage />} />
+              <Route path="affiliates" element={<AdminAffiliatesPage />} />
+              <Route path="affiliates/:clientId" element={<AdminAffiliateDetailPage />} />
               <Route path="notifications" element={<AdminNotificationsPage />} />
             </Route>
           </Route>
@@ -100,6 +105,7 @@ function AppRoutes() {
               <Route path="documents" element={<ClientDocumentsPage />} />
               <Route path="messages" element={<Navigate to="/client" replace />} />
               <Route path="guides" element={<ClientGuidesPage />} />
+              <Route path="affiliates" element={<ClientAffiliatePage />} />
               {/* CORRECCIÓN 16 (bloque de 20) — "Citas" ya no es una ruta
                   independiente: se solicita desde dentro de un caso en
                   Soporte. Se conserva el redirect por si queda algún enlace
