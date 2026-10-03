@@ -552,6 +552,13 @@ export default function ClientsListPage() {
                       </td>
                       <td>
                         {summary.total} <span style={{ color: 'var(--qlc-muted2)' }}>({summary.activated} {t('adminClientsList.activatedShort')})</span>
+                        {summary.readyToActivate > 0 && (
+                          <div>
+                            <span className="qlc-badge warn" style={{ fontSize: 10 }}>
+                              {summary.readyToActivate} {t('adminClientsList.readyToActivateShort')}
+                            </span>
+                          </div>
+                        )}
                       </td>
                       <td>
                         {principalProgress ? (
