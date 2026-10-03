@@ -20,7 +20,7 @@ import LoadingScreen from '../../components/LoadingScreen';
 const CONDITION_ORDER = ['PAYMENT', 'FUNDS', 'API', 'ACTIVATION'];
 
 const EMPTY_STATEMENT_FORM = {
-  periodStart: '', periodEnd: '', startingBalance: '', endingBalance: '', resultAmount: '', resultPercentage: '', volatility: '', netResult: '', commission: '0', activityNotes: '', adminNotes: '',
+  periodStart: '', periodEnd: '', startingBalance: '', endingBalance: '', resultAmount: '', resultPercentage: '', volatility: '', netResult: '', commission: '0', affiliateCommission: '', activityNotes: '', adminNotes: '',
 };
 // BORRADOR guardado → valores del formulario (fechas-calendario sin zona
 // horaria, igual que formatDateOnly).
@@ -37,6 +37,7 @@ function statementFormFromDraft(draft) {
     volatility: draft.volatility || '',
     netResult: numInput(draft.netResult),
     commission: numInput(draft.commission) || '0',
+    affiliateCommission: numInput(draft.affiliateCommissionAmount),
     activityNotes: draft.activityNotes || '',
     adminNotes: draft.adminNotes || '',
   };
@@ -104,11 +105,21 @@ function SecretField({ label, value, t }) {
 
 // QLC AFFILIATE PROGRAM — vista previa de la distribución de la RENTABILIDAD
 // GENERADA que se registrará al emitir (el backend la recalcula y la guarda).
-function DistributionPreview({ resultAmount, distribution, t }) {
+// Comisión del afiliador sugerida con el % vigente (solo con afiliador directo).
+export function suggestedAffiliateCommission(resultAmount, distribution) {
+  const profit = Number(resultAmount) > 0 ? Number(resultAmount) : 0;
+  if (!distribution?.hasReferrer) return 0;
+  return Math.round(((profit * distribution.affiliateSharePct) / 100) * 100) / 100;
+}
+
+function DistributionPreview({ resultAmount, distribution, affiliateCommission, t }) {
   const profit = Number(resultAmount) > 0 ? Number(resultAmount) : 0;
   const r2 = (n) => Math.round(n * 100) / 100;
   const client = r2((profit * distribution.clientSharePct) / 100);
-  const affiliate = r2((profit * distribution.affiliateSharePct) / 100);
+  const affiliate =
+    distribution.hasReferrer && affiliateCommission !== '' && affiliateCommission !== undefined
+      ? r2(Number(affiliateCommission) || 0)
+      : r2((profit * distribution.affiliateSharePct) / 100);
   const qlc = r2(profit - client - affiliate);
   return (
     <div className="qlc-invite-code" style={{ marginTop: 12 }}>
@@ -320,6 +331,17 @@ export default function AdminSubaccountDetailPage() {
 
   // GUARDAR BORRADOR — UPDATE del único borrador de la subcuenta (lo crea la
   // primera vez). Sin PDF ni Drive: el PDF definitivo solo se sube al finalizar.
+  // Valores a enviar: la comisión del afiliador, si el admin no la tocó, es la
+  // sugerida con el % vigente (solo con afiliador directo).
+  const effectiveStatementForm = () => ({
+    ...statementForm,
+    affiliateCommission: statementDistribution?.hasReferrer
+      ? statementForm.affiliateCommission === ''
+        ? String(suggestedAffiliateCommission(statementForm.resultAmount, statementDistribution))
+        : statementForm.affiliateCommission
+      : '',
+  });
+
   const saveStatementDraft = async () => {
     if (statementBusy.current) return;
     statementBusy.current = true;
@@ -327,7 +349,7 @@ export default function AdminSubaccountDetailPage() {
     setError('');
     try {
       const payload = {};
-      Object.entries(statementForm).forEach(([key, value]) => {
+      Object.entries(effectiveStatementForm()).forEach(([key, value]) => {
         if (key === 'periodStart' && hasPreviousStatement) return;
         if (value !== '' && value !== null && value !== undefined) payload[key] = value;
       });
@@ -360,7 +382,7 @@ export default function AdminSubaccountDetailPage() {
       // multipart: campos + el PDF del estado de cuenta (se adjunta al correo
       // del cliente y queda en su subcuenta). Los campos vacíos no se envían.
       const fd = new FormData();
-      Object.entries(statementForm).forEach(([key, value]) => {
+      Object.entries(effectiveStatementForm()).forEach(([key, value]) => {
         if (key === 'periodStart' && hasPreviousStatement) return;
         if (value !== '' && value !== null && value !== undefined) fd.append(key, value);
       });
@@ -720,8 +742,42 @@ export default function AdminSubaccountDetailPage() {
                 <label className="qlc-label">{t('adminClientDetail.commission')} (USDT)</label>
                 <input className="qlc-input" type="number" step="0.01" value={statementForm.commission} onChange={(e) => setStatementForm((f) => ({ ...f, commission: e.target.value }))} />
               </div>
+              {/* COMISIÓN DEL AFILIADOR — se propone sola con el % vigente al
+                  escribir la rentabilidad; el admin puede ajustarla. Al
+                  generar, el cliente la ve en su estado de cuenta y el
+                  afiliador en su Affiliate Dashboard al mismo tiempo. */}
+              <div>
+                <label className="qlc-label">{t('adminClientDetail.affiliateCommission')} (USDT)</label>
+                <input
+                  className="qlc-input"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  disabled={!statementDistribution?.hasReferrer}
+                  value={
+                    statementDistribution?.hasReferrer
+                      ? statementForm.affiliateCommission === ''
+                        ? String(suggestedAffiliateCommission(statementForm.resultAmount, statementDistribution))
+                        : statementForm.affiliateCommission
+                      : '0'
+                  }
+                  onChange={(e) => setStatementForm((f) => ({ ...f, affiliateCommission: e.target.value }))}
+                />
+                <p style={{ fontSize: 11, color: 'var(--qlc-muted2)', margin: '4px 0 0' }}>
+                  {statementDistribution?.hasReferrer
+                    ? t('adminClientDetail.affiliateCommissionHint').replace('{pct}', statementDistribution.affiliateSharePct)
+                    : t('adminClientDetail.affiliateCommissionNoReferrer')}
+                </p>
+              </div>
             </div>
-            {statementDistribution && <DistributionPreview resultAmount={statementForm.resultAmount} distribution={statementDistribution} t={t} />}
+            {statementDistribution && (
+              <DistributionPreview
+                resultAmount={statementForm.resultAmount}
+                distribution={statementDistribution}
+                affiliateCommission={statementForm.affiliateCommission === '' ? undefined : statementForm.affiliateCommission}
+                t={t}
+              />
+            )}
             <label className="qlc-label">{t('adminClientDetail.activityNotes')}</label>
             <textarea className="qlc-textarea" rows={2} value={statementForm.activityNotes} onChange={(e) => setStatementForm((f) => ({ ...f, activityNotes: e.target.value }))} />
             <label className="qlc-label">{t('adminClientDetail.adminNotes')}</label>
