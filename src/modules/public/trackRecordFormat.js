@@ -16,6 +16,13 @@ export function formatRoi(value) {
   return `${n > 0 ? '+' : ''}${n.toFixed(2)}%`;
 }
 
+// Maximum Drawdown → "3.02%" (capturado por el admin; sin valor → "—").
+export function formatDrawdown(value) {
+  const n = toNumber(value);
+  if (n === null) return EMPTY_METRIC;
+  return `${n.toFixed(2)}%`;
+}
+
 // Tasa de éxito → "78%" / "78.5%"
 export function formatWinRate(value) {
   const n = toNumber(value);

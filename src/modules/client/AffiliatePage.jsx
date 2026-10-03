@@ -202,7 +202,7 @@ function ReferralAccount({ account, t }) {
                       <td>{money(h.amount)}</td>
                       <td>
                         <span className="qlc-badge muted">
-                          {h.type === 'CIERRE_DE_PERIODO' ? t(`affiliate.statementStatus.${h.status}`) : t('affiliate.movementApproved')}
+                          {h.type === 'CIERRE_DE_PERIODO' ? t(`affiliate.statementStatus.${h.status}`) : h.type === 'DEPOSITO_QLC' ? t('affiliate.movementRegistered') : t('affiliate.movementApproved')}
                         </span>
                       </td>
                     </tr>

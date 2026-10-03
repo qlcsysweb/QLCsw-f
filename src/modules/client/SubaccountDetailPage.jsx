@@ -65,6 +65,8 @@ export default function SubaccountDetailPage() {
   const scrolledToHash = useRef(false);
   // CORREGIR.xlsx CLIENTE 13 — reporte real de distribución de capital.
   const [distributionReports, setDistributionReports] = useState([]);
+  // Depósitos que QLC realizó al cliente en esta subcuenta.
+  const [qlcDeposits, setQlcDeposits] = useState([]);
   // Confirmación de capital VIGENTE (la decide el backend).
   const [distributionCurrent, setDistributionCurrent] = useState(null);
 
@@ -97,6 +99,10 @@ export default function SubaccountDetailPage() {
         api
           .get(`/client/api-subaccounts/${id}/payment-data`)
           .then(({ data }) => setPaymentConfig(data.paymentData))
+          .catch(() => {});
+        api
+          .get(`/client/api-subaccounts/${id}/qlc-deposits`)
+          .then(({ data }) => setQlcDeposits(data.deposits))
           .catch(() => {});
         api
           .get(`/client/api-subaccounts/${id}/capital-distribution-reports`)
@@ -448,6 +454,36 @@ export default function SubaccountDetailPage() {
             onReported={load}
             onRemoved={load}
           />
+        </div>
+
+        {/* DEPÓSITOS QUE QLC REALIZA AL CLIENTE en esta subcuenta (registro
+            administrativo de QLC; solo lectura para el cliente). */}
+        <div className="qlc-card qlc-area-deposits">
+          <h3 style={{ marginTop: 0 }}>{t('qlcDeposits.title')}</h3>
+          {qlcDeposits.length ? (
+            <div className="qlc-table-wrap">
+              <table className="qlc-table">
+                <thead>
+                  <tr>
+                    <th>{t('qlcDeposits.date')}</th>
+                    <th>{t('qlcDeposits.amount')}</th>
+                    <th>{t('qlcDeposits.reference')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {qlcDeposits.map((d) => (
+                    <tr key={d.id}>
+                      <td>{formatCdmxDate(d.depositedAt)}</td>
+                      <td>{Number(d.amount).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {d.currency}</td>
+                      <td>{d.reference || '—'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="qlc-empty">{t('qlcDeposits.empty')}</div>
+          )}
         </div>
       </div>
 

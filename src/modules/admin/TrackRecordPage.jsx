@@ -40,6 +40,7 @@ export default function TrackRecordPage() {
         profileLink: form.profileLink || '',
         roi30d: form.roi30d ?? '',
         winRate: form.winRate ?? '',
+        maxDrawdown: form.maxDrawdown ?? '',
       });
       setMessage(t('adminTrackRecord.updated'));
       setTimeout(() => setMessage(''), 3000);
@@ -101,6 +102,16 @@ export default function TrackRecordPage() {
               value={form.winRate ?? ''}
               onChange={update('winRate')}
               placeholder="78.5"
+            />
+          </div>
+          <div>
+            <label className="qlc-label">{t('adminTrackRecord.maxDrawdown')}</label>
+            <input
+              className="qlc-input"
+              inputMode="decimal"
+              value={form.maxDrawdown ?? ''}
+              onChange={update('maxDrawdown')}
+              placeholder="3.02"
             />
           </div>
         </div>

@@ -1,11 +1,11 @@
 import { useLanguage } from '../../../i18n/LanguageContext';
-import { formatRoi, formatWinRate } from '../trackRecordFormat';
+import { formatRoi, formatWinRate, formatDrawdown } from '../trackRecordFormat';
 
 /*
  * Las 4 cards informativas (hero y Resultados):
- * BITGET | ELITE TRADER · ROI 30D | valor · TASA DE ÉXITO | valor · API | EJECUCIÓN ALGORÍTMICA QLC
- * ROI y tasa de éxito provienen del TrackRecord administrable; sin valor
- * configurado se muestra "—".
+ * BITGET | ELITE TRADER · ROI 30D | valor · TASA DE ÉXITO | valor · MAXIMUM DRAWDOWN | valor
+ * ROI, tasa de éxito y Maximum Drawdown provienen del TrackRecord que edita el
+ * admin (Admin → Track Record); sin valor configurado se muestra "—".
  */
 export default function TrackRecordHighlights({ trackRecord, text, className = '' }) {
   const { t } = useLanguage();
@@ -28,9 +28,9 @@ export default function TrackRecordHighlights({ trackRecord, text, className = '
         <span>{t('hero.winRate')}</span>
         <b>{formatWinRate(trackRecord?.winRate)}</b>
       </div>
-      <div className="mini">
-        <b>API</b>
-        <span>{t('hero.algoExecution')}</span>
+      <div className="mini mini-metric">
+        <span>{t('hero.maxDrawdown')}</span>
+        <b>{formatDrawdown(trackRecord?.maxDrawdown)}</b>
       </div>
     </div>
   );

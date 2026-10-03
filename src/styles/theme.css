@@ -1916,7 +1916,7 @@ span.qlc-time-mx:not(:only-child) {
   .qlc-subaccount-layout {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     /* La fila 2 absorbe el alto sobrante de la columna derecha. */
-    grid-template-rows: auto 1fr auto;
+    grid-template-rows: auto 1fr auto auto;
   }
   .qlc-area-model {
     grid-column: 1;
@@ -1934,6 +1934,10 @@ span.qlc-time-mx:not(:only-child) {
   .qlc-area-transfer {
     grid-column: 1 / -1;
     grid-row: 3;
+  }
+  .qlc-area-deposits {
+    grid-column: 1 / -1;
+    grid-row: 4;
   }
 }
 
