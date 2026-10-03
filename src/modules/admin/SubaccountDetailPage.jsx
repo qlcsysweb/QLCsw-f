@@ -12,6 +12,7 @@ import TransferReportList from './TransferReportList';
 import CapitalDistributionCard from './CapitalDistributionCard';
 import StatementAttachments from './StatementAttachments';
 import QlcDepositsCard from './QlcDepositsCard';
+import AffiliatePrepaymentStep from './AffiliatePrepaymentStep';
 import usePolling from '../../hooks/usePolling';
 import LoadingScreen from '../../components/LoadingScreen';
 
@@ -156,6 +157,11 @@ export default function AdminSubaccountDetailPage() {
   const [statementDraft, setStatementDraft] = useState(null);
   // Porcentajes vigentes del QLC Affiliate Program + si el cliente tiene afiliador directo.
   const [statementDistribution, setStatementDistribution] = useState(null);
+  // PAGO PREVIO al promotor afiliador (obligatorio antes de generar con
+  // rentabilidad). `affiliateNoProfit` = el admin indica que el periodo no
+  // tuvo rentabilidad (no hay comisión que pagar).
+  const [affiliatePrepayment, setAffiliatePrepayment] = useState(null);
+  const [affiliateNoProfit, setAffiliateNoProfit] = useState(false);
   const [confirmDeleteDraft, setConfirmDeleteDraft] = useState(false);
   // UID de recepción GENERAL (solo lectura aquí; se edita en Configuración · Plataforma).
   const [receiveUid, setReceiveUid] = useState('');
@@ -193,6 +199,7 @@ export default function AdminSubaccountDetailPage() {
 
   const applyStatements = (data) => {
     setStatementDistribution(data.distribution || null);
+    setAffiliatePrepayment(data.affiliatePrepayment || null);
     setStatements(data.statements);
     setCurrentStatement(data.current);
     setStatementDraft(data.draft || null);
@@ -333,12 +340,16 @@ export default function AdminSubaccountDetailPage() {
   // primera vez). Sin PDF ni Drive: el PDF definitivo solo se sube al finalizar.
   // Valores a enviar: la comisión del afiliador, si el admin no la tocó, es la
   // sugerida con el % vigente (solo con afiliador directo).
+  const affiliateGateLocked = Boolean(
+    statementDistribution?.hasReferrer && affiliatePrepayment?.referrer && !affiliatePrepayment?.prepayment && !affiliateNoProfit
+  );
+  const paidAffiliateAmount = affiliatePrepayment?.prepayment ? String(affiliatePrepayment.prepayment.amount) : null;
   const effectiveStatementForm = () => ({
     ...statementForm,
     affiliateCommission: statementDistribution?.hasReferrer
-      ? statementForm.affiliateCommission === ''
+      ? paidAffiliateAmount ?? (statementForm.affiliateCommission === ''
         ? String(suggestedAffiliateCommission(statementForm.resultAmount, statementDistribution))
-        : statementForm.affiliateCommission
+        : statementForm.affiliateCommission)
       : '',
   });
 
@@ -693,7 +704,20 @@ export default function AdminSubaccountDetailPage() {
                 {t('statementStatus.draftHint').replace('{date}', formatCdmxDateTime(statementDraft.generatedAt))}
               </p>
             )}
-            <fieldset disabled={hasUnpaidStatement || creatingStatement} className="qlc-plain-fieldset">
+            {/* Cliente con promotor afiliador: primero se le paga su comisión
+                (a su UID de Bitget) y se carga el comprobante; hasta entonces
+                el formulario queda bloqueado. */}
+            {statementDistribution?.hasReferrer && affiliatePrepayment?.referrer && !hasUnpaidStatement && (
+              <AffiliatePrepaymentStep
+                subaccountId={id}
+                info={affiliatePrepayment}
+                noProfit={affiliateNoProfit}
+                onNoProfitChange={setAffiliateNoProfit}
+                onChanged={load}
+                suggestedAmount={suggestedAffiliateCommission(statementForm.resultAmount, statementDistribution)}
+              />
+            )}
+            <fieldset disabled={hasUnpaidStatement || creatingStatement || affiliateGateLocked} className="qlc-plain-fieldset">
             <div className="qlc-statement-form-grid">
               {hasPreviousStatement ? (
                 <div style={{ gridColumn: '1 / -1' }}>
@@ -753,19 +777,21 @@ export default function AdminSubaccountDetailPage() {
                   type="number"
                   step="0.01"
                   min="0"
-                  disabled={!statementDistribution?.hasReferrer}
+                  disabled={!statementDistribution?.hasReferrer || Boolean(paidAffiliateAmount)}
                   value={
                     statementDistribution?.hasReferrer
-                      ? statementForm.affiliateCommission === ''
+                      ? paidAffiliateAmount ?? (statementForm.affiliateCommission === ''
                         ? String(suggestedAffiliateCommission(statementForm.resultAmount, statementDistribution))
-                        : statementForm.affiliateCommission
+                        : statementForm.affiliateCommission)
                       : '0'
                   }
                   onChange={(e) => setStatementForm((f) => ({ ...f, affiliateCommission: e.target.value }))}
                 />
                 <p style={{ fontSize: 11, color: 'var(--qlc-muted2)', margin: '4px 0 0' }}>
                   {statementDistribution?.hasReferrer
-                    ? t('adminClientDetail.affiliateCommissionHint').replace('{pct}', statementDistribution.affiliateSharePct)
+                    ? paidAffiliateAmount
+                      ? t('adminClientDetail.affiliateCommissionPaid')
+                      : t('adminClientDetail.affiliateCommissionHint').replace('{pct}', statementDistribution.affiliateSharePct)
                     : t('adminClientDetail.affiliateCommissionNoReferrer')}
                 </p>
               </div>
@@ -774,7 +800,7 @@ export default function AdminSubaccountDetailPage() {
               <DistributionPreview
                 resultAmount={statementForm.resultAmount}
                 distribution={statementDistribution}
-                affiliateCommission={statementForm.affiliateCommission === '' ? undefined : statementForm.affiliateCommission}
+                affiliateCommission={paidAffiliateAmount ?? (statementForm.affiliateCommission === '' ? undefined : statementForm.affiliateCommission)}
                 t={t}
               />
             )}

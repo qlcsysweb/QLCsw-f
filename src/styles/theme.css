@@ -2394,3 +2394,16 @@ span.qlc-time-mx:not(:only-child) {
   border-top: 1px solid var(--qlc-line);
   padding-top: 10px;
 }
+
+/* Paso obligatorio: pago de la comisión al promotor afiliador */
+.qlc-aff-prepay {
+  margin: 12px 0;
+  padding: 14px;
+  border: 1px solid var(--qlc-warn-border);
+  border-radius: 14px;
+  background: rgba(200, 155, 60, 0.06);
+}
+.qlc-aff-prepay.is-done {
+  border-color: var(--qlc-ok-border);
+  background: rgba(0, 168, 255, 0.05);
+}
