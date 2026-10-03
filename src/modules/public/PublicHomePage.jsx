@@ -80,7 +80,7 @@ export default function PublicHomePage() {
       case 'como-funciona':
         return <ComoFuncionaSection text={text} media={media} />;
       case 'tecnologia':
-        return <TecnologiaSection text={text} media={media} />;
+        return <TecnologiaSection text={text} media={media} withIntro />;
       case 'microposiciones':
         return <MicroposicionesSection text={text} media={media} />;
       case 'el-problema':

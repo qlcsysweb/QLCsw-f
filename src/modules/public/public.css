@@ -1357,3 +1357,376 @@
 .qlc-public .legal-content li {
   margin-bottom: 6px;
 }
+
+/* ---------- TECNOLOGÍA: 5 ETAPAS (ícono + "ETAPA 0X" + título + texto) ----------
+   Escritorio: 5 tarjetas en fila. ≤1100px: lista vertical con el ícono a la
+   izquierda y separadores entre etapas. */
+.qlc-public .tech-stages {
+  list-style: none;
+  padding: 0;
+  margin: 38px 0 0;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+}
+.qlc-public .tech-stage {
+  padding: 22px 18px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.025);
+}
+.qlc-public .tech-stage-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: #10294a;
+  color: #4fd4ff;
+  margin-bottom: 14px;
+  flex: 0 0 auto;
+}
+.qlc-public .tech-stage-kicker {
+  color: #4fd4ff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin-bottom: 4px;
+}
+.qlc-public .tech-stage h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
+  letter-spacing: 0.02em;
+}
+.qlc-public .tech-stage p {
+  margin: 0;
+  color: var(--qlc-muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+@media (max-width: 1100px) {
+  .qlc-public .tech-stages {
+    grid-template-columns: 1fr;
+    gap: 0;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.025);
+    padding: 4px 20px;
+  }
+  .qlc-public .tech-stage {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    padding: 18px 0;
+  }
+  .qlc-public .tech-stage + .tech-stage {
+    border-top: 1px solid var(--line);
+  }
+  .qlc-public .tech-stage-icon {
+    margin-bottom: 0;
+  }
+}
+@media (max-height: 900px) {
+  .qlc-public .tech-stages {
+    margin-top: 24px;
+  }
+}
+
+/* ---------- MODAL DE ENTRADA A TECNOLOGÍA ---------- */
+.qlc-tech-intro-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2050;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 24px 16px;
+  background: rgba(3, 6, 12, 0.86);
+  overflow-y: auto;
+}
+.qlc-tech-intro {
+  position: relative;
+  width: min(1180px, 100%);
+  margin: auto;
+  padding: 30px 28px 26px;
+  border-radius: 22px;
+  border: 1px solid rgba(0, 168, 255, 0.28);
+  background:
+    radial-gradient(ellipse at 50% 38%, rgba(0, 140, 255, 0.22), transparent 60%),
+    linear-gradient(180deg, #071224, #050b16);
+  box-shadow: 0 40px 120px rgba(0, 0, 0, 0.6);
+  text-align: center;
+  color: #f4f7fb;
+}
+.qlc-tech-intro-x {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.04);
+  color: #c8d3df;
+  font-size: 15px;
+  cursor: pointer;
+}
+.qlc-tech-intro-x:hover {
+  color: #fff;
+  border-color: rgba(0, 168, 255, 0.5);
+}
+.qlc-tech-intro-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+}
+.qlc-tech-intro-logo {
+  width: 52px;
+  height: 52px;
+}
+.qlc-tech-intro-logo img,
+.qlc-tech-intro-logo video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.qlc-tech-intro-brand strong {
+  display: block;
+  font-size: 26px;
+  line-height: 1;
+}
+.qlc-tech-intro-brand span {
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  color: #c8d3df;
+}
+.qlc-tech-intro-title {
+  margin: 14px 0 6px;
+  font-size: clamp(26px, 4vw, 46px);
+  line-height: 1.1;
+  font-weight: 800;
+}
+.qlc-tech-intro-title span {
+  color: #19c3ff;
+}
+.qlc-tech-intro-sub {
+  margin: 0 auto;
+  max-width: 760px;
+  font-size: clamp(14px, 1.6vw, 18px);
+  color: #c8d3df;
+}
+.qlc-tech-intro-rule {
+  width: 80px;
+  height: 2px;
+  margin: 14px auto;
+  background: #19c3ff;
+  border-radius: 2px;
+}
+.qlc-tech-intro-desc {
+  margin: 0 auto;
+  max-width: 720px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--qlc-muted, #9ca9b7);
+}
+.qlc-tech-intro-flow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 24px auto 22px;
+  max-width: 980px;
+  position: relative;
+}
+.qlc-tech-intro-flow::before {
+  content: "";
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  top: 31px;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(25, 195, 255, 0.1), #19c3ff, rgba(25, 195, 255, 0.1));
+  box-shadow: 0 0 12px rgba(25, 195, 255, 0.6);
+}
+.qlc-tech-flow-node {
+  position: relative;
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #c8d3df;
+}
+.qlc-tech-flow-icon {
+  width: 62px;
+  height: 62px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  color: #4fd4ff;
+  background: #0b1f3a;
+  border: 1px solid rgba(25, 195, 255, 0.35);
+}
+.qlc-tech-flow-icon svg {
+  width: 30px;
+  height: 30px;
+}
+.qlc-tech-flow-node.is-main .qlc-tech-flow-icon {
+  width: 78px;
+  height: 78px;
+  margin-top: -8px;
+  border-radius: 50%;
+  border-color: #19c3ff;
+  box-shadow: 0 0 34px rgba(25, 195, 255, 0.55), inset 0 0 18px rgba(25, 195, 255, 0.35);
+}
+.qlc-tech-flow-node.is-main .qlc-tech-flow-icon svg {
+  width: 40px;
+  height: 40px;
+}
+.qlc-tech-intro-cards {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+}
+.qlc-tech-intro-card {
+  position: relative;
+  padding: 18px 14px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(199, 204, 210, 0.16);
+  background: rgba(8, 20, 38, 0.85);
+  text-align: center;
+}
+.qlc-tech-intro-card.is-main {
+  border-color: #19c3ff;
+  box-shadow: 0 0 26px rgba(25, 195, 255, 0.35);
+}
+.qlc-tech-intro-num {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid rgba(199, 204, 210, 0.3);
+  background: #0b1f3a;
+}
+.qlc-tech-intro-card-icon {
+  color: #19c3ff;
+  margin: 6px auto 8px;
+}
+.qlc-tech-intro-card-icon svg {
+  width: 38px;
+  height: 38px;
+}
+.qlc-tech-intro-card h3 {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+.qlc-tech-intro-card h3::after {
+  content: "";
+  display: block;
+  width: 26px;
+  height: 2px;
+  margin: 8px auto 0;
+  background: #19c3ff;
+}
+.qlc-tech-intro-card p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #c8d3df;
+}
+.qlc-tech-intro-features {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 20px;
+  text-align: left;
+}
+.qlc-tech-intro-feature {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.qlc-tech-intro-feature-icon {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #19c3ff;
+  background: #0b1f3a;
+  border: 1px solid rgba(25, 195, 255, 0.3);
+}
+.qlc-tech-intro-feature strong {
+  display: block;
+  font-size: 13px;
+}
+.qlc-tech-intro-feature span {
+  font-size: 12px;
+  color: var(--qlc-muted, #9ca9b7);
+}
+.qlc-public .qlc-tech-intro-cta {
+  margin-top: 22px;
+  min-width: 220px;
+}
+@media (max-width: 1000px) {
+  .qlc-tech-intro-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .qlc-tech-intro-card:last-child {
+    grid-column: 1 / -1;
+  }
+  .qlc-tech-intro-features {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 640px) {
+  .qlc-tech-intro {
+    padding: 26px 16px 20px;
+  }
+  .qlc-tech-flow-node {
+    font-size: 9px;
+  }
+  .qlc-tech-flow-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+  }
+  .qlc-tech-flow-icon svg {
+    width: 22px;
+    height: 22px;
+  }
+  .qlc-tech-flow-node.is-main .qlc-tech-flow-icon {
+    width: 56px;
+    height: 56px;
+  }
+  .qlc-tech-flow-node.is-main .qlc-tech-flow-icon svg {
+    width: 30px;
+    height: 30px;
+  }
+  .qlc-tech-intro-flow::before {
+    top: 22px;
+  }
+  .qlc-tech-intro-cards,
+  .qlc-tech-intro-features {
+    grid-template-columns: 1fr;
+  }
+}
