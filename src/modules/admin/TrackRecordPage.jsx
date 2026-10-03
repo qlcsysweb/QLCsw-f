@@ -41,6 +41,7 @@ export default function TrackRecordPage() {
         roi30d: form.roi30d ?? '',
         winRate: form.winRate ?? '',
         maxDrawdown: form.maxDrawdown ?? '',
+        roiDays: form.roiDays === '' || form.roiDays == null ? undefined : form.roiDays,
       });
       setMessage(t('adminTrackRecord.updated'));
       setTimeout(() => setMessage(''), 3000);
@@ -85,7 +86,20 @@ export default function TrackRecordPage() {
             Resultados (antes: "#XXX / Clasificación actual"). Vacío = "—". */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 }}>
           <div>
-            <label className="qlc-label">{t('adminTrackRecord.roi30d')}</label>
+            <label className="qlc-label">{t('adminTrackRecord.roiDays')}</label>
+            <input
+              className="qlc-input"
+              type="number"
+              min="1"
+              max="365"
+              step="1"
+              value={form.roiDays ?? 30}
+              onChange={update('roiDays')}
+              placeholder="30"
+            />
+          </div>
+          <div>
+            <label className="qlc-label">{t('adminTrackRecord.roi30d').replace('30', String(form.roiDays || 30))}</label>
             <input
               className="qlc-input"
               inputMode="decimal"

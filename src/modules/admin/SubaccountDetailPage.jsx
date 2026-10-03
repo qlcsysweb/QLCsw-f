@@ -11,7 +11,6 @@ import ConfirmModal from '../../components/ConfirmModal';
 import TransferReportList from './TransferReportList';
 import CapitalDistributionCard from './CapitalDistributionCard';
 import StatementAttachments from './StatementAttachments';
-import QlcDepositsCard from './QlcDepositsCard';
 import AffiliatePrepaymentStep from './AffiliatePrepaymentStep';
 import usePolling from '../../hooks/usePolling';
 import LoadingScreen from '../../components/LoadingScreen';
@@ -618,7 +617,6 @@ export default function AdminSubaccountDetailPage() {
 
         <CapitalDistributionCard reports={distributionReports} onChanged={load} onMessage={flash} />
 
-        <QlcDepositsCard subaccountId={id} />
 
         <div className={`qlc-card qlc-card-span-all${statementStatus === 'PENDIENTE_DE_PAGO' ? ' qlc-card-attention' : ''}`}>
           <div className="qlc-statement-card-head">
@@ -716,6 +714,11 @@ export default function AdminSubaccountDetailPage() {
                 onChanged={load}
                 suggestedAmount={suggestedAffiliateCommission(statementForm.resultAmount, statementDistribution)}
               />
+            )}
+            {affiliateGateLocked && (
+              <div className="qlc-aff-locked" role="status">
+                🔒 {t('affiliatePrepay.lockedNotice')}
+              </div>
             )}
             <fieldset disabled={hasUnpaidStatement || creatingStatement || affiliateGateLocked} className="qlc-plain-fieldset">
             <div className="qlc-statement-form-grid">

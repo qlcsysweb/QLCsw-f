@@ -21,7 +21,8 @@ export default function TrackRecordHighlights({ trackRecord, text, className = '
         <span>{platformValue}</span>
       </div>
       <div className="mini mini-metric">
-        <span>{t('hero.roi30d')}</span>
+        {/* Días del ROI editables en Admin → Track Record (ej. "ROI 30D"). */}
+        <span>{t('hero.roiDays').replace('{days}', String(trackRecord?.roiDays || 30))}</span>
         <b>{formatRoi(trackRecord?.roi30d)}</b>
       </div>
       <div className="mini mini-metric">

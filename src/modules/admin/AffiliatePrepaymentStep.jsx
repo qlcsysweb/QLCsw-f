@@ -8,6 +8,12 @@ import useCopyToClipboard from '../../hooks/useCopyToClipboard';
 import DocumentViewerModal from '../../components/DocumentViewerModal';
 import Modal from '../../components/Modal';
 
+// Fecha/hora local actual en formato de <input type="datetime-local">.
+const localNow = () => {
+  const d = new Date();
+  d.setSeconds(0, 0);
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+};
 const money = (n) => `${Number(n || 0).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDT`;
 
 /*
@@ -22,7 +28,7 @@ const money = (n) => `${Number(n || 0).toLocaleString('es-MX', { minimumFraction
 export default function AffiliatePrepaymentStep({ subaccountId, info, noProfit, onNoProfitChange, onChanged, suggestedAmount }) {
   const { t, language } = useLanguage();
   const { copy, isCopied } = useCopyToClipboard();
-  const [form, setForm] = useState({ amount: '', reference: '' });
+  const [form, setForm] = useState({ amount: '', reference: '', paidAt: '' });
   const [file, setFile] = useState(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -59,11 +65,13 @@ export default function AffiliatePrepaymentStep({ subaccountId, info, noProfit, 
     }
     const fd = new FormData();
     fd.append('amount', form.amount);
-    if (form.reference) fd.append('reference', form.reference);
+    fd.append('reference', form.reference.trim());
+    // datetime-local = hora local del dispositivo → ISO (UTC) para el backend.
+    fd.append('paidAt', new Date(form.paidAt).toISOString());
     fd.append('file', file);
     const ok = await run(() => api.post(`/admin/api-subaccounts/${subaccountId}/affiliate-prepayment`, fd, { headers: { 'Content-Type': 'multipart/form-data' } }));
     if (ok) {
-      setForm({ amount: '', reference: '' });
+      setForm({ amount: '', reference: '', paidAt: '' });
       setFile(null);
       if (inputRef.current) inputRef.current.value = '';
     }
@@ -134,9 +142,27 @@ export default function AffiliatePrepaymentStep({ subaccountId, info, noProfit, 
               </div>
               <div>
                 <label className="qlc-label">{t('affiliatePrepay.reference')}</label>
-                <input className="qlc-input" maxLength={200} value={form.reference} onChange={(e) => setForm((f) => ({ ...f, reference: e.target.value }))} />
+                <input
+                  className="qlc-input"
+                  required
+                  minLength={4}
+                  maxLength={64}
+                  autoComplete="off"
+                  placeholder={t('affiliatePrepay.reference')}
+                  value={form.reference}
+                  onChange={(e) => setForm((f) => ({ ...f, reference: e.target.value }))}
+                />
               </div>
             </div>
+            <label className="qlc-label">{t('affiliatePrepay.paidAt')}</label>
+            <input
+              className="qlc-input"
+              type="datetime-local"
+              required
+              max={localNow()}
+              value={form.paidAt}
+              onChange={(e) => setForm((f) => ({ ...f, paidAt: e.target.value }))}
+            />
             <label className="qlc-label">{t('affiliatePrepay.proof')}</label>
             <input
               ref={inputRef}

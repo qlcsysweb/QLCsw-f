@@ -181,30 +181,19 @@ function ReferralAccount({ account, t }) {
               <table className="qlc-table">
                 <thead>
                   <tr>
-                    <th>{t('affiliate.payDate')}</th>
+                    <th>{t('affiliate.depositDateTime')}</th>
                     <th>{t('affiliate.movementType')}</th>
-                    <th>{t('affiliate.result')}</th>
-                    <th>{t('affiliate.status')}</th>
+                    <th>{t('affiliate.amount')}</th>
+                    <th>{t('affiliate.orderNumber')}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {account.history.map((h, i) => (
                     <tr key={`${h.type}-${h.date}-${i}`}>
-                      <td>{formatCdmxDate(h.date)}</td>
-                      <td>
-                        {t(`affiliate.movement.${h.type}`)}
-                        {h.periodStart && (
-                          <div style={{ fontSize: 11, color: 'var(--qlc-muted2)' }}>
-                            {formatDateOnly(h.periodStart)} – {formatDateOnly(h.periodEnd)}
-                          </div>
-                        )}
-                      </td>
+                      <td>{formatCdmxDateTime(h.date)}</td>
+                      <td>{t(`affiliate.movement.${h.type}`)}</td>
                       <td>{money(h.amount)}</td>
-                      <td>
-                        <span className="qlc-badge muted">
-                          {h.type === 'CIERRE_DE_PERIODO' ? t(`affiliate.statementStatus.${h.status}`) : h.type === 'DEPOSITO_QLC' ? t('affiliate.movementRegistered') : t('affiliate.movementApproved')}
-                        </span>
-                      </td>
+                      <td>{h.orderNumber ? <code>{h.orderNumber}</code> : '—'}</td>
                     </tr>
                   ))}
                 </tbody>

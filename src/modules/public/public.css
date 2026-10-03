@@ -497,6 +497,17 @@
   margin-top: 0;
 }
 
+/* A pedido del cliente: dentro de la tarjeta del HERO las métricas se
+   colocan al FONDO de la tarjeta (ocupan el espacio que sobraba debajo) y el
+   logo crece en ese espacio liberado — SIN cambiar el tamaño de la tarjeta
+   (su alto lo sigue definiendo la columna izquierda). */
+.qlc-public .hero-card .hero-logo {
+  /* El margen automático empuja las métricas al fondo de la tarjeta; su
+     propio margin-top (de siempre) sigue siendo la separación mínima, así
+     que donde no sobra espacio nada cambia. */
+  margin-bottom: auto;
+}
+
 /* CORRECCIÓN — "congelar" el HERO para laptops chicas horizontales
    (1024–1600px de ancho, hasta 900px de alto: 1024×700, 1280×720,
    1280×800, 1366×768, 1440×900, etc.). El cliente ve la página
@@ -530,7 +541,9 @@
     padding-top: 16px;
   }
   .qlc-public .hero-logo {
-    max-width: 400px;
+    /* 400 → 455 px: el logo aprovecha el espacio que antes quedaba vacío
+       debajo de las métricas (la tarjeta conserva su alto). */
+    max-width: 455px;
   }
   .qlc-public .hero-mini {
     /* A pedido del cliente: separación fija y compacta respecto al logo —
@@ -1254,7 +1267,7 @@
     padding: 12px 0 16px;
   }
   .qlc-public .hero-logo {
-    max-width: min(340px, 44vh);
+    max-width: min(362px, 47vh);
   }
   .qlc-public .hero-mini {
     margin-top: 18px;

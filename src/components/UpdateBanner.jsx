@@ -14,6 +14,18 @@ import { useLanguage } from '../i18n/LanguageContext';
  * versión nueva completa. La sesión y el idioma se conservan.
  */
 const CHECK_EVERY_MS = 60 * 1000;
+// Al detectar una versión nueva se aplica SOLA (borrando la caché vieja) tras
+// esta cuenta regresiva, para que siempre se vea lo último publicado. Si la
+// persona está escribiendo en un campo, se espera a que termine (nunca se
+// pierde lo que está capturando). Con la pestaña en segundo plano se aplica
+// de inmediato.
+const AUTO_UPDATE_SECONDS = 15;
+const isTyping = () => {
+  const el = document.activeElement;
+  if (!el) return false;
+  const tag = el.tagName;
+  return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || el.isContentEditable;
+};
 // eslint-disable-next-line no-undef
 const RUNNING_BUILD = typeof __QLC_BUILD_ID__ !== 'undefined' ? __QLC_BUILD_ID__ : null;
 
@@ -50,6 +62,40 @@ export default function UpdateBanner() {
   const { t } = useLanguage();
   const [outdated, setOutdated] = useState(false);
   const [updating, setUpdating] = useState(false);
+  const [secondsLeft, setSecondsLeft] = useState(AUTO_UPDATE_SECONDS);
+
+  // Actualización automática (ver AUTO_UPDATE_SECONDS).
+  useEffect(() => {
+    if (!outdated || updating) return undefined;
+    if (document.visibilityState === 'hidden') {
+      setUpdating(true);
+      clearOldVersionAndReload();
+      return undefined;
+    }
+    const timer = setInterval(() => {
+      if (isTyping()) return; // espera a que termine de escribir
+      setSecondsLeft((s) => {
+        if (s <= 1) {
+          clearInterval(timer);
+          setUpdating(true);
+          clearOldVersionAndReload();
+          return 0;
+        }
+        return s - 1;
+      });
+    }, 1000);
+    const onHidden = () => {
+      if (document.visibilityState === 'hidden' && !isTyping()) {
+        setUpdating(true);
+        clearOldVersionAndReload();
+      }
+    };
+    document.addEventListener('visibilitychange', onHidden);
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener('visibilitychange', onHidden);
+    };
+  }, [outdated, updating]);
 
   // Si una pantalla intenta cargar un archivo de la versión anterior que ya no
   // existe en el servidor (se publicó una nueva), se ofrece actualizar en vez
@@ -94,7 +140,10 @@ export default function UpdateBanner() {
   if (!outdated) return null;
   return (
     <div className="qlc-update-banner" role="status">
-      <span>{t('updateBanner.text')}</span>
+      <span>
+        {t('updateBanner.text')}{' '}
+        {!updating && <small style={{ opacity: 0.8 }}>{t('updateBanner.auto').replace('{s}', secondsLeft)}</small>}
+      </span>
       <button
         type="button"
         className="qlc-btn primary"
