@@ -32,6 +32,7 @@ const KNOWN_MESSAGES = {
   'No pudimos enviar el código a ese correo. Revisa que esté bien escrito e intenta de nuevo.': 'We could not send the code to that email. Check it is spelled correctly and try again.',
   'No pudimos enviar el código de verificación en este momento. Intenta más tarde o contacta a soporte@qlctrade.net.': 'We could not send the verification code right now. Try later or contact soporte@qlctrade.net.',
   'Demasiadas solicitudes de código. Intenta más tarde.': 'Too many code requests. Try again later.',
+  'Esa nomenclatura ya está en uso por otro cliente.': 'That nomenclature is already used by another client.',
   'Indica tu UID de Bitget.': 'Enter your Bitget UID.',
   'El UID de Bitget debe contener solo números (5 a 20 dígitos).': 'The Bitget UID must contain only numbers (5 to 20 digits).',
   'Registra tu UID de Bitget antes de crear tu liga de afiliación.': 'Register your Bitget UID before creating your affiliate link.',

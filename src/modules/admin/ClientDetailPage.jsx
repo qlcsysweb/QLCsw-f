@@ -30,7 +30,15 @@ function SubaccountRow({ s, id, t, language, apiStatusMap, onDeactivate, onActiv
   const isInactive = Boolean(s.deactivatedAt);
   return (
     <tr>
-      <td>{s.isPrincipal ? t('clientSubaccounts.principalLabel') : (s.identifier || t('adminClientDetail.unassignedIdentifier'))}</td>
+      <td>
+        {/* Nombre de la cuenta (#N) y debajo su código PCB. "PCB sin asignar"
+            = todavía no se le captura el identificador interno (se asigna en
+            Ver → Conexión API → Identificador interno). */}
+        <strong>{s.isPrincipal ? t('clientSubaccounts.principalLabel') : `${t('clientSubaccounts.subaccountLabel')} #${s.slotIndex}`}</strong>
+        <div style={{ fontSize: 11, color: s.identifier ? 'var(--qlc-muted)' : 'var(--qlc-warn)' }}>
+          {s.identifier ? `PCB ${s.identifier}` : t('adminClientDetail.pcbUnassigned')}
+        </div>
+      </td>
       <td>{formatParticipationSplit(s.clientModel?.model, t)}</td>
       <td>
         <span className={`qlc-badge ${apiStatus.className}`}>{apiStatus.text}</span>
@@ -82,6 +90,7 @@ export default function ClientDetailPage() {
   // totalmente distinto de ACTIVA/INACTIVA (estado de la subcuenta misma).
   const [showDisconnectedSubaccounts, setShowDisconnectedSubaccounts] = useState(false);
   const [showInactiveStatusSubaccounts, setShowInactiveStatusSubaccounts] = useState(false);
+  const [showDisconnectedOnly, setShowDisconnectedOnly] = useState(false);
   const [deactivateTarget, setDeactivateTarget] = useState(null);
   const [activateTarget, setActivateTarget] = useState(null);
   const [pendingRequests, setPendingRequests] = useState([]);
@@ -248,10 +257,9 @@ export default function ClientDetailPage() {
     }
   };
 
-  // NOMENCLATURA ÚNICA §7/§9 — solo se puede ASIGNAR cuando el cliente
-  // todavía no tiene una (el backend rechaza el resto de los casos). Nunca
-  // hay una forma de editarla después: ni este botón ni ningún otro
-  // aparecen una vez que client.username ya tiene un valor.
+  // NOMENCLATURA ÚNICA — el admin la ASIGNA o la EDITA cuando lo necesite.
+  // Sigue siendo única entre clientes (el backend lo valida) y, si cambia,
+  // la carpeta de Google Drive del cliente se renombra con el valor nuevo.
   const confirmAssignUsername = async () => {
     setAssigningUsername(true);
     setUsernameError('');
@@ -302,7 +310,12 @@ export default function ClientDetailPage() {
   // PRINCIPAL siempre se muestra aparte, sin importar su estado.
   const principalSubaccount = subaccounts.find((s) => s.isPrincipal);
   const connectedSubaccounts = activeNumberedSubaccounts.filter((s) => s.status === 'CONECTADA');
-  const disconnectedSubaccounts = activeNumberedSubaccounts.filter((s) => s.status !== 'CONECTADA');
+  // Pendientes = todavía nunca conectadas; desconectadas = ya estuvieron
+  // conectadas y se desconectaron. Se listan por separado para que el número
+  // de cada grupo sea claro.
+  const pendingSubaccounts = activeNumberedSubaccounts.filter((s) => s.status === 'PENDIENTE');
+  const disconnectedSubaccounts = activeNumberedSubaccounts.filter((s) => s.status === 'DESCONECTADA');
+  const [showPendingSubaccounts, setShowPendingSubaccounts] = [showDisconnectedSubaccounts, setShowDisconnectedSubaccounts];
 
   return (
     <div>
@@ -333,9 +346,17 @@ export default function ClientDetailPage() {
             {client.username ? (
               <>
                 <code>{client.username}</code>
-                <span className="qlc-badge muted" style={{ fontSize: 10 }} title={t('adminClientDetail.usernameLockedHint')}>
-                  🔒 {t('adminClientDetail.usernameLocked')}
-                </span>
+                <button
+                  type="button"
+                  className="qlc-btn ghost"
+                  style={{ fontSize: 11, padding: '4px 8px' }}
+                  onClick={() => {
+                    setUsernameDraft(client.username);
+                    setShowAssignUsername(true);
+                  }}
+                >
+                  {t('adminClientDetail.editUsername')}
+                </button>
               </>
             ) : (
               <>
@@ -446,7 +467,7 @@ export default function ClientDetailPage() {
           <table className="qlc-table">
             <thead>
               <tr>
-                <th>{t('adminClientDetail.identifier')}</th>
+                <th>{t('adminClientDetail.accountAndPcb')}</th>
                 <th>{t('adminClientDetail.model')}</th>
                 <th>{t('adminClientDetail.api')}</th>
                 <th>{t('adminClientDetail.activationProcess')}</th>
@@ -467,16 +488,40 @@ export default function ClientDetailPage() {
                   onActivate={setActivateTarget}
                 />
               ))}
+              {pendingSubaccounts.length > 0 && (
+                <>
+                  <tr>
+                    <td colSpan={6}>
+                      <button type="button" className="qlc-btn ghost" onClick={() => setShowPendingSubaccounts((v) => !v)}>
+                        {showPendingSubaccounts ? '▾' : '▸'} {t('adminClientDetail.pendingConnectionSubaccounts')} ({pendingSubaccounts.length})
+                      </button>
+                    </td>
+                  </tr>
+                  {showPendingSubaccounts &&
+                    pendingSubaccounts.map((s) => (
+                      <SubaccountRow
+                        key={s.id}
+                        s={s}
+                        id={id}
+                        t={t}
+                        language={language}
+                        apiStatusMap={apiStatusMap}
+                        onDeactivate={setDeactivateTarget}
+                        onActivate={setActivateTarget}
+                      />
+                    ))}
+                </>
+              )}
               {disconnectedSubaccounts.length > 0 && (
                 <>
                   <tr>
                     <td colSpan={6}>
-                      <button type="button" className="qlc-btn ghost" onClick={() => setShowDisconnectedSubaccounts((v) => !v)}>
-                        {showDisconnectedSubaccounts ? '▾' : '▸'} {t('adminClientDetail.disconnectedSubaccounts')} ({disconnectedSubaccounts.length})
+                      <button type="button" className="qlc-btn ghost" onClick={() => setShowDisconnectedOnly((v) => !v)}>
+                        {showDisconnectedOnly ? '▾' : '▸'} {t('adminClientDetail.disconnectedSubaccounts')} ({disconnectedSubaccounts.length})
                       </button>
                     </td>
                   </tr>
-                  {showDisconnectedSubaccounts &&
+                  {showDisconnectedOnly &&
                     disconnectedSubaccounts.map((s) => (
                       <SubaccountRow
                         key={s.id}
@@ -663,7 +708,7 @@ export default function ClientDetailPage() {
 
       {showAssignUsername && (
         <Modal
-          title={t('adminClientDetail.assignUsernameTitle')}
+          title={client.username ? t('adminClientDetail.editUsernameTitle') : t('adminClientDetail.assignUsernameTitle')}
           onClose={() => {
             setShowAssignUsername(false);
             setUsernameError('');
@@ -671,7 +716,7 @@ export default function ClientDetailPage() {
           width={440}
         >
           <p style={{ color: 'var(--qlc-muted)', fontSize: 13, lineHeight: 1.6, marginTop: 0 }}>
-            {t('adminClientDetail.assignUsernameNotice')}
+            {client.username ? t('adminClientDetail.editUsernameNotice') : t('adminClientDetail.assignUsernameNotice')}
           </p>
           <label className="qlc-label">{t('adminClientDetail.usernameLabel')}</label>
           <input
@@ -688,7 +733,7 @@ export default function ClientDetailPage() {
               {t('modals.cancel')}
             </button>
             <button className="qlc-btn primary" onClick={confirmAssignUsername} disabled={assigningUsername || !usernameDraft.trim()}>
-              {assigningUsername ? t('common.saving') : t('adminClientDetail.assignUsername')}
+              {assigningUsername ? t('common.saving') : client.username ? t('modals.saveChanges') : t('adminClientDetail.assignUsername')}
             </button>
           </div>
         </Modal>

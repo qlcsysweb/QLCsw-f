@@ -413,7 +413,20 @@ export default function AdminSubaccountDetailPage() {
       <div className="qlc-page-header" style={{ marginTop: 10 }}>
         <div>
           <div className="qlc-kicker">{t('adminClientDetail.kicker')}</div>
-          <h1 style={{ margin: 0 }}>{subaccount.identifier || t('adminClientDetail.unassignedIdentifier')}</h1>
+          <h1 style={{ margin: 0 }}>
+            {subaccount.isPrincipal ? t('clientSubaccounts.principalLabel') : `${t('clientSubaccounts.subaccountLabel')} #${subaccount.slotIndex}`}
+          </h1>
+          {/* PCB = identificador interno que QLC le asigna a esta cuenta. Se
+              captura abajo, en "Conexión API" → "Identificador interno". */}
+          <div style={{ fontSize: 13, color: subaccount.identifier ? 'var(--qlc-muted)' : 'var(--qlc-warn)' }}>
+            {subaccount.identifier ? (
+              <>
+                PCB <code style={{ color: 'var(--qlc-blue2)' }}>{subaccount.identifier}</code>
+              </>
+            ) : (
+              t('adminClientDetail.pcbUnassignedHowTo')
+            )}
+          </div>
         </div>
         <span className={`qlc-badge ${status.className}`}>{status.text}</span>
       </div>
