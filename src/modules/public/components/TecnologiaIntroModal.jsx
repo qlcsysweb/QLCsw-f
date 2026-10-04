@@ -62,8 +62,8 @@ export default function TecnologiaIntroModal({ onClose }) {
 
   const flow = [
     { Icon: ChartIcon, lines: [t('techIntro.flowData'), t('techIntro.flowIndicators'), t('techIntro.flowInstitutional'), t('techIntro.flowNews')] },
-    { badge: t('techIntro.flowAi'), main: true },
-    { Icon: ServerIcon, lines: [] },
+    { badge: t('techIntro.flowAi'), main: true, lines: [t('techIntro.flowAiLabel')] },
+    { Icon: ServerIcon, lines: [t('techIntro.flowAlgoLabel')] },
     { Icon: ShieldIcon, lines: ['API'] },
     { Icon: DevicesIcon, lines: ['Bitget'] },
   ];
