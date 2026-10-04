@@ -30,7 +30,7 @@ export default function TecnologiaSection({ text, media = () => [], withIntro = 
 
   return (
     <section className="section alt" id="tecnologia">
-      {showIntro && <TecnologiaIntroModal text={text} stages={stages} onClose={() => setShowIntro(false)} />}
+      {showIntro && <TecnologiaIntroModal onClose={() => setShowIntro(false)} />}
       <div className="container">
         <div className="kicker">{text('tecnologia', 'kicker', 'INFRAESTRUCTURA')}</div>
         <h2>

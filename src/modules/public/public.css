@@ -1939,3 +1939,28 @@
     margin-top: 14px;
   }
 }
+
+/* Modal de Tecnología: insignia "IA" al centro del flujo y etiquetas en lista. */
+.qlc-tech-flow-node span + span {
+  margin-top: -5px;
+}
+.qlc-tech-flow-badge {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: #e9f8ff;
+  text-shadow: 0 0 12px rgba(25, 195, 255, 0.9);
+}
+@media (max-height: 700px) {
+  .qlc-tech-flow-badge {
+    font-size: 20px;
+  }
+}
+@media (max-width: 640px) {
+  .qlc-tech-flow-badge {
+    font-size: 16px;
+  }
+  .qlc-tech-flow-node span + span {
+    margin-top: -3px;
+  }
+}

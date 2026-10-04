@@ -2,14 +2,15 @@ import { useEffect, useLayoutEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import QlcLogo from '../../../components/QlcLogo';
 import { useLanguage } from '../../../i18n/LanguageContext';
-import { ChartIcon, AnalysisIcon, ServerIcon, ShieldIcon, DevicesIcon, BoltIcon, LockIcon, MicroIcon } from './TechIcons';
+import { ChartIcon, ServerIcon, ShieldIcon, DevicesIcon, BoltIcon, LockIcon, MicroIcon, StrategyIcon, AnalysisIcon, AlgorithmsIcon, ApiIcon } from './TechIcons';
 
 /*
  * MODAL DE ENTRADA A "TECNOLOGÍA": "De los datos a las oportunidades."
  * Se muestra al entrar a la sección, antes de su contenido. Se cierra con el
  * botón, la ✕, clic fuera o Esc.
  */
-export default function TecnologiaIntroModal({ text, stages, onClose }) {
+// Textos idénticos a la infografía aprobada por el cliente.
+export default function TecnologiaIntroModal({ onClose }) {
   const { t } = useLanguage();
   const panelRef = useRef(null);
 
@@ -60,11 +61,18 @@ export default function TecnologiaIntroModal({ text, stages, onClose }) {
   }, [onClose]);
 
   const flow = [
-    { Icon: ChartIcon, label: t('techIntro.flowData') },
-    { Icon: AnalysisIcon, label: text('tecnologia', 'stage2_title', '') || t('tecnologiaSection.stage2Title'), main: true },
-    { Icon: ServerIcon, label: t('techIntro.flowAlgorithms') },
-    { Icon: ShieldIcon, label: 'API' },
-    { Icon: DevicesIcon, label: t('techIntro.flowAccount') },
+    { Icon: ChartIcon, lines: [t('techIntro.flowData'), t('techIntro.flowIndicators'), t('techIntro.flowInstitutional'), t('techIntro.flowNews')] },
+    { badge: t('techIntro.flowAi'), main: true },
+    { Icon: ServerIcon, lines: [] },
+    { Icon: ShieldIcon, lines: ['API'] },
+    { Icon: DevicesIcon, lines: ['Bitget'] },
+  ];
+  const cards = [
+    { Icon: StrategyIcon, title: t('techIntro.c1Title'), text: t('techIntro.c1Text') },
+    { Icon: AnalysisIcon, title: t('techIntro.c2Title'), text: t('techIntro.c2Text') },
+    { Icon: AlgorithmsIcon, title: t('techIntro.c3Title'), text: t('techIntro.c3Text') },
+    { Icon: ApiIcon, title: t('techIntro.c4Title'), text: t('techIntro.c4Text') },
+    { Icon: MicroIcon, title: t('techIntro.c5Title'), text: t('techIntro.c5Text') },
   ];
   const features = [
     { Icon: ShieldIcon, title: t('techIntro.f1Title'), text: t('techIntro.f1Text') },
@@ -89,23 +97,23 @@ export default function TecnologiaIntroModal({ text, stages, onClose }) {
         <h2 className="qlc-tech-intro-title">
           {t('techIntro.titleA')} <span>{t('techIntro.titleB')}</span>
         </h2>
-        <p className="qlc-tech-intro-sub">{text('tecnologia', 'intro_sub', '') || t('techIntro.sub')}</p>
+        <p className="qlc-tech-intro-sub">{t('techIntro.sub')}</p>
         <div className="qlc-tech-intro-rule" />
         <p className="qlc-tech-intro-desc">{t('techIntro.desc')}</p>
 
         <div className="qlc-tech-intro-flow" aria-hidden="true">
-          {flow.map(({ Icon, label, main }, i) => (
+          {flow.map(({ Icon, lines = [], badge, main }, i) => (
             <div className={`qlc-tech-flow-node${main ? ' is-main' : ''}`} key={i}>
-              <div className="qlc-tech-flow-icon">
-                <Icon />
-              </div>
-              <span>{label}</span>
+              <div className="qlc-tech-flow-icon">{badge ? <b className="qlc-tech-flow-badge">{badge}</b> : <Icon />}</div>
+              {lines.map((l) => (
+                <span key={l}>{l}</span>
+              ))}
             </div>
           ))}
         </div>
 
         <ol className="qlc-tech-intro-cards">
-          {stages.map(({ Icon, title, text: body }, i) => (
+          {cards.map(({ Icon, title, text: body }, i) => (
             <li className={`qlc-tech-intro-card${i === 1 ? ' is-main' : ''}`} key={i}>
               <span className="qlc-tech-intro-num">{String(i + 1).padStart(2, '0')}</span>
               <div className="qlc-tech-intro-card-icon">
@@ -125,7 +133,7 @@ export default function TecnologiaIntroModal({ text, stages, onClose }) {
               </div>
               <div>
                 <strong>{title}</strong>
-                <span>{body}</span>
+                {body && <span>{body}</span>}
               </div>
             </div>
           ))}
