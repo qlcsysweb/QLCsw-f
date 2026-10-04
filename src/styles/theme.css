@@ -2413,3 +2413,31 @@ span.qlc-time-mx:not(:only-child) {
   font-size: 12px;
   line-height: 1.5;
 }
+
+/* Tablas dentro de las Guías de Uso (p. ej. Guía QLC Affiliate Program). */
+.qlc-guide-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 0 14px;
+  font-size: 13px;
+}
+.qlc-guide-content th,
+.qlc-guide-content td {
+  border: 1px solid var(--qlc-line);
+  padding: 8px 10px;
+  text-align: left;
+  vertical-align: top;
+  color: var(--qlc-muted);
+  line-height: 1.5;
+}
+.qlc-guide-content th {
+  color: var(--qlc-text);
+  background: rgba(255, 255, 255, 0.04);
+  font-weight: 600;
+}
+@media (max-width: 640px) {
+  .qlc-guide-content table {
+    display: block;
+    overflow-x: auto;
+  }
+}

@@ -95,6 +95,7 @@ const es = {
     seguridad: 'Seguridad',
     sobreQlc: 'Sobre QLC',
     faq: 'FAQ',
+    faqAffiliate: 'FAQ Affiliate Program',
     registro: 'Registro',
     accesoClientes: 'Acceso cliente',
     accesoAdmins: 'Acceso administrador',
@@ -122,6 +123,22 @@ const es = {
     registerSubtitle: 'Solicita información y comienza tu proceso',
   },
 
+  faqAffiliateSection: {
+    kicker: 'QLC AFFILIATE PROGRAM',
+    title: 'FAQ Affiliate Program',
+    q1: '¿Puedo crear varias ligas?',
+    a1: 'No. Cada afiliado tiene una liga única; no se generan duplicados automáticamente.',
+    q2: '¿Qué pasa si un invitado abre otra liga después?',
+    a2: 'La atribución guardada en su registro no cambia por visitar otra liga.',
+    q3: '¿Un referido de mi referido me genera comisión?',
+    a3: 'No. El programa es de un solo nivel; solo cuentan los clientes que tú refieres directamente.',
+    q4: '¿Por qué un referido todavía no aparece como activo?',
+    a4: 'Debe alcanzar el estado de activación confirmado por QLC. El registro por sí solo no garantiza ese estado.',
+    q5: '¿Por qué no veo un saldo actualizado?',
+    a5: 'Puede que el dato no esté disponible o esté vencido según la configuración; el panel lo indica como «Sin actualizar».',
+    q6: '¿Por qué mi comisión no aparece como pagada?',
+    a6: 'El cálculo y el pago son procesos separados. El historial se actualiza como pagado tras la confirmación de QLC.',
+  },
   faqSection: {
     kicker: 'PREGUNTAS FRECUENTES',
     title: 'Lo esencial.',
@@ -255,6 +272,7 @@ const es = {
 
   sobreQlcSection: {
     kicker: 'Nuestra Naturaleza',
+    body4: 'El alcance de los servicios de QLC se limita a las funciones tecnológicas expresamente contratadas.',
     title: 'Sobre QLC',
     strapline: 'Somos una infraestructura tecnológica para la ejecución de estrategias de trading.',
   },
@@ -444,6 +462,7 @@ const es = {
     fieldParagraph1: 'Párrafo 1',
     fieldParagraph2: 'Párrafo 2',
     fieldParagraph3Highlight: 'Párrafo 3 (destacado)',
+    fieldParagraph4Highlight: 'Párrafo 4 (destacado)',
     fieldTitle: 'Título',
     fieldTagline: 'Tagline',
     fieldRiskDisclaimer: 'Disclaimer de riesgo',
@@ -2447,6 +2466,7 @@ const en = {
     seguridad: 'Security',
     sobreQlc: 'About QLC',
     faq: 'FAQ',
+    faqAffiliate: 'FAQ Affiliate Program',
     registro: 'Register',
     accesoClientes: 'Client access',
     accesoAdmins: 'Administrator access',
@@ -2474,6 +2494,22 @@ const en = {
     registerSubtitle: 'Request information and start your process',
   },
 
+  faqAffiliateSection: {
+    kicker: 'QLC AFFILIATE PROGRAM',
+    title: 'FAQ Affiliate Program',
+    q1: 'Can I create several links?',
+    a1: 'No. Each affiliate has a single unique link; duplicates are not generated automatically.',
+    q2: 'What happens if an invitee opens another link later?',
+    a2: 'The attribution saved in their registration does not change by visiting another link.',
+    q3: 'Does a referral of my referral earn me a commission?',
+    a3: 'No. The program is single-level; only the clients you refer directly count.',
+    q4: 'Why does a referral not appear as active yet?',
+    a4: 'They must reach the activation status confirmed by QLC. Registration alone does not guarantee that status.',
+    q5: "Why don't I see an updated balance?",
+    a5: 'The data may not be available or may have expired according to the settings; the panel shows it as “Not updated”.',
+    q6: "Why doesn't my commission appear as paid?",
+    a6: "Calculation and payment are separate processes. The history is updated as paid after QLC's confirmation.",
+  },
   faqSection: {
     kicker: 'FREQUENTLY ASKED QUESTIONS',
     title: 'The essentials.',
@@ -2607,6 +2643,7 @@ const en = {
 
   sobreQlcSection: {
     kicker: 'Our Nature',
+    body4: "The scope of QLC's services is limited to the technological functions expressly contracted.",
     title: 'About QLC',
     strapline: 'We are a technology infrastructure for executing trading strategies.',
   },
@@ -2796,6 +2833,7 @@ const en = {
     fieldParagraph1: 'Paragraph 1',
     fieldParagraph2: 'Paragraph 2',
     fieldParagraph3Highlight: 'Paragraph 3 (highlighted)',
+    fieldParagraph4Highlight: 'Paragraph 4 (highlighted)',
     fieldTitle: 'Title',
     fieldTagline: 'Tagline',
     fieldRiskDisclaimer: 'Risk disclaimer',

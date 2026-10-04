@@ -43,8 +43,12 @@ export default function SobreQlcSection({ text, media = () => [] }) {
               {text(
                 'sobre_qlc',
                 'body_3',
-                'QLC no es un banco, no es una institución financiera y no custodia directamente los fondos de sus usuarios. Los fondos permanecen en la cuenta del propio cliente en el exchange correspondiente, bajo su titularidad y control.'
+                'QLC no es un banco, no es una institución financiera y no custodia los fondos de sus usuarios. Los fondos permanecen en la cuenta del propio cliente en el exchange correspondiente, bajo su titularidad y control.'
               )}
+            </p>
+
+            <p style={{ color: '#c7ccd2', fontSize: 15, lineHeight: 1.6, fontWeight: 600, marginTop: 15 }}>
+              {text('sobre_qlc', 'body_4', '') || t('sobreQlcSection.body4')}
             </p>
           </div>
         </div>

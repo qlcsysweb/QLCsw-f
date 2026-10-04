@@ -155,6 +155,7 @@ export default function CmsPage() {
         { key: 'body_1', label: t('adminCms.fieldParagraph1'), type: 'textarea', fallback: '' },
         { key: 'body_2', label: t('adminCms.fieldParagraph2'), type: 'textarea', fallback: '' },
         { key: 'body_3', label: t('adminCms.fieldParagraph3Highlight'), type: 'textarea', fallback: '' },
+        { key: 'body_4', label: t('adminCms.fieldParagraph4Highlight'), type: 'textarea', fallback: 'El alcance de los servicios de QLC se limita a las funciones tecnológicas expresamente contratadas.' },
       ],
       PreviewComponent: SobreQlcSection,
     },

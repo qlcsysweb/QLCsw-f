@@ -15,6 +15,7 @@ export const SECTIONS = [
   { id: 'seguridad', path: '/seguridad', labelKey: 'nav.seguridad' },
   { id: 'sobre-qlc', path: '/sobre-qlc', labelKey: 'nav.sobreQlc' },
   { id: 'faq', path: '/faq', labelKey: 'nav.faq' },
+  { id: 'faq-affiliate-program', path: '/faq-affiliate-program', labelKey: 'nav.faqAffiliate' },
 ];
 
 // Vistas adicionales que no son un enlace del navbar pero sí pantallas propias.

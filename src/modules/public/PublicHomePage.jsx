@@ -18,6 +18,7 @@ import ResultadosSection from './components/ResultadosSection';
 import SeguridadSection from './components/SeguridadSection';
 import SobreQlcSection from './components/SobreQlcSection';
 import FaqSection from './components/FaqSection';
+import FaqAffiliateSection from './components/FaqAffiliateSection';
 import ContactoSection from './components/ContactoSection';
 import PublicFooter from './components/PublicFooter';
 import './public.css';
@@ -95,6 +96,8 @@ export default function PublicHomePage() {
         return <SobreQlcSection text={text} media={media} />;
       case 'faq':
         return loading ? null : <FaqSection faqs={faqs} media={media} />;
+      case 'faq-affiliate-program':
+        return <FaqAffiliateSection />;
       case 'contacto':
         return (
           <>
