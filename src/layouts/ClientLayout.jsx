@@ -41,7 +41,6 @@ export default function ClientLayout() {
     { to: '/client/profile', label: t('clientNav.profile') },
     { to: '/client/api-subaccounts', label: t('clientNav.subaccounts') },
     { to: '/client/documents', label: t('clientNav.documents') },
-    { to: '/client/guides', label: t('clientNav.guides') },
     { to: '/client/affiliates', label: t('affiliate.nav') },
     { to: '/client/support', label: t('clientNav.support') },
   ];
@@ -74,6 +73,10 @@ export default function ClientLayout() {
         {/* El cliente trabaja en UTC (citas, chat): solo se muestra esa hora. */}
         <DualClock zones={['UTC']} />
         <nav>
+          {/* A pedido del cliente: "Guías de uso" va hasta arriba del menú. */}
+          <NavLink to="/client/guides" className={({ isActive }) => `qlc-admin-nav-link${isActive ? ' active' : ''}`}>
+            {t('clientNav.guides')}
+          </NavLink>
           <NavLink
             to="/client/notifications"
             className={({ isActive }) => `qlc-admin-nav-link${isActive ? ' active' : ''}`}

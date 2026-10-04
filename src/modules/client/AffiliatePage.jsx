@@ -455,18 +455,34 @@ export default function AffiliatePage() {
                       <td>
                         <span className={`qlc-badge ${PAYMENT_BADGE[p.status]}`}>{t(`affiliate.paymentStatus.${p.status}`)}</span>
                       </td>
+                      {/* 1.er VER: la ficha (comprobante del pago al afiliador).
+                          2.º VER: el PDF del estado de cuenta enviado al
+                          cliente (detalle de movimientos). */}
                       <td>
-                        {p.hasProof ? (
-                          <button
-                            type="button"
-                            className="qlc-link-btn"
-                            onClick={() => setViewingProof({ url: `/client/affiliate/payments/${p.id}/proof`, fileName: p.proofFileName || 'comprobante' })}
-                          >
-                            {t('affiliate.viewProof')}
-                          </button>
-                        ) : (
-                          p.reference || '—'
-                        )}
+                        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+                          {p.hasProof ? (
+                            <button
+                              type="button"
+                              className="qlc-link-btn"
+                              title={t('affiliate.viewProofTitle')}
+                              onClick={() => setViewingProof({ url: `/client/affiliate/payments/${p.id}/proof`, fileName: p.proofFileName || 'comprobante' })}
+                            >
+                              {t('affiliate.viewProof')}
+                            </button>
+                          ) : (
+                            <span>{p.reference || '—'}</span>
+                          )}
+                          {p.hasStatementPdf && (
+                            <button
+                              type="button"
+                              className="qlc-link-btn"
+                              title={t('affiliate.viewStatementPdfTitle')}
+                              onClick={() => setViewingProof({ url: `/client/affiliate/payments/${p.id}/statement-pdf`, fileName: 'estado-de-cuenta.pdf' })}
+                            >
+                              {t('affiliate.viewProof')}
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}
