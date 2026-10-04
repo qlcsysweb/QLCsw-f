@@ -1914,3 +1914,28 @@
     display: none;
   }
 }
+
+/* HERO (escritorio/laptop): el logo crece hasta llenar TODO el espacio libre
+   entre el borde superior de la tarjeta y las métricas. El alto de la
+   tarjeta lo sigue definiendo la columna de texto (align-items: stretch);
+   con flex-basis 0 el logo nunca la agranda, solo ocupa lo que sobra.
+   Solo en laptops (≤900px de alto): en monitores altos el alto de la tarjeta
+   lo define el propio logo y se conserva como estaba. */
+@media (min-width: 961px) and (max-height: 900px) {
+  .qlc-public .hero-card .hero-logo {
+    flex: 1 1 0;
+    min-height: 0;
+    width: 100%;
+    max-width: none;
+    margin: 0 auto;
+  }
+  .qlc-public .hero-card .hero-logo .qlc-logo-media {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+  }
+  .qlc-public .hero-card .hero-mini {
+    margin-top: 14px;
+  }
+}

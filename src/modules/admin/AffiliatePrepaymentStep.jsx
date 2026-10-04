@@ -28,7 +28,8 @@ const money = (n) => `${Number(n || 0).toLocaleString('es-MX', { minimumFraction
 export default function AffiliatePrepaymentStep({ subaccountId, info, noProfit, onNoProfitChange, onChanged, suggestedAmount }) {
   const { t, language } = useLanguage();
   const { copy, isCopied } = useCopyToClipboard();
-  const [form, setForm] = useState({ amount: '', reference: '', paidAt: '' });
+  // La fecha y hora del depósito arranca con la hora actual (editable).
+  const [form, setForm] = useState(() => ({ amount: '', reference: '', paidAt: localNow() }));
   const [file, setFile] = useState(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -57,8 +58,20 @@ export default function AffiliatePrepaymentStep({ subaccountId, info, noProfit, 
     }
   };
 
+  const formRef = useRef(null);
+
+  // Este paso vive DENTRO del formulario del estado de cuenta, y el navegador
+  // no admite un formulario dentro de otro (el botón terminaba enviando el
+  // estado de cuenta bloqueado). Por eso es un bloque normal que valida y
+  // envía por su cuenta.
   const submit = async (e) => {
-    e.preventDefault();
+    e?.preventDefault();
+    const fields = formRef.current ? Array.from(formRef.current.querySelectorAll('input')) : [];
+    const invalid = fields.find((el) => !el.checkValidity());
+    if (invalid) {
+      invalid.reportValidity();
+      return;
+    }
     if (!file) {
       setError(t('affiliatePrepay.proofRequired'));
       return;
@@ -71,7 +84,7 @@ export default function AffiliatePrepaymentStep({ subaccountId, info, noProfit, 
     fd.append('file', file);
     const ok = await run(() => api.post(`/admin/api-subaccounts/${subaccountId}/affiliate-prepayment`, fd, { headers: { 'Content-Type': 'multipart/form-data' } }));
     if (ok) {
-      setForm({ amount: '', reference: '', paidAt: '' });
+      setForm({ amount: '', reference: '', paidAt: localNow() });
       setFile(null);
       if (inputRef.current) inputRef.current.value = '';
     }
@@ -125,7 +138,16 @@ export default function AffiliatePrepaymentStep({ subaccountId, info, noProfit, 
             <li>{t('affiliatePrepay.step2')}</li>
             <li>{t('affiliatePrepay.step3')}</li>
           </ol>
-          <form onSubmit={submit}>
+          <div
+            ref={formRef}
+            onKeyDown={(e) => {
+              // Enter en un campo de este paso no debe enviar el estado de cuenta.
+              if (e.key === 'Enter' && e.target.tagName === 'INPUT') {
+                e.preventDefault();
+                submit();
+              }
+            }}
+          >
             <div className="qlc-aff-share-grid" style={{ gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
               <div>
                 <label className="qlc-label">{t('affiliatePrepay.amount')}</label>
@@ -173,10 +195,10 @@ export default function AffiliatePrepaymentStep({ subaccountId, info, noProfit, 
               onChange={(e) => setFile(e.target.files?.[0] || null)}
             />
             {error && <p className="qlc-field-error">{error}</p>}
-            <button type="submit" className="qlc-btn primary" style={{ marginTop: 8 }} disabled={busy || !referrer.bitgetUid}>
+            <button type="button" className="qlc-btn primary" style={{ marginTop: 8 }} disabled={busy || !referrer.bitgetUid} onClick={submit}>
               {busy ? t('common.saving') : t('affiliatePrepay.register')}
             </button>
-          </form>
+          </div>
           <label className="qlc-label" style={{ display: 'flex', gap: 8, alignItems: 'flex-start', marginTop: 12, textTransform: 'none', letterSpacing: 0 }}>
             <input type="checkbox" checked={noProfit} onChange={(e) => onNoProfitChange(e.target.checked)} />
             <span>{t('affiliatePrepay.noProfit')}</span>
