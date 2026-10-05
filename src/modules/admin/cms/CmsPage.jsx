@@ -114,7 +114,7 @@ export default function CmsPage() {
       kind: 'content',
       section: 'microposiciones',
       fields: [
-        { key: 'range', label: t('adminCms.fieldRange'), fallback: '100–2,000 USDT' },
+        { key: 'range', label: t('adminCms.fieldRange'), fallback: '100 – 2,000 USDT' },
         { key: 'lead', label: t('adminCms.fieldText'), type: 'textarea', fallback: '' },
       ],
       PreviewComponent: MicroposicionesSection,

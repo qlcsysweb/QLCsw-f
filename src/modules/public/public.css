@@ -2236,3 +2236,11 @@
   -webkit-backdrop-filter: blur(14px) saturate(1.2);
   backdrop-filter: blur(14px) saturate(1.2);
 }
+
+/* Rango "100 – 2,000 USDT" en celulares angostos: la letra se ajusta al
+   ancho para que, con los espacios alrededor del guion, no se salga. */
+@media (max-width: 420px) {
+  .qlc-public .range {
+    font-size: clamp(30px, 10.4vw, 42px);
+  }
+}
