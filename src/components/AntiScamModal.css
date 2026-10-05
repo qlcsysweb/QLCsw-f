@@ -143,3 +143,31 @@
     border-radius: 16px;
   }
 }
+
+/* SIN SCROLL: el aviso se ensancha en pantallas de poca altura (laptops
+   chicas) para que el texto ocupe menos renglones; si aun así no cabe,
+   useFitToViewport lo reduce proporcionalmente. */
+.qlc-scam-overlay {
+  overflow: hidden;
+  padding: 16px;
+}
+.qlc-scam-panel {
+  margin: auto;
+}
+@media (min-width: 700px) and (max-height: 900px) {
+  .qlc-scam-panel {
+    width: min(760px, 100%);
+    padding: 22px 34px;
+  }
+  .qlc-scam-notice-body,
+  .qlc-scam-body {
+    font-size: 14px;
+    line-height: 1.55;
+  }
+  .qlc-scam-notice-title {
+    font-size: 18px;
+  }
+  .qlc-scam-title {
+    font-size: 19px;
+  }
+}

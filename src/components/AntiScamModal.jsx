@@ -1,4 +1,6 @@
+import { useRef } from 'react';
 import { useLanguage } from '../i18n/LanguageContext';
+import useFitToViewport from '../hooks/useFitToViewport';
 import './AntiScamModal.css';
 
 // CORRECCIÓN 1 — aviso de seguridad/antiestafa. Aparece en CADA visita a la
@@ -6,9 +8,12 @@ import './AntiScamModal.css';
 // cierra al hacer clic fuera — solo con el botón explícito.
 export default function AntiScamModal({ onClose }) {
   const { t } = useLanguage();
+  const panelRef = useRef(null);
+  // Nunca con scroll: si aun así no cabe, se reduce hasta caber completo.
+  useFitToViewport(panelRef);
   return (
     <div className="qlc-scam-overlay" role="dialog" aria-modal="true" aria-label={t('antiScam.title')}>
-      <div className="qlc-scam-panel" onClick={(e) => e.stopPropagation()}>
+      <div className="qlc-scam-panel" ref={panelRef} onClick={(e) => e.stopPropagation()}>
         <div className="qlc-scam-notice-kicker">{t('antiScam.noticeKicker')}</div>
         <div className="qlc-scam-notice-title">{t('antiScam.noticeTitle')}</div>
         <p className="qlc-scam-notice-body">{t('antiScam.noticeBody1')}</p>
