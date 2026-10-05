@@ -113,6 +113,10 @@ const KNOWN_MESSAGES = {
   'El archivo no corresponde a su formato o está dañado.': 'The file does not match its format or is damaged.',
   'Evento no encontrado': 'Event not found',
   'Reporte no encontrado': 'Report not found',
+  'Ya estuviste inscrito en QLC con la liga de otro afiliador. Para volver a inscribirte debes usar la liga original de tu afiliador.':
+    'You were already registered with QLC through another affiliate\'s link. To register again you must use your original affiliate\'s link.',
+  'Ya estuviste inscrito en QLC con un afiliador cuya liga ya no está disponible. Comunícate con QLC para volver a inscribirte.':
+    'You were already registered with QLC through an affiliate whose link is no longer available. Contact QLC to register again.',
   'Este reporte sigue en revisión; podrás borrarlo cuando lo confirmes o rechaces.': 'This report is still under review; you can delete it once you confirm or reject it.',
   'Solo se pueden borrar estados de cuenta ya pagados.': 'Only statements that are already paid can be deleted.',
   'El estado de cuenta actual no se puede borrar.': 'The current statement cannot be deleted.',

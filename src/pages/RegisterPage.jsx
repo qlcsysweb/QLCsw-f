@@ -111,7 +111,13 @@ export default function RegisterPage() {
     sendingRef.current = true;
     setSendingCode(true);
     try {
-      await api.post('/auth/register/email-code', { email: form.email.trim(), affiliateCode: valid.code, language });
+      await api.post('/auth/register/email-code', {
+        email: form.email.trim(),
+        affiliateCode: valid.code,
+        firstName: form.firstName?.trim() || undefined,
+        lastName: form.lastName?.trim() || undefined,
+        language,
+      });
       setCodeSentTo(form.email.trim().toLowerCase());
       setEmailCode('');
       setCodeInfo(t('register.codeSent').replace('{email}', form.email.trim()));
