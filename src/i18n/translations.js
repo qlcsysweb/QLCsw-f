@@ -241,6 +241,36 @@ const es = {
 
   problemaSection: {
     kicker: 'EL PROBLEMA',
+    videoLabel: 'VIDEO',
+    watchVideo: 'Ver video',
+    video1Title: 'Así arruina el TRADING a miles de personas cada año.',
+    video2Title: 'Un ANALISTA explica cómo los TRADERS INSTITUCIONALES cazan los STOPS RETAIL.',
+  },
+
+  problemaCharts: {
+    c1Title: 'Retornos respecto a la rentabilidad esperada',
+    c1Sub: '(Ponderado por valor neto de las acciones)',
+    c1XAxis: 'Día del evento',
+    c1Institutions: 'Institucionales',
+    c1Individuals: 'Individuales',
+    c2Title: 'Porcentaje de traders que superan al mercado a lo largo del tiempo',
+    c2Sub: '(Criterio de ratio Sharpe y sin costes de transacción)',
+    c2Beat: 'Superan al mercado',
+    c2Match: 'Igualan al mercado',
+    c2Under: 'Peor que el mercado',
+    source: 'Fuente: gráficas mostradas en el video de VisualEconomik «Así arruina el TRADING a miles de personas cada año». Valores aproximados.',
+  },
+
+  problemaIntro: {
+    title: 'QLC: un aliado estratégico para tu cartera de inversión',
+    body: 'QLC no busca administrar todo tu patrimonio, sino ofrecerte acceso a una estrategia algorítmica especializada que complemente tu cartera mediante una exposición controlada a mercados de alto riesgo y alto potencial de rentabilidad.',
+    rangeLabel: 'Asignación inicial para nuevos clientes:',
+    limitA: 'Este límite funciona como un mecanismo de disciplina para evitar una exposición excesiva desde el inicio. Los incrementos de capital por encima de este rango se realizan',
+    limitBold: 'únicamente por invitación de QLC',
+    limitB: ', conforme a sus criterios internos.',
+    philosophy: 'Nuestra filosofía: participación gradual, disciplina y gestión consciente del riesgo.',
+    disclaimer: 'Las estrategias de alto riesgo pueden generar pérdidas significativas. La rentabilidad no está garantizada.',
+    cta: 'Continuar',
   },
 
   modelosSection: {
@@ -2612,6 +2642,36 @@ const en = {
 
   problemaSection: {
     kicker: 'THE PROBLEM',
+    videoLabel: 'VIDEO',
+    watchVideo: 'Watch video',
+    video1Title: 'This is how TRADING ruins thousands of people every year.',
+    video2Title: 'An ANALYST explains how INSTITUTIONAL TRADERS hunt RETAIL STOPS.',
+  },
+
+  problemaCharts: {
+    c1Title: 'Returns relative to expected return',
+    c1Sub: '(Weighted by net value of shares)',
+    c1XAxis: 'Event day',
+    c1Institutions: 'Institutions',
+    c1Individuals: 'Individuals',
+    c2Title: 'Percentage of traders who beat the market over time',
+    c2Sub: '(Sharpe ratio criterion, excluding transaction costs)',
+    c2Beat: 'Beat the market',
+    c2Match: 'Match the market',
+    c2Under: 'Underperform the market',
+    source: 'Source: charts shown in the VisualEconomik video (in Spanish) about how trading ruins thousands of people every year. Approximate values.',
+  },
+
+  problemaIntro: {
+    title: 'QLC: a strategic ally for your investment portfolio',
+    body: 'QLC does not seek to manage all your wealth, but to give you access to a specialized algorithmic strategy that complements your portfolio through controlled exposure to high-risk, high-return-potential markets.',
+    rangeLabel: 'Initial allocation for new clients:',
+    limitA: 'This limit works as a discipline mechanism to avoid excessive exposure from the start. Capital increases above this range are made',
+    limitBold: 'only by invitation from QLC',
+    limitB: ', according to its internal criteria.',
+    philosophy: 'Our philosophy: gradual participation, discipline and conscious risk management.',
+    disclaimer: 'High-risk strategies can generate significant losses. Returns are not guaranteed.',
+    cta: 'Continue',
   },
 
   modelosSection: {

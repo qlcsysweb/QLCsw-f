@@ -85,7 +85,7 @@ export default function PublicHomePage() {
       case 'microposiciones':
         return <MicroposicionesSection text={text} media={media} />;
       case 'el-problema':
-        return <ProblemaSection text={text} media={media} />;
+        return <ProblemaSection text={text} media={media} withIntro />;
       case 'modelos':
         return loading ? null : <ModelosSection models={models} text={text} media={media} />;
       case 'resultados':

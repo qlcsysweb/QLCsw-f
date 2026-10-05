@@ -1,21 +1,52 @@
+import { useState } from 'react';
 import SectionMedia from './SectionMedia';
+import ProblemaIntroModal from './ProblemaIntroModal';
+import ProblemaCharts from './ProblemaCharts';
 import { useLanguage } from '../../../i18n/LanguageContext';
 
 // CORRECCIÓN 26 — nueva sección pública "El problema", ubicada después de
 // Microposiciones. El contenido es real (texto proporcionado), administrable
 // vía CMS (PublicContent, sección "problema") y bilingüe.
-export default function ProblemaSection({ text, media = () => [] }) {
+// Videos de referencia (títulos = nombre del video en YouTube). Se abren en
+// una pestaña nueva, igual que el enlace de Bitget en Resultados.
+const VIDEOS = [
+  { url: 'https://youtu.be/5NGCovAg71c', titleKey: 'problemaSection.video1Title', channel: 'VisualEconomik' },
+  { url: 'https://youtu.be/-d-zddKM5uE', titleKey: 'problemaSection.video2Title', channel: 'El psicólogo del trading' },
+];
+
+// withIntro: al ENTRAR a la sección (página pública) se muestra primero el
+// anuncio "QLC: un aliado estratégico…". En la vista previa del CMS no.
+export default function ProblemaSection({ text, media = () => [], withIntro = false }) {
   const { t } = useLanguage();
+  const [showIntro, setShowIntro] = useState(withIntro);
   return (
     <section className="section alt" id="el-problema">
+      {showIntro && <ProblemaIntroModal onClose={() => setShowIntro(false)} />}
       <div className="container">
-        <div className="kicker">{t('problemaSection.kicker')}</div>
-        <h2 style={{ marginBottom: 10 }}>
-          {text('problema', 'title', 'EL JUEGO NO ES PAREJO.')}
-        </h2>
-        <p className="sub" style={{ marginBottom: 25 }}>
-          {text('problema', 'lead', 'El 95% pierde. El 5% opera con otra infraestructura.')}
-        </p>
+        <div className="problema-head">
+          <div>
+            <div className="kicker">{t('problemaSection.kicker')}</div>
+            <h2 style={{ marginBottom: 10 }}>
+              {text('problema', 'title', 'EL JUEGO NO ES PAREJO.')}
+            </h2>
+            <p className="sub" style={{ marginBottom: 25 }}>
+              {text('problema', 'lead', 'El 95% pierde. El 5% opera con otra infraestructura.')}
+            </p>
+          </div>
+          <div className="problema-videos">
+            {VIDEOS.map((v) => (
+              <div className="problema-video" key={v.url}>
+                <div className="problema-video-text">
+                  <span>▶ {t('problemaSection.videoLabel')} · {v.channel}</span>
+                  <strong>{t(v.titleKey)}</strong>
+                </div>
+                <a className="btn primary problema-video-btn" href={v.url} target="_blank" rel="noreferrer">
+                  {t('problemaSection.watchVideo')} ↗
+                </a>
+              </div>
+            ))}
+          </div>
+        </div>
 
         <div className="clean-card problema-card">
           <p style={{ color: 'var(--qlc-muted)', fontSize: 15, lineHeight: 1.6, marginBottom: 15 }}>
@@ -77,6 +108,8 @@ export default function ProblemaSection({ text, media = () => [] }) {
             )}
           </p>
         </div>
+
+        <ProblemaCharts />
 
         <SectionMedia items={media('problema')} />
       </div>
