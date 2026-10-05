@@ -2189,3 +2189,29 @@
     font-size: 14px;
   }
 }
+
+/* Anuncio "El problema" en laptops de poca altura: A LO ANCHO (dos columnas)
+   para que quepa sin reducir la letra. */
+@media (min-width: 900px) and (max-height: 860px) {
+  .qlc-ally {
+    width: min(1040px, 100%);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    column-gap: 36px;
+    align-items: center;
+    padding: 30px 36px 26px;
+  }
+  .qlc-ally-col + .qlc-ally-col {
+    padding-left: 36px;
+    border-left: 1px solid rgba(200, 155, 60, 0.25);
+  }
+  .qlc-ally-title {
+    font-size: clamp(30px, 3.2vw, 40px);
+  }
+  .qlc-ally-text {
+    font-size: 16px;
+  }
+  .qlc-ally-range {
+    margin-top: 0;
+  }
+}

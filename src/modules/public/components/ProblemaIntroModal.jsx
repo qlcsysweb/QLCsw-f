@@ -28,28 +28,35 @@ export default function ProblemaIntroModal({ onClose }) {
         <button type="button" className="qlc-tech-intro-x" aria-label={t('common.close')} onClick={onClose}>
           ✕
         </button>
-        <div className="qlc-ally-brand">
-          <QlcLogo className="qlc-ally-logo" alt="QLC" />
-          <span>QUANTUM LIQUIDITY CAPITAL</span>
+        {/* Dos bloques: en pantallas altas van uno sobre otro; en laptops de
+            poca altura se colocan lado a lado (a lo ancho) para que la letra
+            no tenga que reducirse. */}
+        <div className="qlc-ally-col">
+          <div className="qlc-ally-brand">
+            <QlcLogo className="qlc-ally-logo" alt="QLC" />
+            <span>QUANTUM LIQUIDITY CAPITAL</span>
+          </div>
+          <h2 className="qlc-ally-title">{t('problemaIntro.title')}</h2>
+          <p className="qlc-ally-text">{t('problemaIntro.body')}</p>
         </div>
-        <h2 className="qlc-ally-title">{t('problemaIntro.title')}</h2>
-        <p className="qlc-ally-text">{t('problemaIntro.body')}</p>
 
-        <div className="qlc-ally-range">
-          <span>{t('problemaIntro.rangeLabel')}</span>
-          <strong>100 – 2,000 USD</strong>
+        <div className="qlc-ally-col">
+          <div className="qlc-ally-range">
+            <span>{t('problemaIntro.rangeLabel')}</span>
+            <strong>100 – 2,000 USD</strong>
+          </div>
+
+          <p className="qlc-ally-text">
+            {t('problemaIntro.limitA')} <strong>{t('problemaIntro.limitBold')}</strong>
+            {t('problemaIntro.limitB')}
+          </p>
+          <p className="qlc-ally-philosophy">{t('problemaIntro.philosophy')}</p>
+          <p className="qlc-ally-disclaimer">{t('problemaIntro.disclaimer')}</p>
+
+          <button type="button" className="btn primary qlc-ally-cta" onClick={onClose}>
+            {t('problemaIntro.cta')}
+          </button>
         </div>
-
-        <p className="qlc-ally-text">
-          {t('problemaIntro.limitA')} <strong>{t('problemaIntro.limitBold')}</strong>
-          {t('problemaIntro.limitB')}
-        </p>
-        <p className="qlc-ally-philosophy">{t('problemaIntro.philosophy')}</p>
-        <p className="qlc-ally-disclaimer">{t('problemaIntro.disclaimer')}</p>
-
-        <button type="button" className="btn primary qlc-ally-cta" onClick={onClose}>
-          {t('problemaIntro.cta')}
-        </button>
       </div>
     </div>,
     document.body
