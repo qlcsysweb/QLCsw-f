@@ -140,6 +140,8 @@ export default function NotificationsList({ scope }) {
         notifications.map((n) => {
           const { title, message } = resolveNotification(n, t);
           const hasLink = Boolean(resolveNotificationLink(n, role));
+          // Botón de acción opcional por plantilla (p. ej. "Ver guía de permisos de API").
+          const actionLabel = hasLink && n.templateKey ? t(`notificationTemplates.${n.templateKey}.action`, null) : null;
           const isSelected = selected.has(n.id);
           return (
             <div
@@ -166,6 +168,19 @@ export default function NotificationsList({ scope }) {
                   {!n.isRead && <span className="qlc-badge ok">{t('clientNotifications.newBadge')}</span>}
                 </div>
                 <p style={{ color: 'var(--qlc-muted)', fontSize: 13, margin: '6px 0 0', whiteSpace: 'pre-line' }}>{message}</p>
+                {actionLabel && (
+                  <button
+                    type="button"
+                    className="qlc-btn primary"
+                    style={{ marginTop: 10 }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openNotification(n);
+                    }}
+                  >
+                    {actionLabel}
+                  </button>
+                )}
                 <div style={{ fontSize: 11, color: 'var(--qlc-muted2)', marginTop: 6 }}>
                   {new Date(n.createdAt).toLocaleString()}
                 </div>

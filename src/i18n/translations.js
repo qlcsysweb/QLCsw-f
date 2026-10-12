@@ -1441,6 +1441,12 @@ const es = {
       title: 'Bienvenido a QLC',
       message: 'Tu cuenta fue creada. Completa tu proceso para comenzar.',
     },
+    api_permissions_guide: {
+      title: 'IMPORTANTE — Configura correctamente los permisos de tu API',
+      message:
+        'Antes de registrar o configurar tu API de Bitget, revisa la Guía de Uso — Permisos de API. Ahí encontrarás los permisos correspondientes a tu tipo de cuenta y las indicaciones sobre cuándo debes agregar una dirección IP.',
+      action: 'Ver guía de permisos de API',
+    },
   },
 
   clientAppointments: {
@@ -1834,6 +1840,7 @@ const es = {
     intro: 'Toda la información sobre cómo usar su cuenta QLC, organizada por temas.',
     none: 'Todavía no hay guías disponibles.',
     downloadPdf: 'Descargar PDF',
+    closeImage: 'Cerrar imagen',
   },
 
   statementStatus: {
@@ -3837,6 +3844,12 @@ const en = {
       title: 'Welcome to QLC',
       message: 'Your account was created. Complete your process to get started.',
     },
+    api_permissions_guide: {
+      title: 'IMPORTANT — Set up your API permissions correctly',
+      message:
+        'Before registering or configuring your Bitget API, review the Usage Guide — API Permissions. There you will find the permissions for your account type and when you need to add an IP address.',
+      action: 'View API permissions guide',
+    },
   },
 
   clientAppointments: {
@@ -4230,6 +4243,7 @@ const en = {
     intro: 'Everything about how to use your QLC account, organized by topic.',
     none: 'No guides available yet.',
     downloadPdf: 'Download PDF',
+    closeImage: 'Close image',
   },
 
   statementStatus: {

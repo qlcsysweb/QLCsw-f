@@ -2441,3 +2441,162 @@ span.qlc-time-mx:not(:only-child) {
     overflow-x: auto;
   }
 }
+
+/* Guías de Uso — listado + contenido. En pantallas pequeñas el listado se
+   apila arriba del contenido (antes era 260px fijos + 1fr también en móvil). */
+.qlc-detail-grid.qlc-guides-layout {
+  grid-template-columns: 260px minmax(0, 1fr);
+}
+@media (max-width: 860px) {
+  .qlc-detail-grid.qlc-guides-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.qlc-guides-layout .qlc-guides-item {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.35;
+}
+.qlc-guides-content {
+  scroll-margin-top: 16px;
+  overflow-wrap: break-word;
+}
+
+/* Guía de Uso — Permisos de API: aviso, capturas, permisos y casos de IP. */
+.qlc-guide-alert {
+  border: 1px solid var(--qlc-warn-border);
+  background: linear-gradient(135deg, rgba(200, 155, 60, 0.12), rgba(200, 155, 60, 0.03));
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin: 0 0 18px;
+}
+.qlc-guide-alert-kicker {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  font-weight: 700;
+  color: var(--qlc-warn);
+  margin-bottom: 4px;
+}
+.qlc-guide-alert-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--qlc-text);
+  margin-bottom: 8px;
+}
+.qlc-guide-content .qlc-guide-alert p {
+  margin: 0;
+}
+.qlc-guide-content .qlc-guide-figure {
+  margin: 4px 0 14px;
+  max-width: 760px;
+}
+.qlc-guide-content .qlc-guide-figure img {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--qlc-line);
+  border-radius: 10px;
+  background: #18191b;
+  cursor: zoom-in;
+}
+.qlc-guide-content .qlc-guide-figure figcaption {
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--qlc-muted2);
+}
+.qlc-guide-content ul.qlc-guide-perms {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.qlc-guide-content ul.qlc-guide-perms li {
+  border: 1px solid var(--qlc-ok-border);
+  background: rgba(0, 168, 255, 0.08);
+  border-radius: 999px;
+  padding: 5px 12px;
+  line-height: 1.4;
+  max-width: 100%;
+}
+.qlc-guide-content ul.qlc-guide-perms li::before {
+  content: '✓ ';
+  color: var(--qlc-blue2);
+  font-weight: 700;
+}
+.qlc-guide-content ul.qlc-guide-perms li span {
+  color: var(--qlc-muted2);
+  font-size: 12px;
+}
+.qlc-guide-ip-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+  gap: 10px;
+  margin: 0 0 12px;
+}
+.qlc-guide-ip-case {
+  border: 1px solid var(--qlc-line);
+  border-left: 3px solid var(--qlc-success);
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.02);
+}
+.qlc-guide-ip-case.is-ip {
+  border-left-color: var(--qlc-blue2);
+}
+.qlc-guide-ip-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--qlc-text);
+  margin-bottom: 4px;
+}
+.qlc-guide-content .qlc-guide-ip-case p {
+  margin: 0;
+}
+.qlc-guide-content p.qlc-guide-footnote {
+  margin-top: 18px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--qlc-muted2);
+}
+
+/* Ampliación de capturas de una guía. */
+.qlc-guide-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 16px 16px;
+  background: rgba(3, 5, 8, 0.88);
+  cursor: zoom-out;
+}
+.qlc-guide-lightbox img {
+  max-width: min(1200px, 100%);
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 10px;
+  border: 1px solid var(--qlc-line);
+  cursor: default;
+}
+.qlc-guide-lightbox-close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--qlc-line);
+  background: var(--qlc-panel);
+  color: var(--qlc-text);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}

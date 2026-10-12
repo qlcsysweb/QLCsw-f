@@ -44,6 +44,8 @@ const CLIENT_GENERAL_PATHS = {
   appointment_confirmed_utc: '/client/support',
   case_created_self: '/client/support',
   welcome: '/client',
+  // Aviso del cliente nuevo: abre directamente la guía seleccionada.
+  api_permissions_guide: '/client/guides?guide=permisos-api',
 };
 
 export function resolveNotificationLink(notification, role) {
