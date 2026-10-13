@@ -6,6 +6,7 @@ import { resolveViewId, HOME_ID } from './useSectionNav';
 import { getCookie, setCookie } from '../../utils/cookies';
 import DailyLanguagePrompt from '../../i18n/DailyLanguagePrompt';
 import AntiScamModal from '../../components/AntiScamModal';
+import AccountNotice from '../../components/AccountNotice';
 import PublicNav from './components/PublicNav';
 import Hero from './components/Hero';
 import ModeloSection from './components/ModeloSection';
@@ -118,6 +119,8 @@ export default function PublicHomePage() {
           transferencia interna Bitget se muestra al iniciar sesión como
           cliente (ver ClientLayout), no aquí. */}
       {showScamModal && <AntiScamModal onClose={() => setShowScamModal(false)} />}
+      {/* Aviso tras solicitar la eliminación de la cuenta (una sola vez). */}
+      <AccountNotice />
       <PublicNav activeId={shownId} />
       <main className="qlc-stage" ref={stageRef}>
         <div

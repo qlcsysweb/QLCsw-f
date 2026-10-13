@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import api from '../../services/api';
 import ConfirmModal from '../../components/ConfirmModal';
 import { ACCOUNT_STATUS, statusOf } from '../../utils/statusLabels';
@@ -343,7 +343,6 @@ function ProgressBar({ confirmed, total, width = 70 }) {
 
 export default function ClientsListPage() {
   const { t } = useLanguage();
-  const location = useLocation();
   const [items, setItems] = useState([]);
   const [total, setTotal] = useState(0);
   const [search, setSearch] = useState('');
@@ -354,10 +353,6 @@ export default function ClientsListPage() {
   const [showProgressHelp, setShowProgressHelp] = useState(false);
   const [pendingRequests, setPendingRequests] = useState([]);
   const [confirmDeactivateClient, setConfirmDeactivateClient] = useState(null);
-  // Resultado real de la eliminación de la carpeta de Drive de un cliente
-  // que se acaba de borrar permanentemente (ver ClientDetailPage.jsx) —
-  // nunca se afirma que se borró si no se confirmó de verdad.
-  const driveDeletionResult = location.state?.driveDeletionStatus;
 
   const accountStatusMap = ACCOUNT_STATUS(t);
 
@@ -425,18 +420,6 @@ export default function ClientsListPage() {
 
       <SubaccountIdentifierSearch />
 
-      {driveDeletionResult && (
-        <div
-          className="qlc-card"
-          style={{ marginBottom: 18, borderColor: driveDeletionResult === 'error' ? 'var(--qlc-danger-border)' : 'var(--qlc-ok-border)' }}
-        >
-          <p style={{ margin: 0, fontSize: 13 }}>
-            {t('adminClientsList.clientDeletedNotice')}{' '}
-            {t(`adminClientsList.driveDeletionStatus_${driveDeletionResult}`)}
-            {driveDeletionResult === 'error' && location.state?.driveDeletionError ? ` (${location.state.driveDeletionError})` : ''}
-          </p>
-        </div>
-      )}
 
       {pendingRequests.length > 0 && (
         <div className="qlc-card" style={{ marginBottom: 18, borderColor: 'var(--qlc-warn-border)' }}>
@@ -542,6 +525,11 @@ export default function ClientsListPage() {
                       </td>
                       <td>
                         <span className={`qlc-badge ${accStatus.className}`}>{accStatus.text}</span>
+                        {c.accountDeletionStatus && (
+                          <div style={{ marginTop: 4 }}>
+                            <span className="qlc-badge danger">{t('adminClientDetail.deletionStatusRequested')}</span>
+                          </div>
+                        )}
                         {c.subaccountRequestedAt && (
                           <div style={{ marginTop: 4 }}>
                             <span className="qlc-badge warn" title={t('adminClientsList.subaccountRequestPending')}>
@@ -582,7 +570,7 @@ export default function ClientsListPage() {
                         <Link className="qlc-btn ghost" to={`/admin/clients/${c.id}`}>
                           {t('adminClientsList.view')}
                         </Link>
-                        {c.user?.isActive ? (
+                        {c.accountDeletionStatus ? null : c.user?.isActive ? (
                           <button type="button" className="qlc-btn ghost" onClick={() => setConfirmDeactivateClient(c)}>
                             {t('adminClientDetail.deactivate')}
                           </button>

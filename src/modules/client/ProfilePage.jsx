@@ -4,6 +4,7 @@ import { ACCOUNT_STATUS, statusOf } from '../../utils/statusLabels';
 import { useLanguage } from '../../i18n/LanguageContext';
 import usePolling from '../../hooks/usePolling';
 import LoadingScreen from '../../components/LoadingScreen';
+import AccountDeletionSection from '../../components/AccountDeletionSection';
 
 // CORRECCIÓN 6/17/18: sin teléfono, sin username — solo nombre, apellidos,
 // correo (identificador único) y estado de cuenta.
@@ -42,6 +43,9 @@ export default function ProfilePage() {
         <label className="qlc-label">{t('clientProfile.clientSince')}</label>
         <input className="qlc-input" value={new Date(profile.memberSince).toLocaleDateString()} disabled />
       </div>
+
+      {/* Sección discreta de seguridad al final del perfil. */}
+      <AccountDeletionSection />
     </div>
   );
 }

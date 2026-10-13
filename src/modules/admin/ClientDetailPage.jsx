@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import api from '../../services/api';
 import ConfirmModal from '../../components/ConfirmModal';
 import Modal from '../../components/Modal';
@@ -74,17 +74,13 @@ function SubaccountRow({ s, id, t, language, apiStatusMap, onDeactivate, onActiv
 
 export default function ClientDetailPage() {
   const { id } = useParams();
-  const navigate = useNavigate();
   const { t, language } = useLanguage();
   const [client, setClient] = useState(null);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [confirmDeactivate, setConfirmDeactivate] = useState(false);
   const [confirmDeleteDoc, setConfirmDeleteDoc] = useState(null);
-  const [confirmDeleteClient, setConfirmDeleteClient] = useState(false);
   const [confirmReset2fa, setConfirmReset2fa] = useState(false);
-  const [deleteError, setDeleteError] = useState('');
-  const [deleting, setDeleting] = useState(false);
   const [creatingSubaccount, setCreatingSubaccount] = useState(false);
   // "Desconectadas" es el estado de la conexión API (CONECTADA/no) — un eje
   // totalmente distinto de ACTIVA/INACTIVA (estado de la subcuenta misma).
@@ -176,26 +172,6 @@ export default function ClientDetailPage() {
 
   const confirmDeactivateAccount = async () => {
     await toggleActive(false);
-  };
-
-  // Eliminación sin contraseña adicional: el backend autoriza con la sesión
-  // (token) + rol ADMIN + permiso de administrador general.
-  const deleteClientAccount = async () => {
-    setDeleting(true);
-    setDeleteError('');
-    try {
-      const { data } = await api.delete(`/admin/clients/${id}`);
-      // El backend nunca afirma que la carpeta de Drive se borró si no se
-      // confirmó de verdad — se lleva ese estado real a la lista de
-      // clientes para que el admin lo vea, en vez de perderlo al navegar.
-      navigate('/admin/clients', {
-        state: { driveDeletionStatus: data.driveDeletionStatus, driveDeletionError: data.driveDeletionError },
-      });
-    } catch (err) {
-      setDeleteError(translateBackendMessage(err.message, language));
-    } finally {
-      setDeleting(false);
-    }
   };
 
   // GESTIÓN DINÁMICA DE SUBCUENTAS — cambio de estado (ACTIVA/INACTIVA)
@@ -383,7 +359,9 @@ export default function ClientDetailPage() {
               {t('adminClientDetail.reset2fa')}
             </button>
           )}
-          {client.user?.isActive ? (
+          {/* ADMIN no puede eliminar cuentas de clientes, ni reactivar una
+              cuya eliminación solicitó su titular (el backend lo impide). */}
+          {client.accountDeletionStatus ? null : client.user?.isActive ? (
             <button className="qlc-btn danger" onClick={() => setConfirmDeactivate(true)}>
               {t('adminClientDetail.deactivate')}
             </button>
@@ -392,16 +370,31 @@ export default function ClientDetailPage() {
               {t('adminClientDetail.activateAccount')}
             </button>
           )}
-          <button
-            className="qlc-btn danger"
-            onClick={() => setConfirmDeleteClient(true)}
-            disabled={client.user?.isActive}
-            title={client.user?.isActive ? t('adminClientDetail.deleteClientMustDeactivateFirst') : undefined}
-          >
-            {t('adminClientDetail.deleteClient')}
-          </button>
         </div>
       </div>
+
+      {client.accountDeletionStatus && (
+        <div className="qlc-card qlc-deletion-status" style={{ borderColor: 'var(--qlc-danger-border)', marginBottom: 16 }}>
+          <h3 style={{ marginTop: 0 }}>{t('adminClientDetail.deletionRequestTitle')}</h3>
+          <dl className="qlc-deletion-status-grid">
+            <dt>{t('adminClientDetail.deletionClient')}</dt>
+            <dd>{client.username || `${client.firstName} ${client.lastName}`}</dd>
+            <dt>{t('adminClientDetail.deletionStatus')}</dt>
+            <dd>
+              <span className="qlc-badge danger">
+                {client.accountDeletionStatus === 'ANONYMIZED'
+                  ? t('adminClientDetail.deletionStatusAnonymized')
+                  : t('adminClientDetail.deletionStatusRequested')}
+              </span>
+            </dd>
+            <dt>{t('adminClientDetail.deletionDate')}</dt>
+            <dd>{client.accountDeletionRequestedAt ? new Date(client.accountDeletionRequestedAt).toLocaleString() : '—'}</dd>
+            <dt>{t('adminClientDetail.deletionAccess')}</dt>
+            <dd>{t('adminClientDetail.deletionAccessDisabled')}</dd>
+          </dl>
+          <p style={{ color: 'var(--qlc-muted)', fontSize: 12, margin: 0 }}>{t('adminClientDetail.deletionRequestNote')}</p>
+        </div>
+      )}
 
       {message && <div className="qlc-card" style={{ borderColor: 'var(--qlc-ok-border)', marginBottom: 16 }}>{message}</div>}
 
@@ -663,47 +656,6 @@ export default function ClientDetailPage() {
           fileName={previewDoc.fileName}
           onClose={() => setPreviewDoc(null)}
         />
-      )}
-
-      {/* Confirmación visual única (sin contraseña adicional): la
-          autorización real la hace el backend con la sesión del admin. */}
-      {confirmDeleteClient && (
-        <Modal
-          title={t('adminClientDetail.deleteClientTitle')}
-          onClose={() => {
-            if (deleting) return;
-            setConfirmDeleteClient(false);
-            setDeleteError('');
-          }}
-          width={460}
-        >
-          <p style={{ color: 'var(--qlc-muted)', fontSize: 14, lineHeight: 1.6, marginTop: 0 }}>
-            {t('adminClientDetail.deleteClientMessage')}
-          </p>
-          <div className="qlc-delete-target">
-            <span>{t('adminClientDetail.deleteClientTarget')}</span>
-            <strong>
-              {client.firstName} {client.lastName}
-            </strong>
-          </div>
-          <p style={{ color: 'var(--qlc-danger)', fontSize: 13, fontWeight: 600 }}>{t('modals.cannotBeUndone')}</p>
-          {deleteError && <div className="qlc-field-error">{deleteError}</div>}
-          <div className="qlc-form-actions">
-            <button
-              className="qlc-btn ghost"
-              onClick={() => {
-                setConfirmDeleteClient(false);
-                setDeleteError('');
-              }}
-              disabled={deleting}
-            >
-              {t('modals.cancel')}
-            </button>
-            <button className="qlc-btn danger qlc-btn-destructive" onClick={deleteClientAccount} disabled={deleting}>
-              {deleting ? t('modals.processing') : t('adminClientDetail.deleteClient')}
-            </button>
-          </div>
-        </Modal>
       )}
 
       {showAssignUsername && (

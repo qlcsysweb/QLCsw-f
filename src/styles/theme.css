@@ -2600,3 +2600,69 @@ span.qlc-time-mx:not(:only-child) {
   line-height: 1;
   cursor: pointer;
 }
+
+/* Perfil del cliente — "Administración de cuenta" (eliminar mi cuenta):
+   sección discreta al final del perfil, no un botón destacado. */
+.qlc-account-admin {
+  max-width: 480px;
+  margin-top: 18px;
+  border-color: var(--qlc-line);
+}
+.qlc-account-admin h3 {
+  margin: 0 0 6px;
+  font-size: 14px;
+  color: var(--qlc-muted);
+  letter-spacing: 0.02em;
+}
+.qlc-account-admin p {
+  margin: 0 0 12px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--qlc-muted2);
+}
+.qlc-account-admin-btn {
+  color: var(--qlc-danger);
+  border-color: var(--qlc-danger-border);
+}
+.qlc-account-admin-warning {
+  margin-top: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--qlc-muted);
+}
+.qlc-account-admin-code {
+  letter-spacing: 0.4em;
+  font-variant-numeric: tabular-nums;
+  max-width: 220px;
+}
+.qlc-account-admin-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 6px 0 14px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--qlc-text);
+  cursor: pointer;
+}
+.qlc-account-admin-check input {
+  margin-top: 3px;
+  flex: 0 0 auto;
+}
+
+/* ADMIN — consulta del estado de una cuenta con eliminación solicitada. */
+.qlc-deletion-status-grid {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 6px 16px;
+  margin: 0 0 12px;
+  font-size: 13px;
+}
+.qlc-deletion-status-grid dt {
+  color: var(--qlc-muted2);
+}
+.qlc-deletion-status-grid dd {
+  margin: 0;
+  color: var(--qlc-text);
+  overflow-wrap: anywhere;
+}

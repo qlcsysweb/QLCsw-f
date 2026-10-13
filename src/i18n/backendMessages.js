@@ -12,6 +12,17 @@
  * del backend en vez de romper o mostrarse en un idioma mezclado.
  */
 const KNOWN_MESSAGES = {
+  // Eliminación de cuenta (autoservicio del cliente) / ADMIN sin borrado
+  'La contraseña o el código de Google Authenticator no son correctos.': 'The password or the Google Authenticator code is incorrect.',
+  'Ya registramos una solicitud de eliminación para esta cuenta.': 'We have already registered a deletion request for this account.',
+  'Debes tener activa la verificación en dos pasos (Google Authenticator) para eliminar tu cuenta.': 'You must have two-step verification (Google Authenticator) enabled to delete your account.',
+  'Escribe tu contraseña actual.': 'Enter your current password.',
+  'Escribe el código de Google Authenticator.': 'Enter the Google Authenticator code.',
+  'El código de Google Authenticator debe tener 6 dígitos.': 'The Google Authenticator code must have 6 digits.',
+  'Debes confirmar que entiendes que perderás el acceso a tu cuenta.': 'You must confirm that you understand you will lose access to your account.',
+  'Demasiados intentos de verificación. Intenta de nuevo en 15 minutos.': 'Too many verification attempts. Try again in 15 minutes.',
+  'Los administradores no pueden eliminar cuentas de clientes. Solo el titular puede solicitar la eliminación desde su perfil.': 'Administrators cannot delete client accounts. Only the account holder can request deletion from their profile.',
+  'Esta cuenta tiene una solicitud de eliminación registrada por su titular: su acceso no puede reactivarse ni modificarse.': 'This account has a deletion request registered by its holder: its access cannot be reactivated or modified.',
   // Estado de cuenta / Transferencia interna Bitget
   'El número de orden es obligatorio': 'The order number is required',
   'El número de orden no puede superar 64 caracteres': 'The order number cannot exceed 64 characters',
