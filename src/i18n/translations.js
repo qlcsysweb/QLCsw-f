@@ -3855,6 +3855,85 @@ const en = {
       title: 'New administrator registered',
       message: '{adminName} ({email}) was registered as an administrator.',
     },
+    // Plantillas solo en inglés: en español se muestra el texto original
+    // guardado. `requires`: si la notificación no trae ese parámetro (avisos
+    // anteriores a esta plantilla), se muestra también su texto original.
+    // [[param:texto]] solo se incluye cuando la notificación trae ese parámetro.
+    affiliate_payment_paid: {
+      title: 'Affiliate commission payment',
+      message: 'QLC registered the payment of your affiliate commission ({amount} {currency}, period {period}).',
+      requires: 'i18n',
+    },
+    capital_distribution_report_updated: {
+      title: 'Update on your capital distribution report',
+      message: 'Your capital distribution report ({amount} USDT) was marked as: {status}',
+      requires: 'i18n',
+    },
+    document_unlocked: {
+      title: 'You can replace a document',
+      message: 'QLC temporarily enabled your "{category}" document so you can delete it and submit it again.',
+      requires: 'i18n',
+    },
+    affiliate_commission_created: {
+      title: '[[prepaid:Affiliate commission paid]][[pending:New affiliate commission]]',
+      message: 'A statement for one of your referrals was issued. [[prepaid:Your commission for the period ({amount} USDT) has already been PAID by QLC to your Bitget UID.]][[pending:Your commission for the period is {amount} USDT (pending approval and payment by QLC).]]',
+      requires: 'i18n',
+    },
+    support_case_message: {
+      title: '[[content:New message]][[fileName:New file]] in your case #{caseNumber}',
+      message: '[[content:{content}]][[fileName:QLC attached "{fileName}".]]',
+      requires: 'i18n',
+    },
+    capital_distribution_reported: {
+      title: 'Capital distribution reported',
+      message: '{clientName} reported that they already distributed {amount} USDT[[identifier: in subaccount/API {identifier}]].',
+      requires: 'i18n',
+    },
+    document_corrected_admin: {
+      title: 'Corrected document received',
+      message: '{clientName} sent a correction of their document in the "{category}" category.',
+      requires: 'i18n',
+    },
+    support_case_created: {
+      title: 'New support case',
+      message: '{clientName} registered case #{caseNumber}: "{subject}"',
+      requires: 'i18n',
+    },
+    support_case_message_admin: {
+      title: '[[content:New message]][[fileName:New file]] from the client in case #{caseNumber}',
+      message: '{clientName}[[content:: {content}]][[fileName: attached "{fileName}".]]',
+      requires: 'i18n',
+    },
+    subaccount_request_created_admin: {
+      title: 'New subaccount request',
+      message: '{clientName} requested an additional subaccount/API ({activeCount}/{max} active).[[reason: Reason: {reason}]]',
+      requires: 'i18n',
+    },
+    subaccount_deactivate_request_created_admin: {
+      title: 'Subaccount deactivation request',
+      message: '{clientName} requested to deactivate subaccount/API {subaccount}.[[reason: Reason: {reason}]]',
+      requires: 'i18n',
+    },
+    subaccount_request_approved: {
+      title: 'New subaccount approved',
+      message: 'QLC approved your request for an additional subaccount[[requiredCapital: — required operating capital: {requiredCapital} USDT]].',
+      requires: 'i18n',
+    },
+    subaccount_request_rejected: {
+      title: 'New subaccount request rejected',
+      message: 'QLC reviewed your request for an additional subaccount and, for now, it was not possible to enable it.[[reason: Reason: {reason}]]',
+      requires: 'i18n',
+    },
+    subaccount_deactivate_request_rejected: {
+      title: 'Deactivation request rejected',
+      message: 'QLC reviewed your request to deactivate your [[principal:PRINCIPAL account]][[slot:Subaccount #{slot}]] and, for now, it was not possible to authorize it.[[reason: Reason: {reason}]]',
+      requires: 'i18n',
+    },
+    subaccount_activated: {
+      title: 'Subaccount activated',
+      message: 'QLC activated your [[principal:PRINCIPAL account]][[slot:Subaccount #{slot}]]. You can now see it in your panel.',
+      requires: 'i18n',
+    },
     account_deletion_requested_admin: {
       title: 'Account deletion request',
       message: '{clientName} ({username}) requested the deletion of their account after verifying their password and Google Authenticator. Their access was disabled; their data is kept until it is processed according to the applicable policy.',

@@ -161,6 +161,8 @@ export default function RegisterPage() {
         privacyAccepted: true,
         termsAccepted: true,
         apiAuthorizationAccepted: true,
+        // Idioma elegido: los correos de QLC le llegarán en este idioma.
+        language,
       });
       navigate('/client', { replace: true });
     } catch (err) {

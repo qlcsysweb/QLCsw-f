@@ -11,7 +11,7 @@
  * literal que ya tenía guardado — nunca se pierde ni se mezcla idioma.
  */
 
-const STATUS_LABEL_KEYS = {
+export const STATUS_LABEL_KEYS = {
   payment_status_updated: {
     status: {
       PENDING: 'status.paymentReport.pending',
@@ -68,11 +68,40 @@ const STATUS_LABEL_KEYS = {
       otro: 'clientDocuments.categoryOther',
     },
   },
+  document_unlocked: {
+    category: {
+      identificacion: 'clientDocuments.categoryId',
+      otro: 'clientDocuments.categoryOther',
+    },
+  },
+  document_corrected_admin: {
+    category: {
+      identificacion: 'clientDocuments.categoryId',
+      otro: 'clientDocuments.categoryOther',
+    },
+  },
+  capital_distribution_report_updated: {
+    status: {
+      PENDING: 'status.paymentReport.pending',
+      EN_REVISION: 'status.paymentReport.inReview',
+      APROBADO: 'status.paymentReport.approved',
+      RECHAZADO: 'status.paymentReport.rejected',
+    },
+  },
 };
+
+// [[param:texto]] — segmento que solo aparece si la notificación trae ese
+// parámetro (p. ej. el motivo opcional de una solicitud). Se resuelve sobre
+// la plantilla ANTES de insertar valores, así un texto libre nunca se
+// interpreta como plantilla. Misma regla en backend/src/utils/notificationI18n.js.
+const hasParam = (params, name) => params?.[name] !== undefined && params?.[name] !== null && params?.[name] !== '';
+function applyConditionals(template, params) {
+  return template.replace(/\[\[(\w+):([\s\S]*?)\]\]/g, (_, name, inner) => (hasParam(params, name) ? inner : ''));
+}
 
 function interpolate(template, templateKey, params, t) {
   const labelKeys = STATUS_LABEL_KEYS[templateKey] || {};
-  return template.replace(/\{(\w+)\}/g, (_, paramName) => {
+  return applyConditionals(template, params).replace(/\{(\w+)\}/g, (_, paramName) => {
     const raw = params?.[paramName];
     if (raw === undefined || raw === null) return '';
     const labelKeyMap = labelKeys[paramName];
@@ -90,6 +119,10 @@ export function resolveNotification(notification, t) {
   const titleTemplate = t(`notificationTemplates.${templateKey}.title`, null);
   const messageTemplate = t(`notificationTemplates.${templateKey}.message`, null);
   if (!titleTemplate || !messageTemplate) return { title, message };
+  // Plantilla que necesita parámetros que un aviso anterior no trae: se
+  // conserva su texto original en vez de mostrar una frase incompleta.
+  const requires = t(`notificationTemplates.${templateKey}.requires`, null);
+  if (requires && !hasParam(templateParams, requires)) return { title, message };
 
   return {
     title: interpolate(titleTemplate, templateKey, templateParams, t),

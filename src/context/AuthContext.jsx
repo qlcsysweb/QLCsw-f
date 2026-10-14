@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import api, { getAuthToken, setAuthToken, setUnauthorizedHandler } from '../services/api';
+import { useLanguage } from '../i18n/LanguageContext';
 
 const AuthContext = createContext(null);
 
@@ -70,6 +71,18 @@ export function AuthProvider({ children }) {
     });
     return () => setUnauthorizedHandler(null);
   }, []);
+
+  // IDIOMA DE LOS CORREOS — el idioma elegido en el sitio se guarda en la
+  // cuenta (al iniciar sesión y cada vez que lo cambia), y QLC le envía sus
+  // correos en ese idioma. Solo pide cambios cuando realmente difieren.
+  const { language } = useLanguage();
+  useEffect(() => {
+    if (!user || !language || user.preferredLanguage === language) return;
+    api
+      .patch('/auth/language', { language })
+      .then(() => setUser((current) => (current ? { ...current, preferredLanguage: language } : current)))
+      .catch(() => {});
+  }, [user, language]);
 
   const login = async (email, password) => {
     const { data } = await api.post('/auth/login', { email, password });
