@@ -23,7 +23,7 @@ export default function ResultadosSection({ trackRecord, text, media = () => [] 
             {text(
               'resultados',
               'lead_1',
-              `No te pedimos que confíes ciegamente en nosotros. Te damos acceso a una referencia externa para que puedas consultar directamente en ${platformName} los indicadores de rendimiento del perfil.`
+              `No te pedimos que confíes en nosotros. Te damos acceso a una referencia externa para que puedas consultar directamente en ${platformName} los indicadores de rendimiento del perfil.`
             )}
           </p>
           <p>
@@ -35,7 +35,7 @@ export default function ResultadosSection({ trackRecord, text, media = () => [] 
           </p>
           <p>
             {trackRecord?.description ||
-              `Los indicadores de rendimiento pueden consultarse directamente en ${platformName}, incluyendo el ROI de 30 días y la tasa de éxito. Son datos históricos de carácter informativo y no constituyen una garantía de resultados futuros.`}
+              `Los indicadores de rendimiento pueden consultarse directamente en ${platformName}, incluyendo el ROI de 30 días hasta 180 días y la tasa de éxito. Son datos históricos de carácter informativo y no constituyen una garantía de resultados futuros.`}
           </p>
 
           {profileLink ? (
