@@ -1,15 +1,15 @@
-import { useEffect, useState } from 'react';
-import api from '../services/api';
+import PUBLIC_CONTENT from '../content/publicContent';
 import { useLanguage } from '../i18n/LanguageContext';
 import { getLocalizedContentValue } from '../i18n/bilingualContent';
 
 /*
- * AVISO DE PRIVACIDAD y TÉRMINOS Y CONDICIONES — editables por el ADMIN desde
- * el CMS (sección "legal" de PublicContent: <doc>_title / <doc>_body, en
- * español e inglés). Un solo texto por documento, usado en TODOS los lugares:
- * páginas públicas /privacidad y /terminos y las pantallas de aceptación del
- * registro. Mientras el admin no lo edite, se usa el texto oficial que QLC
- * entregó (translations.js → registerLegal.*FullText).
+ * AVISO DE PRIVACIDAD y TÉRMINOS Y CONDICIONES — viven en el código
+ * (src/content/publicContent.js, sección "legal": <doc>_title / <doc>_body, en
+ * español e inglés). Al cambiarlos, actualiza también
+ * backend/src/utils/legalVersions.js. Un solo texto por documento, usado en
+ * TODOS los lugares: páginas públicas /privacidad y /terminos y las pantallas
+ * de aceptación del registro. Si faltara alguno, se usa el texto oficial que
+ * QLC entregó (translations.js → registerLegal.*FullText).
  *
  * Formato del cuerpo: texto plano; una línea en blanco separa párrafos.
  */
@@ -65,24 +65,12 @@ export function resolveLegalDoc(text, t, doc) {
   };
 }
 
-// Para pantallas fuera de la web pública (modales del registro): lee el
-// contenido una vez; mientras carga (o si falla) muestra el texto oficial.
+// Para pantallas fuera de la web pública (modales del registro): mismo texto
+// que la página pública, tomado del código (ya no se consulta la API).
 export function useLegalDoc(doc) {
   const { t, language } = useLanguage();
-  const [legal, setLegal] = useState(null);
-  useEffect(() => {
-    let cancelled = false;
-    api
-      .get('/content')
-      .then(({ data }) => {
-        if (!cancelled) setLegal(data.content?.[LEGAL_SECTION] || {});
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-  const text = (section, key, fallback) => getLocalizedContentValue(legal?.[key], language, fallback);
+  const legal = PUBLIC_CONTENT[LEGAL_SECTION] || {};
+  const text = (section, key, fallback) => getLocalizedContentValue(legal[key], language, fallback);
   return resolveLegalDoc(text, t, doc);
 }
 

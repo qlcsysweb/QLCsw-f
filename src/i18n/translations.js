@@ -439,7 +439,8 @@ const es = {
   adminCms: {
     kicker: 'CONTENIDO DEL SITIO',
     title: 'Editor de la página pública',
-    intro: 'Cada tarjeta corresponde a una sección real de la página pública. Los cambios que guardes aquí se publican de inmediato — no necesitas tocar código.',
+    intro: 'Multimedia, modelos, track record y FAQ de la página pública. Los cambios que guardes aquí se publican en el sitio en pocos minutos.',
+    textsInCodeNotice: 'Los textos de las secciones de la página pública (en español e inglés), incluidos el Aviso de Privacidad y los Términos y Condiciones, ahora viven en el código del sitio para no consultar la base de datos en cada visita. Para cambiar un texto, solicítalo al equipo de desarrollo.',
     edit: 'Editar',
     changesSaved: '✓ Cambios guardados correctamente.',
     multimediaLabel: 'MULTIMEDIA',
@@ -2864,7 +2865,8 @@ const en = {
   adminCms: {
     kicker: 'SITE CONTENT',
     title: 'Public site editor',
-    intro: 'Each card corresponds to a real section of the public site. Changes you save here are published immediately — no code changes needed.',
+    intro: 'Multimedia, models, track record and FAQ of the public site. Changes you save here are published on the site within a few minutes.',
+    textsInCodeNotice: 'The texts of the public site sections (in Spanish and English), including the Privacy Notice and the Terms and Conditions, now live in the site code so the database is not queried on every visit. To change a text, ask the development team.',
     edit: 'Edit',
     changesSaved: '✓ Changes saved successfully.',
     multimediaLabel: 'MULTIMEDIA',
