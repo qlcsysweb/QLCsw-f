@@ -351,7 +351,8 @@ const es = {
   },
 
   mediaLocations: {
-    logo: 'Logo (marca QLC)',
+    logo: 'Logo — Español',
+    logo_en: 'Logo — Inglés',
     hero: 'Hero',
     modelo: 'Modelo',
     como_funciona: 'Cómo funciona',
@@ -379,7 +380,7 @@ const es = {
     file: 'Archivo (PNG, JPG, WEBP, GIF, MP4 o WEBM)',
     location: 'Ubicación',
     selectLocation: 'Selecciona dónde se usará este archivo…',
-    logoHint: 'Después de subirlo, ábrelo con "Editar" y marca "Publicado" y "Usar como logo activo" — de lo contrario no reemplazará al logo actual del sitio.',
+    logoHint: 'Cada idioma admite una imagen y un video como logo (el sitio muestra el video si existe; si no, la imagen). Después de subirlo, ábrelo con "Editar" y marca "Publicado" y "Usar como logo activo" — de lo contrario no reemplazará al logo actual. Si el inglés no tiene logo, se usa el de español.',
     internalTitle: 'Título interno (opcional)',
     internalTitlePlaceholder: 'Solo para identificarlo aquí en el panel',
     internalDescription: 'Descripción interna (opcional)',
@@ -416,7 +417,7 @@ const es = {
     internalDescriptionLabel: 'Descripción interna',
     orderHint: 'Orden (cuando la sección tiene varios recursos)',
     publishedCheckbox: 'Publicado (visible en la página pública)',
-    useAsActiveLogoCheckbox: 'Usar como logo activo (reemplaza al que esté activo ahora)',
+    useAsActiveLogoCheckbox: 'Usar como logo activo de este idioma (reemplaza al del mismo tipo que esté activo ahora)',
     mainResourceCheckbox: 'Recurso principal de esta sección',
     editSaveConfirmMessage: 'Se actualizará este recurso multimedia. Si está publicado, el cambio se reflejará de inmediato en la página pública.',
     replaceModalTitle: 'Reemplazar archivo',
@@ -439,8 +440,8 @@ const es = {
   adminCms: {
     kicker: 'CONTENIDO DEL SITIO',
     title: 'Editor de la página pública',
-    intro: 'Multimedia, modelos, track record y FAQ de la página pública. Los cambios que guardes aquí se publican en el sitio en pocos minutos.',
-    textsInCodeNotice: 'Los textos de las secciones de la página pública (en español e inglés), incluidos el Aviso de Privacidad y los Términos y Condiciones, ahora viven en el código del sitio para no consultar la base de datos en cada visita. Para cambiar un texto, solicítalo al equipo de desarrollo.',
+    intro: 'Multimedia (incluidos los logos en español e inglés) y las cifras del perfil de Bitget de la página pública. Los cambios que guardes aquí se publican en el sitio en pocos minutos.',
+    textsInCodeNotice: 'Los textos de la página pública en español e inglés (secciones, preguntas frecuentes, modelo de participación con su nota de advertencia, Resultados, Aviso de Privacidad y Términos) viven en el código del sitio: la página pública no consulta la base de datos. Para cambiar un texto, solicítalo al equipo de desarrollo.',
     edit: 'Editar',
     changesSaved: '✓ Cambios guardados correctamente.',
     multimediaLabel: 'MULTIMEDIA',
@@ -796,6 +797,7 @@ const es = {
   },
 
   adminTrackRecord: {
+    textsInCodeNotice: 'El título y la descripción (español e inglés) de esta sección viven en el código del sitio. Aquí se actualizan las cifras y el enlace del perfil de Bitget.',
     kicker: 'RESULTADOS · BITGET',
     title: 'Referencia externa verificable',
     fieldTitle: 'Título',
@@ -2777,7 +2779,8 @@ const en = {
   },
 
   mediaLocations: {
-    logo: 'Logo (QLC brand)',
+    logo: 'Logo — Spanish',
+    logo_en: 'Logo — English',
     hero: 'Hero',
     modelo: 'Model',
     como_funciona: 'How it works',
@@ -2805,7 +2808,7 @@ const en = {
     file: 'File (PNG, JPG, WEBP, GIF, MP4 or WEBM)',
     location: 'Location',
     selectLocation: 'Select where this file will be used…',
-    logoHint: 'After uploading it, open it with "Edit" and check "Published" and "Use as active logo" — otherwise it won\'t replace the site\'s current logo.',
+    logoHint: 'Each language accepts one image and one video as its logo (the site shows the video if there is one; otherwise the image). After uploading it, open it with "Edit" and check "Published" and "Use as active logo" — otherwise it will not replace the current logo. If English has no logo, the Spanish one is used.',
     internalTitle: 'Internal title (optional)',
     internalTitlePlaceholder: 'Just to identify it here in the panel',
     internalDescription: 'Internal description (optional)',
@@ -2842,7 +2845,7 @@ const en = {
     internalDescriptionLabel: 'Internal description',
     orderHint: 'Order (when the section has multiple resources)',
     publishedCheckbox: 'Published (visible on the public site)',
-    useAsActiveLogoCheckbox: 'Use as active logo (replaces whichever is active now)',
+    useAsActiveLogoCheckbox: 'Use as the active logo for this language (replaces the active one of the same type)',
     mainResourceCheckbox: 'Main resource for this section',
     editSaveConfirmMessage: "This media resource will be updated. If it's published, the change will be reflected immediately on the public site.",
     replaceModalTitle: 'Replace file',
@@ -2865,8 +2868,8 @@ const en = {
   adminCms: {
     kicker: 'SITE CONTENT',
     title: 'Public site editor',
-    intro: 'Multimedia, models, track record and FAQ of the public site. Changes you save here are published on the site within a few minutes.',
-    textsInCodeNotice: 'The texts of the public site sections (in Spanish and English), including the Privacy Notice and the Terms and Conditions, now live in the site code so the database is not queried on every visit. To change a text, ask the development team.',
+    intro: 'Multimedia (including the Spanish and English logos) and the Bitget profile figures of the public site. Changes you save here are published on the site within a few minutes.',
+    textsInCodeNotice: 'The public site texts in Spanish and English (sections, FAQ, participation model with its warning note, Results, Privacy Notice and Terms) live in the site code: the public site does not query the database. To change a text, ask the development team.',
     edit: 'Edit',
     changesSaved: '✓ Changes saved successfully.',
     multimediaLabel: 'MULTIMEDIA',
@@ -3222,6 +3225,7 @@ const en = {
   },
 
   adminTrackRecord: {
+    textsInCodeNotice: 'The title and description (Spanish and English) of this section live in the site code. Here you update the figures and the Bitget profile link.',
     kicker: 'RESULTS · BITGET',
     title: 'Verifiable external reference',
     fieldTitle: 'Title',

@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import api from '../../services/api';
-import BilingualField from '../../components/BilingualField';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../i18n/backendMessages';
 import LoadingScreen from '../../components/LoadingScreen';
@@ -31,11 +30,9 @@ export default function TrackRecordPage() {
     setSaving(true);
     setError('');
     try {
+      // El título y la descripción (español/inglés) viven en el código del
+      // sitio (frontend/src/content/publicSiteData.js): aquí solo cifras y enlace.
       await api.patch(`/admin/track-record/${record.id}`, {
-        title: form.title,
-        titleEn: form.titleEn || null,
-        description: form.description,
-        descriptionEn: form.descriptionEn || null,
         platformName: form.platformName,
         profileLink: form.profileLink || '',
         roi30d: form.roi30d ?? '',
@@ -58,21 +55,7 @@ export default function TrackRecordPage() {
       <div className="qlc-kicker">{t('adminTrackRecord.kicker')}</div>
       <h1 style={{ marginTop: 0 }}>{t('adminTrackRecord.title')}</h1>
       <form className="qlc-card" style={{ maxWidth: 780 }} onSubmit={submit}>
-        <BilingualField
-          label={t('adminTrackRecord.fieldTitle')}
-          esValue={form.title}
-          enValue={form.titleEn}
-          onEsChange={update('title')}
-          onEnChange={update('titleEn')}
-        />
-        <BilingualField
-          label={t('adminTrackRecord.description')}
-          esValue={form.description}
-          enValue={form.descriptionEn}
-          onEsChange={update('description')}
-          onEnChange={update('descriptionEn')}
-          textarea
-        />
+        <p style={{ marginTop: 0, fontSize: 12, color: 'var(--qlc-muted2)' }}>{t('adminTrackRecord.textsInCodeNotice')}</p>
         <label className="qlc-label">{t('adminTrackRecord.platform')}</label>
         <input className="qlc-input" value={form.platformName} onChange={update('platformName')} />
         <label className="qlc-label">{t('adminTrackRecord.profileLink')}</label>

@@ -120,7 +120,7 @@ function EditModal({ item, onClose, onSaved }) {
             checked={values.isPrimary}
             onChange={(e) => setValues((v) => ({ ...v, isPrimary: e.target.checked }))}
           />
-          {values.location === 'logo' ? t('adminMedia.useAsActiveLogoCheckbox') : t('adminMedia.mainResourceCheckbox')}
+          {(values.location === 'logo' || values.location === 'logo_en') ? t('adminMedia.useAsActiveLogoCheckbox') : t('adminMedia.mainResourceCheckbox')}
         </label>
 
         {error && <div className="qlc-field-error">{error}</div>}
@@ -260,7 +260,7 @@ function UploadForm({ onUploaded }) {
           </option>
         ))}
       </select>
-      {location === 'logo' && (
+      {(location === 'logo' || location === 'logo_en') && (
         <div className="qlc-field-hint" style={{ marginTop: -6, marginBottom: 10, fontSize: 12, color: 'var(--qlc-gold)' }}>
           {t('adminMedia.logoHint')}
         </div>
@@ -360,7 +360,7 @@ export default function MediaLibraryPage() {
                 {item.isPublished ? t('adminMedia.published') : t('adminMedia.unpublished')}
               </span>
             </div>
-            {item.location === 'logo' && !(item.isPublished && item.isPrimary) && (
+            {(item.location === 'logo' || item.location === 'logo_en') && !(item.isPublished && item.isPrimary) && (
               <div style={{ fontSize: 12, color: 'var(--qlc-gold)', marginTop: 8 }}>{logoWarning(item)}</div>
             )}
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 12 }}>

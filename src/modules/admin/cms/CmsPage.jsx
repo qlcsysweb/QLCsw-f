@@ -1,25 +1,22 @@
 import { useState } from 'react';
 import Modal from '../../../components/Modal';
-import ModelsPage from '../ModelsPage';
-import FaqPage from '../FaqPage';
 import TrackRecordPage from '../TrackRecordPage';
 import MediaLibraryPage from './MediaLibraryPage';
 import { useLanguage } from '../../../i18n/LanguageContext';
 
 // Contenido del sitio público. Los TEXTOS de las secciones (en español e
 // inglés, incluidos los documentos legales) ya no se editan aquí: viven en el
-// código (frontend/src/content/publicContent.js), así el sitio público no
-// consulta NeonDB para mostrarlos. Aquí quedan los datos que QLC actualiza
-// con frecuencia: multimedia, modelos, track record y FAQ.
+// código (frontend/src/content/), igual que las preguntas frecuentes y los
+// textos del modelo de participación y de Resultados: la página pública no
+// consulta NeonDB. Aquí quedan la multimedia (logos ES/EN) y las cifras del
+// perfil de Bitget, que se publican en site-data.json (Cloudinary).
 export default function CmsPage() {
   const { t } = useLanguage();
   const [customModal, setCustomModal] = useState(null);
 
   const SECTIONS = [
     { key: 'multimedia', label: t('adminCms.multimediaLabel'), description: t('adminCms.multimediaDesc') },
-    { key: 'modelos', label: t('adminCms.modelosLabel'), description: t('adminCms.modelosDesc') },
     { key: 'track_record', label: t('adminCms.trackRecordLabel'), description: t('adminCms.trackRecordDesc') },
-    { key: 'faq', label: t('adminCms.faqLabel'), description: t('adminCms.faqDesc') },
   ];
 
   return (
@@ -43,19 +40,9 @@ export default function CmsPage() {
         ))}
       </div>
 
-      {customModal === 'modelos' && (
-        <Modal title={t('adminCms.modelsModalTitle')} onClose={() => setCustomModal(null)} width={960}>
-          <ModelsPage />
-        </Modal>
-      )}
       {customModal === 'track_record' && (
         <Modal title={t('adminCms.trackRecordLabel')} onClose={() => setCustomModal(null)} width={640}>
           <TrackRecordPage />
-        </Modal>
-      )}
-      {customModal === 'faq' && (
-        <Modal title={t('adminCms.faqModalTitle')} onClose={() => setCustomModal(null)} width={720}>
-          <FaqPage />
         </Modal>
       )}
       {customModal === 'multimedia' && (

@@ -1,69 +1,35 @@
-import { useEffect, useMemo, useState } from 'react';
-import api from '../../services/api';
+import { useMemo } from 'react';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { getLocalizedContentValue, getLocalizedModel, getLocalizedFaq, getLocalizedTrackRecord } from '../../i18n/bilingualContent';
 import PUBLIC_CONTENT from '../../content/publicContent';
+import { FAQS, MODELS, TRACK_RECORD_TEXT } from '../../content/publicSiteData';
+import { useSiteData } from '../../content/siteData';
 
 /*
- * Datos del sitio público — pensado para NO despertar NeonDB en cada visita:
- *  - Los TEXTOS (español e inglés) vienen del código (src/content/publicContent.js):
- *    cero peticiones.
- *  - Multimedia, modelos, FAQ y track record (lo que el admin sí actualiza)
- *    se piden UNA vez por visita y se comparten entre páginas públicas
- *    (inicio, privacidad, términos) durante unos minutos. Ya no hay sondeo
- *    cada 20 s. Además el backend los sirve desde caché en memoria.
+ * Datos del sitio público — 0 consultas al backend y a NeonDB:
+ *  - TEXTOS en español e inglés (secciones, FAQ, modelo, Resultados) vienen
+ *    del código (src/content/).
+ *  - Cifras/enlace del perfil de Bitget, logos y multimedia (lo que el admin
+ *    sí actualiza) vienen de site-data.json en el CDN de Cloudinary
+ *    (src/content/siteData.js), con valores predefinidos de respaldo.
  */
-const SHARED_TTL_MS = 5 * 60 * 1000;
-let shared = null; // { promise, at }
-
-function loadShared() {
-  if (shared && Date.now() - shared.at < SHARED_TTL_MS) return shared.promise;
-  const promise = Promise.all([api.get('/media'), api.get('/models'), api.get('/faq'), api.get('/track-record')]).then(
-    ([mediaRes, modelsRes, faqRes, trackRes]) => ({
-      media: mediaRes.data.media,
-      models: modelsRes.data.models,
-      faqs: faqRes.data.faqs,
-      trackRecord: trackRes.data.trackRecord,
-    })
-  );
-  shared = { promise, at: Date.now() };
-  // Un fallo no se queda guardado: la siguiente página lo vuelve a intentar.
-  promise.catch(() => {
-    shared = null;
-  });
-  return promise;
-}
-
 export default function usePublicData() {
   const { language } = useLanguage();
-  const [data, setData] = useState({ media: {}, models: [], faqs: [], trackRecord: null });
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-    loadShared()
-      .then((loaded) => {
-        if (!cancelled) setData(loaded);
-      })
-      .catch(() => {})
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const site = useSiteData();
 
   // Cada texto trae { value, valueEn }; se muestra solo el del idioma activo.
   const text = (section, key, fallback = '') => getLocalizedContentValue(PUBLIC_CONTENT?.[section]?.[key], language, fallback);
 
   // Multimedia publicada asignada a una sección — array vacío si el admin
   // no configuró nada (nunca se inserta contenido automáticamente).
-  const sectionMedia = (location) => data.media?.[location] || [];
+  const sectionMedia = (location) => site.sectionMedia?.[location] || [];
 
-  const models = useMemo(() => (data.models || []).map((m) => getLocalizedModel(m, language)), [data.models, language]);
-  const faqs = useMemo(() => (data.faqs || []).map((f) => getLocalizedFaq(f, language)), [data.faqs, language]);
-  const trackRecord = useMemo(() => getLocalizedTrackRecord(data.trackRecord, language), [data.trackRecord, language]);
+  const models = useMemo(() => MODELS.map((m) => getLocalizedModel(m, language)), [language]);
+  const faqs = useMemo(() => FAQS.map((f) => getLocalizedFaq(f, language)), [language]);
+  const trackRecord = useMemo(
+    () => (site.trackRecord ? getLocalizedTrackRecord({ ...TRACK_RECORD_TEXT, ...site.trackRecord, isActive: true }, language) : null),
+    [site.trackRecord, language]
+  );
 
-  return { content: PUBLIC_CONTENT, text, media: sectionMedia, models, faqs, trackRecord, loading };
+  return { content: PUBLIC_CONTENT, text, media: sectionMedia, models, faqs, trackRecord, loading: false };
 }

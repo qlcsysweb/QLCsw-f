@@ -3,6 +3,7 @@
 // nombres se traducen según el idioma personal de quien esté viendo el panel.
 const LOCATION_VALUES = [
   'logo',
+  'logo_en',
   'hero',
   'modelo',
   'como_funciona',

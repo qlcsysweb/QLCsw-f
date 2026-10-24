@@ -1,41 +1,16 @@
-import { useEffect, useState } from 'react';
-import api from '../services/api';
+import { useLanguage } from '../i18n/LanguageContext';
+import { useSiteData } from '../content/siteData';
 
-// Logo activo configurado desde Admin → Contenido del sitio → Multimedia.
-// Si no hay ninguno publicado como principal, el consumidor debe usar su
-// PNG estático por defecto (comportamiento actual, sin cambios).
-// Se pide una sola vez por visita y se comparte entre pantallas (login, nav,
-// hero…) para no repetir la consulta en cada cambio de página.
-let cached = null; // promesa compartida
-
-function loadLogo() {
-  if (!cached) {
-    cached = api
-      .get('/media/logo')
-      .then(({ data }) => data.asset || null)
-      .catch(() => {
-        cached = null;
-        return null;
-      });
-  }
-  return cached;
-}
-
+// Logo activo configurado desde Admin → Contenido del sitio → Multimedia,
+// POR IDIOMA: "Logo — Español" y "Logo — Inglés", cada uno con imagen y/o
+// video. Se usa el del idioma activo (video si hay; si no, la imagen); si
+// el inglés no tiene ninguno, se usa el español. Sin nada configurado, el
+// consumidor usa su PNG estático por defecto.
+// Viene de site-data.json en el CDN de Cloudinary — ya no consulta el backend.
 export default function useActiveLogo() {
-  const [asset, setAsset] = useState(null);
-  const [loaded, setLoaded] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-    loadLogo().then((value) => {
-      if (cancelled) return;
-      setAsset(value);
-      setLoaded(true);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  return { asset, loaded };
+  const { language } = useLanguage();
+  const site = useSiteData();
+  const pick = (slot) => (slot ? slot.video || slot.image || null : null);
+  const asset = (language === 'en' ? pick(site.logos?.en) : null) || pick(site.logos?.es);
+  return { asset, loaded: true };
 }
