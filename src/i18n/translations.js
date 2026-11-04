@@ -232,7 +232,7 @@ const es = {
   microposicionesSection: {
     kicker: 'MICROPOSICIONES',
     titleLine1: 'Una nueva escala para',
-    titleLine2: 'el Copytrading Institucional.',
+    titleLine2: 'el trading cuantitativo.',
     designedKicker: 'DISEÑADO PARA INVERSORES INDIVIDUALES',
     subtitleLine1: 'El tamaño cambia.',
     subtitleLine2: 'La infraestructura no.',
@@ -309,10 +309,11 @@ const es = {
 
   hero: {
     howItWorks: 'Cómo funciona',
-    seeModels: 'Ver modelo de participación',
+    seeModels: 'Conoce nuestro modelo',
     trustCapital: 'Tu capital',
     trustAccount: 'Tu cuenta',
-    trustStrategy: 'Nuestra estrategia',
+    trustStrategy: 'Tecnología QLC',
+    fundsNote: 'Tus fondos permanecen en tu propia cuenta. QLC no necesita permisos de retiro.',
     algoExecution: 'Ejecución algorítmica QLC',
     roi30d: 'ROI 30D',
     roiDays: 'ROI {days}D',
@@ -449,7 +450,7 @@ const es = {
     heroLabel: 'HERO',
     heroDesc: 'Título principal, frase destacada y estadísticas de portada.',
     modeloLabel: 'MODELO',
-    modeloDesc: '"El concepto" — cómo se presenta la propuesta de copytrading.',
+    modeloDesc: '"El concepto" — cómo se presenta la propuesta de QLC Quantitative Trading Bot.',
     comoFuncionaLabel: 'CÓMO FUNCIONA',
     comoFuncionaDesc: 'Explicación del flujo cliente → API → QLC.',
     tecnologiaLabel: 'TECNOLOGÍA',
@@ -1658,7 +1659,7 @@ const es = {
     kicker: 'CONEXIÓN API',
     title: 'Conexión con el exchange',
     disclaimer:
-      'QLC nunca se conecta a tu exchange, nunca valida esta clave y nunca ejecuta operaciones desde esta plataforma. Aquí solo registras tu API Key para que el equipo administre tu proceso de copytrading; el estado de la conexión lo actualiza el equipo de forma administrativa.',
+      'QLC nunca se conecta a tu exchange, nunca valida esta clave y nunca ejecuta operaciones desde esta plataforma. Aquí solo registras tu API Key para que el equipo administre tu conexión con QLC Quantitative Trading Bot; el estado de la conexión lo actualiza el equipo de forma administrativa.',
     statusTitle: 'Estado de tu conexión',
     exchange: 'Exchange',
     registered: '✓ Registrada',
@@ -2660,7 +2661,7 @@ const en = {
   microposicionesSection: {
     kicker: 'MICRO-POSITIONS',
     titleLine1: 'A new scale for',
-    titleLine2: 'Institutional Copytrading.',
+    titleLine2: 'quantitative trading.',
     designedKicker: 'DESIGNED FOR INDIVIDUAL INVESTORS',
     subtitleLine1: 'The size changes.',
     subtitleLine2: 'The infrastructure doesn\'t.',
@@ -2737,10 +2738,11 @@ const en = {
 
   hero: {
     howItWorks: 'How it works',
-    seeModels: 'View participation model',
+    seeModels: 'Discover our model',
     trustCapital: 'Your capital',
     trustAccount: 'Your account',
-    trustStrategy: 'Our strategy',
+    trustStrategy: 'QLC technology',
+    fundsNote: 'Your funds stay in your own account. QLC does not need withdrawal permissions.',
     algoExecution: 'QLC algorithmic execution',
     roi30d: '30D ROI',
     roiDays: '{days}D ROI',
@@ -2877,7 +2879,7 @@ const en = {
     heroLabel: 'HERO',
     heroDesc: 'Main title, headline phrase and homepage stats.',
     modeloLabel: 'MODEL',
-    modeloDesc: '"The concept" — how the copytrading proposal is presented.',
+    modeloDesc: '"The concept" — how the QLC Quantitative Trading Bot proposal is presented.',
     comoFuncionaLabel: 'HOW IT WORKS',
     comoFuncionaDesc: 'Explanation of the client → API → QLC flow.',
     tecnologiaLabel: 'TECHNOLOGY',
@@ -4160,7 +4162,7 @@ const en = {
     kicker: 'API CONNECTION',
     title: 'Exchange connection',
     disclaimer:
-      "QLC never connects to your exchange, never validates this key, and never executes trades from this platform. This is only where you register your API Key so the team can administer your copytrading process; the connection status is updated by the team administratively.",
+      "QLC never connects to your exchange, never validates this key, and never executes trades from this platform. This is only where you register your API Key so the team can administer your connection to QLC Quantitative Trading Bot; the connection status is updated by the team administratively.",
     statusTitle: 'Your connection status',
     exchange: 'Exchange',
     registered: '✓ Registered',

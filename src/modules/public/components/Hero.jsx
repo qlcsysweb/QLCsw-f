@@ -1,6 +1,7 @@
 import QlcLogo from '../../../components/QlcLogo';
 import SectionMedia from './SectionMedia';
 import TrackRecordHighlights from './TrackRecordHighlights';
+import { ShieldIcon } from './TechIcons';
 import { useLanguage } from '../../../i18n/LanguageContext';
 import useSectionNav from '../useSectionNav';
 
@@ -28,10 +29,10 @@ export default function Hero({ text, media = () => [], trackRecord }) {
       <div className="container hero-grid">
         <div>
           <div className="eyebrow">
-            <span className="dot"></span> {text('hero', 'eyebrow', 'Institutional Copytrading Infrastructure')}
+            <span className="dot"></span> {text('hero', 'eyebrow', 'Quantitative Trading Technology')}
           </div>
           <h1>
-            {text('hero', 'title_line1', 'Copytrading Institucional.')}
+            {text('hero', 'title_line1', 'Trading cuantitativo automatizado.')}
             <br />
             <HeroAmountLine value={text('hero', 'title_line2', 'Accesible desde 100 USDT.')} />
           </h1>
@@ -39,7 +40,7 @@ export default function Hero({ text, media = () => [], trackRecord }) {
             {text(
               'hero',
               'lead',
-              'QLC es un sistema de copytrading institucional que ejecuta nuestra estrategia directamente en la cuenta del cliente mediante tecnología propia y una conexión API autorizada.'
+              'QLC Quantitative Trading Bot es un sistema de trading cuantitativo que conecta tu cuenta de exchange mediante tecnología propia y una conexión API autorizada para ejecutar operaciones automáticamente.'
             )}
           </p>
           <div className="actions">
@@ -56,6 +57,10 @@ export default function Hero({ text, media = () => [], trackRecord }) {
             <span>{t('hero.trustAccount')}</span>
             <span>·</span>
             <span>{t('hero.trustStrategy')}</span>
+          </div>
+          <div className="hero-note">
+            <ShieldIcon />
+            <span>{t('hero.fundsNote')}</span>
           </div>
         </div>
 

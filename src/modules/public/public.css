@@ -421,6 +421,21 @@
   letter-spacing: 0.16em;
   text-transform: uppercase;
 }
+.qlc-public .hero-note {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+  color: #aab4bd;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.qlc-public .hero-note svg {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  color: var(--qlc-blue2);
+}
 .qlc-public .hero-card {
   position: relative;
   display: flex;

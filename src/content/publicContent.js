@@ -45,8 +45,8 @@ const PUBLIC_CONTENT = {
       "valueEn": "Quantitative trading · Algorithms · API Execution · Micro-positions"
     },
     "title": {
-      "value": "COPYTRADING INSTITUCIONAL.",
-      "valueEn": "INSTITUTIONAL COPYTRADING."
+      "value": "QLC QUANTITATIVE TRADING BOT.",
+      "valueEn": "QLC QUANTITATIVE TRADING BOT."
     }
   },
   "footer": {
@@ -61,12 +61,12 @@ const PUBLIC_CONTENT = {
   },
   "hero": {
     "eyebrow": {
-      "value": "Institutional Copytrading Infrastructure",
-      "valueEn": "Institutional Copytrading Infrastructure"
+      "value": "Quantitative Trading Technology",
+      "valueEn": "Quantitative Trading Technology"
     },
     "lead": {
-      "value": "QLC es un sistema de copytrading institucional que ejecuta nuestra estrategia directamente en la cuenta del cliente mediante tecnología propia y una conexión API autorizada.",
-      "valueEn": "QLC is an institutional copy-trading system that executes our strategy directly on the client's account using proprietary technology and an authorized API connection."
+      "value": "QLC Quantitative Trading Bot es un sistema de trading cuantitativo que conecta tu cuenta de exchange mediante tecnología propia y una conexión API autorizada para ejecutar operaciones automáticamente.",
+      "valueEn": "QLC Quantitative Trading Bot is a quantitative trading system that connects your exchange account through proprietary technology and an authorized API connection to execute trades automatically."
     },
     "mini_platform_label": {
       "value": "BITGET",
@@ -77,8 +77,8 @@ const PUBLIC_CONTENT = {
       "valueEn": "Elite Trader"
     },
     "title_line1": {
-      "value": "Copytrading Institucional.",
-      "valueEn": "Institutional Copytrading."
+      "value": "Trading cuantitativo automatizado.",
+      "valueEn": "Automated quantitative trading."
     },
     "title_line2": {
       "value": "Accesible desde 100 USDT.",
@@ -115,8 +115,8 @@ const PUBLIC_CONTENT = {
   },
   "modelo": {
     "h2_line1": {
-      "value": "Copytrading institucional.",
-      "valueEn": "Institutional copytrading."
+      "value": "Trading cuantitativo automatizado.",
+      "valueEn": "Automated quantitative trading."
     },
     "h2_line2": {
       "value": "Sin salir de tu cuenta.",
@@ -155,8 +155,8 @@ const PUBLIC_CONTENT = {
       "valueEn": "QLC changes that equation."
     },
     "body_5": {
-      "value": "Ponemos al alcance de inversores individuales una infraestructura de Copytrading Institucional, basada en nuestra propia estrategia, tecnología y sistemas de ejecución.",
-      "valueEn": "We put an institutional Copytrading infrastructure within reach of individual investors, built on our own strategy, technology and execution systems."
+      "value": "Ponemos al alcance de usuarios individuales tecnología de trading cuantitativo, mediante nuestro propio bot, algoritmos y sistemas de ejecución automatizada.",
+      "valueEn": "We put quantitative trading technology within reach of individual users, through our own bot, algorithms and automated execution systems."
     },
     "body_6": {
       "value": "Desde 100 USDT.",
@@ -175,8 +175,8 @@ const PUBLIC_CONTENT = {
       "valueEn": "The difference isn't only in what you see on the chart. It's in everything that happens behind it."
     },
     "closing": {
-      "value": "QLC — Infraestructura institucional. Ahora al alcance del inversor individual.",
-      "valueEn": "QLC — Institutional infrastructure. Now within reach of the individual investor."
+      "value": "QLC — Tecnología de trading cuantitativo. Ahora al alcance del usuario individual.",
+      "valueEn": "QLC — Quantitative trading technology. Now within reach of the individual user."
     },
     "lead": {
       "value": "El 95% pierde. El 5% opera con otra infraestructura.",

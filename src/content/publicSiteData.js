@@ -21,8 +21,8 @@ export const FAQS = [
     "id": "cmtswub8h00057kqgb64tpd0e",
     "question": "¿Qué es QLC?",
     "questionEn": "What is QLC?",
-    "answer": "QLC es un sistema de copytrading institucional que permite ejecutar una estrategia de trading institucional directamente sobre la cuenta del cliente mediante tecnología propia y conexión API.",
-    "answerEn": "QLC is an institutional copytrading system that executes an institutional trading strategy directly on the client's account through proprietary technology and an API connection."
+    "answer": "QLC es un sistema de trading cuantitativo automatizado. Mediante QLC Quantitative Trading Bot y tecnología propia, ejecuta operaciones directamente sobre la cuenta del propio usuario a través de una conexión API autorizada. Los fondos permanecen en su cuenta y la conexión no tiene permisos de retiro.",
+    "answerEn": "QLC is an automated quantitative trading system. Through QLC Quantitative Trading Bot and proprietary technology, it executes trades directly on the user's own account via an authorized API connection. Funds stay in the user's account and the connection has no withdrawal permissions."
   },
   {
     "id": "cmtswub8i00067kqg4ke9jd1k",
@@ -51,13 +51,6 @@ export const FAQS = [
     "questionEn": "What account size is supported?",
     "answer": "La arquitectura comercial de QLC está diseñada para operar con cuentas individuales desde 100 USDT hasta 2,000 USDT.",
     "answerEn": "QLC's commercial architecture is designed to operate with individual accounts ranging from 100 USDT to 2,000 USDT."
-  },
-  {
-    "id": "cmtswub8i00097kqguhprl26x",
-    "question": "¿QLC utiliza el copytrading nativo del exchange?",
-    "questionEn": "Does QLC use the exchange's native copytrading?",
-    "answer": "No. El modelo se basa en infraestructura propia y en una conexión API directa con la cuenta autorizada del cliente.",
-    "answerEn": "No. The model is based on proprietary infrastructure and a direct API connection with the client's authorized account."
   },
   {
     "id": "cmu4dg5l400001iz0722oatqv",

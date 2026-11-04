@@ -77,7 +77,7 @@ export default function ProblemaSection({ text, media = () => [], withIntro = fa
             {text(
               'problema',
               'body_5',
-              'Ponemos al alcance de inversores individuales una infraestructura de Copytrading Institucional, basada en nuestra propia estrategia, tecnología y sistemas de ejecución.'
+              'Ponemos al alcance de usuarios individuales tecnología de trading cuantitativo, mediante nuestro propio bot, algoritmos y sistemas de ejecución automatizada.'
             )}
           </p>
           <p style={{ color: 'var(--qlc-muted)', fontSize: 15, lineHeight: 1.6, marginBottom: 15 }}>

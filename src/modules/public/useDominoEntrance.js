@@ -28,6 +28,7 @@ const LEAF_SELECTOR = [
   '.hero-logo',
   '.actions > *',
   '.trust > span',
+  '.hero-note',
   '.range',
   '.btn',
   '.registro-panel label',
