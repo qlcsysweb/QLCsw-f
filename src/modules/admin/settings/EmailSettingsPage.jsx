@@ -88,7 +88,7 @@ export default function EmailSettingsPage() {
     setError('');
     try {
       const payload = { gmailSenderName: form.gmailSenderName, authMethod: method };
-      if (form.gmailUser) payload.gmailUser = form.gmailUser;
+      if (method === 'APP_PASSWORD' && form.gmailUser) payload.gmailUser = form.gmailUser;
       if (method === 'APP_PASSWORD' && form.gmailAppPassword) payload.gmailAppPassword = form.gmailAppPassword;
       if (method === 'OAUTH2' && form.googleClientId) payload.googleClientId = form.googleClientId;
       if (method === 'OAUTH2' && form.googleClientSecret) payload.googleClientSecret = form.googleClientSecret;
@@ -155,7 +155,7 @@ export default function EmailSettingsPage() {
     ? { text: t('adminEmail.disconnected'), className: 'danger', dot: '×' }
     : { text: t('adminEmail.notConfigured'), className: 'muted', dot: '—' };
 
-  const canConnectGoogle = Boolean((form.gmailUser || config.gmailUserMasked) && (form.googleClientId || config.hasGoogleOAuthClient));
+  const canConnectGoogle = Boolean(form.googleClientId || config.hasGoogleOAuthClient);
   const redirectUri = `${backendPublicUrlGuess()}${OAUTH_CALLBACK_PATH}`;
 
   return (
@@ -223,15 +223,19 @@ export default function EmailSettingsPage() {
           <p style={{ fontSize: 12, color: 'var(--qlc-muted2)', marginTop: -6 }}>{t('adminEmail.credentialsHint')}</p>
           <label className="qlc-label">{t('adminEmail.providerLabel')}</label>
           <input className="qlc-input" value="Gmail" disabled />
-          <label className="qlc-label">{t('adminEmail.gmailUserLabel')}</label>
-          <input
-            className="qlc-input"
-            type="email"
-            value={form.gmailUser}
-            onChange={(e) => setForm((f) => ({ ...f, gmailUser: e.target.value }))}
-            placeholder={config.gmailUserMasked || 'correo@qlc.net'}
-            disabled={config.isLockedByAnother}
-          />
+          {method === 'APP_PASSWORD' && (
+            <>
+              <label className="qlc-label">{t('adminEmail.gmailUserLabel')}</label>
+              <input
+                className="qlc-input"
+                type="email"
+                value={form.gmailUser}
+                onChange={(e) => setForm((f) => ({ ...f, gmailUser: e.target.value }))}
+                placeholder={config.gmailUserMasked || 'correo@qlc.net'}
+                disabled={config.isLockedByAnother}
+              />
+            </>
+          )}
           <label className="qlc-label">{t('adminEmail.senderNameLabel')}</label>
           <input
             className="qlc-input"

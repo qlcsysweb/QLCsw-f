@@ -199,7 +199,7 @@ a.qlc-login-submit {
 /* Selector de forma de acceso: contraseña o Google Authenticator. */
 .qlc-login-modes {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: 4px;
   margin: 8px 0 6px;
   padding: 4px;

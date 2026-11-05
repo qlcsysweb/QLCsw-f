@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import QlcLogo from '../components/QlcLogo';
 import { useLanguage } from '../i18n/LanguageContext';
 import { translateBackendMessage } from '../i18n/backendMessages';
+import PasswordResetFlow from './PasswordResetFlow';
 import './LoginPage.css';
 
 export default function LoginPage() {
@@ -72,25 +73,40 @@ export default function LoginPage() {
         <h1>{t('auth.title')}</h1>
         <p className="qlc-login-sub">{t('auth.subtitle')}</p>
 
-        {!tempToken ? (
+        {!tempToken && (
+          <div className="qlc-login-modes" role="tablist" aria-label={t('auth.modeLabel')}>
+            {[
+              ['password', t('auth.modePassword')],
+              ['code', t('auth.modeCode')],
+              ['reset', t('auth.modeReset')],
+            ].map(([m, label]) => (
+              <button
+                key={m}
+                type="button"
+                role="tab"
+                aria-selected={mode === m}
+                className={mode === m ? 'is-active' : ''}
+                onClick={() => {
+                  setMode(m);
+                  setError('');
+                }}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {tempToken ? null : mode === 'reset' ? (
+          <PasswordResetFlow
+            initialEmail={email}
+            onGoLogin={() => {
+              setPassword('');
+              setMode('password');
+            }}
+          />
+        ) : (
           <form onSubmit={handleSubmit}>
-            <div className="qlc-login-modes" role="tablist" aria-label={t('auth.modeLabel')}>
-              {['password', 'code'].map((m) => (
-                <button
-                  key={m}
-                  type="button"
-                  role="tab"
-                  aria-selected={mode === m}
-                  className={mode === m ? 'is-active' : ''}
-                  onClick={() => {
-                    setMode(m);
-                    setError('');
-                  }}
-                >
-                  {m === 'password' ? t('auth.modePassword') : t('auth.modeCode')}
-                </button>
-              ))}
-            </div>
             <label className="qlc-label">{t('auth.email')}</label>
             <input
               className="qlc-input"
@@ -151,7 +167,13 @@ export default function LoginPage() {
                 </div>
 
                 <div className="qlc-login-forgot">
-                  <button type="button" onClick={() => navigate('/restablecer-contrasena', { state: { email } })}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMode('reset');
+                      setError('');
+                    }}
+                  >
                     {t('auth.forgotPassword')}
                   </button>
                 </div>
@@ -168,7 +190,9 @@ export default function LoginPage() {
               {t('auth.noAccount')} <Link to="/registro">{t('auth.createAccount')}</Link>
             </p>
           </form>
-        ) : (
+        )}
+
+        {tempToken && (
           <form onSubmit={handleTwoFactorSubmit}>
             <p className="qlc-login-sub">{t('auth.twoFactorHint')}</p>
             <label className="qlc-label" htmlFor="login-2fa">{t('auth.twoFactorCode')}</label>
