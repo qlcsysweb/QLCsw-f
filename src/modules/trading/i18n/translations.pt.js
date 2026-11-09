@@ -1366,6 +1366,81 @@ const pt = {
       "title": "IMPORTANTE — Configure corretamente as permissões da sua API",
       "message": "Antes de registrar ou configurar sua API da Bitget, consulte o Guia de Uso — Permissões de API. Lá você encontrará as permissões correspondentes ao seu tipo de conta e as indicações sobre quando deve adicionar um endereço IP.",
       "action": "Ver guia de permissões de API"
+    },
+    "affiliate_payment_paid": {
+      "title": "Pagamento de comissão de afiliado",
+      "message": "A QLC registrou o pagamento da sua comissão de afiliado ({amount} {currency}, período {period}).",
+      "requires": "i18n"
+    },
+    "capital_distribution_report_updated": {
+      "title": "Atualização do seu relatório de distribuição de capital",
+      "message": "Seu relatório de distribuição de capital ({amount} USDT) foi marcado como: {status}",
+      "requires": "i18n"
+    },
+    "document_unlocked": {
+      "title": "Você pode substituir um documento",
+      "message": "A QLC habilitou temporariamente seu documento de \"{category}\" para que você possa excluí-lo e enviá-lo novamente.",
+      "requires": "i18n"
+    },
+    "affiliate_commission_created": {
+      "title": "[[prepaid:Comissão de afiliado paga]][[pending:Nova comissão de afiliado]]",
+      "message": "Foi emitido um extrato de um dos seus indicados. [[prepaid:Sua comissão do período ({amount} USDT) já foi PAGA pela QLC no seu UID da Bitget.]][[pending:Sua comissão do período é de {amount} USDT (pendente de aprovação e pagamento pela QLC).]]",
+      "requires": "i18n"
+    },
+    "support_case_message": {
+      "title": "[[content:Nova mensagem]][[fileName:Novo arquivo]] no seu caso #{caseNumber}",
+      "message": "[[content:{content}]][[fileName:A QLC anexou \"{fileName}\".]]",
+      "requires": "i18n"
+    },
+    "capital_distribution_reported": {
+      "title": "Distribuição de capital informada",
+      "message": "{clientName} informou que já distribuiu {amount} USDT[[identifier: na subconta/API {identifier}]].",
+      "requires": "i18n"
+    },
+    "document_corrected_admin": {
+      "title": "Documento corrigido recebido",
+      "message": "{clientName} enviou uma correção do documento na categoria \"{category}\".",
+      "requires": "i18n"
+    },
+    "support_case_created": {
+      "title": "Novo caso de suporte",
+      "message": "{clientName} registrou o caso #{caseNumber}: \"{subject}\"",
+      "requires": "i18n"
+    },
+    "support_case_message_admin": {
+      "title": "[[content:Nova mensagem]][[fileName:Novo arquivo]] do cliente no caso #{caseNumber}",
+      "message": "{clientName}[[content:: {content}]][[fileName: anexou \"{fileName}\".]]",
+      "requires": "i18n"
+    },
+    "subaccount_request_created_admin": {
+      "title": "Nova solicitação de subconta",
+      "message": "{clientName} solicitou uma subconta/API adicional ({activeCount}/{max} ativas).[[reason: Motivo: {reason}]]",
+      "requires": "i18n"
+    },
+    "subaccount_deactivate_request_created_admin": {
+      "title": "Solicitação de desativação de subconta",
+      "message": "{clientName} solicitou desativar a subconta/API {subaccount}.[[reason: Motivo: {reason}]]",
+      "requires": "i18n"
+    },
+    "subaccount_request_approved": {
+      "title": "Nova subconta aprovada",
+      "message": "A QLC aprovou sua solicitação de uma subconta adicional[[requiredCapital: — capital operacional exigido: {requiredCapital} USDT]].",
+      "requires": "i18n"
+    },
+    "subaccount_request_rejected": {
+      "title": "Solicitação de nova subconta recusada",
+      "message": "A QLC analisou sua solicitação de uma subconta adicional e, por enquanto, não foi possível habilitá-la.[[reason: Motivo: {reason}]]",
+      "requires": "i18n"
+    },
+    "subaccount_deactivate_request_rejected": {
+      "title": "Solicitação de desativação recusada",
+      "message": "A QLC analisou sua solicitação para desativar sua [[principal:conta PRINCIPAL]][[slot:Subconta #{slot}]] e, por enquanto, não foi possível autorizá-la.[[reason: Motivo: {reason}]]",
+      "requires": "i18n"
+    },
+    "subaccount_activated": {
+      "title": "Subconta ativada",
+      "message": "A QLC ativou sua [[principal:conta PRINCIPAL]][[slot:Subconta #{slot}]]. Você já pode vê-la no seu painel.",
+      "requires": "i18n"
     }
   },
   "clientAppointments": {

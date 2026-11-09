@@ -51,6 +51,8 @@
 }
 
 .lang-gate-title span {
+  display: inline-block;
+  white-space: nowrap;
   margin-left: 0.25em;
   color: #6f7f92;
   font-weight: 500;
