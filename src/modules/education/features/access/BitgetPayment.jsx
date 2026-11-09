@@ -45,6 +45,15 @@ function CopyButton({ value }) {
   return <Button variant="secondary" onClick={copy}>{copied ? tr('Copiado') : tr('Copiar')}</Button>;
 }
 
+const onlyBitget = ({ uid, wallet }) => !!uid && !wallet;
+const bothOptions = ({ uid, wallet }) => !!uid && !!wallet;
+
+const saveReferenceStep = (options) => {
+  if (onlyBitget(options)) return tr('Guarda el N.º de orden de Bitget.');
+  if (bothOptions(options)) return tr('Guarda el hash de la transacción. Si usaste la transferencia interna Bitget, guarda el N.º de orden.');
+  return tr('Guarda el hash de la transacción.');
+};
+
 export function BitgetInstructions({ uid, instructions, wallet, amount, currency }) {
   return (
     <div className="stack">
@@ -73,14 +82,14 @@ export function BitgetInstructions({ uid, instructions, wallet, amount, currency
       {instructions && <p className="small muted" style={{ whiteSpace: 'pre-line' }}>{instructions}</p>}
       <ol className="small">
         <li>{tr('Envía los USDT por una de las opciones de arriba. Debe llegar el monto completo.')}</li>
-        <li>{tr('Guarda el N.º de orden de Bitget o el hash de la transacción.')}</li>
+        <li>{saveReferenceStep({ uid, wallet })}</li>
         <li>{tr('Llena abajo «Confirma tu transferencia» con ese dato, la fecha y hora, y tu evidencia.')}</li>
       </ol>
     </div>
   );
 }
 
-export function BitgetReportForm({ attemptId, report, onDone, onCancel }) {
+export function BitgetReportForm({ attemptId, report, uid, wallet, onDone, onCancel }) {
   const [f, setF] = useState({ orderNumber: report?.orderNumber || '', transferredAt: report ? toLocalInput(report.transferredAt) : '' });
   const [files, setFiles] = useState([]);
   const [removed, setRemoved] = useState([]);
@@ -120,7 +129,10 @@ export function BitgetReportForm({ attemptId, report, onDone, onCancel }) {
     <form className="stack" onSubmit={submit}>
       <h4>{tr('Confirma tu transferencia')}</h4>
       <div className="form-grid cols-2">
-        <Field label={tr('N.º de orden o hash de la transacción')}><Input required maxLength={128} autoComplete="off" value={f.orderNumber} onChange={(e) => setF({ ...f, orderNumber: e.target.value })} /></Field>
+        <Field
+          label={onlyBitget({ uid, wallet }) ? tr('N.º de orden de Bitget') : tr('Hash de la transacción')}
+          hint={bothOptions({ uid, wallet }) ? tr('Si usaste la transferencia interna Bitget, escribe aquí el N.º de orden.') : undefined}
+        ><Input required maxLength={128} autoComplete="off" value={f.orderNumber} onChange={(e) => setF({ ...f, orderNumber: e.target.value })} /></Field>
         <Field label={tr('Fecha y hora de la transferencia')}><Input required type="datetime-local" value={f.transferredAt} onChange={(e) => setF({ ...f, transferredAt: e.target.value })} /></Field>
       </div>
       <Field label={tr('Evidencia')} hint={tr('De 1 a 5 archivos JPG, PNG, WEBP o PDF, de máximo 5 MB cada uno.')}>
@@ -194,13 +206,13 @@ export function BitgetReportsCard() {
         <FormError error={error} />
       </div>
       <Modal open={!!fixing} title={tr('Corregir reporte')} onClose={() => setFixing(null)}>
-        {fixing && <BitgetReportForm report={fixing} onDone={done} onCancel={() => setFixing(null)} />}
+        {fixing && <BitgetReportForm report={fixing} uid={data.info?.uid} wallet={data.info?.wallet} onDone={done} onCancel={() => setFixing(null)} />}
       </Modal>
       <Modal open={!!paying} title={tr('Reportar transferencia')} onClose={() => setPaying(null)}>
         {paying && (
           <div className="stack">
             <BitgetInstructions uid={data.info?.uid} instructions={data.info?.instructions} wallet={data.info?.wallet} amount={paying.amount} currency={paying.currency} />
-            <BitgetReportForm attemptId={paying.id} onDone={done} onCancel={() => setPaying(null)} />
+            <BitgetReportForm attemptId={paying.id} uid={data.info?.uid} wallet={data.info?.wallet} onDone={done} onCancel={() => setPaying(null)} />
           </div>
         )}
       </Modal>

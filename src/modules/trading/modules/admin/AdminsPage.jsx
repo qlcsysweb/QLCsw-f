@@ -1,3 +1,4 @@
+import PasswordInput from '../../components/PasswordInput';
 import { useEffect, useState } from 'react';
 import api from '../../services/api';
 import ConfirmModal from '../../components/ConfirmModal';
@@ -66,11 +67,11 @@ function EditAdminModal({ admin, onClose, onSaved }) {
             <label className="qlc-label">{t('adminAdmins.email')}</label>
             <input className="qlc-input" type="email" value={form.email} onChange={update('email')} required />
             <label className="qlc-label">{t('adminAdmins.newPasswordOptional')}</label>
-            <input className="qlc-input" type="password" value={form.password} onChange={update('password')} minLength={8} placeholder={t('adminAdmins.leaveBlankPassword')} />
+            <PasswordInput value={form.password} onChange={update('password')} minLength={8} placeholder={t('adminAdmins.leaveBlankPassword')} />
             {form.password && (
               <>
                 <label className="qlc-label">{t('adminAdmins.confirmPassword')}</label>
-                <input className="qlc-input" type="password" value={form.confirmPassword} onChange={update('confirmPassword')} minLength={8} />
+                <PasswordInput value={form.confirmPassword} onChange={update('confirmPassword')} minLength={8} />
               </>
             )}
             {error && <div className="qlc-field-error">{error}</div>}
@@ -250,7 +251,7 @@ export default function AdminsPage() {
         <label className="qlc-label">{t('adminAdmins.email')}</label>
         <input className="qlc-input" type="email" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} required />
         <label className="qlc-label">{t('adminAdmins.password')}</label>
-        <input className="qlc-input" type="password" value={form.password} onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))} required minLength={8} />
+        <PasswordInput value={form.password} onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))} required minLength={8} />
         {error && <div className="qlc-field-error">{error}</div>}
         <div className="qlc-form-actions">
           <button className="qlc-btn primary">{t('adminAdmins.createAdmin')}</button>

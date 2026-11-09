@@ -1,3 +1,4 @@
+import PasswordInput from '../../components/PasswordInput';
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { Link } from '../../router.jsx';
 import api from '../../services/api';
@@ -157,9 +158,7 @@ function CreateClientModal({ onClose, onCreated }) {
           <label className="qlc-label">{t('adminClientsList.email')}</label>
           <input className="qlc-input" type="email" value={form.email} onChange={update('email')} required />
           <label className="qlc-label">{t('adminClientsList.initialPassword')}</label>
-          <input
-            className="qlc-input"
-            type="password"
+          <PasswordInput
             value={form.password}
             onChange={update('password')}
             required
@@ -263,11 +262,11 @@ function EditClientModal({ client, onClose, onSaved }) {
             <label className="qlc-label">{t('adminClientsList.email')}</label>
             <input className="qlc-input" type="email" value={form.email} onChange={update('email')} required />
             <label className="qlc-label">{t('adminClientsList.newPasswordOptional')}</label>
-            <input className="qlc-input" type="password" value={form.password} onChange={update('password')} minLength={8} placeholder={t('adminClientsList.leaveBlankPassword')} />
+            <PasswordInput value={form.password} onChange={update('password')} minLength={8} placeholder={t('adminClientsList.leaveBlankPassword')} />
             {form.password && (
               <>
                 <label className="qlc-label">{t('adminClientsList.confirmPassword')}</label>
-                <input className="qlc-input" type="password" value={form.confirmPassword} onChange={update('confirmPassword')} minLength={8} />
+                <PasswordInput value={form.confirmPassword} onChange={update('confirmPassword')} minLength={8} />
               </>
             )}
             {error && <div className="qlc-field-error">{error}</div>}

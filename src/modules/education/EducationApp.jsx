@@ -1,10 +1,14 @@
+import { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext.jsx';
 import { CurrencyProvider } from './context/CurrencyContext.jsx';
-import { I18nProvider } from './i18n/I18nContext.jsx';
+import { I18nProvider, useI18n } from './i18n/I18nContext.jsx';
 import AppRoutes from './routes/AppRoutes.jsx';
 import { UpdatePrompt } from './features/updates/UpdatePrompt.jsx';
 import { LanguageSync } from './i18n/LanguageSync.jsx';
 import { applyDocumentHead } from '../../shared/documentHead.js';
+import LanguageGate from '../../shared/LanguageGate.jsx';
+import { languagePromptPending, rememberLanguageChoice } from '../../shared/languageChoice.js';
 import './styles/tokens.css';
 import './styles/base.css';
 import './styles/app.css';
@@ -28,13 +32,30 @@ applyDocumentHead({
   ],
 });
 
+function EducationRoutes() {
+  const { pathname } = useLocation();
+  const { chooseLang } = useI18n();
+  const [promptPending, setPromptPending] = useState(languagePromptPending);
+
+  if (pathname === '/' && promptPending) {
+    const choose = (code) => {
+      rememberLanguageChoice(code);
+      chooseLang(code);
+      setPromptPending(false);
+    };
+    return <LanguageGate logo={<img className="lang-gate-logo" src="/brand/qlc-logo.png" alt="Quantum Liquidity Capital" />} onSelect={choose} />;
+  }
+
+  return <AppRoutes />;
+}
+
 export default function EducationApp() {
   return (
     <I18nProvider>
       <CurrencyProvider>
         <AuthProvider>
           <LanguageSync />
-          <AppRoutes />
+          <EducationRoutes />
           <UpdatePrompt />
         </AuthProvider>
       </CurrencyProvider>

@@ -28,7 +28,7 @@ export default function TecnologiaIntroModal({ onClose }) {
     { badge: t('techIntro.flowAi'), main: true, lines: [t('techIntro.flowAiLabel')] },
     { Icon: ServerIcon, lines: [t('techIntro.flowAlgoLabel')] },
     { Icon: ShieldIcon, lines: ['API'] },
-    { Icon: DevicesIcon, lines: ['Bitget'] },
+    { Icon: DevicesIcon, lines: ['Exchange'] },
   ];
   const cards = [
     { Icon: StrategyIcon, title: t('techIntro.c1Title'), text: t('techIntro.c1Text') },

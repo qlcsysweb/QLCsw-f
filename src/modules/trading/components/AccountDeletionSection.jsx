@@ -1,3 +1,4 @@
+import PasswordInput from './PasswordInput';
 import { useState } from 'react';
 import { useNavigate } from '../router.jsx';
 import api from '../services/api';
@@ -77,10 +78,8 @@ export default function AccountDeletionSection() {
             <label className="qlc-label" htmlFor="qlc-del-password">
               {t('accountDeletion.passwordLabel')}
             </label>
-            <input
+            <PasswordInput
               id="qlc-del-password"
-              className="qlc-input"
-              type="password"
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}

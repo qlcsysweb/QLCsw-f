@@ -28,16 +28,6 @@ function LanguageDropdown() {
           <div className="qlc-nav-lang-panel">
             <button
               type="button"
-              className={`qlc-nav-lang-option${language === 'es' ? ' active' : ''}`}
-              onClick={() => {
-                setLanguage('es');
-                close();
-              }}
-            >
-              🇪🇸 Español
-            </button>
-            <button
-              type="button"
               className={`qlc-nav-lang-option${language === 'en' ? ' active' : ''}`}
               onClick={() => {
                 setLanguage('en');
@@ -45,6 +35,16 @@ function LanguageDropdown() {
               }}
             >
               🇺🇸 English
+            </button>
+            <button
+              type="button"
+              className={`qlc-nav-lang-option${language === 'es' ? ' active' : ''}`}
+              onClick={() => {
+                setLanguage('es');
+                close();
+              }}
+            >
+              🇪🇸 Español
             </button>
           </div>
         </>

@@ -333,7 +333,7 @@ export function CheckoutModal({ offer, mode = 'buy', promo = null, onClose }) {
       {step === 'bitget' && attempt && bitget && (
         <div className="stack">
           <BitgetInstructions uid={bitget.uid} instructions={bitget.instructions} wallet={bitget.wallet} amount={attempt.chargedAmount} currency={attempt.chargedCurrency} />
-          <BitgetReportForm attemptId={attempt.id} onDone={() => setStep('reported')} />
+          <BitgetReportForm attemptId={attempt.id} uid={bitget.uid} wallet={bitget.wallet} onDone={() => setStep('reported')} />
           <p className="muted small">{tr('Si aún no transfieres, puedes cerrar esta ventana y reportarla después en Mi acceso, en Transferencias Bitget.')}</p>
         </div>
       )}

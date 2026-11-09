@@ -23,16 +23,6 @@ export default function LanguageSwitcherCompact() {
             <div className="qlc-lang-switch-heading">{t('language.label')}</div>
             <button
               type="button"
-              className={`qlc-lang-switch-option${language === 'es' ? ' active' : ''}`}
-              onClick={() => {
-                setLanguage('es');
-                setOpen(false);
-              }}
-            >
-              🇪🇸 Español
-            </button>
-            <button
-              type="button"
               className={`qlc-lang-switch-option${language === 'en' ? ' active' : ''}`}
               onClick={() => {
                 setLanguage('en');
@@ -40,6 +30,16 @@ export default function LanguageSwitcherCompact() {
               }}
             >
               🇺🇸 English
+            </button>
+            <button
+              type="button"
+              className={`qlc-lang-switch-option${language === 'es' ? ' active' : ''}`}
+              onClick={() => {
+                setLanguage('es');
+                setOpen(false);
+              }}
+            >
+              🇪🇸 Español
             </button>
           </div>
         </>

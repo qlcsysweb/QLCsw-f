@@ -60,6 +60,14 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
   background: #08111b; color: #fff; outline: none; min-width: 0;
 }
 .input:focus { border-color: var(--blue); }
+.password-field { position: relative; display: block; width: 100%; }
+.password-field .input { padding-right: 44px; }
+.password-toggle {
+  position: absolute; top: 50%; right: 6px; transform: translateY(-50%);
+  display: grid; place-items: center; width: 32px; height: 32px; padding: 0;
+  border: 0; border-radius: 8px; background: transparent; color: var(--muted); cursor: pointer;
+}
+.password-toggle:hover, .password-toggle:focus-visible { color: #fff; background: rgba(255, 255, 255, 0.08); outline: none; }
 textarea.input { resize: vertical; }
 .form-actions { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; margin-top: 6px; }
 .form-error { background: rgba(196, 61, 75, 0.1); border: 1px solid rgba(255, 123, 134, 0.3); color: #ffb3ba; padding: 10px 12px; border-radius: 10px; font-size: 12px; margin-top: 8px; }

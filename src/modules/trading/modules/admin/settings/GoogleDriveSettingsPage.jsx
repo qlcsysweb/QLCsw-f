@@ -1,3 +1,4 @@
+import PasswordInput from '../../../components/PasswordInput';
 import { useEffect, useState } from 'react';
 import api, { API_BASE_URL } from '../../../services/api';
 import ConfirmModal from '../../../components/ConfirmModal';
@@ -214,9 +215,7 @@ export default function GoogleDriveSettingsPage() {
             disabled={config.isLockedByAnother}
           />
           <label className="qlc-label">{t('adminDrive.oauthClientSecretLabel')}</label>
-          <input
-            className="qlc-input"
-            type="password"
+          <PasswordInput
             value={form.googleClientSecret}
             onChange={(e) => setForm((f) => ({ ...f, googleClientSecret: e.target.value }))}
             placeholder={config.hasGoogleOAuthClient ? '•••••••••••••••• (configurado)' : 'GOCSPX-xxxxxxxxxxxxxxxx'}

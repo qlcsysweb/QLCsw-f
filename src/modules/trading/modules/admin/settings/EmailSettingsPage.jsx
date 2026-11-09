@@ -1,3 +1,4 @@
+import PasswordInput from '../../../components/PasswordInput';
 import { useEffect, useState } from 'react';
 import api, { API_BASE_URL } from '../../../services/api';
 import ConfirmModal from '../../../components/ConfirmModal';
@@ -245,9 +246,7 @@ export default function EmailSettingsPage() {
           {method === 'APP_PASSWORD' && (
             <>
               <label className="qlc-label">{t('adminEmail.appPasswordLabel')}</label>
-              <input
-                className="qlc-input"
-                type="password"
+              <PasswordInput
                 value={form.gmailAppPassword}
                 onChange={(e) => setForm((f) => ({ ...f, gmailAppPassword: e.target.value }))}
                 placeholder={config.hasOwnCredentials && config.authMethod === 'APP_PASSWORD' ? '•••••••••••••••• (configurada)' : 'xxxx xxxx xxxx xxxx'}
@@ -272,9 +271,7 @@ export default function EmailSettingsPage() {
                 disabled={config.isLockedByAnother}
               />
               <label className="qlc-label">{t('adminEmail.oauthClientSecretLabel')}</label>
-              <input
-                className="qlc-input"
-                type="password"
+              <PasswordInput
                 value={form.googleClientSecret}
                 onChange={(e) => setForm((f) => ({ ...f, googleClientSecret: e.target.value }))}
                 placeholder={config.hasGoogleOAuthClient ? '•••••••••••••••• (configurado)' : 'GOCSPX-xxxxxxxxxxxxxxxx'}

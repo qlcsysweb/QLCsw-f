@@ -6,8 +6,8 @@ import { applyLabels } from '../utils/labels.js';
 import { setTrLang } from './tr.js';
 
 export const LANGUAGES = [
-  { code: 'es', label: 'Español', short: 'ES' },
   { code: 'en', label: 'English', short: 'EN' },
+  { code: 'es', label: 'Español', short: 'ES' },
 ];
 
 const MESSAGES = { es, en };

@@ -3,8 +3,8 @@ import { useLocation } from '../../router.jsx';
 import usePublicData from './usePublicData';
 import useDominoEntrance from './useDominoEntrance';
 import { resolveViewId, HOME_ID } from './useSectionNav';
-import { getCookie, setCookie } from '../../utils/cookies';
-import DailyLanguagePrompt from '../../i18n/DailyLanguagePrompt';
+import { languagePromptPending } from '../../../../shared/languageChoice.js';
+import WelcomeLanguageGate from '../../i18n/WelcomeLanguageGate';
 import AntiScamModal from '../../components/AntiScamModal';
 import AccountNotice from '../../components/AccountNotice';
 import PublicNav from './components/PublicNav';
@@ -27,9 +27,7 @@ import './public.css';
 // CORRECCIÓN 1: el visitante puede volver a elegir idioma solo una vez al
 // día; el aviso antiestafa, en cambio, aparece en CADA visita a la página
 // pública, siempre inmediatamente después. Ninguno de los dos afecta la
-// preferencia de idioma permanente (qlc_language, 365 días).
-const LANGUAGE_PROMPT_COOKIE = 'trad_language_prompt_date';
-const todayString = () => new Date().toISOString().slice(0, 10);
+// preferencia de idioma permanente (365 días).
 
 /*
  * La página pública funciona como un conjunto de pantallas: el navbar queda
@@ -43,12 +41,8 @@ const todayString = () => new Date().toISOString().slice(0, 10);
 export default function PublicHomePage() {
   const location = useLocation();
   const { text, media, models, faqs, trackRecord, loading } = usePublicData();
-  const [showLanguagePrompt, setShowLanguagePrompt] = useState(
-    () => getCookie(LANGUAGE_PROMPT_COOKIE) !== todayString()
-  );
-  const [showScamModal, setShowScamModal] = useState(
-    () => getCookie(LANGUAGE_PROMPT_COOKIE) === todayString()
-  );
+  const [showLanguagePrompt, setShowLanguagePrompt] = useState(languagePromptPending);
+  const [showScamModal, setShowScamModal] = useState(() => !languagePromptPending());
   const shownId = resolveViewId(location.pathname, location.hash);
   const stageRef = useRef(null);
   const viewRef = useRef(null);
@@ -70,7 +64,6 @@ export default function PublicHomePage() {
   }, [shownId]);
 
   const handleLanguagePromptDone = () => {
-    setCookie(LANGUAGE_PROMPT_COOKIE, todayString(), 2);
     setShowLanguagePrompt(false);
     setShowScamModal(true);
   };
@@ -114,7 +107,7 @@ export default function PublicHomePage() {
 
   return (
     <div className="qlc-public qlc-public-app">
-      {showLanguagePrompt && <DailyLanguagePrompt onDone={handleLanguagePromptDone} />}
+      {showLanguagePrompt && <WelcomeLanguageGate onDone={handleLanguagePromptDone} />}
       {/* Idioma (1 vez al día) → aviso antiestafa → página. El modal de
           transferencia interna Bitget se muestra al iniciar sesión como
           cliente (ver ClientLayout), no aquí. */}
