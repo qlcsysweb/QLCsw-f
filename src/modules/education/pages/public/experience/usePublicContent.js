@@ -31,14 +31,22 @@ export function usePublicOffers() {
     const cached = readOffers();
     if (cached && Date.now() - cached.at < OFFERS_TTL) return undefined;
     let alive = true;
-    api.get('/public/offers')
+    let timer = null;
+    // Si el servidor apenas despierta la primera consulta puede fallar: se reintenta para no dejar la sección sin planes.
+    const load = (left) => api.get('/public/offers')
       .then((data) => {
         if (!alive || !Array.isArray(data?.offers)) return;
         writeOffers(data.offers);
         setOffers(data.offers);
       })
-      .catch(() => null);
-    return () => { alive = false; };
+      .catch(() => {
+        if (alive && left > 0) timer = setTimeout(() => load(left - 1), 2500);
+      });
+    load(4);
+    return () => {
+      alive = false;
+      clearTimeout(timer);
+    };
   }, []);
 
   return offers;
