@@ -16,6 +16,7 @@ import { useI18n } from '../i18n/I18nContext.jsx';
 import { LanguageSwitcher } from '../components/ui/LanguageSwitcher.jsx';
 import { useCurrency } from '../context/CurrencyContext.jsx';
 import { LoginNotice } from '../features/notice/LoginNotice.jsx';
+import { NotificationsBell } from '../features/notifications/NotificationsBell.jsx';
 
 export const NAV = [
   { to: '', icon: '⌂', label: 'home', end: true },
@@ -64,6 +65,8 @@ export function AppLayout() {
   const location = useLocation();
   const relative = location.pathname.slice(basePath.length);
   const gated = !isAdminView && !hasAccess && !FREE_PATHS.some((p) => relative.startsWith(p));
+  const showPeriod = (hasAccess || isAdminView) && !relative.startsWith('/academia') && !relative.startsWith('/acceso');
+  const showBell = !isAdminView && user?.role === 'CLIENT';
 
   useEffect(() => {
     setMenuOpen(false);
@@ -122,8 +125,11 @@ export function AppLayout() {
         )}
         {!isAdminView && user?.role === 'CLIENT' && <DataShareBanner />}
         {isAdminView && clientId && <ShareChat clientId={clientId} />}
-        {(hasAccess || isAdminView) && !relative.startsWith('/academia') && !relative.startsWith('/acceso') && (
-          <div className="topbar"><PeriodSelector /></div>
+        {(showPeriod || showBell) && (
+          <div className="topbar">
+            {showPeriod && <PeriodSelector />}
+            {showBell && <NotificationsBell />}
+          </div>
         )}
         {!isAdminView && <PaymentReturn />}
         <div className="page-enter" key={`${location.pathname}-${lang}-${currency}`}>{gated ? <AccessGate /> : <Outlet />}</div>

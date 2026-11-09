@@ -102,8 +102,11 @@ body.public-locked {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   animation: sheetIn 0.32s var(--ease-out);
 }
+.pnav-sheet > * { flex-shrink: 0; }
 .pnav-sheet > button, .pnav-sheet > .pnav-sheet-link {
   display: flex;
   align-items: baseline;

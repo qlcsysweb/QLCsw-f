@@ -133,7 +133,7 @@ export function BitgetReportForm({ attemptId, report, uid, wallet, onDone, onCan
           label={onlyBitget({ uid, wallet }) ? tr('N.º de orden de Bitget') : tr('Hash de la transacción')}
           hint={bothOptions({ uid, wallet }) ? tr('Si usaste la transferencia interna Bitget, escribe aquí el N.º de orden.') : undefined}
         ><Input required maxLength={128} autoComplete="off" value={f.orderNumber} onChange={(e) => setF({ ...f, orderNumber: e.target.value })} /></Field>
-        <Field label={tr('Fecha y hora de la transferencia')}><Input required type="datetime-local" value={f.transferredAt} onChange={(e) => setF({ ...f, transferredAt: e.target.value })} /></Field>
+        <Field label={tr('Fecha y hora de la transacción')}><Input required type="datetime-local" value={f.transferredAt} onChange={(e) => setF({ ...f, transferredAt: e.target.value })} /></Field>
       </div>
       <Field label={tr('Evidencia')} hint={tr('De 1 a 5 archivos JPG, PNG, WEBP o PDF, de máximo 5 MB cada uno.')}>
         <Input type="file" accept={ACCEPT} multiple disabled={total >= MAX_FILES} onChange={addFiles} />

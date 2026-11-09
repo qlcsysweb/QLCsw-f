@@ -1,15 +1,17 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useWorkspace } from '../../../context/WorkspaceContext.jsx';
 import { MODULE_STATE } from '../../../utils/labels.js';
 import { AsyncView } from '../../../components/ui/States.jsx';
 import { Pill, ProgressBar } from '../../../components/ui/Card.jsx';
 import { AccessOffers } from '../../../features/access/AccessOffers.jsx';
+import { LockedModuleModal } from '../../../features/access/TrialNotice.jsx';
 import { modulePath, useAcademy } from '../../../features/academy/useAcademy.js';
 import { tr } from '../../../i18n/tr.js';
 
 const PILL = { good: '', info: '', warn: 'warn', muted: 'muted', bad: 'bad' };
 
-function ModuleTile({ m, to }) {
+function ModuleTile({ m, to, onLocked }) {
   const meta = MODULE_STATE[m.state];
   const open = m.state === 'AVAILABLE' || m.state === 'COMPLETED';
   const body = (
@@ -23,12 +25,16 @@ function ModuleTile({ m, to }) {
       <span className="tile-cta">{m.state === 'COMPLETED' ? tr('Revisar módulo →') : open ? tr('Entrar al módulo →') : ''}</span>
     </>
   );
-  return open || to.admin ? <Link className={`module-tile state-${m.state}`} to={to.path}>{tr(body)}</Link> : <div className={`module-tile state-${m.state}`}>{tr(body)}</div>;
+  if (open || to.admin) return <Link className={`module-tile state-${m.state}`} to={to.path}>{tr(body)}</Link>;
+  // Sin acceso a este módulo: al tocarlo se indica que se desbloquea desde Mi acceso.
+  if (m.state === 'LOCKED_ACCESS') return <button type="button" className={`module-tile state-${m.state}`} onClick={() => onLocked(m)}>{tr(body)}</button>;
+  return <div className={`module-tile state-${m.state}`}>{tr(body)}</div>;
 }
 
 export default function AcademyHome() {
   const { basePath, isAdminView } = useWorkspace();
   const res = useAcademy();
+  const [locked, setLocked] = useState(null);
   return (
     <AsyncView {...res} onRetry={res.reload}>
       {(a) => (
@@ -53,10 +59,10 @@ export default function AcademyHome() {
           <section className="academy-block">
             <div className="block-head">
               <h2>{tr('Bloque 1 · Fundamentos, inversión y riesgo')}</h2>
-              <span className="muted small">{a.access.mode === 'TOOLS' ? tr('Modalidad: solo herramientas') : tr('Modalidad: academia completa')}</span>
+              <span className="muted small">{a.access.mode === 'TRIAL' ? tr('Modalidad: prueba gratis de herramientas') : a.access.mode === 'TOOLS' ? tr('Modalidad: solo herramientas') : tr('Modalidad: academia completa')}</span>
             </div>
             <div className="tiles">
-              {a.block1.slice(0, 3).map((m) => <ModuleTile key={m.number} m={m} to={{ path: modulePath(basePath, m.number), admin: isAdminView }} />)}
+              {a.block1.slice(0, 3).map((m) => <ModuleTile key={m.number} m={m} onLocked={setLocked} to={{ path: modulePath(basePath, m.number), admin: isAdminView }} />)}
             </div>
             <div className="route-strip">
               <div>
@@ -70,7 +76,7 @@ export default function AcademyHome() {
               </div>
             </div>
             <div className="tiles">
-              {a.block1.slice(3).map((m) => <ModuleTile key={m.number} m={m} to={{ path: modulePath(basePath, m.number), admin: isAdminView }} />)}
+              {a.block1.slice(3).map((m) => <ModuleTile key={m.number} m={m} onLocked={setLocked} to={{ path: modulePath(basePath, m.number), admin: isAdminView }} />)}
             </div>
           </section>
 
@@ -80,9 +86,10 @@ export default function AcademyHome() {
               <span className="muted small">{a.block2ProgressPct}{tr('% completado · La Ruta de Mercados (M4–M6) es opcional')}</span>
             </div>
             <div className="tiles">
-              {a.block2.map((m) => <ModuleTile key={m.number} m={m} to={{ path: modulePath(basePath, m.number), admin: isAdminView }} />)}
+              {a.block2.map((m) => <ModuleTile key={m.number} m={m} onLocked={setLocked} to={{ path: modulePath(basePath, m.number), admin: isAdminView }} />)}
             </div>
           </section>
+          <LockedModuleModal module={locked} onClose={() => setLocked(null)} />
         </div>
       )}
     </AsyncView>

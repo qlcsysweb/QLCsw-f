@@ -33,6 +33,7 @@
 a.module-tile:hover { transform: translateY(-2px); border-color: rgba(0, 168, 255, 0.4); box-shadow: 0 18px 50px rgba(0, 0, 0, 0.3); color: var(--text); }
 .module-tile h3 { font-size: 16px; }
 .module-tile p { font-size: 12.5px; color: var(--muted); margin: 0; flex: 1; line-height: 1.55; }
+button.module-tile { width: 100%; font: inherit; text-align: left; cursor: pointer; }
 .module-tile.state-COMPLETED { border-color: rgba(91, 212, 165, 0.3); }
 .module-tile.state-LOCKED_ORDER, .module-tile.state-LOCKED_ACCESS, .module-tile.state-LOCKED_FILTER, .module-tile.state-LOCKED_ROUTE, .tiles.is-muted .module-tile { opacity: 0.62; }
 .tile-top { display: flex; justify-content: space-between; align-items: center; }

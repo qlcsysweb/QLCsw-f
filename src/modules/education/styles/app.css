@@ -277,3 +277,46 @@ h1 { font-size: clamp(28px, 4vw, 44px); line-height: 1.12; letter-spacing: -.04e
 .notify-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
 .notify-group { margin: 0; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; display: flex; flex-direction: column; gap: 4px; }
 .notify-group legend { display: flex; gap: 10px; align-items: center; padding: 0 6px; font-weight: 700; font-size: 13px; }
+
+/* Notificaciones: campana arriba a la derecha y bandeja en un panel lateral derecho. */
+.topbar { gap: 12px; }
+.notif-bell { margin-left: auto; position: relative; display: inline-flex; align-items: center; justify-content: center; width: 42px; height: 42px; border-radius: 12px; border: 1px solid var(--line); background: rgba(255, 255, 255, 0.03); color: var(--text); cursor: pointer; transition: border-color 0.2s, background 0.2s; }
+.notif-bell:hover { border-color: rgba(0, 168, 255, 0.45); background: rgba(0, 168, 255, 0.08); }
+.notif-bell-count { position: absolute; top: -6px; right: -6px; min-width: 19px; height: 19px; padding: 0 5px; border-radius: 999px; background: #e5484d; color: #fff; font-size: 11px; font-weight: 700; line-height: 19px; text-align: center; box-shadow: 0 0 0 2px var(--bg, #05070a); }
+.notif-backdrop { position: fixed; inset: 0; z-index: 90; background: rgba(2, 4, 8, 0.55); backdrop-filter: blur(3px); display: flex; justify-content: flex-end; }
+.notif-panel { width: min(430px, 100vw); height: 100dvh; display: flex; flex-direction: column; background: var(--panel, #0b1118); border-left: 1px solid var(--line); box-shadow: -24px 0 60px rgba(0, 0, 0, 0.45); animation: notifIn 0.28s ease-out; }
+@keyframes notifIn { from { transform: translateX(40px); opacity: 0; } }
+.notif-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding: 20px 20px 12px; border-bottom: 1px solid var(--line); }
+.notif-head h3 { margin: 2px 0 0; font-size: 20px; }
+.notif-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 20px; border-bottom: 1px solid var(--line); }
+.notif-toolbar-actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.notif-check { display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted); cursor: pointer; }
+.notif-panel .btn-sm { display: inline-flex; align-items: center; gap: 5px; padding: 6px 10px; font-size: 12px; border-radius: 9px; }
+.notif-confirm { margin: 10px 20px 0; padding: 12px; border: 1px solid rgba(255, 123, 134, 0.35); border-radius: 12px; background: rgba(196, 61, 75, 0.1); font-size: 13px; }
+.notif-confirm p { margin: 0 0 8px; }
+.notif-list { flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: 10px 12px 24px; display: flex; flex-direction: column; gap: 6px; }
+.notif-empty { color: var(--muted); text-align: center; padding: 40px 10px; font-size: 13.5px; }
+.notif-item { display: grid; grid-template-columns: auto 1fr auto; align-items: flex-start; gap: 10px; padding: 12px; border: 1px solid var(--line); border-radius: 14px; background: rgba(255, 255, 255, 0.025); }
+.notif-item.is-read { opacity: 0.62; }
+.notif-item.is-selected { border-color: rgba(0, 168, 255, 0.5); opacity: 1; }
+.notif-item > input { margin-top: 3px; }
+.notif-body { display: flex; flex-direction: column; gap: 4px; min-width: 0; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.notif-title { display: flex; align-items: center; gap: 7px; font-weight: 650; font-size: 13.5px; }
+.notif-dot { width: 8px; height: 8px; flex: 0 0 8px; border-radius: 50%; background: var(--blue2, #5bd4ff); }
+.notif-message { font-size: 12.5px; color: var(--muted); line-height: 1.5; overflow-wrap: anywhere; }
+.notif-date { font-size: 11px; color: var(--muted); opacity: 0.8; }
+.notif-delete { border: 0; background: none; color: var(--muted); cursor: pointer; padding: 4px; border-radius: 8px; }
+.notif-delete:hover { color: var(--red, #ff7b86); background: rgba(196, 61, 75, 0.12); }
+@media (prefers-reduced-motion: reduce) { .notif-panel { animation: none; } }
+
+/* Ficha de pago en OXXO. */
+.oxxo-ticket { display: flex; flex-direction: column; gap: 14px; }
+.oxxo-head { display: flex; align-items: center; gap: 14px; }
+.oxxo-head h4 { margin: 0 0 2px; }
+.oxxo-badge { flex: 0 0 auto; padding: 8px 12px; border-radius: 10px; background: #e5332a; color: #ffd600; font-weight: 900; letter-spacing: 0.06em; }
+.oxxo-qr { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
+.oxxo-qr img { width: 200px; height: 200px; padding: 10px; border-radius: 14px; background: #fff; }
+.oxxo-reference { padding: 12px 14px; border: 1px solid var(--line); border-radius: 14px; background: rgba(255, 255, 255, 0.03); }
+.oxxo-number { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-top: 6px; }
+.oxxo-number b { font-size: clamp(18px, 4.6vw, 22px); letter-spacing: 0.04em; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.oxxo-steps { margin: 0; padding-left: 18px; display: grid; gap: 4px; }

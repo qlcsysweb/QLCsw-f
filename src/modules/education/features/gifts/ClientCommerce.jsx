@@ -37,15 +37,17 @@ export function SubscriptionCard() {
       setState({ busy: false, error });
     }
   };
-  const until = access.full?.expiresAt || access.toolAccess?.reduce((max, t) => (t.expiresAt && (!max || t.expiresAt > max) ? t.expiresAt : max), null);
+  // La prueba gratis no es una suscripción pagada: no se muestra como activa ni se puede cancelar.
+  const paid = access.hasAny && access.mode !== 'TRIAL';
+  const until = access.full?.expiresAt || access.toolAccess?.filter((t) => !t.trial).reduce((max, t) => (t.expiresAt && (!max || t.expiresAt > max) ? t.expiresAt : max), null);
   return (
-    <Card title={tr('Mi suscripción')} actions={sub.cancelledAt ? <Pill variant="warn">{tr('Cancelada')}</Pill> : access.hasAny ? <Pill>{tr('Activa')}</Pill> : <Pill variant="muted">{tr('Sin acceso activo')}</Pill>}>
+    <Card title={tr('Mi suscripción')} actions={sub.cancelledAt ? <Pill variant="warn">{tr('Cancelada')}</Pill> : paid ? <Pill>{tr('Activa')}</Pill> : access.mode === 'TRIAL' ? <Pill variant="warn">{tr('Prueba gratis')}</Pill> : <Pill variant="muted">{tr('Sin acceso activo')}</Pill>}>
       {sub.cancelledAt ? (
-        <p className="small">{access.hasAny
+        <p className="small">{paid
           ? tr('Cancelaste tu suscripción el {date}. Conservas tu acceso hasta el {until}; después no se renovará.', { date: date(sub.cancelledAt), until: until ? date(until) : '—' })
           : tr('Cancelaste tu suscripción el {date}. Tus datos se conservan y puedes regresar cuando quieras.', { date: date(sub.cancelledAt) })}</p>
       ) : (
-        <p className="small">{access.hasAny ? tr('Tu suscripción está activa{until}.', { until: until ? tr(' hasta el {date}', { date: date(until) }) : '' }) : tr('Aún no tienes un acceso activo.')}</p>
+        <p className="small">{paid ? tr('Tu suscripción está activa{until}.', { until: until ? tr(' hasta el {date}', { date: date(until) }) : '' }) : access.mode === 'TRIAL' ? tr('Estás usando la prueba gratis; aún no tienes un acceso pagado.') : tr('Aún no tienes un acceso activo.')}</p>
       )}
       {sub.billing && (
         <p className="small">{tr('{name}: cobro automático de {amount} cada {period} con {provider}.', { name: tr(sub.billing.offerName || ''), amount: `${priceMoney(sub.billing.amount)} ${sub.billing.currency}`, period: tr(sub.billing.cycle === 'YEARLY' ? 'año' : 'mes'), provider: tr(sub.billing.provider === 'PAYPAL' ? 'PayPal' : 'tarjeta') })}{sub.billing.nextBillingAt ? ` ${tr('Próximo cobro: {date}.', { date: date(sub.billing.nextBillingAt) })}` : ''}</p>
@@ -53,7 +55,7 @@ export function SubscriptionCard() {
       <div className="row-actions">
         {sub.cancelledAt && !sub.billing
           ? sub.canResume !== false && <Button loading={state.busy} onClick={() => run(() => api.post('/payments/subscription/resume'))}>{tr('Reactivar mi suscripción')}</Button>
-          : (access.hasAny || sub.billing) && <Button variant="secondary" onClick={() => setConfirm(true)}>{tr('Cancelar mi suscripción')}</Button>}
+          : (paid || sub.billing) && <Button variant="secondary" onClick={() => setConfirm(true)}>{tr('Cancelar mi suscripción')}</Button>}
       </div>
       <label className="check">
         <input type="checkbox" checked={!sub.marketingOptOut} disabled={state.busy} onChange={(e) => run(() => api.put('/payments/preferences', { marketingOptOut: !e.target.checked }))} />

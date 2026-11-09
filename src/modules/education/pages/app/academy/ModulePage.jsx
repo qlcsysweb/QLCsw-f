@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useWorkspace } from '../../../context/WorkspaceContext.jsx';
+import { useAuth } from '../../../context/AuthContext.jsx';
 import { Button } from '../../../components/ui/Button.jsx';
 import { Field, FormError, Textarea } from '../../../components/ui/Form.jsx';
 import { dateTime } from '../../../utils/format.js';
@@ -46,7 +47,8 @@ function Lesson({ module }) {
 }
 
 function Progress({ module, onDone }) {
-  const { api, canEdit, basePath } = useWorkspace();
+  const { api, canEdit, basePath, isAdminView } = useWorkspace();
+  const { access, refreshAccess } = useAuth();
   const navigate = useNavigate();
   const [exercise, setExercise] = useState(module.exercise || '');
   const [state, setState] = useState({ busy: false, error: null, saved: false });
@@ -60,7 +62,11 @@ function Progress({ module, onDone }) {
       await api.put(`/academy/modules/${module.number}/progress`, { status, exercise });
       setState({ busy: false, error: null, saved: true });
       await onDone();
-      if (status === 'COMPLETED') {
+      if (status === 'COMPLETED' && !isAdminView && access?.trial?.checkpoints?.includes(module.number)) {
+        // Prueba gratis: al terminar el M3 y el M9 se le recuerda en Mi acceso.
+        await refreshAccess?.();
+        navigate(`${basePath}/acceso?prueba=M${module.number}`);
+      } else if (status === 'COMPLETED') {
         const next = NEXT_STEP[module.number];
         if (next) navigate(`${basePath}/academia/${next}`);
         else if (next === undefined) navigate(modulePath(basePath, module.number + 1));
@@ -129,7 +135,7 @@ export default function ModulePage() {
   const masterTab = showMasterclass ? [['masterclass', 'Masterclass']] : [];
   const tabs = m.mode === 'ACADEMY'
     ? [...masterTab, ['clase', 'Instrucciones de uso de herramienta'], ['herramienta', 'Herramienta'], ['avance', 'Ejercicio y avance']]
-    : [['herramienta', 'Herramienta'], ['avance', 'Avance'], ...masterTab];
+    : [['clase', 'Instrucciones de uso de herramienta'], ['herramienta', 'Herramienta'], ['avance', 'Avance'], ...masterTab];
   const active = tab && tabs.some(([k]) => k === tab) ? tab : tabs[0][0];
   const refresh = async () => { await Promise.all([overview.reload(), mod.reload()]); };
 

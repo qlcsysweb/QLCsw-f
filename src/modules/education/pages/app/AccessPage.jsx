@@ -12,6 +12,7 @@ import { CodeInput, Field, FormError, Input } from '../../components/ui/Form.jsx
 import { Modal } from '../../components/ui/Modal.jsx';
 import { AccessOffers } from '../../features/access/AccessOffers.jsx';
 import { BitgetReportsCard } from '../../features/access/BitgetPayment.jsx';
+import { TrialNotice } from '../../features/access/TrialNotice.jsx';
 import { tr } from '../../i18n/tr.js';
 import { DataShareCard } from '../../features/share/DataShare.jsx';
 import { GiftShop, MyGifts, PromoCodeCard, RedeemCard, SubscriptionCard } from '../../features/gifts/ClientCommerce.jsx';
@@ -169,13 +170,15 @@ export default function AccessPage() {
   const { isAdminView } = useWorkspace();
   const isClient = user?.role === 'CLIENT' && !isAdminView;
   useEffect(() => {
-    const target = new URLSearchParams(window.location.search).get('promo') ? 'promocion' : window.location.hash.slice(1);
+    const search = new URLSearchParams(window.location.search);
+    const target = search.get('promo') ? 'promocion' : search.get('prueba') ? 'prueba-gratis' : window.location.hash.slice(1);
     if (target) setTimeout(() => document.getElementById(target)?.scrollIntoView({ behavior: 'smooth' }), 400);
   }, []);
   const attempts = useAsync(() => api.get('/payments/attempts'), [accessInfo]);
   return (
     <>
       <PageHeader kicker={tr('Mi acceso')} title={tr('Acceso a QLC Financial Education')} subtitle={`Modalidad actual: ${ACCESS_MODES[access.mode]}`} />
+      {isClient && <TrialNotice />}
       {isClient && <SubscriptionCard />}
       <AccessOffers title={tr('Formas de adquirir')} />
       {isClient && <BitgetReportsCard key={accessInfo?.access?.mode} />}

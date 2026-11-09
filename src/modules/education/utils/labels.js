@@ -25,7 +25,7 @@ export const APPOINTMENT_REASONS = [
   'Construcción patrimonial', 'Diversificación', 'Educación sobre inversiones',
 ];
 
-export const ACCESS_MODES = { FULL: 'Acceso completo anual', TOOLS: 'Solo herramientas', NONE: 'Sin acceso' };
+export const ACCESS_MODES = { FULL: 'Acceso completo anual', TOOLS: 'Solo herramientas', TRIAL: 'Prueba gratis de 1 mes', NONE: 'Sin acceso' };
 export const PAYMENT_STATUS = { PENDING: 'Pendiente', APPROVED: 'Aprobado', REJECTED: 'Rechazado' };
 
 export const ADMIN_LEVELS = { VIEW: 'Visualización', EDIT: 'Edición', FULL: 'Administración completa' };
@@ -113,7 +113,7 @@ const EN = {
   APPOINTMENT_STATUS: { PENDING: 'Pending', CONFIRMED: 'Confirmed', COMPLETED: 'Completed', CANCELLED: 'Cancelled' },
   APPOINTMENT_CHANNELS: { CHAT_INTERNO: 'Internal chat', VIDEOLLAMADA: 'Video call', LLAMADA: 'Phone call', WHATSAPP: 'WhatsApp', PRESENCIAL: 'In person' },
   APPOINTMENT_REASONS: ['Financial organization', 'Goal planning', 'Budget', 'Debts', 'Wealth building', 'Diversification', 'Investment education'],
-  ACCESS_MODES: { FULL: 'Full annual access', TOOLS: 'Tools only', NONE: 'No access' },
+  ACCESS_MODES: { FULL: 'Full annual access', TOOLS: 'Tools only', TRIAL: '1-month free trial', NONE: 'No access' },
   PAYMENT_STATUS: { PENDING: 'Pending', APPROVED: 'Approved', REJECTED: 'Rejected' },
   ADMIN_LEVELS: { VIEW: 'View only', EDIT: 'Edit', FULL: 'Full administration' },
   PRODUCT_TYPES: {
