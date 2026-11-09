@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { Routes, Route, Navigate } from './router.jsx';
 import { applyDocumentHead } from '../../shared/documentHead.js';
+import { languagePromptPending } from '../../shared/languageChoice.js';
 import './styles/theme.css';
 import { AuthProvider } from './context/AuthContext';
 import { LanguageProvider, useLanguage } from './i18n/LanguageContext';
@@ -63,7 +65,9 @@ applyDocumentHead({
 function AppRoutes() {
   const { hasChosenLanguage } = useLanguage();
 
-  if (!hasChosenLanguage) return <WelcomeLanguageGate />;
+  const [promptPending, setPromptPending] = useState(languagePromptPending);
+
+  if (!hasChosenLanguage || promptPending) return <WelcomeLanguageGate onDone={() => setPromptPending(false)} />;
 
   return (
     <AuthProvider>

@@ -2,9 +2,13 @@ import { useState } from 'react';
 import { useNavigate, useLocation, Link } from '../router.jsx';
 import { useAuth } from '../context/AuthContext';
 import QlcLogo from '../components/QlcLogo';
+import QuantumBackdrop from '../components/QuantumBackdrop';
 import { useLanguage } from '../i18n/LanguageContext';
 import { translateBackendMessage } from '../i18n/backendMessages';
+import PasswordResetForm from './PasswordResetForm';
 import './LoginPage.css';
+
+const MODE_LABELS = { password: 'auth.modePassword', code: 'auth.modeCode', reset: 'auth.modeReset' };
 
 export default function LoginPage() {
   const { login, loginWithTwoFactor, loginWithCode } = useAuth();
@@ -16,7 +20,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [code, setCode] = useState('');
   const [tempToken, setTempToken] = useState(null);
-  // Acceso con contraseña O con código de Google Authenticator (uno de los dos).
+  // Contraseña, código de Google Authenticator o restablecer contraseña.
   const [mode, setMode] = useState('password');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -61,8 +65,14 @@ export default function LoginPage() {
     }
   };
 
+  const selectMode = (next) => {
+    setMode(next);
+    setError('');
+  };
+
   return (
     <div className="qlc-login-screen">
+      <QuantumBackdrop />
       <div className="qlc-login-box qlc-card">
         <div className="qlc-login-brand">
           <QlcLogo className="qlc-login-logo" animated alt="QLC" />
@@ -73,24 +83,25 @@ export default function LoginPage() {
         <p className="qlc-login-sub">{t('auth.subtitle')}</p>
 
         {!tempToken ? (
-          <form onSubmit={handleSubmit}>
+          <>
             <div className="qlc-login-modes" role="tablist" aria-label={t('auth.modeLabel')}>
-              {['password', 'code'].map((m) => (
+              {Object.entries(MODE_LABELS).map(([m, label]) => (
                 <button
                   key={m}
                   type="button"
                   role="tab"
                   aria-selected={mode === m}
                   className={mode === m ? 'is-active' : ''}
-                  onClick={() => {
-                    setMode(m);
-                    setError('');
-                  }}
+                  onClick={() => selectMode(m)}
                 >
-                  {m === 'password' ? t('auth.modePassword') : t('auth.modeCode')}
+                  {t(label)}
                 </button>
               ))}
             </div>
+            {mode === 'reset' ? (
+              <PasswordResetForm initialEmail={email} onGoLogin={() => selectMode('password')} />
+            ) : (
+          <form onSubmit={handleSubmit}>
             <label className="qlc-label">{t('auth.email')}</label>
             <input
               className="qlc-input"
@@ -151,7 +162,7 @@ export default function LoginPage() {
                 </div>
 
                 <div className="qlc-login-forgot">
-                  <button type="button" onClick={() => navigate('/restablecer-contrasena', { state: { email } })}>
+                  <button type="button" onClick={() => selectMode('reset')}>
                     {t('auth.forgotPassword')}
                   </button>
                 </div>
@@ -164,10 +175,12 @@ export default function LoginPage() {
               {loading ? t('auth.submitting') : t('auth.submit')}
             </button>
 
+          </form>
+            )}
             <p className="qlc-login-sub" style={{ marginTop: 18, marginBottom: 0 }}>
               {t('auth.noAccount')} <Link to="/registro">{t('auth.createAccount')}</Link>
             </p>
-          </form>
+          </>
         ) : (
           <form onSubmit={handleTwoFactorSubmit}>
             <p className="qlc-login-sub">{t('auth.twoFactorHint')}</p>

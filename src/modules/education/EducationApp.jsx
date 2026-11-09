@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext.jsx';
 import { CurrencyProvider } from './context/CurrencyContext.jsx';
 import { I18nProvider, useI18n } from './i18n/I18nContext.jsx';
@@ -33,11 +32,10 @@ applyDocumentHead({
 });
 
 function EducationRoutes() {
-  const { pathname } = useLocation();
   const { chooseLang } = useI18n();
   const [promptPending, setPromptPending] = useState(languagePromptPending);
 
-  if (pathname === '/' && promptPending) {
+  if (promptPending) {
     const choose = (code) => {
       rememberLanguageChoice(code);
       chooseLang(code);

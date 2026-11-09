@@ -1,3 +1,4 @@
+import QuantumBackdrop from '../components/QuantumBackdrop';
 import { useState } from 'react';
 import { Navigate, useNavigate } from '../router.jsx';
 import api from '../services/api';
@@ -58,6 +59,7 @@ export default function TwoFactorSetupPage() {
 
   return (
     <div className="qlc-login-screen">
+      <QuantumBackdrop />
       <div className="qlc-login-box qlc-2fa-box qlc-card">
         <div className="qlc-login-brand">
           <QlcLogo className="qlc-login-logo" animated alt="QLC" />

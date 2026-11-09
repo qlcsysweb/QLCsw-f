@@ -1990,6 +1990,7 @@ const es = {
     modeLabel: 'Forma de acceso',
     modePassword: 'Contraseña',
     modeCode: 'Google Authenticator',
+    modeReset: 'Restablecer contraseña',
     codeModeHint: 'Abre Google Authenticator y escribe el código de 6 dígitos de QLC. Disponible cuando ya registraste tu Authenticator.',
   },
 
@@ -4492,6 +4493,7 @@ const en = {
     modeLabel: 'Sign-in method',
     modePassword: 'Password',
     modeCode: 'Google Authenticator',
+    modeReset: 'Reset password',
     codeModeHint: 'Open Google Authenticator and enter the 6-digit QLC code. Available once you have registered your Authenticator.',
   },
 

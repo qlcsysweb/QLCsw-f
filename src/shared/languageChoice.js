@@ -7,7 +7,8 @@ const EDUCATION_LANGUAGE_KEY = 'edu_lang';
 const TRADING_LANGUAGE_COOKIE = 'trad_language';
 const COOKIE_MAX_AGE = 365 * 24 * 60 * 60;
 
-const today = () => new Date().toISOString().slice(0, 10);
+// Día local del visitante: el selector vuelve al empezar su día, no a medianoche UTC.
+const today = () => new Date().toLocaleDateString('en-CA');
 
 export function languagePromptPending() {
   try {

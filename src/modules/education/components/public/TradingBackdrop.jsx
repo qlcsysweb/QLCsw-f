@@ -32,8 +32,18 @@ function buildCandles({ seed, count, top, bottom }) {
     bodyHeight: Math.max(2, Math.abs(y(c.open) - y(c.close))),
     wickTop: y(c.high),
     wickBottom: y(c.low),
+    open: y(c.open),
     close: y(c.close),
   }));
+}
+
+// La serie seguida de su espejo termina donde empieza: al desplazarla 2×WIDTH
+// (ver tbTicker) el gráfico corre sin salto. La tercera parte cubre la pantalla
+// durante el último tramo del recorrido.
+function loopCandles(candles) {
+  const period = WIDTH * 2;
+  const mirrored = [...candles].reverse().map((c) => ({ ...c, x: period - c.x, up: !c.up, open: c.close, close: c.open }));
+  return [...candles, ...mirrored, ...candles.map((c) => ({ ...c, x: c.x + period }))];
 }
 
 const linePath = (candles) => candles.map((c, i) => `${i ? 'L' : 'M'}${c.x.toFixed(1)} ${c.close.toFixed(1)}`).join(' ');
@@ -53,8 +63,8 @@ function CandleSeries({ candles, className }) {
 
 export function TradingBackdrop() {
   const { front, back } = useMemo(() => ({
-    front: buildCandles({ seed: 7919, count: 64, top: 300, bottom: 760 }),
-    back: buildCandles({ seed: 104729, count: 96, top: 140, bottom: 560 }),
+    front: loopCandles(buildCandles({ seed: 7919, count: 64, top: 300, bottom: 760 })),
+    back: loopCandles(buildCandles({ seed: 104729, count: 96, top: 140, bottom: 560 })),
   }), []);
 
   return (
@@ -70,13 +80,14 @@ export function TradingBackdrop() {
           </linearGradient>
         </defs>
         <rect width={WIDTH} height={HEIGHT} fill="url(#tb-grid)" />
-        <g className="tb-drift-slow">
+        <g className="tb-ticker-slow">
           <CandleSeries candles={back} className="tb-series tb-back" />
         </g>
-        <g className="tb-drift">
-          <path className="tb-area" d={`${linePath(front)} L${WIDTH} ${HEIGHT} L0 ${HEIGHT} Z`} />
+        <g className="tb-ticker">
+          <path className="tb-area" d={`${linePath(front)} L${WIDTH * 3} ${HEIGHT} L0 ${HEIGHT} Z`} />
           <CandleSeries candles={front} className="tb-series tb-front" />
-          <path className="tb-line" d={linePath(front)} pathLength="1" />
+          <path className="tb-line" d={linePath(front)} />
+          <path className="tb-line-run" d={linePath(front)} pathLength="1" />
         </g>
       </svg>
       <div className="tb-glow" />

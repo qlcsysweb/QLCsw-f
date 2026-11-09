@@ -3,8 +3,6 @@ import { useLocation } from '../../router.jsx';
 import usePublicData from './usePublicData';
 import useDominoEntrance from './useDominoEntrance';
 import { resolveViewId, HOME_ID } from './useSectionNav';
-import { languagePromptPending } from '../../../../shared/languageChoice.js';
-import WelcomeLanguageGate from '../../i18n/WelcomeLanguageGate';
 import AntiScamModal from '../../components/AntiScamModal';
 import AccountNotice from '../../components/AccountNotice';
 import PublicNav from './components/PublicNav';
@@ -24,10 +22,6 @@ import ContactoSection from './components/ContactoSection';
 import PublicFooter from './components/PublicFooter';
 import './public.css';
 
-// CORRECCIÓN 1: el visitante puede volver a elegir idioma solo una vez al
-// día; el aviso antiestafa, en cambio, aparece en CADA visita a la página
-// pública, siempre inmediatamente después. Ninguno de los dos afecta la
-// preferencia de idioma permanente (365 días).
 
 /*
  * La página pública funciona como un conjunto de pantallas: el navbar queda
@@ -41,8 +35,7 @@ import './public.css';
 export default function PublicHomePage() {
   const location = useLocation();
   const { text, media, models, faqs, trackRecord, loading } = usePublicData();
-  const [showLanguagePrompt, setShowLanguagePrompt] = useState(languagePromptPending);
-  const [showScamModal, setShowScamModal] = useState(() => !languagePromptPending());
+  const [showScamModal, setShowScamModal] = useState(true);
   const shownId = resolveViewId(location.pathname, location.hash);
   const stageRef = useRef(null);
   const viewRef = useRef(null);
@@ -62,11 +55,6 @@ export default function PublicHomePage() {
     }
     viewRef.current?.focus({ preventScroll: true });
   }, [shownId]);
-
-  const handleLanguagePromptDone = () => {
-    setShowLanguagePrompt(false);
-    setShowScamModal(true);
-  };
 
   const renderView = () => {
     switch (shownId) {
@@ -107,10 +95,9 @@ export default function PublicHomePage() {
 
   return (
     <div className="qlc-public qlc-public-app">
-      {showLanguagePrompt && <WelcomeLanguageGate onDone={handleLanguagePromptDone} />}
-      {/* Idioma (1 vez al día) → aviso antiestafa → página. El modal de
-          transferencia interna Bitget se muestra al iniciar sesión como
-          cliente (ver ClientLayout), no aquí. */}
+      {/* El aviso antiestafa aparece en cada visita, después del selector de
+          idioma de TradingApp. El modal de transferencia interna Bitget se
+          muestra al iniciar sesión como cliente (ver ClientLayout), no aquí. */}
       {showScamModal && <AntiScamModal onClose={() => setShowScamModal(false)} />}
       {/* Aviso tras solicitar la eliminación de la cuenta (una sola vez). */}
       <AccountNotice />

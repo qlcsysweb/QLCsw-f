@@ -1,3 +1,4 @@
+import QuantumBackdrop from '../components/QuantumBackdrop';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, Link, useSearchParams } from '../router.jsx';
 import { useAuth } from '../context/AuthContext';
@@ -186,6 +187,7 @@ export default function RegisterPage() {
 
   return (
     <div className="qlc-login-screen">
+      <QuantumBackdrop />
       <div className="qlc-login-box qlc-card">
         <div className="qlc-login-brand">
           <QlcLogo className="qlc-login-logo" animated alt="QLC" />
