@@ -38,7 +38,7 @@ export default function ContactoSection({ text, media = () => [] }) {
         <div className="contact-clean">
           <div>
             <div className="kicker">{text('contacto', 'kicker', 'QUANTUM LIQUIDITY CAPITAL')}</div>
-            <h2 style={{ marginBottom: 10 }}>{text('contacto', 'title', 'COPYTRADING INSTITUCIONAL.')}</h2>
+            <h2 style={{ marginBottom: 10 }}>{text('contacto', 'title', 'BOT TRADING INSTITUCIONAL.')}</h2>
             <p className="sub">
               {text('contacto', 'sub', 'Trading cuantitativo · Algoritmos · API Execution · Microposiciones')}
             </p>

@@ -232,7 +232,7 @@ const es = {
   microposicionesSection: {
     kicker: 'MICROPOSICIONES',
     titleLine1: 'Una nueva escala para',
-    titleLine2: 'el Copytrading Institucional.',
+    titleLine2: 'el Bot Trading Institucional.',
     designedKicker: 'DISEÑADO PARA INVERSORES INDIVIDUALES',
     subtitleLine1: 'El tamaño cambia.',
     subtitleLine2: 'La infraestructura no.',
@@ -449,7 +449,7 @@ const es = {
     heroLabel: 'HERO',
     heroDesc: 'Título principal, frase destacada y estadísticas de portada.',
     modeloLabel: 'MODELO',
-    modeloDesc: '"El concepto" — cómo se presenta la propuesta de copytrading.',
+    modeloDesc: '"El concepto" — cómo se presenta la estrategia de bot trading.',
     comoFuncionaLabel: 'CÓMO FUNCIONA',
     comoFuncionaDesc: 'Explicación del flujo cliente → API → QLC.',
     tecnologiaLabel: 'TECNOLOGÍA',
@@ -1658,7 +1658,7 @@ const es = {
     kicker: 'CONEXIÓN API',
     title: 'Conexión con el exchange',
     disclaimer:
-      'QLC nunca se conecta a tu exchange, nunca valida esta clave y nunca ejecuta operaciones desde esta plataforma. Aquí solo registras tu API Key para que el equipo administre tu proceso de copytrading; el estado de la conexión lo actualiza el equipo de forma administrativa.',
+      'QLC nunca se conecta a tu exchange, nunca valida esta clave y nunca ejecuta operaciones desde esta plataforma. Aquí solo registras tu API Key para que el equipo administre tu bot de trading; el estado de la conexión lo actualiza el equipo de forma administrativa.',
     statusTitle: 'Estado de tu conexión',
     exchange: 'Exchange',
     registered: '✓ Registrada',
@@ -2661,7 +2661,7 @@ const en = {
   microposicionesSection: {
     kicker: 'MICRO-POSITIONS',
     titleLine1: 'A new scale for',
-    titleLine2: 'Institutional Copytrading.',
+    titleLine2: 'Institutional Bot Trading.',
     designedKicker: 'DESIGNED FOR INDIVIDUAL INVESTORS',
     subtitleLine1: 'The size changes.',
     subtitleLine2: 'The infrastructure doesn\'t.',
@@ -2878,7 +2878,7 @@ const en = {
     heroLabel: 'HERO',
     heroDesc: 'Main title, headline phrase and homepage stats.',
     modeloLabel: 'MODEL',
-    modeloDesc: '"The concept" — how the copytrading proposal is presented.',
+    modeloDesc: '"The concept" — how the bot trading strategy is presented.',
     comoFuncionaLabel: 'HOW IT WORKS',
     comoFuncionaDesc: 'Explanation of the client → API → QLC flow.',
     tecnologiaLabel: 'TECHNOLOGY',
@@ -4161,7 +4161,7 @@ const en = {
     kicker: 'API CONNECTION',
     title: 'Exchange connection',
     disclaimer:
-      "QLC never connects to your exchange, never validates this key, and never executes trades from this platform. This is only where you register your API Key so the team can administer your copytrading process; the connection status is updated by the team administratively.",
+      "QLC never connects to your exchange, never validates this key, and never executes trades from this platform. This is only where you register your API Key so the team can administer your trading bot; the connection status is updated by the team administratively.",
     statusTitle: 'Your connection status',
     exchange: 'Exchange',
     registered: '✓ Registered',

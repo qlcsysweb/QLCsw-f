@@ -318,6 +318,137 @@
   background: transparent;
 }
 
+/* "Página principal" y menú desplegable: mismo formato que la academia. */
+.qlc-public .qlc-nav-home {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: #fff;
+  font-size: 12.5px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: border-color 0.2s, background 0.2s;
+}
+.qlc-public .qlc-nav-home:hover {
+  border-color: rgba(0, 168, 255, 0.5);
+  background: rgba(0, 168, 255, 0.08);
+}
+.qlc-public .qlc-nav-home span {
+  color: var(--qlc-blue2);
+}
+.qlc-public .qlc-nav-home b {
+  font-weight: 600;
+}
+.qlc-public .qlc-nav-actions {
+  margin-left: auto;
+}
+.qlc-public .qlc-nav-burger {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.03);
+  cursor: pointer;
+}
+.qlc-public .qlc-nav-burger span {
+  width: 16px;
+  height: 1.5px;
+  background: #fff;
+  border-radius: 2px;
+  transition: transform 0.3s ease;
+}
+.qlc-public .nav.is-open .qlc-nav-burger span:first-child {
+  transform: translateY(3.3px) rotate(45deg);
+}
+.qlc-public .nav.is-open .qlc-nav-burger span:last-child {
+  transform: translateY(-3.3px) rotate(-45deg);
+}
+.qlc-public .qlc-nav-sheet {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  height: calc(100dvh - 100%);
+  overflow-y: auto;
+  background: rgba(5, 7, 10, 0.97);
+  backdrop-filter: blur(20px);
+  padding: 18px max(20px, calc((100% - 1180px) / 2));
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  animation: qlc-sheet-in 0.32s ease-out;
+}
+.qlc-public .qlc-nav-sheet > a {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  border-bottom: 1px solid var(--line);
+  color: var(--qlc-text);
+  font-size: clamp(20px, 6vw, 26px);
+  font-weight: 650;
+  padding: 12px 2px;
+  text-decoration: none;
+  opacity: 0;
+  animation: qlc-sheet-item 0.42s ease-out forwards;
+  animation-delay: calc(var(--i) * 40ms + 60ms);
+}
+.qlc-public .qlc-nav-sheet > a span {
+  font-size: 11px;
+  color: var(--qlc-blue2);
+  letter-spacing: 0.12em;
+}
+.qlc-public .qlc-nav-sheet > a:hover,
+.qlc-public .qlc-nav-sheet > a.active {
+  color: var(--qlc-blue2);
+}
+.qlc-public .qlc-nav-sheet > .qlc-nav-sheet-home {
+  color: #fff;
+  font-weight: 700;
+}
+@keyframes qlc-sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+@keyframes qlc-sheet-item {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .qlc-public .qlc-nav-sheet,
+  .qlc-public .qlc-nav-sheet > a {
+    animation: none;
+    opacity: 1;
+  }
+}
+@media (max-width: 560px) {
+  .qlc-public .qlc-nav-home {
+    padding: 6px 9px;
+  }
+  .qlc-public .qlc-nav-home b {
+    display: none;
+  }
+  .qlc-public .qlc-nav-burger {
+    width: 32px;
+    height: 32px;
+  }
+}
+
 /* ---------- HERO ---------- */
 /* CORRECCIÓN 2: el hero debe caber en el viewport inicial (nav sticky de
    76px + hero) sin scroll interno. min-height ya no fuerza más alto que el

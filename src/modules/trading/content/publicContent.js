@@ -45,8 +45,8 @@ const PUBLIC_CONTENT = {
       "valueEn": "Quantitative trading · Algorithms · API Execution · Micro-positions"
     },
     "title": {
-      "value": "COPYTRADING INSTITUCIONAL.",
-      "valueEn": "INSTITUTIONAL COPYTRADING."
+      "value": "BOT TRADING INSTITUCIONAL.",
+      "valueEn": "INSTITUTIONAL BOT TRADING."
     }
   },
   "footer": {
@@ -61,12 +61,12 @@ const PUBLIC_CONTENT = {
   },
   "hero": {
     "eyebrow": {
-      "value": "Institutional Copytrading Infrastructure",
-      "valueEn": "Institutional Copytrading Infrastructure"
+      "value": "Institutional Trading Bot Strategy",
+      "valueEn": "Institutional Trading Bot Strategy"
     },
     "lead": {
-      "value": "QLC es un sistema de copytrading institucional que ejecuta nuestra estrategia directamente en la cuenta del cliente mediante tecnología propia y una conexión API autorizada.",
-      "valueEn": "QLC is an institutional copy-trading system that executes our strategy directly on the client's account using proprietary technology and an authorized API connection."
+      "value": "QLC es una estrategia de bot trading institucional: nuestro bot ejecuta la estrategia directamente en la cuenta del cliente mediante tecnología propia y una conexión API autorizada.",
+      "valueEn": "QLC is an institutional bot trading strategy: our bot executes the strategy directly on the client's account using proprietary technology and an authorized API connection."
     },
     "mini_platform_label": {
       "value": "BITGET",
@@ -77,8 +77,8 @@ const PUBLIC_CONTENT = {
       "valueEn": "Elite Trader"
     },
     "title_line1": {
-      "value": "Copytrading Institucional.",
-      "valueEn": "Institutional Copytrading."
+      "value": "Bot Trading Institucional.",
+      "valueEn": "Institutional Bot Trading."
     },
     "title_line2": {
       "value": "Accesible desde 100 USDT.",
@@ -115,8 +115,8 @@ const PUBLIC_CONTENT = {
   },
   "modelo": {
     "h2_line1": {
-      "value": "Copytrading institucional.",
-      "valueEn": "Institutional copytrading."
+      "value": "Bot trading institucional.",
+      "valueEn": "Institutional bot trading."
     },
     "h2_line2": {
       "value": "Sin salir de tu cuenta.",
@@ -155,8 +155,8 @@ const PUBLIC_CONTENT = {
       "valueEn": "QLC changes that equation."
     },
     "body_5": {
-      "value": "Ponemos al alcance de inversores individuales una infraestructura de Copytrading Institucional, basada en nuestra propia estrategia, tecnología y sistemas de ejecución.",
-      "valueEn": "We put an institutional Copytrading infrastructure within reach of individual investors, built on our own strategy, technology and execution systems."
+      "value": "Ponemos al alcance de inversores individuales una estrategia de Bot Trading Institucional, basada en nuestra propia estrategia, tecnología y sistemas de ejecución.",
+      "valueEn": "We put an institutional Bot Trading strategy within reach of individual investors, built on our own strategy, technology and execution systems."
     },
     "body_6": {
       "value": "Desde 100 USDT.",

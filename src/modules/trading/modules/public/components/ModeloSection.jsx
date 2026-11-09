@@ -19,7 +19,7 @@ export default function ModeloSection({ text, media = () => [] }) {
           <div>
             <div className="kicker">{text('modelo', 'kicker', 'EL CONCEPTO')}</div>
             <h2>
-              {text('modelo', 'h2_line1', 'Copytrading institucional.')}
+              {text('modelo', 'h2_line1', 'Bot trading institucional.')}
               <br />
               <span className="gradient">{text('modelo', 'h2_line2', 'Sin salir de tu cuenta.')}</span>
             </h2>

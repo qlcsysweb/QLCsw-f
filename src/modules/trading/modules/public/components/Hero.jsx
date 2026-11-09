@@ -29,10 +29,10 @@ export default function Hero({ text, media = () => [], trackRecord }) {
       <div className="container hero-grid">
         <div>
           <div className="eyebrow">
-            <span className="dot"></span> {text('hero', 'eyebrow', 'Institutional Copytrading Infrastructure')}
+            <span className="dot"></span> {text('hero', 'eyebrow', 'Institutional Trading Bot Strategy')}
           </div>
           <h1>
-            {text('hero', 'title_line1', 'Copytrading Institucional.')}
+            {text('hero', 'title_line1', 'Bot Trading Institucional.')}
             <br />
             <HeroAmountLine value={text('hero', 'title_line2', 'Accesible desde 100 USDT.')} />
           </h1>
@@ -40,7 +40,7 @@ export default function Hero({ text, media = () => [], trackRecord }) {
             {text(
               'hero',
               'lead',
-              'QLC es un sistema de copytrading institucional que ejecuta nuestra estrategia directamente en la cuenta del cliente mediante tecnología propia y una conexión API autorizada.'
+              'QLC es una estrategia de bot trading institucional: nuestro bot ejecuta la estrategia directamente en la cuenta del cliente mediante tecnología propia y una conexión API autorizada.'
             )}
           </p>
           <div className="actions">

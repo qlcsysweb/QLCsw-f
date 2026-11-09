@@ -48,15 +48,15 @@ import ClientNotificationsPage from './modules/client/NotificationsPage';
 import ClientGuidesPage from './modules/client/GuidesPage';
 import ClientAffiliatePage from './modules/client/AffiliatePage';
 
-const DESCRIPTION = 'QLC es un sistema de copytrading institucional que ejecuta una estrategia cuantitativa directamente en la cuenta del cliente mediante tecnología propia y una conexión API autorizada. Accesible desde 100 USDT.';
+const DESCRIPTION = 'QLC es una estrategia de bot trading institucional que ejecuta una estrategia cuantitativa directamente en la cuenta del cliente mediante tecnología propia y una conexión API autorizada. Accesible desde 100 USDT.';
 
 applyDocumentHead({
-  title: 'Quantum Liquidity Capital — Copytrading Institucional',
+  title: 'Quantum Liquidity Capital — Bot Trading Institucional',
   icon: '/favicon.png',
   names: { description: DESCRIPTION },
   properties: {
     'og:type': 'website',
-    'og:title': 'Quantum Liquidity Capital — Copytrading Institucional',
+    'og:title': 'Quantum Liquidity Capital — Bot Trading Institucional',
     'og:description': 'Trading institucional accesible desde 100 USDT. El capital permanece en tu propia cuenta del exchange — QLC ejecuta la estrategia mediante una conexión API autorizada.',
     'og:image': '/favicon.png',
   },

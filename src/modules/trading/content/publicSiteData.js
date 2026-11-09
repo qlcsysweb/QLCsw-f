@@ -21,8 +21,8 @@ export const FAQS = [
     "id": "cmtswub8h00057kqgb64tpd0e",
     "question": "¿Qué es QLC?",
     "questionEn": "What is QLC?",
-    "answer": "QLC es un sistema de copytrading institucional que permite ejecutar una estrategia de trading institucional directamente sobre la cuenta del cliente mediante tecnología propia y conexión API.",
-    "answerEn": "QLC is an institutional copytrading system that executes an institutional trading strategy directly on the client's account through proprietary technology and an API connection."
+    "answer": "QLC es una estrategia de bot trading institucional: un bot ejecuta la estrategia directamente sobre la cuenta del cliente mediante tecnología propia y conexión API.",
+    "answerEn": "QLC is an institutional bot trading strategy: a bot executes the strategy directly on the client's account through proprietary technology and an API connection."
   },
   {
     "id": "cmtswub8i00067kqg4ke9jd1k",

@@ -24,7 +24,7 @@ export default function MicroposicionesSection({ text, media = () => [] }) {
               {text(
                 'microposiciones',
                 'lead',
-                'QLC adapta una arquitectura de copytrading institucional a cuentas individuales mediante una metodología basada en microposiciones y ejecución sistemática.'
+                'QLC adapta una arquitectura de trading institucional a cuentas individuales mediante una metodología basada en microposiciones y ejecución sistemática.'
               )}
             </p>
           </div>
