@@ -165,6 +165,7 @@ export const pt = {
       codeResent: 'Enviamos um novo código.',
       changeEmail: 'Alterar e-mail',
       acceptRequired: 'Você deve aceitar os Termos e o Aviso de privacidade',
+      emailHint: 'Ao criar sua conta, enviaremos um código para este e-mail para confirmá-lo.',
       country: 'País de residência',
       countrySelect: 'Selecione seu país',
       acceptBefore: 'Li e aceito os ',

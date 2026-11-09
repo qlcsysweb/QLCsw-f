@@ -18,7 +18,6 @@ export function CtaButton({ label, target, go, variant = 'primary' }) {
   return (
     <button type="button" className={`pbtn pbtn-${variant}`} onClick={() => go(target)}>
       {label}
-      {variant === 'primary' && <span className="pbtn-arrow" aria-hidden="true">→</span>}
     </button>
   );
 }

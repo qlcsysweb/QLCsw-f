@@ -704,3 +704,18 @@ h1.ps-title { font-size: clamp(32px, min(5.4vw, 8.4dvh), 78px); }
   .course-grid { min-height: auto; }
 }
 .pnav-sheet > button.is-highlight { color: #fff; background: linear-gradient(110deg, var(--blue), var(--blue3)); border-radius: 12px; padding-left: 12px; padding-right: 12px; border-bottom-color: transparent; }
+
+/* Aviso del primer mes gratis que lleva al registro. */
+.trial-badge { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 14px; margin: 14px 0 18px; padding: 14px 16px; border-radius: 16px; border: 1px solid rgba(245, 197, 66, 0.55); background: linear-gradient(120deg, rgba(245, 197, 66, 0.16), rgba(0, 168, 255, 0.12)); color: var(--text); text-decoration: none; box-shadow: 0 0 0 0 rgba(245, 197, 66, 0.45); animation: trialPulse 2.6s ease-in-out infinite; transition: transform 0.2s, border-color 0.2s; }
+.trial-badge:hover { transform: translateY(-2px); border-color: rgba(245, 197, 66, 0.9); }
+.trial-badge-tag { padding: 4px 10px; border-radius: 999px; background: #f5c542; color: #1a1300; font-size: 11px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; }
+.trial-badge-body { display: flex; flex-direction: column; gap: 2px; flex: 1 1 220px; min-width: 0; }
+.trial-badge-body b { font-size: 16px; font-weight: 800; color: #fff; }
+.trial-badge-body small { font-size: 12.5px; color: var(--muted); line-height: 1.45; }
+.trial-badge-cta { padding: 9px 14px; border-radius: 10px; background: linear-gradient(110deg, var(--blue), var(--blue3)); color: #fff; font-size: 13px; font-weight: 700; white-space: nowrap; }
+.trial-badge.is-compact { margin: 10px 0 0; padding: 10px 12px; gap: 6px 10px; }
+.trial-badge.is-compact .trial-badge-body { flex-basis: 100%; }
+.trial-badge.is-compact .trial-badge-body b { font-size: 13.5px; }
+.trial-badge.is-compact .trial-badge-cta { padding: 7px 10px; font-size: 12px; }
+@keyframes trialPulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(245, 197, 66, 0.35); } 50% { box-shadow: 0 0 0 6px rgba(245, 197, 66, 0); } }
+@media (prefers-reduced-motion: reduce) { .trial-badge { animation: none; } }

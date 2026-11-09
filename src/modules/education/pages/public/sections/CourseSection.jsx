@@ -3,6 +3,7 @@ import { LESSONS as LESSONS_BY_LANG } from '../courseContent.js';
 import { useI18n } from '../../../i18n/I18nContext.jsx';
 import { ClassViewer } from './ClassViewer.jsx';
 import { SectionHead } from './SectionParts.jsx';
+import { TrialBadge } from './TrialBadge.jsx';
 
 const STAGE_ICONS = {
   learn: <path d="M3 9.5 12 5l9 4.5-9 4.5-9-4.5Zm4 2.2V16c0 1.4 2.2 2.5 5 2.5s5-1.1 5-2.5v-4.3M21 9.5V14" />,
@@ -19,7 +20,7 @@ function CourseStages({ stages }) {
           <span className="course-stage-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">{STAGE_ICONS[s.icon]}</svg>
           </span>
-          <div><b>{s.title}</b><p>{s.text}</p></div>
+          <div><b>{s.title}</b><p>{s.text}</p>{s.icon === 'apply' && <TrialBadge compact />}</div>
         </li>
       ))}
     </ol>

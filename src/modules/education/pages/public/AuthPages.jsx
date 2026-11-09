@@ -148,6 +148,11 @@ export function Register() {
   const [accepted, setAccepted] = useState(false);
   const [verify, setVerify] = useState(null);
   const [resent, setResent] = useState(false);
+  // Solo se avisa del código si el correo de la plataforma está conectado y realmente se enviará.
+  const [emailVerification, setEmailVerification] = useState(false);
+  useEffect(() => {
+    api.get('/public/register-options').then((o) => setEmailVerification(!!o?.emailVerification)).catch(() => null);
+  }, []);
 
   const create = async ({ confirm: _c, code, ...v }, emailToken) => {
     await register({ ...v, language: lang, acceptLegal: true, legalVersion: LEGAL_VERSION, ...(emailToken ? { emailToken, emailCode: code } : {}) });
@@ -196,7 +201,7 @@ export function Register() {
       footer={<>{t('auth.register.hasAccount')} <Link to="/login">{t('common.login')}</Link></>}>
       <form className="stack" onSubmit={submit}>
         <Field label={t('auth.register.name')}><Input required autoComplete="name" maxLength={120} {...f.bind('name')} /></Field>
-        <Field label={t('auth.email')}><Input type="email" required autoComplete="email" {...f.bind('email')} /></Field>
+        <Field label={t('auth.email')} hint={emailVerification ? t('auth.register.emailHint') : undefined}><Input type="email" required autoComplete="email" {...f.bind('email')} /></Field>
         <Field label={t('auth.register.country')}>
           <select className="input" required autoComplete="country" {...f.bind('residenceCountry')}>
             <option value="">{t('auth.register.countrySelect')}</option>

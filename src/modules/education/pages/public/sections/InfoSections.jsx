@@ -3,6 +3,7 @@ import { responsiveImage } from '../../../utils/media.js';
 import { useI18n } from '../../../i18n/I18nContext.jsx';
 import { LegalLinks } from '../legal/LegalPage.jsx';
 import { CtaButton, MoreInfo, SectionCtas, SectionHead } from './SectionParts.jsx';
+import { TrialBadge } from './TrialBadge.jsx';
 
 const hasPrice = (offer) => offer?.price !== null && offer?.price !== undefined;
 const priceLabel = (offer, t) => (hasPrice(offer) ? `${priceMoney(offer.price)} ${offer.currency}` : t('public.priceTbd'));
@@ -91,6 +92,7 @@ export function AccessSection({ section, offers, go }) {
   return (
     <div className="ps-container access">
       <SectionHead section={section} compact />
+      <TrialBadge />
       <div className="access-grid access-grid-3">
         {PUBLIC_PLANS.map(([code, copy], i) => {
           const offer = find(code);
