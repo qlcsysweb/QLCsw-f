@@ -151,7 +151,13 @@ export function Register() {
   // Solo se avisa del código si el correo de la plataforma está conectado y realmente se enviará.
   const [emailVerification, setEmailVerification] = useState(false);
   useEffect(() => {
-    api.get('/public/register-options').then((o) => setEmailVerification(!!o?.emailVerification)).catch(() => null);
+    let alive = true;
+    // Se reintenta: la primera consulta puede fallar mientras el servidor despierta.
+    const load = (left) => api.get('/public/register-options')
+      .then((o) => alive && setEmailVerification(!!o?.emailVerification))
+      .catch(() => alive && left > 0 && setTimeout(() => load(left - 1), 2000));
+    load(3);
+    return () => { alive = false; };
   }, []);
 
   const create = async ({ confirm: _c, code, ...v }, emailToken) => {
@@ -201,7 +207,8 @@ export function Register() {
       footer={<>{t('auth.register.hasAccount')} <Link to="/login">{t('common.login')}</Link></>}>
       <form className="stack" onSubmit={submit}>
         <Field label={t('auth.register.name')}><Input required autoComplete="name" maxLength={120} {...f.bind('name')} /></Field>
-        <Field label={t('auth.email')} hint={emailVerification ? t('auth.register.emailHint') : undefined}><Input type="email" required autoComplete="email" {...f.bind('email')} /></Field>
+        <Field label={t('auth.email')}><Input type="email" required autoComplete="email" {...f.bind('email')} /></Field>
+        {emailVerification && <p className="email-confirm-note"><span aria-hidden="true">✉️</span><span>{t('auth.register.emailHint')}</span></p>}
         <Field label={t('auth.register.country')}>
           <select className="input" required autoComplete="country" {...f.bind('residenceCountry')}>
             <option value="">{t('auth.register.countrySelect')}</option>
