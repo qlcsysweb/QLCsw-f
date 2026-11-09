@@ -1,0 +1,85 @@
+.qlc-id-card {
+  max-width: 760px;
+  min-width: 0;
+}
+.qlc-id-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.qlc-id-card-kicker {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--qlc-blue2);
+  text-transform: uppercase;
+}
+.qlc-id-card-title {
+  margin: 4px 0 2px;
+  font-size: 20px;
+}
+.qlc-id-card-sub {
+  margin: 0;
+  font-size: 13px;
+  color: var(--qlc-muted);
+}
+.qlc-id-card-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.qlc-id-card-body {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+  padding: 14px;
+  border: 1px solid var(--qlc-line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.02);
+}
+.qlc-id-card-icon {
+  font-size: 40px;
+  line-height: 1;
+}
+.qlc-id-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1 1 220px;
+  min-width: 0;
+  font-size: 13px;
+  color: var(--qlc-muted);
+}
+.qlc-id-card-info strong {
+  color: var(--qlc-text);
+  font-size: 16px;
+}
+.qlc-id-card-info span {
+  overflow-wrap: anywhere;
+}
+.qlc-id-card-form {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.qlc-id-card-form .qlc-btn {
+  align-self: flex-start;
+}
+.qlc-id-card-hint {
+  margin: 12px 0 0;
+  font-size: 12px;
+  color: var(--qlc-muted2);
+}
+.qlc-id-card-form .qlc-id-card-hint {
+  margin: 0;
+}
+.qlc-id-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}

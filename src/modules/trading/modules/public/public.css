@@ -1,0 +1,2246 @@
+/* Migración fiel del HTML oficial de QLC. Mismas clases, misma estructura,
+   misma identidad visual — solo el markup pasa a JSX y los textos
+   administrables se hidratan desde la API en vez de quedar fijos. */
+
+.qlc-public {
+  --glow: rgba(0, 168, 255, 0.18);
+  --line: rgba(199, 204, 210, 0.14);
+  --max: 1180px;
+  background: radial-gradient(circle at 80% 10%, rgba(0, 168, 255, 0.08), transparent 28%),
+    radial-gradient(circle at 10% 30%, rgba(200, 155, 60, 0.04), transparent 24%), var(--qlc-bg);
+  color: var(--qlc-text);
+  min-height: 100vh;
+}
+
+.qlc-public .container {
+  width: min(var(--max), calc(100% - 40px));
+  margin: auto;
+}
+
+.qlc-public .gradient {
+  background: linear-gradient(100deg, #fff 20%, #b9c2ca 55%, #57d2ff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  /* Con letter-spacing negativo la última letra sobresale de la caja del
+     texto y background-clip no la pinta (la "e" final se veía cortada).
+     El padding amplía el área pintada; el margen negativo lo compensa para
+     no mover el layout. */
+  padding-right: 0.12em;
+  margin-right: -0.12em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+/* ---------- NAV ---------- */
+.qlc-public .nav {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: rgba(5, 7, 10, 0.78);
+  backdrop-filter: blur(18px);
+  border-bottom: 1px solid var(--line);
+  transition: transform 0.35s ease, background 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* ---------- APP SHELL: navegación por pantallas ----------
+   En la página pública (PublicHomePage, clase .qlc-public-app) el documento
+   NO se desplaza: el navbar queda fijo arriba y debajo se muestra una sola
+   sección a la vez dentro de .qlc-stage. Si esa sección no cabe en la altura
+   disponible, SOLO .qlc-stage muestra scroll interno; si cabe, no aparece
+   ninguna barra. Privacidad/Términos (sin .qlc-public-app) no cambian. */
+.qlc-public.qlc-public-app {
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.qlc-public-app .nav {
+  position: relative;
+  flex: none;
+}
+.qlc-public .qlc-stage {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(110, 190, 255, 0.35) transparent;
+}
+.qlc-public .qlc-stage::-webkit-scrollbar {
+  width: 8px;
+}
+.qlc-public .qlc-stage::-webkit-scrollbar-thumb {
+  background: rgba(110, 190, 255, 0.3);
+  border-radius: 8px;
+}
+.qlc-public .qlc-stage::-webkit-scrollbar-track {
+  background: transparent;
+}
+/* margin:auto centra verticalmente la sección cuando cabe y, cuando no cabe,
+   la deja alineada arriba con scroll interno (sin recortar el inicio). */
+.qlc-public .qlc-view {
+  width: 100%;
+  margin: auto 0;
+  outline: none;
+}
+/* ENTRADA EN DOMINÓ — la sección nueva reemplaza a la anterior al instante
+   (sin fundido de salida) y sus elementos llegan uno tras otro, en orden de
+   lectura, con el mismo intervalo entre cada pieza: cada uno "cae" desde
+   arriba como una ficha de dominó y se acomoda en su lugar. El índice y el
+   retardo (--qlc-d) los asigna useDominoEntrance.js. */
+.qlc-public .qlc-domino {
+  animation: qlc-domino-in 520ms cubic-bezier(0.22, 0.8, 0.25, 1) both;
+  animation-delay: var(--qlc-d, 0ms);
+  transform-origin: 50% 0%;
+  backface-visibility: hidden;
+}
+@keyframes qlc-domino-in {
+  0% {
+    opacity: 0;
+    transform: perspective(700px) rotateX(-62deg) translateY(-10px);
+  }
+  60% {
+    opacity: 1;
+    transform: perspective(700px) rotateX(8deg) translateY(1px);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .qlc-public .qlc-domino {
+    animation: none;
+  }
+}
+.qlc-public-app .section {
+  padding: clamp(24px, 6vh, 72px) 0;
+}
+.qlc-public-app .hero {
+  min-height: 0;
+}
+.qlc-public-app .hero-grid {
+  padding: clamp(16px, 4vh, 48px) 0;
+}
+.qlc-public .nav-inner {
+  height: 76px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.qlc-public .brand-area {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+}
+.qlc-public .brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.qlc-public .brand-mark {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+}
+.qlc-public .brand-mark .qlc-logo-media {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 10px;
+  filter: contrast(1.05);
+}
+.qlc-public .brand-name {
+  font-size: 13px;
+  letter-spacing: 0.22em;
+  font-weight: 700;
+}
+
+/* Enlaces de navegación — visibles siempre, sin menú hamburguesa. En
+   pantallas angostas la fila entera se desplaza horizontalmente en vez de
+   desbordar la página (ver responsive más abajo). */
+.qlc-public .nav-links {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.qlc-public .nav-links::-webkit-scrollbar {
+  display: none;
+}
+.qlc-public .nav-links a {
+  position: relative;
+  font-size: 12px;
+  color: var(--qlc-muted);
+  white-space: nowrap;
+  padding: 6px 0;
+  transition: color 0.2s ease;
+}
+.qlc-public .nav-links a:hover {
+  color: var(--qlc-text);
+}
+.qlc-public .nav-links a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--qlc-blue);
+  transform: scaleX(0);
+  transition: transform 0.25s ease;
+}
+.qlc-public .nav-links a.active {
+  color: var(--qlc-text);
+  font-weight: 600;
+}
+.qlc-public .nav-links a.active::after {
+  transform: scaleX(1);
+}
+
+.qlc-public .qlc-nav-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+}
+.qlc-public .access-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid rgba(110, 190, 255, 0.42);
+  border-radius: 999px;
+  color: #f2f6fa;
+  background: rgba(7, 18, 30, 0.55);
+  text-decoration: none;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: 0.2s ease;
+  cursor: pointer;
+}
+.qlc-public .access-btn:hover {
+  border-color: #59bfff;
+  background: rgba(30, 92, 135, 0.28);
+  transform: translateY(-1px);
+}
+.qlc-public .access-primary {
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--qlc-blue), var(--qlc-blue3));
+  color: #04101a;
+  box-shadow: 0 10px 26px rgba(0, 168, 255, 0.28);
+}
+.qlc-public .access-primary.is-current {
+  box-shadow: 0 0 0 2px rgba(141, 223, 255, 0.55), 0 10px 26px rgba(0, 168, 255, 0.28);
+}
+.qlc-public .access-primary:hover {
+  background: linear-gradient(135deg, var(--qlc-blue2), var(--qlc-blue));
+  box-shadow: 0 12px 30px rgba(0, 168, 255, 0.38);
+}
+
+/* Selector de idioma — dropdown compacto, abre hacia abajo. Mismo patrón de
+   cierre (clic afuera cierra, clic en opción actúa y cierra) que cualquier
+   menú de la interfaz — nunca se confunde con el comportamiento de un modal. */
+.qlc-public .qlc-nav-lang {
+  position: relative;
+}
+.qlc-public .qlc-nav-lang-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: 1px solid var(--line);
+  color: var(--qlc-text);
+  border-radius: 999px;
+  padding: 0 12px;
+  min-height: 36px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+.qlc-public .qlc-nav-lang-btn:hover {
+  border-color: rgba(110, 190, 255, 0.42);
+}
+.qlc-public .qlc-nav-lang-panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 30;
+  width: 170px;
+  background: var(--qlc-panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.qlc-public .qlc-nav-lang-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--line);
+  color: #f2f6fa;
+  border-radius: 10px;
+  padding: 9px 10px;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+.qlc-public .qlc-nav-lang-option.active {
+  border-color: rgba(110, 190, 255, 0.5);
+  background: rgba(0, 168, 255, 0.1);
+}
+.qlc-nav-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 15;
+  background: transparent;
+}
+
+/* ---------- HERO ---------- */
+/* CORRECCIÓN 2: el hero debe caber en el viewport inicial (nav sticky de
+   76px + hero) sin scroll interno. min-height ya no fuerza más alto que el
+   viewport disponible; el contenido interno (hero-grid/hero-card/hero-logo/
+   hero-mini) se reduce de forma proporcional en pantallas de poca altura
+   mediante unidades vh — ver abajo. */
+.qlc-public .hero {
+  min-height: min(720px, calc(100svh - 76px));
+  display: grid;
+  place-items: center;
+  position: relative;
+  overflow: hidden;
+}
+.qlc-public .hero:before {
+  content: '';
+  position: absolute;
+  width: 700px;
+  height: 700px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 168, 255, 0.13), transparent 63%);
+  top: -160px;
+  right: -160px;
+  filter: blur(8px);
+}
+.qlc-public .hero-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.08fr;
+  gap: clamp(20px, 3.5vh, 56px);
+  /* "stretch": a pedido del cliente, la tarjeta del logo debe alargarse
+     hasta quedar al ras (misma altura) que la columna de texto de la
+     izquierda — con el logo ya más grande, ese espacio extra debajo de
+     las mini-tarjetas se ve proporcionado, no como un hueco vacío. */
+  align-items: stretch;
+  /* CORRECCIÓN 5 (bloque de 20) — margen superior reducido al mínimo
+     solicitado (~0.1cm ≈ 4px) entre el navbar y el primer contenido del
+     hero. Solo se toca el padding-top: el bottom, el tamaño del hero, el
+     logo y la composición interna quedan exactamente igual. */
+  padding: 4px 0 clamp(24px, 3.5vh, 80px);
+}
+.qlc-public .eyebrow {
+  display: inline-flex;
+  gap: 9px;
+  align-items: center;
+  color: var(--qlc-blue2);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+.qlc-public .dot {
+  width: 7px;
+  height: 7px;
+  background: var(--qlc-blue);
+  border-radius: 50%;
+  box-shadow: 0 0 18px var(--qlc-blue);
+}
+.qlc-public h1 {
+  font-size: clamp(46px, 6vw, 78px);
+  line-height: 0.98;
+  letter-spacing: -0.055em;
+  margin: 20px 0 25px;
+  max-width: 780px;
+}
+.qlc-public .lead {
+  font-size: 18px;
+  color: #aeb9c5;
+  max-width: 650px;
+}
+.qlc-public .actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 30px;
+}
+.qlc-public .btn {
+  padding: 14px 20px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  font-weight: 650;
+  font-size: 13px;
+  cursor: pointer;
+  display: inline-block;
+  text-decoration: none;
+  color: var(--qlc-text);
+  background: transparent;
+}
+.qlc-public .btn.primary {
+  background: linear-gradient(135deg, #009de9, #006fae);
+  box-shadow: 0 14px 40px rgba(0, 168, 255, 0.18);
+  border-color: transparent;
+}
+.qlc-public .btn.secondary {
+  background: #0b1016;
+}
+.qlc-public .trust {
+  display: flex;
+  gap: 22px;
+  flex-wrap: wrap;
+  margin-top: 30px;
+  color: #778592;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.qlc-public .hero-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  /* Ajuste solicitado por el cliente: el logo debe conservar su tamaño
+     (no encogerlo), así que el "cascarón" gris que lo encierra reduce su
+     propio padding en pantallas de poca altura para seguir cabiendo sin
+     scroll — ver .hero-logo/.hero-mini abajo, que ceden espacio primero. */
+  padding: clamp(14px, 2vh, 40px);
+  /* Un poco más relajado que antes (12px): el logo debe quedar cerca del
+     borde superior pero sin quedar pegado — "un poco más abajo". */
+  padding-top: 18px;
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.012));
+  box-shadow: 0 30px 100px rgba(0, 0, 0, 0.35);
+}
+.qlc-public .hero-logo {
+  width: 100%;
+  /* Logo notablemente más grande, a pedido del cliente — debe llenar casi
+     todo el ancho de la tarjeta, como en su referencia fotográfica. */
+  max-width: clamp(340px, 54vh, 520px);
+  margin: 0 auto;
+}
+.qlc-public .hero-logo .qlc-logo-media {
+  mix-blend-mode: screen;
+  opacity: 0.98;
+}
+.qlc-public .hero-mini {
+  /* Empujadas un poco más abajo, a pedido del cliente — más separación
+     visible respecto al logo. */
+  margin-top: clamp(14px, 2.2vh, 30px);
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+.qlc-public .hero-mini .mini {
+  padding: clamp(7px, 1.1vh, 15px) 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(8, 14, 21, 0.78);
+  min-height: clamp(44px, 6vh, 82px);
+}
+.qlc-public .hero-mini .mini b {
+  display: block;
+  font-size: 15px;
+  line-height: 1.15;
+}
+.qlc-public .hero-mini .mini span {
+  display: block;
+  font-size: 9px;
+  color: var(--qlc-muted);
+  margin-top: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  overflow-wrap: anywhere;
+}
+.qlc-public .hero-mini .mini {
+  min-width: 0;
+}
+/* ROI 30D / Tasa de éxito: etiqueta arriba, cifra destacada abajo. */
+.qlc-public .hero-mini .mini-metric span {
+  margin-top: 0;
+}
+.qlc-public .hero-mini .mini-metric b {
+  margin-top: 6px;
+  color: #8ddfff;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.qlc-public .hero-mini.hero-mini-2x2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 0;
+}
+
+/* A pedido del cliente: dentro de la tarjeta del HERO las métricas se
+   colocan al FONDO de la tarjeta (ocupan el espacio que sobraba debajo) y el
+   logo crece en ese espacio liberado — SIN cambiar el tamaño de la tarjeta
+   (su alto lo sigue definiendo la columna izquierda). */
+.qlc-public .hero-card .hero-logo {
+  /* El margen automático empuja las métricas al fondo de la tarjeta; su
+     propio margin-top (de siempre) sigue siendo la separación mínima, así
+     que donde no sobra espacio nada cambia. */
+  margin-bottom: auto;
+}
+
+/* CORRECCIÓN — "congelar" el HERO para laptops chicas horizontales
+   (1024–1600px de ancho, hasta 900px de alto: 1024×700, 1280×720,
+   1280×800, 1366×768, 1440×900, etc.). El cliente ve la página
+   principalmente en una laptop de pantalla chica y NO quiere que el
+   tamaño del logo/tarjeta varíe de forma "fluida" con vh entre estas
+   resoluciones — quiere SIEMPRE la misma composición aprobada, con
+   valores fijos en vez de clamp()/vh. Pantallas más altas (monitores de
+   escritorio, >900px de alto) y el modo responsive de celular quedan
+   fuera de este bloque y conservan su propio comportamiento. */
+@media (min-width: 1024px) and (max-width: 1920px) and (max-height: 900px) {
+  .qlc-public .hero {
+    /* "start" (no "center"): con center, .hero-grid quedaba centrado
+       dentro de la altura fija de 720px de .hero, y todo el espacio
+       sobrante se repartía MITAD ARRIBA/MITAD ABAJO — eso diluía el
+       margen fijo hasta el doble en las laptops más altas del rango
+       (900px). Con "start" + min-height:auto, la altura de .hero la
+       define exclusivamente el propio contenido, así que el margen
+       superior queda IGUAL sin importar la altura exacta de la pantalla
+       dentro del rango 700–900px. */
+    align-content: start;
+    min-height: auto;
+  }
+  .qlc-public .hero-grid {
+    /* CORRECCIÓN 5 (bloque de 20) — top reducido a ~0.1cm (4px); el
+       bottom (22px) y el resto de la composición congelada no cambian. */
+    padding: 4px 0 22px;
+    gap: 26px;
+  }
+  .qlc-public .hero-card {
+    padding: 16px;
+    padding-top: 16px;
+  }
+  .qlc-public .hero-logo {
+    /* 400 → 455 px: el logo aprovecha el espacio que antes quedaba vacío
+       debajo de las métricas (la tarjeta conserva su alto). */
+    max-width: 455px;
+  }
+  .qlc-public .hero-mini {
+    /* A pedido del cliente: separación fija y compacta respecto al logo —
+       NO se estira para alcanzar el botón "Ver modelos de participación";
+       eso hacía ver la card gris demasiado alargada. El alto total de la
+       card lo sigue definiendo align-items:stretch (columna izquierda), así
+       que este valor solo reubica las mini-cards dentro de esa altura. */
+    margin-top: 34px;
+  }
+  .qlc-public .hero-mini .mini {
+    padding: 10px 12px;
+    min-height: 58px;
+  }
+}
+
+/* ---------- SECTIONS ---------- */
+.qlc-public .section {
+  padding: 105px 0;
+}
+.qlc-public .section.alt {
+  background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.018), transparent);
+}
+.qlc-public .kicker {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--qlc-blue2);
+  margin-bottom: 10px;
+}
+.qlc-public h2 {
+  font-size: clamp(32px, 4vw, 52px);
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+  margin: 0 0 18px;
+}
+.qlc-public .sub {
+  color: var(--qlc-muted);
+  max-width: 760px;
+  font-size: 16px;
+}
+
+.qlc-public .section-intro {
+  display: grid;
+  grid-template-columns: 1fr 0.9fr;
+  gap: 60px;
+  align-items: end;
+}
+.qlc-public .clean-card {
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.015));
+}
+.qlc-public .clean-card p {
+  margin: 0;
+  color: var(--qlc-muted);
+  font-size: 14px;
+}
+.qlc-public .feature-list {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin-top: 38px;
+}
+.qlc-public .feature-item {
+  padding: 23px 18px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.022);
+  min-height: 145px;
+}
+.qlc-public .feature-item .icon {
+  font-size: 18px;
+  color: var(--qlc-blue2);
+  margin-bottom: 17px;
+}
+.qlc-public .feature-item h3 {
+  font-size: 14px;
+  margin: 0 0 7px;
+}
+.qlc-public .feature-item p {
+  font-size: 12px;
+  color: var(--qlc-muted);
+  margin: 0;
+}
+
+.qlc-public .connection {
+  display: grid;
+  grid-template-columns: 0.82fr 1.18fr;
+  gap: 22px;
+  align-items: stretch;
+  margin-top: 40px;
+}
+.qlc-public .connection-copy {
+  padding: 35px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: #0b1016;
+}
+.qlc-public .connection-copy h3 {
+  font-size: 28px;
+  letter-spacing: -0.03em;
+  margin: 7px 0 12px;
+}
+.qlc-public .connection-copy p {
+  color: var(--qlc-muted);
+  font-size: 14px;
+}
+.qlc-public .statusbar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+.qlc-public .status {
+  padding: 7px 10px;
+  border-radius: 999px;
+  font-size: 10px;
+  border: 1px solid var(--line);
+  color: #cbd4dc;
+}
+.qlc-public .status.ok {
+  border-color: rgba(0, 168, 255, 0.35);
+  color: #8ddfff;
+}
+.qlc-public .flow-line {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  align-items: stretch;
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: linear-gradient(145deg, #0d151d, #080c11);
+}
+.qlc-public .flow-node {
+  min-height: 120px;
+  padding: 18px 13px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #0a1016;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.qlc-public .flow-node b {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.qlc-public .flow-node span {
+  font-size: 10px;
+  color: var(--qlc-muted);
+  margin-top: 7px;
+}
+
+.qlc-public .pillars {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-top: 38px;
+}
+.qlc-public .pillar {
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.025);
+}
+.qlc-public .pillar .icon {
+  color: var(--qlc-blue2);
+  font-size: 20px;
+  margin-bottom: 18px;
+}
+.qlc-public .pillar h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
+}
+.qlc-public .pillar p {
+  margin: 0;
+  color: var(--qlc-muted);
+  font-size: 13px;
+}
+
+.qlc-public .micro-hero {
+  margin-top: 38px;
+  padding: 42px;
+  border: 1px solid rgba(0, 168, 255, 0.2);
+  border-radius: 24px;
+  background: radial-gradient(circle at 80% 25%, rgba(0, 168, 255, 0.12), transparent 38%), #0a1016;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 30px;
+  align-items: center;
+}
+.qlc-public .micro-hero h3 {
+  font-size: 36px;
+  letter-spacing: -0.045em;
+  margin: 5px 0 10px;
+}
+.qlc-public .micro-hero p {
+  color: var(--qlc-muted);
+  max-width: 650px;
+  margin: 0;
+}
+.qlc-public .range {
+  font-size: 56px;
+  font-weight: 800;
+  letter-spacing: -0.06em;
+  background: linear-gradient(100deg, #fff, #5bd4ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  white-space: nowrap;
+  padding-right: 0.12em;
+  margin-right: -0.12em;
+}
+
+/* Modelo único de participación: encabezado (tagline + descripción | reparto
+   grande) y detalle en tarjetas (ver .qlc-pmd en theme.css). */
+.qlc-public .model-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(260px, 1fr);
+  gap: 18px;
+  align-items: center;
+  margin-top: 24px;
+  padding: 22px 26px;
+  border: 1px solid rgba(0, 168, 255, 0.34);
+  border-radius: 20px;
+  background: #0b1016;
+  box-shadow: 0 20px 70px rgba(0, 168, 255, 0.07);
+}
+.qlc-public .model-head-copy h3 {
+  font-size: 22px;
+  margin: 0 0 6px;
+}
+.qlc-public .model-head-copy p {
+  margin: 0;
+  color: var(--qlc-muted);
+  font-size: 13px;
+}
+.qlc-public .model-head-split .qlc-pm-split dd {
+  font-size: 40px;
+}
+.qlc-public .qlc-pmd {
+  margin-top: 14px;
+}
+.qlc-public .note {
+  font-size: 12px;
+  color: var(--qlc-muted2);
+  margin-top: 22px;
+}
+
+.qlc-public .security-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-top: 38px;
+}
+.qlc-public .security-card {
+  padding: 25px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.022);
+}
+.qlc-public .security-card h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
+}
+.qlc-public .security-card p {
+  margin: 0;
+  color: var(--qlc-muted);
+  font-size: 12px;
+}
+
+.qlc-public .faq-clean {
+  max-width: 900px;
+  margin: 35px auto 0;
+}
+.qlc-public details {
+  border-top: 1px solid var(--line);
+  padding: 19px 0;
+}
+.qlc-public summary {
+  cursor: pointer;
+  font-weight: 650;
+  list-style: none;
+}
+.qlc-public summary::-webkit-details-marker {
+  display: none;
+}
+.qlc-public details p {
+  color: var(--qlc-muted);
+  font-size: 14px;
+  max-width: 760px;
+  margin: 10px 0 0;
+}
+
+.qlc-public .contact-clean {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 30px;
+  align-items: center;
+  padding: 55px 60px;
+  border: 1px solid rgba(0, 168, 255, 0.22);
+  border-radius: 28px;
+  background: radial-gradient(circle at 85% 30%, rgba(0, 168, 255, 0.13), transparent 35%), #0b1016;
+}
+
+/* Resultados: copia + indicadores. */
+.qlc-public .resultados-grid {
+  align-items: stretch;
+}
+.qlc-public .resultados-grid .connection-copy p {
+  margin: 0 0 12px;
+}
+.qlc-public .resultados-cta {
+  margin-top: 14px;
+}
+.qlc-public .resultados-card {
+  justify-content: center;
+  gap: 16px;
+  padding: 25px;
+}
+.qlc-public .resultados-card .note {
+  margin: 0;
+}
+/* El problema: el texto largo se reparte en dos columnas en pantallas
+   anchas para que la sección no se convierta en una página interminable. */
+.qlc-public .problema-card {
+  column-count: 2;
+  column-gap: 44px;
+}
+.qlc-public .problema-card p {
+  break-inside: avoid;
+}
+/* Contacto: presentación y formulario lado a lado. */
+.qlc-public .contact-layout {
+  display: grid;
+  grid-template-columns: 1fr minmax(320px, 460px);
+  gap: 24px;
+  align-items: stretch;
+}
+.qlc-public .contact-layout .contact-clean {
+  grid-template-columns: 1fr;
+}
+.qlc-public .contact-layout .registro-panel {
+  margin-top: 0;
+  max-width: none;
+}
+
+/* ---------- REGISTRO ---------- */
+.qlc-public .registro-panel {
+  margin-top: 32px;
+  padding: 30px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: #0b1016;
+  max-width: 520px;
+}
+.qlc-public .registro-panel input,
+.qlc-public .registro-panel textarea {
+  width: 100%;
+  padding: 11px 13px;
+  border-radius: 9px;
+  border: 1px solid var(--line);
+  background: #080c11;
+  color: var(--qlc-text);
+  outline: none;
+  font-size: 13px;
+  margin-bottom: 12px;
+  font-family: inherit;
+}
+.qlc-public .registro-panel label {
+  display: block;
+  font-size: 10px;
+  color: var(--qlc-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: 6px;
+}
+
+/* ---------- FOOTER ---------- */
+.qlc-public .footer {
+  border-top: 1px solid var(--line);
+  padding: 45px 0 30px;
+  color: #7f8b96;
+  font-size: 12px;
+}
+.qlc-public .footer-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr;
+  gap: 30px;
+}
+.qlc-public .footer h4 {
+  color: #c8d0d8;
+  margin: 0 0 12px;
+}
+.qlc-public .footer a {
+  color: inherit;
+}
+.qlc-public .disclaimer {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+  font-size: 11px;
+  line-height: 1.7;
+  color: #6e7984;
+}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 1100px) {
+  .qlc-public .feature-list {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .qlc-public .connection {
+    grid-template-columns: 1fr;
+  }
+  .qlc-public .flow-line {
+    grid-template-columns: repeat(5, 1fr);
+  }
+  .qlc-public .qlc-nav-actions .access-btn {
+    padding: 0 10px;
+    font-size: 10px;
+  }
+  .qlc-public .nav-links {
+    gap: 16px;
+  }
+  .qlc-public .nav-links a {
+    font-size: 11px;
+  }
+}
+@media (max-width: 980px) {
+  .qlc-public .hero-grid,
+  .qlc-public .section-intro,
+  .qlc-public .connection {
+    grid-template-columns: 1fr;
+  }
+  .qlc-public .flow-line {
+    grid-template-columns: 1fr 1fr;
+  }
+  .qlc-public .pillars {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 900px) {
+  .qlc-public .section-intro,
+  .qlc-public .micro-hero,
+  .qlc-public .contact-clean {
+    grid-template-columns: 1fr;
+  }
+  .qlc-public .model-head {
+    grid-template-columns: 1fr;
+  }
+  .qlc-public .security-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .qlc-public .range {
+    font-size: 48px;
+  }
+}
+/* Navbar en dos filas cuando las opciones ya no caben en una sola línea
+   (tablets / ventanas angostas): marca + acciones arriba, TODAS las
+   opciones abajo, envolviéndose en varias líneas si hace falta — nunca se
+   ocultan opciones ni se provoca overflow horizontal. */
+@media (max-width: 960px) {
+  .qlc-public .nav-inner {
+    flex-wrap: wrap;
+    height: auto;
+    padding: 10px 0;
+    row-gap: 8px;
+  }
+  .qlc-public .brand-area {
+    order: 1;
+  }
+  .qlc-public .qlc-nav-actions {
+    order: 2;
+    margin-left: auto;
+  }
+  .qlc-public .nav-links {
+    order: 3;
+    flex: none;
+    width: 100%;
+    flex-wrap: wrap;
+    overflow: visible;
+    column-gap: 18px;
+    row-gap: 2px;
+    justify-content: center;
+  }
+  .qlc-public .brand-mark {
+    width: 36px;
+    height: 36px;
+  }
+  .qlc-public .contact-layout {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 900px) {
+  .qlc-public .problema-card {
+    column-count: 1;
+  }
+}
+@media (max-width: 700px) {
+  .qlc-public .feature-list {
+    grid-template-columns: 1fr;
+  }
+  .qlc-public .flow-line {
+    grid-template-columns: 1fr 1fr;
+  }
+  .qlc-public .security-grid {
+    grid-template-columns: 1fr;
+  }
+  .qlc-public .micro-hero {
+    padding: 30px;
+  }
+  .qlc-public .contact-clean {
+    padding: 35px 25px;
+  }
+  .qlc-public .range {
+    font-size: 42px;
+  }
+}
+@media (max-width: 600px) {
+  .qlc-public .container {
+    width: min(calc(100% - 28px), var(--max));
+  }
+  .qlc-public .access-btn {
+    padding: 0 10px;
+    font-size: 10px;
+    min-height: 34px;
+  }
+  .qlc-public .qlc-nav-lang-btn {
+    padding: 0 9px;
+    font-size: 10px;
+    min-height: 34px;
+  }
+  .qlc-public .qlc-nav-actions {
+    gap: 6px;
+  }
+  .qlc-public .nav-links {
+    gap: 14px;
+  }
+  .qlc-public .hero {
+    min-height: auto;
+  }
+  .qlc-public .hero-grid {
+    padding: 65px 0 45px;
+    gap: 35px;
+  }
+  .qlc-public-app .hero-grid {
+    padding: 22px 0 28px;
+    gap: 24px;
+  }
+  .qlc-public-app .section {
+    padding: 28px 0 36px;
+  }
+  .qlc-public h1 {
+    font-size: 46px;
+  }
+  .qlc-public .lead {
+    font-size: 16px;
+  }
+  .qlc-public .hero-card {
+    padding: 24px;
+  }
+  .qlc-public .hero-logo {
+    max-width: 220px;
+  }
+  .qlc-public .hero-mini {
+    margin-top: 20px;
+    gap: 8px;
+  }
+  .qlc-public .hero-mini .mini {
+    padding: 11px 9px;
+    min-height: 68px;
+  }
+  .qlc-public .hero-mini .mini b {
+    font-size: 13px;
+  }
+  .qlc-public .section {
+    padding: 75px 0;
+  }
+  .qlc-public .contact-clean {
+    padding: 32px 22px;
+  }
+  .qlc-public .footer-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 420px) {
+  .qlc-public .hero-mini {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+/* Teléfonos: navbar compacto — marca + acciones en la primera franja (las
+   acciones pueden partirse en dos líneas) y todas las opciones debajo en
+   líneas cortas. Nada se oculta y no hay overflow horizontal. */
+@media (max-width: 560px) {
+  .qlc-public .nav-inner {
+    padding: 8px 0;
+    column-gap: 8px;
+    row-gap: 6px;
+  }
+  .qlc-public .brand-mark {
+    width: 32px;
+    height: 32px;
+  }
+  .qlc-public .qlc-nav-actions {
+    flex: 1 1 0;
+    min-width: 0;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+  .qlc-public .qlc-nav-actions .access-btn {
+    min-height: 30px;
+    padding: 0 8px;
+    font-size: 10px;
+  }
+  .qlc-public .qlc-nav-lang-btn {
+    min-height: 30px;
+    padding: 0 7px;
+  }
+  .qlc-public .nav-links {
+    column-gap: 12px;
+    row-gap: 0;
+    align-content: flex-start;
+  }
+  .qlc-public .nav-links a {
+    font-size: 11px;
+    line-height: 1.3;
+    padding: 4px 0;
+  }
+  .qlc-public .pillars {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- RESPONSIVE POR ALTURA (laptops de pantalla pequeña) ----------
+   Una laptop puede tener bastante ancho pero muy poca altura (1366×768,
+   1280×720, 1024×600 con barras del navegador). Se compacta el navbar y los
+   espaciados verticales; lo que aun así no quepa usa el scroll interno de
+   .qlc-stage — nunca se reduce el texto a tamaños ilegibles. */
+/* Navbar de una sola fila (desktop/laptop): alto fijo compacto. En ≤960px
+   el navbar pasa a varias filas con alto automático y NO debe fijarse. */
+@media (min-width: 961px) and (max-height: 900px) {
+  .qlc-public .nav-inner {
+    height: 62px;
+  }
+  .qlc-public .brand-mark {
+    width: 36px;
+    height: 36px;
+  }
+  .qlc-public .access-btn {
+    min-height: 34px;
+  }
+  .qlc-public .qlc-nav-lang-btn {
+    min-height: 32px;
+  }
+}
+@media (max-height: 900px) {
+  .qlc-public-app .section {
+    padding: clamp(20px, 5vh, 44px) 0;
+  }
+  .qlc-public h2 {
+    font-size: clamp(28px, 3.4vw, 42px);
+  }
+  .qlc-public .feature-list,
+  .qlc-public .pillars,
+  .qlc-public .security-grid,
+  .qlc-public .micro-hero,
+  .qlc-public .connection {
+    margin-top: 24px;
+  }
+  .qlc-public .model-head {
+    margin-top: 16px;
+    padding: 16px 20px;
+  }
+  .qlc-public .model-head-split .qlc-pm-split dd {
+    font-size: 32px;
+  }
+  .qlc-public .feature-item {
+    min-height: 0;
+    padding: 18px 16px;
+  }
+  .qlc-public .micro-hero {
+    padding: 30px;
+  }
+  .qlc-public .connection-copy {
+    padding: 26px;
+  }
+  .qlc-public .flow-line {
+    padding: 20px;
+  }
+  .qlc-public .flow-node {
+    min-height: 96px;
+  }
+  .qlc-public .contact-clean {
+    padding: 36px 40px;
+  }
+  .qlc-public .faq-clean {
+    margin-top: 20px;
+  }
+  .qlc-public details {
+    padding: 14px 0;
+  }
+}
+/* Hero en laptops de poca altura (1280×720, 1024×600…): tipografía y logo
+   algo más compactos para que hero + 4 cards quepan sin recortar. */
+@media (min-width: 961px) and (max-height: 760px) {
+  .qlc-public h1 {
+    font-size: clamp(40px, 4.6vw, 62px);
+    margin: 14px 0 18px;
+  }
+  .qlc-public .lead {
+    font-size: 16px;
+  }
+  .qlc-public .actions,
+  .qlc-public .trust {
+    margin-top: 20px;
+  }
+  .qlc-public-app .hero-grid {
+    padding: 12px 0 16px;
+  }
+  .qlc-public .hero-logo {
+    max-width: min(362px, 47vh);
+  }
+  .qlc-public .hero-mini {
+    margin-top: 18px;
+  }
+  .qlc-public .hero-mini .mini {
+    padding: 9px 10px;
+    min-height: 54px;
+  }
+}
+@media (min-width: 961px) and (max-height: 620px) {
+  .qlc-public .nav-inner {
+    height: 56px;
+  }
+  .qlc-public h1 {
+    font-size: clamp(36px, 4.2vw, 52px);
+  }
+  .qlc-public .lead {
+    font-size: 15px;
+  }
+  .qlc-public .btn {
+    padding: 12px 18px;
+  }
+  .qlc-public .hero-logo {
+    max-width: min(280px, 40vh);
+  }
+  .qlc-public .hero-card {
+    padding: 14px;
+  }
+}
+/* Laptop/desktop con ventana poco ancha (1024 px): las 4 cards siguen en una
+   sola fila; se reducen gap y padding, no el número de columnas. */
+@media (min-width: 961px) and (max-width: 1180px) {
+  .qlc-public .hero-mini {
+    gap: 8px;
+  }
+  .qlc-public .hero-mini .mini {
+    padding-left: 9px;
+    padding-right: 9px;
+  }
+  .qlc-public .hero-mini .mini b {
+    font-size: 14px;
+  }
+}
+
+/*
+ * Multimedia administrable asignada a una sección (Admin → Multimedia).
+ * Franja simple que se integra al diseño existente sin alterarlo; si no
+ * hay elementos, SectionMedia no renderiza nada y este bloque no aparece.
+ */
+.qlc-public .qlc-section-media {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 28px;
+  max-width: var(--qlc-max);
+  margin-left: auto;
+  margin-right: auto;
+}
+.qlc-public .qlc-section-media-item {
+  flex: 1 1 280px;
+  max-width: 100%;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  object-fit: cover;
+  max-height: 360px;
+}
+
+/* ---------- LEGAL (Privacidad / Términos) ---------- */
+.qlc-public .legal-content {
+  max-width: 780px;
+}
+.qlc-public .legal-content h3 {
+  font-size: 19px;
+  margin: 34px 0 10px;
+  letter-spacing: -0.01em;
+}
+.qlc-public .legal-content p,
+.qlc-public .legal-content li {
+  color: #aeb9c5;
+  font-size: 15px;
+  line-height: 1.7;
+}
+.qlc-public .legal-content ul {
+  margin: 0 0 16px;
+  padding-left: 20px;
+}
+.qlc-public .legal-content li {
+  margin-bottom: 6px;
+}
+
+/* ---------- TECNOLOGÍA: 5 ETAPAS (ícono + "ETAPA 0X" + título + texto) ----------
+   Escritorio: 5 tarjetas en fila. ≤1100px: lista vertical con el ícono a la
+   izquierda y separadores entre etapas. */
+.qlc-public .tech-stages {
+  list-style: none;
+  padding: 0;
+  margin: 38px 0 0;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+}
+.qlc-public .tech-stage {
+  padding: 22px 18px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.025);
+}
+.qlc-public .tech-stage-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: #10294a;
+  color: #4fd4ff;
+  margin-bottom: 14px;
+  flex: 0 0 auto;
+}
+.qlc-public .tech-stage-kicker {
+  color: #4fd4ff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin-bottom: 4px;
+}
+.qlc-public .tech-stage h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
+  letter-spacing: 0.02em;
+}
+.qlc-public .tech-stage p {
+  margin: 0;
+  color: var(--qlc-muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+@media (max-width: 1100px) {
+  .qlc-public .tech-stages {
+    grid-template-columns: 1fr;
+    gap: 0;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.025);
+    padding: 4px 20px;
+  }
+  .qlc-public .tech-stage {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    padding: 18px 0;
+  }
+  .qlc-public .tech-stage + .tech-stage {
+    border-top: 1px solid var(--line);
+  }
+  .qlc-public .tech-stage-icon {
+    margin-bottom: 0;
+  }
+}
+@media (max-height: 900px) {
+  .qlc-public .tech-stages {
+    margin-top: 24px;
+  }
+}
+
+/* ---------- MODAL DE ENTRADA A TECNOLOGÍA ---------- */
+.qlc-tech-intro-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(3, 6, 12, 0.86);
+  overflow: hidden;
+}
+.qlc-tech-intro {
+  position: relative;
+  width: min(1180px, 100%);
+  margin: auto;
+  padding: 30px 28px 26px;
+  border-radius: 22px;
+  border: 1px solid rgba(0, 168, 255, 0.28);
+  background:
+    radial-gradient(ellipse at 50% 38%, rgba(0, 140, 255, 0.22), transparent 60%),
+    linear-gradient(180deg, #071224, #050b16);
+  box-shadow: 0 40px 120px rgba(0, 0, 0, 0.6);
+  text-align: center;
+  color: #f4f7fb;
+}
+.qlc-tech-intro-x {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.04);
+  color: #c8d3df;
+  font-size: 15px;
+  cursor: pointer;
+}
+.qlc-tech-intro-x:hover {
+  color: #fff;
+  border-color: rgba(0, 168, 255, 0.5);
+}
+.qlc-tech-intro-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+}
+.qlc-tech-intro-logo {
+  width: 52px;
+  height: 52px;
+}
+.qlc-tech-intro-logo img,
+.qlc-tech-intro-logo video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.qlc-tech-intro-brand strong {
+  display: block;
+  font-size: 26px;
+  line-height: 1;
+}
+.qlc-tech-intro-brand span {
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  color: #c8d3df;
+}
+.qlc-tech-intro-title {
+  margin: 14px 0 6px;
+  font-size: clamp(26px, 4vw, 46px);
+  line-height: 1.1;
+  font-weight: 800;
+}
+.qlc-tech-intro-title span {
+  color: #19c3ff;
+}
+.qlc-tech-intro-sub {
+  margin: 0 auto;
+  max-width: 760px;
+  font-size: clamp(14px, 1.6vw, 18px);
+  color: #c8d3df;
+}
+.qlc-tech-intro-rule {
+  width: 80px;
+  height: 2px;
+  margin: 14px auto;
+  background: #19c3ff;
+  border-radius: 2px;
+}
+.qlc-tech-intro-desc {
+  margin: 0 auto;
+  max-width: 720px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--qlc-muted, #9ca9b7);
+}
+.qlc-tech-intro-flow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 24px auto 22px;
+  max-width: 980px;
+  position: relative;
+}
+.qlc-tech-intro-flow::before {
+  content: "";
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  top: 31px;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(25, 195, 255, 0.1), #19c3ff, rgba(25, 195, 255, 0.1));
+  box-shadow: 0 0 12px rgba(25, 195, 255, 0.6);
+}
+.qlc-tech-flow-node {
+  position: relative;
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #c8d3df;
+}
+.qlc-tech-flow-icon {
+  width: 62px;
+  height: 62px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  color: #4fd4ff;
+  background: #0b1f3a;
+  border: 1px solid rgba(25, 195, 255, 0.35);
+}
+.qlc-tech-flow-icon svg {
+  width: 30px;
+  height: 30px;
+}
+.qlc-tech-flow-node.is-main .qlc-tech-flow-icon {
+  width: 78px;
+  height: 78px;
+  margin-top: -8px;
+  border-radius: 50%;
+  border-color: #19c3ff;
+  box-shadow: 0 0 34px rgba(25, 195, 255, 0.55), inset 0 0 18px rgba(25, 195, 255, 0.35);
+}
+.qlc-tech-flow-node.is-main .qlc-tech-flow-icon svg {
+  width: 40px;
+  height: 40px;
+}
+.qlc-tech-intro-cards {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+}
+.qlc-tech-intro-card {
+  position: relative;
+  padding: 18px 14px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(199, 204, 210, 0.16);
+  background: rgba(8, 20, 38, 0.85);
+  text-align: center;
+}
+.qlc-tech-intro-card.is-main {
+  border-color: #19c3ff;
+  box-shadow: 0 0 26px rgba(25, 195, 255, 0.35);
+}
+.qlc-tech-intro-num {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid rgba(199, 204, 210, 0.3);
+  background: #0b1f3a;
+}
+.qlc-tech-intro-card-icon {
+  color: #19c3ff;
+  margin: 6px auto 8px;
+}
+.qlc-tech-intro-card-icon svg {
+  width: 38px;
+  height: 38px;
+}
+.qlc-tech-intro-card h3 {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+.qlc-tech-intro-card h3::after {
+  content: "";
+  display: block;
+  width: 26px;
+  height: 2px;
+  margin: 8px auto 0;
+  background: #19c3ff;
+}
+.qlc-tech-intro-card p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #c8d3df;
+}
+.qlc-tech-intro-features {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 20px;
+  text-align: left;
+}
+.qlc-tech-intro-feature {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.qlc-tech-intro-feature-icon {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #19c3ff;
+  background: #0b1f3a;
+  border: 1px solid rgba(25, 195, 255, 0.3);
+}
+.qlc-tech-intro-feature strong {
+  display: block;
+  font-size: 13px;
+}
+.qlc-tech-intro-feature span {
+  font-size: 12px;
+  color: var(--qlc-muted, #9ca9b7);
+}
+.qlc-public .qlc-tech-intro-cta {
+  margin-top: 22px;
+  min-width: 220px;
+}
+/* SIN SCROLL: la ventana siempre cabe completa en la pantalla. Primero se
+   compacta por alto/ancho con estos ajustes; si aun así no cabe (pantallas muy
+   chicas), TecnologiaIntroModal la reduce proporcionalmente (zoom). */
+@media (max-height: 820px) {
+  .qlc-tech-intro {
+    padding: 20px 24px 18px;
+  }
+  .qlc-tech-intro-logo {
+    width: 40px;
+    height: 40px;
+  }
+  .qlc-tech-intro-brand strong {
+    font-size: 21px;
+  }
+  .qlc-tech-intro-title {
+    margin-top: 8px;
+    font-size: clamp(24px, 5vh, 40px);
+  }
+  .qlc-tech-intro-rule {
+    margin: 8px auto;
+  }
+  .qlc-tech-intro-flow {
+    margin: 14px auto 14px;
+  }
+  .qlc-tech-intro-card {
+    padding: 14px 12px 12px;
+  }
+  .qlc-tech-intro-card-icon svg {
+    width: 30px;
+    height: 30px;
+  }
+  .qlc-tech-intro-features {
+    margin-top: 14px;
+  }
+  .qlc-public .qlc-tech-intro-cta {
+    margin-top: 14px;
+    min-height: 40px;
+  }
+}
+@media (max-height: 700px) {
+  .qlc-tech-intro-desc {
+    display: none;
+  }
+  .qlc-tech-flow-icon {
+    width: 48px;
+    height: 48px;
+  }
+  .qlc-tech-flow-icon svg {
+    width: 24px;
+    height: 24px;
+  }
+  .qlc-tech-flow-node.is-main .qlc-tech-flow-icon {
+    width: 60px;
+    height: 60px;
+    margin-top: -6px;
+  }
+  .qlc-tech-flow-node.is-main .qlc-tech-flow-icon svg {
+    width: 30px;
+    height: 30px;
+  }
+  .qlc-tech-intro-flow::before {
+    top: 24px;
+  }
+  .qlc-tech-intro-card h3::after {
+    margin-top: 5px;
+  }
+}
+/* Tablet: tarjetas en filas compactas (ícono a la izquierda). */
+@media (max-width: 1000px) {
+  .qlc-tech-intro-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .qlc-tech-intro-card {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    column-gap: 12px;
+    align-items: center;
+    text-align: left;
+    padding: 10px 12px;
+  }
+  .qlc-tech-intro-card:last-child {
+    grid-column: 1 / -1;
+  }
+  .qlc-tech-intro-num {
+    display: none;
+  }
+  .qlc-tech-intro-card-icon {
+    grid-row: 1 / span 2;
+    margin: 0;
+  }
+  .qlc-tech-intro-card-icon svg {
+    width: 28px;
+    height: 28px;
+  }
+  .qlc-tech-intro-card h3 {
+    margin: 0 0 2px;
+    font-size: 13px;
+  }
+  .qlc-tech-intro-card h3::after {
+    display: none;
+  }
+  .qlc-tech-intro-card p {
+    font-size: 11.5px;
+    line-height: 1.4;
+  }
+  .qlc-tech-intro-features {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+}
+/* Celular: una columna, todo compacto. */
+@media (max-width: 640px) {
+  .qlc-tech-intro-overlay {
+    padding: 10px;
+  }
+  .qlc-tech-intro {
+    padding: 16px 12px 14px;
+    border-radius: 16px;
+  }
+  .qlc-tech-intro-x {
+    top: 8px;
+    right: 8px;
+    width: 30px;
+    height: 30px;
+    font-size: 13px;
+  }
+  .qlc-tech-intro-logo {
+    width: 32px;
+    height: 32px;
+  }
+  .qlc-tech-intro-brand strong {
+    font-size: 18px;
+  }
+  .qlc-tech-intro-title {
+    margin: 6px 0 4px;
+    font-size: 23px;
+  }
+  .qlc-tech-intro-sub {
+    font-size: 12.5px;
+  }
+  .qlc-tech-intro-rule {
+    margin: 6px auto;
+  }
+  .qlc-tech-intro-desc {
+    display: none;
+  }
+  .qlc-tech-intro-flow {
+    margin: 8px auto 10px;
+    gap: 4px;
+  }
+  .qlc-tech-flow-node {
+    font-size: 9.5px;
+    gap: 5px;
+    letter-spacing: 0;
+  }
+  .qlc-tech-flow-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+  }
+  .qlc-tech-flow-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+  .qlc-tech-flow-node.is-main .qlc-tech-flow-icon {
+    width: 46px;
+    height: 46px;
+    margin-top: -5px;
+  }
+  .qlc-tech-flow-node.is-main .qlc-tech-flow-icon svg {
+    width: 24px;
+    height: 24px;
+  }
+  .qlc-tech-intro-flow::before {
+    top: 18px;
+  }
+  .qlc-tech-intro-cards {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+  .qlc-tech-intro-card {
+    padding: 8px 10px;
+  }
+  .qlc-tech-intro-card-icon svg {
+    width: 24px;
+    height: 24px;
+  }
+  .qlc-tech-intro-card h3 {
+    font-size: 12px;
+  }
+  .qlc-tech-intro-card p {
+    font-size: 11px;
+    line-height: 1.35;
+  }
+  .qlc-tech-intro-features {
+    margin-top: 10px;
+    gap: 6px;
+  }
+  .qlc-tech-intro-feature {
+    gap: 6px;
+  }
+  .qlc-tech-intro-feature-icon {
+    width: 28px;
+    height: 28px;
+  }
+  .qlc-tech-intro-feature-icon svg {
+    width: 15px;
+    height: 15px;
+  }
+  .qlc-tech-intro-feature strong {
+    font-size: 11px;
+  }
+  .qlc-tech-intro-feature span {
+    font-size: 10px;
+  }
+  .qlc-public .qlc-tech-intro-cta {
+    margin-top: 10px;
+    min-height: 38px;
+    width: 100%;
+  }
+}
+@media (max-width: 640px) and (max-height: 760px) {
+  .qlc-tech-intro-features {
+    display: none;
+  }
+}
+
+/* HERO (escritorio/laptop): el logo crece hasta llenar TODO el espacio libre
+   entre el borde superior de la tarjeta y las métricas. El alto de la
+   tarjeta lo sigue definiendo la columna de texto (align-items: stretch);
+   con flex-basis 0 el logo nunca la agranda, solo ocupa lo que sobra.
+   Solo en laptops (≤900px de alto): en monitores altos el alto de la tarjeta
+   lo define el propio logo y se conserva como estaba. */
+@media (min-width: 961px) and (max-height: 900px) {
+  .qlc-public .hero-card .hero-logo {
+    flex: 1 1 0;
+    min-height: 0;
+    width: 100%;
+    max-width: none;
+    margin: 0 auto;
+  }
+  .qlc-public .hero-card .hero-logo .qlc-logo-media {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+  }
+  .qlc-public .hero-card .hero-mini {
+    margin-top: 14px;
+  }
+}
+
+/* Modal de Tecnología: insignia "IA" al centro del flujo y etiquetas en lista. */
+.qlc-tech-flow-node span + span {
+  margin-top: -5px;
+}
+.qlc-tech-flow-badge {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: #e9f8ff;
+  text-shadow: 0 0 12px rgba(25, 195, 255, 0.9);
+}
+@media (max-height: 700px) {
+  .qlc-tech-flow-badge {
+    font-size: 20px;
+  }
+}
+@media (max-width: 640px) {
+  .qlc-tech-flow-badge {
+    font-size: 16px;
+  }
+  .qlc-tech-flow-node span + span {
+    margin-top: -3px;
+  }
+}
+
+/* ---------- EL PROBLEMA: encabezado con videos a la derecha ---------- */
+.qlc-public .problema-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 520px);
+  gap: 28px;
+  align-items: start;
+}
+.qlc-public .problema-videos {
+  display: grid;
+  gap: 10px;
+  margin-top: 6px;
+}
+.qlc-public .problema-video {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+}
+.qlc-public .problema-video-text {
+  min-width: 0;
+}
+.qlc-public .problema-video-text span {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--qlc-blue2);
+  margin-bottom: 4px;
+}
+.qlc-public .problema-video-text strong {
+  display: block;
+  font-size: 13.5px;
+  line-height: 1.35;
+  color: #f4f7fb;
+}
+.qlc-public .problema-video-btn {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  padding: 10px 16px;
+  font-size: 13px;
+}
+@media (max-width: 960px) {
+  .qlc-public .problema-head {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .qlc-public .problema-videos {
+    margin: 0 0 22px;
+  }
+}
+@media (max-width: 520px) {
+  .qlc-public .problema-video {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .qlc-public .problema-video-btn {
+    text-align: center;
+  }
+}
+
+/* ---------- EL PROBLEMA: gráficas (SVG traducible) ---------- */
+.qlc-public .problema-charts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 22px;
+}
+.qlc-public .problema-chart {
+  margin: 0;
+  padding: 16px 16px 10px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(20, 24, 52, 0.9), rgba(12, 14, 32, 0.9));
+}
+.qlc-public .problema-chart figcaption {
+  text-align: center;
+  margin-bottom: 8px;
+}
+.qlc-public .problema-chart figcaption strong {
+  display: block;
+  font-size: 15px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: #fff;
+}
+.qlc-public .problema-chart figcaption span {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--qlc-muted);
+  margin-top: 3px;
+}
+.qlc-public .problema-chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.qlc-public .problema-charts-source {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 11px;
+  color: var(--qlc-muted2, #7d8a97);
+}
+@media (max-width: 900px) {
+  .qlc-public .problema-charts {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- ANUNCIO DE ENTRADA A "EL PROBLEMA" ---------- */
+.qlc-ally-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(3, 6, 12, 0.86);
+  overflow: hidden;
+}
+.qlc-ally {
+  position: relative;
+  width: min(560px, 100%);
+  margin: auto;
+  padding: 30px 30px 24px;
+  border-radius: 22px;
+  border: 1px solid rgba(200, 155, 60, 0.4);
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(200, 155, 60, 0.16), transparent 55%),
+    linear-gradient(180deg, #0d1626, #070c16);
+  box-shadow: 0 40px 120px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(200, 155, 60, 0.08);
+  color: #f4f7fb;
+}
+.qlc-ally-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.qlc-ally-logo {
+  width: 38px;
+  height: 38px;
+}
+.qlc-ally-logo img,
+.qlc-ally-logo video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.qlc-ally-brand span {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #c89b3c;
+}
+.qlc-ally-title {
+  margin: 0 0 14px;
+  font-size: clamp(26px, 3.4vw, 34px);
+  line-height: 1.15;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+.qlc-ally-text {
+  margin: 0 0 14px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #c8d3df;
+}
+.qlc-ally-text strong {
+  color: #fff;
+}
+.qlc-ally-range {
+  margin: 4px 0 16px;
+  padding: 14px 16px 16px;
+  border-top: 1px solid rgba(200, 155, 60, 0.3);
+  border-bottom: 1px solid rgba(200, 155, 60, 0.3);
+  text-align: center;
+}
+.qlc-ally-range span {
+  display: block;
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 6px;
+}
+.qlc-ally-range strong {
+  display: block;
+  font-size: clamp(30px, 5vw, 40px);
+  font-weight: 800;
+  color: #d7b46a;
+  letter-spacing: 0.01em;
+}
+.qlc-ally-philosophy {
+  margin: 0 0 12px;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.45;
+  color: #d7b46a;
+}
+.qlc-ally-disclaimer {
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--qlc-muted, #9ca9b7);
+}
+.qlc-public .qlc-ally-cta {
+  display: block;
+  width: 100%;
+  margin-top: 18px;
+}
+@media (max-width: 640px) {
+  .qlc-ally {
+    padding: 22px 16px 18px;
+    border-radius: 16px;
+  }
+  .qlc-ally-text {
+    font-size: 14px;
+  }
+}
+
+/* Anuncio "El problema" en laptops de poca altura: A LO ANCHO (dos columnas)
+   para que quepa sin reducir la letra. */
+@media (min-width: 900px) and (max-height: 860px) {
+  .qlc-ally {
+    width: min(1040px, 100%);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    column-gap: 36px;
+    align-items: center;
+    padding: 30px 36px 26px;
+  }
+  .qlc-ally-col + .qlc-ally-col {
+    padding-left: 36px;
+    border-left: 1px solid rgba(200, 155, 60, 0.25);
+  }
+  .qlc-ally-title {
+    font-size: clamp(30px, 3.2vw, 40px);
+  }
+  .qlc-ally-text {
+    font-size: 16px;
+  }
+  .qlc-ally-range {
+    margin-top: 0;
+  }
+}
+
+/* Videos de "El problema": separados entre sí y de la tarjeta de abajo. */
+.qlc-public .problema-head {
+  margin-bottom: 26px;
+}
+.qlc-public .problema-videos {
+  gap: 14px;
+}
+
+/* Anuncio de "El problema" TRANSPARENTE: fondo translúcido con desenfoque
+   (efecto vidrio) que deja ver la página detrás. */
+.qlc-ally-overlay {
+  background: rgba(3, 6, 12, 0.45);
+}
+.qlc-ally {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(200, 155, 60, 0.14), transparent 55%),
+    linear-gradient(180deg, rgba(13, 22, 38, 0.62), rgba(7, 12, 22, 0.62));
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  backdrop-filter: blur(14px) saturate(1.2);
+}
+
+/* Rango "100 – 2,000 USDT" en celulares angostos: la letra se ajusta al
+   ancho para que, con los espacios alrededor del guion, no se salga. */
+@media (max-width: 420px) {
+  .qlc-public .range {
+    font-size: clamp(30px, 10.4vw, 42px);
+  }
+}

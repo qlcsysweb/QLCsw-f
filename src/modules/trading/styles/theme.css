@@ -1,0 +1,2668 @@
+:root {
+  --qlc-bg: #05070a;
+  --qlc-bg2: #090d12;
+  --qlc-panel: #0d131a;
+  --qlc-panel2: #111a23;
+  --qlc-text: #f4f7fb;
+  --qlc-muted: #9ca9b7;
+  --qlc-muted2: #6f7c89;
+  --qlc-silver: #c7ccd2;
+  --qlc-silver2: #7f8994;
+  --qlc-blue: #00a8ff;
+  --qlc-blue2: #5bd4ff;
+  --qlc-blue3: #0076b8;
+  --qlc-gold: #c89b3c;
+  --qlc-line: rgba(199, 204, 210, 0.14);
+  --qlc-glow: rgba(0, 168, 255, 0.18);
+  --qlc-max: 1180px;
+
+  --qlc-ok: #8ddfff;
+  --qlc-ok-border: rgba(0, 168, 255, 0.35);
+  --qlc-warn: #e8ca83;
+  --qlc-warn-border: rgba(200, 155, 60, 0.4);
+  --qlc-danger: #ff9292;
+  --qlc-danger-border: rgba(255, 110, 110, 0.4);
+  --qlc-success: #82e0bd;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: radial-gradient(circle at 80% 10%, rgba(0, 168, 255, 0.08), transparent 28%),
+    radial-gradient(circle at 10% 30%, rgba(200, 155, 60, 0.04), transparent 24%), var(--qlc-bg);
+  color: var(--qlc-text);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  line-height: 1.55;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+  color: inherit;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--qlc-panel2);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.qlc-container {
+  width: min(var(--qlc-max), calc(100% - 40px));
+  margin: auto;
+}
+
+.qlc-btn {
+  padding: 12px 20px;
+  border-radius: 10px;
+  border: 1px solid var(--qlc-line);
+  font-weight: 650;
+  font-size: 13px;
+  background: #0b1016;
+  color: var(--qlc-text);
+  cursor: pointer;
+  transition: 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.qlc-btn:hover {
+  border-color: rgba(91, 212, 255, 0.55);
+}
+.qlc-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.qlc-btn.primary {
+  background: linear-gradient(135deg, #009de9, #006fae);
+  box-shadow: 0 14px 40px rgba(0, 168, 255, 0.18);
+  border-color: transparent;
+}
+.qlc-btn.danger {
+  background: rgba(255, 110, 110, 0.1);
+  border-color: var(--qlc-danger-border);
+  color: #ffb3b3;
+}
+.qlc-btn.ghost {
+  background: transparent;
+}
+
+.qlc-card {
+  padding: 22px;
+  border: 1px solid var(--qlc-line);
+  border-radius: 18px;
+  background: rgba(13, 19, 26, 0.76);
+}
+
+.qlc-input,
+.qlc-select,
+.qlc-textarea {
+  width: 100%;
+  padding: 11px 13px;
+  border-radius: 9px;
+  border: 1px solid var(--qlc-line);
+  background: #080c11;
+  color: var(--qlc-text);
+  outline: none;
+  font-size: 13px;
+}
+.qlc-input:focus,
+.qlc-select:focus,
+.qlc-textarea:focus {
+  border-color: rgba(0, 168, 255, 0.55);
+}
+
+.qlc-label {
+  display: block;
+  font-size: 10px;
+  color: var(--qlc-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin: 12px 0 6px;
+}
+
+.qlc-badge {
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 1px solid var(--qlc-line);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.qlc-badge.ok {
+  border-color: var(--qlc-ok-border);
+  color: var(--qlc-ok);
+}
+.qlc-badge.warn {
+  border-color: var(--qlc-warn-border);
+  color: var(--qlc-warn);
+}
+.qlc-badge.danger {
+  border-color: var(--qlc-danger-border);
+  color: var(--qlc-danger);
+}
+.qlc-badge.muted {
+  color: var(--qlc-muted);
+}
+.qlc-badge.success {
+  border-color: rgba(130, 224, 189, 0.4);
+  color: var(--qlc-success);
+}
+/* "GENERADO" (estado de cuenta recién generado, pendiente de pago) — se
+   ilumina en azul para que el cliente note de inmediato que hay algo nuevo
+   disponible; PAGADO/NO GENERADO/VENCIDO nunca usan este brillo. */
+.qlc-badge.info {
+  border-color: var(--qlc-blue3);
+  color: var(--qlc-blue2);
+  background: rgba(0, 168, 255, 0.1);
+  box-shadow: 0 0 0 1px rgba(0, 168, 255, 0.25), 0 0 14px rgba(0, 168, 255, 0.35);
+}
+.qlc-badge-lg {
+  font-size: 12px;
+  padding: 8px 12px;
+}
+
+/* Estado de cuenta + contador de 72 h */
+.qlc-statement-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.qlc-countdown {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--qlc-line);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  max-width: 100%;
+}
+.qlc-countdown strong {
+  font-size: 13px;
+  white-space: nowrap;
+}
+.qlc-countdown-label {
+  color: var(--qlc-muted);
+}
+.qlc-countdown.safe {
+  border-color: rgba(130, 224, 189, 0.4);
+  color: var(--qlc-success);
+}
+.qlc-countdown.urgent {
+  border-color: var(--qlc-danger-border);
+  color: var(--qlc-danger);
+}
+/* Iluminación azul QLC: solo mientras hay un estado de cuenta PENDIENTE DE PAGO. */
+.qlc-card.qlc-card-attention {
+  border-color: rgba(0, 168, 255, 0.6);
+  box-shadow: 0 0 0 1px rgba(0, 168, 255, 0.25), 0 12px 40px var(--qlc-glow);
+  background: linear-gradient(160deg, rgba(0, 168, 255, 0.1), rgba(13, 19, 26, 0.85) 60%);
+}
+
+.qlc-table-wrap {
+  overflow: auto;
+  border: 1px solid var(--qlc-line);
+  border-radius: 14px;
+}
+.qlc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  min-width: 720px;
+}
+.qlc-table th,
+.qlc-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--qlc-line);
+  text-align: left;
+}
+.qlc-table th {
+  color: #91a1af;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.qlc-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* CORRECCIÓN 1/6/20/21 — contenido HTML estructurado de las Guías de Uso */
+.qlc-guide-content h3 {
+  margin: 22px 0 10px;
+  font-size: 16px;
+  color: var(--qlc-text);
+}
+.qlc-guide-content h3:first-child {
+  margin-top: 0;
+}
+.qlc-guide-content h4 {
+  margin: 16px 0 8px;
+  font-size: 14px;
+  color: var(--qlc-blue2);
+}
+.qlc-guide-content p {
+  color: var(--qlc-muted);
+  font-size: 13px;
+  line-height: 1.7;
+  margin: 0 0 10px;
+}
+.qlc-guide-content ul,
+.qlc-guide-content ol {
+  color: var(--qlc-muted);
+  font-size: 13px;
+  line-height: 1.7;
+  padding-left: 20px;
+  margin: 0 0 12px;
+}
+.qlc-guide-content strong {
+  color: var(--qlc-text);
+}
+.qlc-guide-content code {
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 12px;
+}
+.qlc-guide-content pre {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--qlc-line);
+  border-radius: 10px;
+  padding: 14px;
+  font-size: 12px;
+  color: var(--qlc-muted);
+  overflow-x: auto;
+}
+.qlc-guide-content table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  margin: 0 0 14px;
+}
+.qlc-guide-content th,
+.qlc-guide-content td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--qlc-line);
+  text-align: left;
+  color: var(--qlc-muted);
+}
+.qlc-guide-content th {
+  color: #91a1af;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.qlc-guide-notice {
+  border: 1px solid var(--qlc-warn-border);
+  background: rgba(200, 155, 60, 0.08);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 12px;
+  color: var(--qlc-warn);
+  margin: 0 0 14px;
+}
+
+.qlc-kicker {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--qlc-blue2);
+  margin-bottom: 8px;
+}
+
+.qlc-empty {
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--qlc-muted);
+  font-size: 13px;
+}
+
+/* Animación de carga (barras de volumen) — reemplaza el texto "Cargando…"
+   en pantallas que esperan la primera respuesta del API. */
+.qlc-loading-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 70px 20px;
+  min-height: 50vh;
+}
+.qlc-loading-screen-compact {
+  padding: 30px 20px;
+  min-height: 0;
+}
+.qlc-loading-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 7px;
+  height: 46px;
+}
+.qlc-loading-bars-sm {
+  height: 22px;
+  gap: 4px;
+}
+.qlc-loading-bars span {
+  display: block;
+  width: 7px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, var(--qlc-blue2), var(--qlc-blue3));
+  box-shadow: 0 0 10px rgba(0, 168, 255, 0.35);
+  transform-origin: bottom;
+  animation: qlc-loading-bounce 1.1s ease-in-out infinite;
+}
+.qlc-loading-bars-sm span {
+  width: 4px;
+  border-radius: 2px;
+}
+.qlc-loading-bars span:nth-child(1) {
+  height: 42%;
+  animation-delay: 0s;
+}
+.qlc-loading-bars span:nth-child(2) {
+  height: 68%;
+  animation-delay: 0.1s;
+}
+.qlc-loading-bars span:nth-child(3) {
+  height: 100%;
+  animation-delay: 0.2s;
+}
+.qlc-loading-bars span:nth-child(4) {
+  height: 58%;
+  animation-delay: 0.3s;
+}
+.qlc-loading-bars span:nth-child(5) {
+  height: 82%;
+  animation-delay: 0.4s;
+}
+@keyframes qlc-loading-bounce {
+  0%,
+  100% {
+    transform: scaleY(0.35);
+    opacity: 0.55;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .qlc-loading-bars span {
+    animation: none;
+    opacity: 0.85;
+  }
+}
+
+.qlc-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  padding: 14px 18px;
+  border-radius: 12px;
+  border: 1px solid var(--qlc-line);
+  background: #0b1016;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  font-size: 13px;
+  z-index: 200;
+  max-width: 360px;
+}
+.qlc-toast.success {
+  border-color: var(--qlc-ok-border);
+}
+.qlc-toast.error {
+  border-color: var(--qlc-danger-border);
+  color: #ffb3b3;
+}
+
+.qlc-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(190px, 100%), 1fr));
+  gap: 14px;
+  margin-top: 22px;
+}
+.qlc-stat-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 90px;
+}
+.qlc-stat-label {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--qlc-muted2);
+}
+.qlc-stat-value {
+  font-size: 28px;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+}
+.qlc-stat-hint {
+  font-size: 11px;
+  color: var(--qlc-muted);
+}
+
+.qlc-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.qlc-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(6px);
+  display: grid;
+  place-items: center;
+  z-index: 300;
+  padding: 20px;
+}
+.qlc-modal-panel {
+  width: min(560px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  background: #0b1016;
+  border: 1px solid var(--qlc-line);
+  border-radius: 20px;
+  padding: 26px;
+}
+.qlc-modal-panel h2 {
+  margin-top: 0;
+}
+.qlc-form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 22px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+@media (max-width: 600px) {
+  .qlc-form-actions {
+    flex-direction: column-reverse;
+  }
+  .qlc-form-actions button {
+    width: 100%;
+  }
+}
+.qlc-field-error {
+  color: #ffb3b3;
+  font-size: 12px;
+  margin-top: 6px;
+}
+
+.qlc-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr));
+  gap: 18px;
+  align-items: start;
+}
+/* Permite que una tarjeta (p.ej. la tabla de comparación de modelos) ocupe
+   todo el ancho del grid en vez de quedar apretada en una sola columna de
+   ~320px, donde una tabla con min-width no cabe sin scroll horizontal. */
+.qlc-card-span-all {
+  grid-column: 1 / -1;
+}
+/* Los hijos del grid pueden encogerse: las tablas anchas (min-width) hacen
+   scroll dentro de su .qlc-table-wrap en vez de ensanchar toda la página. */
+.qlc-detail-grid > * {
+  min-width: 0;
+}
+/* Variante "mosaico": las tarjetas se apilan por columnas, juntas y sin huecos
+   verticales aunque tengan alturas distintas, siempre con separación de 18px. */
+.qlc-detail-grid.masonry {
+  display: block;
+  column-width: 320px;
+  column-gap: 18px;
+}
+.qlc-detail-grid.masonry > * {
+  break-inside: avoid;
+  margin: 0 0 18px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.qlc-condition-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--qlc-line);
+  font-size: 13px;
+}
+.qlc-condition-row > :first-child {
+  flex: 1 1 140px;
+  min-width: 0;
+}
+.qlc-condition-row > div {
+  flex-wrap: wrap;
+}
+.qlc-condition-row:last-of-type {
+  border-bottom: none;
+}
+
+.qlc-plain-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+}
+
+/* Tarjeta de documento (admin y cliente) — antes los botones se salían de
+   la tarjeta en pantallas angostas porque el nombre del archivo y el grupo
+   de botones vivían en una sola fila sin wrap. Con flex-wrap + gap, ambos
+   grupos pueden bajar a su propia fila, y los botones a su vez pueden
+   ocupar varias filas entre sí, sin anchos fijos que rompan el responsive. */
+.qlc-doc-card {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--qlc-line);
+}
+.qlc-doc-card-info {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex: 1 1 220px;
+}
+.qlc-doc-card-name {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+.qlc-doc-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex: 0 1 auto;
+}
+@media (max-width: 480px) {
+  .qlc-doc-card-actions {
+    width: 100%;
+  }
+  .qlc-doc-card-actions .qlc-btn {
+    flex: 1 1 auto;
+    text-align: center;
+  }
+}
+/* El formulario de "archivo corregido" siempre ocupa su propia fila
+   completa dentro de la tarjeta, sin importar el tamaño de pantalla. */
+.qlc-doc-correction-form {
+  flex: 1 1 100%;
+  margin-top: 4px;
+}
+.qlc-doc-correction-form input[type='file'] {
+  max-width: 100%;
+}
+
+/*
+ * Animación del logotipo QLC — pensada para NO alterar el logo en absoluto.
+ * El propio logo (--logo-src) se usa como máscara: un brillo recorre la
+ * imagen, pero solo se ve donde el logo ya tiene píxeles (sus barras
+ * existentes). No se agregan barras nuevas ni gráficos alrededor del logo,
+ * y no depende de :hover — corre siempre, de forma lenta y continua.
+ */
+.qlc-logo-box {
+  position: relative;
+  display: block;
+}
+.qlc-logo-box .qlc-logo-media {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.qlc-logo-anim::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(100deg, transparent 38%, rgba(255, 255, 255, 0.55) 50%, transparent 62%);
+  background-repeat: no-repeat;
+  background-size: 260% 100%;
+  -webkit-mask-image: var(--logo-src);
+  mask-image: var(--logo-src);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-position: center;
+  mask-position: center;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  animation: qlc-logo-sweep 8s ease-in-out infinite;
+}
+@keyframes qlc-logo-sweep {
+  0%,
+  100% {
+    background-position: 140% 0;
+  }
+  50% {
+    background-position: -140% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .qlc-logo-anim::after {
+    animation: none;
+    display: none;
+  }
+}
+
+/* Secciones/tablas colapsables — mismo look de .qlc-card, con encabezado
+   siempre visible y un cuerpo que se expande/contrae sin perder contenido. */
+.qlc-collapsible {
+  border: 1px solid var(--qlc-line);
+  border-radius: 18px;
+  background: rgba(13, 19, 26, 0.76);
+  overflow: hidden;
+}
+.qlc-collapsible + .qlc-collapsible {
+  margin-top: 16px;
+}
+.qlc-collapsible-mb {
+  margin-bottom: 20px;
+}
+.qlc-collapsible-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+}
+.qlc-collapsible-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  color: var(--qlc-text);
+  font: inherit;
+  text-align: left;
+  flex: 1;
+  min-width: 0;
+}
+.qlc-collapsible-toggle:focus-visible {
+  outline: 2px solid var(--qlc-blue);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+.qlc-collapsible-chevron {
+  display: inline-flex;
+  flex-shrink: 0;
+  color: var(--qlc-muted);
+  transition: transform 0.2s ease;
+}
+.qlc-collapsible-chevron.open {
+  transform: rotate(-180deg);
+}
+.qlc-collapsible-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+.qlc-collapsible-badge {
+  flex-shrink: 0;
+}
+.qlc-collapsible-summary {
+  padding: 0 20px 16px;
+  margin-top: -6px;
+  font-size: 12px;
+  color: var(--qlc-muted);
+}
+.qlc-collapsible-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.25s ease;
+}
+.qlc-collapsible-body.open {
+  grid-template-rows: 1fr;
+}
+.qlc-collapsible-body-inner {
+  overflow: hidden;
+  min-height: 0;
+}
+.qlc-collapsible-body.open .qlc-collapsible-body-inner {
+  padding: 0 20px 20px;
+}
+@media (max-width: 600px) {
+  .qlc-collapsible-header {
+    padding: 14px 16px;
+  }
+  .qlc-collapsible-body.open .qlc-collapsible-body-inner {
+    padding: 0 16px 16px;
+  }
+  .qlc-collapsible-summary {
+    padding: 0 16px 14px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .qlc-collapsible-body {
+    transition: none;
+  }
+  .qlc-collapsible-chevron {
+    transition: none;
+  }
+}
+
+/* Dashboard del cliente: Estado de cuenta (con contador) primero; Subcuentas/API
+   y Notificaciones sin leer a su derecha. Se reacomoda sin cortar contenido. */
+.qlc-client-stats {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 22px;
+  align-items: stretch;
+}
+.qlc-client-stats > .qlc-card {
+  min-width: 0;
+}
+.qlc-client-statement .qlc-stat-hint {
+  overflow-wrap: anywhere;
+}
+.qlc-client-statement-cta {
+  align-self: flex-start;
+  margin-top: 4px;
+  padding: 9px 16px;
+}
+@media (max-width: 980px) {
+  .qlc-client-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .qlc-client-statement {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 480px) {
+  .qlc-client-stats {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .qlc-client-statement-cta {
+    align-self: stretch;
+  }
+}
+
+/* "Tu proceso, paso a paso" — 8 pasos en rejilla equilibrada (4 / 2 / 1). */
+.qlc-process-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  counter-reset: none;
+}
+.qlc-process-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--qlc-line);
+  border-radius: 12px;
+  background: rgba(8, 12, 17, 0.6);
+  min-width: 0;
+}
+.qlc-process-step-num {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--qlc-blue2);
+  border: 1px solid var(--qlc-ok-border);
+  background: rgba(0, 168, 255, 0.08);
+}
+.qlc-process-step-title {
+  font-size: 13px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 1100px) {
+  .qlc-process-steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 520px) {
+  .qlc-process-steps {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Transferencia interna Bitget (Depósito de tu garantía) */
+.qlc-bitget {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 22px;
+  scroll-margin-top: 20px;
+}
+/* Encabezado, pasos, datos/UID, ventajas y evidencia: components/BitgetTransfer.css */
+.qlc-bitget-form {
+  border-left: 1px solid var(--qlc-line);
+  padding-left: 22px;
+  min-width: 0;
+}
+.qlc-bitget-form h4 {
+  margin: 0 0 4px;
+}
+.qlc-bitget-form form > .qlc-btn.primary {
+  width: 100%;
+  margin-top: 14px;
+}
+.qlc-bitget-history {
+  grid-column: 1 / -1;
+  border-top: 1px solid var(--qlc-line);
+  padding-top: 12px;
+}
+.qlc-bitget-history li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px 12px;
+  font-size: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--qlc-line);
+}
+.qlc-bitget-history li span {
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+@media (max-width: 900px) {
+  .qlc-bitget {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .qlc-bitget-form {
+    border-left: none;
+    padding-left: 0;
+    border-top: 1px solid var(--qlc-line);
+    padding-top: 14px;
+  }
+}
+
+/* Estado de cuenta dentro de la subcuenta/API */
+.qlc-statement-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px 12px;
+  margin-bottom: 10px;
+}
+.qlc-statement-card-head h3 {
+  margin: 0;
+}
+.qlc-statement-meta {
+  font-size: 12px;
+  color: var(--qlc-muted);
+  margin: 10px 0 0;
+  overflow-wrap: anywhere;
+}
+.qlc-statement-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+.qlc-statement-history li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px 10px;
+  font-size: 12px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--qlc-line);
+}
+.qlc-statement-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(160px, 100%), 1fr));
+  gap: 0 12px;
+}
+
+/* Reportes de transferencia interna Bitget (admin) */
+.qlc-transfer-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+.qlc-transfer-item {
+  border: 1px solid var(--qlc-line);
+  border-radius: 12px;
+  padding: 12px;
+  min-width: 0;
+}
+.qlc-transfer-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px 10px;
+  margin-bottom: 8px;
+}
+.qlc-transfer-data {
+  display: grid;
+  grid-template-columns: minmax(90px, max-content) minmax(0, 1fr);
+  gap: 4px 12px;
+  margin: 0;
+  font-size: 12px;
+}
+.qlc-transfer-data dt {
+  color: var(--qlc-muted2);
+}
+.qlc-transfer-data dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+/* Modelo único de participación (QLC 50% · Cliente 50%). */
+.qlc-pm-title {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--qlc-blue2);
+  margin-bottom: 10px;
+}
+.qlc-pm-split {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.qlc-pm-split > div {
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--qlc-line);
+  background: rgba(255, 255, 255, 0.025);
+}
+.qlc-pm-split > div:first-child {
+  border-color: var(--qlc-ok-border);
+  background: rgba(0, 168, 255, 0.06);
+}
+.qlc-pm-split dt {
+  font-size: 12px;
+  color: var(--qlc-muted);
+}
+.qlc-pm-split dd {
+  margin: 2px 0 0;
+  font-size: 26px;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+/* Adjuntos de mensajes admin→cliente. */
+.qlc-att-list {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.qlc-att-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  border-radius: 10px;
+  border: 1px solid var(--qlc-line);
+  background: rgba(255, 255, 255, 0.02);
+  min-width: 0;
+}
+.qlc-att-thumb {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid var(--qlc-line);
+}
+.qlc-att-thumb-empty {
+  display: block;
+  background: rgba(255, 255, 255, 0.04);
+}
+.qlc-att-pdf {
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--qlc-blue2);
+  border-color: var(--qlc-ok-border);
+}
+.qlc-att-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+}
+/* Confirmación del capital operativo (cliente). */
+.qlc-capital-amount {
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--qlc-ok-border);
+  background: rgba(0, 168, 255, 0.06);
+}
+.qlc-capital-amount strong {
+  display: block;
+  font-size: 26px;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+.qlc-capital-pending {
+  display: block;
+  font-size: 13px;
+  color: var(--qlc-warn);
+}
+.qlc-capital-help {
+  margin: 12px 0 6px;
+  font-size: 13px;
+  color: var(--qlc-muted);
+}
+/* Card con las dos declaraciones autorizadas (ES / EN), siempre visibles. */
+.qlc-capital-phrases {
+  display: grid;
+  gap: 10px;
+  margin: 0 0 4px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(91, 212, 255, 0.28);
+  background: linear-gradient(180deg, rgba(91, 212, 255, 0.07), rgba(0, 0, 0, 0.28));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+.qlc-capital-phrase-row {
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0;
+}
+.qlc-capital-phrase-lang {
+  display: inline-block;
+  text-align: center;
+  padding: 2px 0;
+  border-radius: 6px;
+  background: rgba(91, 212, 255, 0.16);
+  color: var(--qlc-blue2);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+.qlc-capital-phrase-text {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.45;
+  color: var(--qlc-text, #e8eef7);
+  overflow-wrap: anywhere;
+}
+.qlc-capital-mismatch {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: var(--qlc-warn);
+}
+.qlc-capital-done {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(130, 224, 189, 0.4);
+  background: rgba(130, 224, 189, 0.06);
+}
+.qlc-capital-done-title {
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--qlc-success);
+}
+.qlc-capital-done p {
+  margin: 6px 0 8px;
+  font-size: 13px;
+  color: var(--qlc-muted);
+}
+.qlc-capital-done dl,
+.qlc-report-summary dl {
+  margin: 0;
+  display: grid;
+  gap: 6px;
+}
+.qlc-capital-done dl > div,
+.qlc-report-summary dl > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  font-size: 13px;
+}
+.qlc-capital-done dt,
+.qlc-report-summary dt {
+  color: var(--qlc-muted);
+}
+.qlc-capital-done dd,
+.qlc-report-summary dd {
+  margin: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+  text-align: right;
+}
+/* Resumen de una transferencia ya reportada (cliente). */
+.qlc-report-summary {
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(130, 224, 189, 0.4);
+  background: rgba(130, 224, 189, 0.06);
+}
+.qlc-report-summary.is-rejected {
+  border-color: var(--qlc-danger-border);
+  background: rgba(255, 110, 110, 0.06);
+}
+.qlc-report-summary-title {
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--qlc-success);
+  margin-bottom: 8px;
+}
+.qlc-report-summary.is-rejected .qlc-report-summary-title {
+  color: var(--qlc-danger);
+}
+.qlc-report-summary-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+.qlc-report-summary-actions .qlc-btn {
+  flex: 1 1 auto;
+}
+/* Advertencia previa al perfil de Bitget (dorado sobre fondo oscuro). */
+.qlc-warn-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(2, 5, 9, 0.78);
+  backdrop-filter: blur(5px);
+}
+.qlc-warn-modal {
+  width: min(460px, 100%);
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  padding: 22px 24px;
+  border-radius: 18px;
+  border: 1px solid rgba(200, 155, 60, 0.6);
+  background: radial-gradient(circle at 90% 0%, rgba(200, 155, 60, 0.14), transparent 50%), #0b1016;
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(200, 155, 60, 0.12);
+  color: var(--qlc-text);
+}
+.qlc-warn-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.qlc-warn-icon {
+  flex: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 19px;
+  color: #1a1204;
+  background: linear-gradient(135deg, #e8ca83, var(--qlc-gold));
+}
+.qlc-warn-head h2 {
+  margin: 0;
+  font-size: 16px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--qlc-warn);
+}
+.qlc-warn-modal p {
+  margin: 0 0 8px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #d5dde5;
+}
+.qlc-warn-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+.qlc-btn.qlc-warn-continue {
+  background: linear-gradient(135deg, #e8ca83, var(--qlc-gold));
+  border-color: transparent;
+  color: #1a1204;
+}
+@media (max-width: 420px) {
+  .qlc-warn-actions .qlc-btn {
+    flex: 1 1 100%;
+  }
+}
+/* Detalle del modelo de participación en tarjetas (público + cliente). */
+.qlc-pmd {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.qlc-pmd-card {
+  margin: 0;
+  padding: 16px 18px;
+  border: 1px solid var(--qlc-line);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.025);
+  min-width: 0;
+}
+.qlc-pmd-card h4 {
+  margin: 0 0 8px;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: var(--qlc-text);
+}
+.qlc-pmd-card p,
+.qlc-pmd-card li {
+  margin: 0;
+  font-size: 13px;
+  color: var(--qlc-muted);
+  line-height: 1.55;
+}
+.qlc-pmd-card ul {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 4px;
+}
+.qlc-pmd-zero {
+  margin-top: 8px !important;
+  color: var(--qlc-blue2) !important;
+  font-weight: 600;
+}
+.qlc-pmd-example {
+  border-color: var(--qlc-ok-border);
+  background: rgba(0, 168, 255, 0.05);
+}
+.qlc-pmd-ex-row + .qlc-pmd-ex-row {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--qlc-line);
+}
+.qlc-pmd-ex-profit {
+  font-size: 13px;
+  color: var(--qlc-muted);
+}
+.qlc-pmd-ex-profit strong {
+  color: var(--qlc-text);
+}
+.qlc-pmd-ex-split {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--qlc-muted);
+}
+.qlc-pmd-ex-split strong {
+  color: var(--qlc-text);
+  font-variant-numeric: tabular-nums;
+}
+.qlc-pmd-ex-final strong {
+  color: var(--qlc-blue2);
+}
+.qlc-pmd-quote blockquote {
+  margin: 0;
+  padding: 4px 0 4px 14px;
+  border-left: 3px solid var(--qlc-blue);
+  font-size: 14px;
+  font-style: italic;
+  line-height: 1.6;
+  color: #d5dde5;
+}
+@media (max-width: 760px) {
+  .qlc-pmd {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+/* Modal "Eliminar cliente": cliente afectado bien visible. */
+.qlc-delete-target {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--qlc-danger-border);
+  background: rgba(255, 110, 110, 0.06);
+  font-size: 14px;
+}
+.qlc-delete-target span {
+  color: var(--qlc-muted);
+}
+.qlc-btn.danger.qlc-btn-destructive {
+  background: #b3261e;
+  border-color: #d64036;
+  color: #fff;
+}
+.qlc-btn.danger.qlc-btn-destructive:hover:not(:disabled) {
+  background: #c8352c;
+}
+/* Evidencias de una transferencia reportada (admin): nombre + Ver/descargar. */
+.qlc-evidence-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+.qlc-evidence-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.qlc-evidence-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Fila hash/orden + botón Copiar — envuelve en pantallas angostas sin que el
+   código largo empuje el botón fuera de la tarjeta. */
+.qlc-copy-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.qlc-copy-btn {
+  padding: 2px 8px;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+.qlc-transfer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+@media (max-width: 420px) {
+  .qlc-transfer-data {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .qlc-transfer-data dd {
+    margin-bottom: 4px;
+  }
+  .qlc-transfer-actions .qlc-btn {
+    flex: 1 1 auto;
+  }
+}
+
+.qlc-plain-fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+
+.qlc-message-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 4px 8px;
+}
+.qlc-message-item {
+  padding: 8px 0 10px;
+  border-bottom: 1px solid var(--qlc-line);
+  font-size: 13px;
+  min-width: 0;
+}
+.qlc-message-item:last-child {
+  border-bottom: none;
+}
+.qlc-message-inbox-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  color: inherit;
+  text-decoration: none;
+}
+.qlc-message-inbox-client {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1 1 200px;
+  min-width: 0;
+}
+
+/* Acciones de un caso (Solicitar cita / estado / Mensajes): nunca se salen de la tarjeta. */
+.qlc-case-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Enlace con apariencia de texto (p.ej. "Caso #1042" dentro de una lista). */
+.qlc-link-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: var(--qlc-blue2);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.qlc-link-btn:hover {
+  color: var(--qlc-text);
+}
+
+/* Notificaciones — selección y eliminación (una, varias o todas). */
+.qlc-notif-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  margin: 0 0 12px;
+  padding: 10px 14px;
+  border: 1px solid var(--qlc-line);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.2);
+}
+.qlc-notif-toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-left: auto;
+}
+.qlc-btn-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.qlc-notif-count {
+  font-size: 12px;
+  color: var(--qlc-muted);
+}
+.qlc-notif-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  user-select: none;
+}
+.qlc-notif-check input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--qlc-blue2);
+  cursor: pointer;
+}
+.qlc-notif-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.qlc-notif-item > .qlc-notif-check {
+  padding-top: 2px;
+}
+.qlc-notif-item.is-selected {
+  border-color: rgba(91, 212, 255, 0.55);
+  box-shadow: 0 0 0 1px rgba(91, 212, 255, 0.25);
+}
+.qlc-notif-body {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.qlc-notif-delete {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--qlc-line);
+  background: transparent;
+  color: var(--qlc-muted);
+  cursor: pointer;
+}
+.qlc-notif-delete:hover,
+.qlc-notif-delete:focus-visible {
+  color: var(--qlc-danger, #ff6b6b);
+  border-color: currentColor;
+}
+@media (max-width: 560px) {
+  .qlc-notif-toolbar-actions {
+    margin-left: 0;
+    width: 100%;
+  }
+  .qlc-notif-toolbar-actions .qlc-btn {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+/* Prospectos — mensaje que escribió la persona al solicitar información. */
+.qlc-prospect-message {
+  margin-top: 6px;
+  max-width: 460px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--qlc-muted);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.qlc-prospect-message span {
+  font-weight: 700;
+  color: var(--qlc-text);
+}
+.qlc-prospect-message.is-empty {
+  font-style: italic;
+  color: var(--qlc-muted2);
+}
+
+/* Citas — hora equivalente (México / UTC) bajo la hora principal. */
+.qlc-time-mx {
+  display: block;
+  margin-top: 3px;
+  font-size: 11px;
+  color: var(--qlc-muted2);
+  white-space: nowrap;
+}
+span.qlc-time-mx:not(:only-child) {
+  display: inline;
+}
+
+/* Fila resaltada al llegar desde una notificación (p. ej. nuevo prospecto). */
+.qlc-row-highlight > td {
+  background: rgba(0, 168, 255, 0.12);
+}
+
+/* Chat de citas — mensajes con archivos adjuntos. */
+.qlc-chat-msg {
+  margin-bottom: 8px;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.qlc-chat-msg .qlc-att-list {
+  margin-top: 6px;
+}
+.qlc-chat-file-btn {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 42px;
+  padding-inline: 10px;
+}
+.qlc-chat-file-hint {
+  margin: 6px 0 0;
+  font-size: 11px;
+  color: var(--qlc-muted2);
+}
+
+/* Soporte (admin) — archivo de sesiones cerradas con buscador por caso. */
+.qlc-archive-search {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.qlc-archive-search .qlc-input {
+  flex: 1 1 180px;
+  max-width: 260px;
+}
+.qlc-archive-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--qlc-line);
+}
+
+/* Botón "Borrar" con icono (casos del cliente, citas del admin). */
+.qlc-case-delete {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.qlc-case-delete:hover:not(:disabled),
+.qlc-case-delete:focus-visible {
+  color: var(--qlc-danger);
+  border-color: var(--qlc-danger-border);
+}
+
+/* Reloj CDMX / UTC en el menú lateral del admin. */
+.qlc-dual-clock {
+  display: grid;
+  gap: 4px;
+  margin: -6px 0 14px;
+  padding: 8px 10px;
+  border: 1px solid var(--qlc-line);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.22);
+  font-variant-numeric: tabular-nums;
+}
+.qlc-dual-clock-row {
+  display: grid;
+  grid-template-columns: 38px 1fr auto;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--qlc-muted);
+}
+.qlc-dual-clock-zone {
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--qlc-blue2);
+}
+.qlc-dual-clock-date {
+  text-transform: capitalize;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.qlc-dual-clock-time {
+  font-size: 13px;
+  color: var(--qlc-text);
+}
+
+/* Buscador de subcuenta por identificador interno (admin). */
+.qlc-ident-search {
+  margin-bottom: 18px;
+}
+.qlc-ident-search .qlc-input {
+  max-width: 420px;
+}
+.qlc-ident-search-empty {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--qlc-muted2);
+}
+.qlc-ident-search-results {
+  margin-top: 10px;
+}
+.qlc-ident-search-results li {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--qlc-line);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.qlc-ident-search-results li .qlc-btn {
+  margin-left: auto;
+}
+
+/* Botón solo con icono (papelera en "Mis citas"). */
+.qlc-icon-only {
+  padding: 6px 8px;
+  min-width: 0;
+}
+/* Resultado del buscador de casos (admin). */
+.qlc-archive-result {
+  margin-top: 8px;
+  padding: 12px;
+  border: 1px solid var(--qlc-line);
+  border-radius: 12px;
+}
+
+/* Aviso de nueva versión publicada (pestañas abiertas con código anterior). */
+.qlc-update-banner {
+  position: fixed;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: calc(100vw - 32px);
+  padding: 10px 14px;
+  border: 1px solid rgba(91, 212, 255, 0.45);
+  border-radius: 12px;
+  background: rgba(6, 12, 18, 0.96);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  color: var(--qlc-text, #f4f7fb);
+  font-size: 13px;
+}
+@media (max-width: 480px) {
+  .qlc-update-banner {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+}
+
+/* Guías — diagrama de flujo vertical (pasos encadenados con flecha ↓). */
+.qlc-guide-content ol.qlc-guide-flow {
+  list-style: none;
+  padding: 0;
+  margin: 4px 0 14px;
+  display: grid;
+  justify-items: center;
+  text-align: center;
+}
+.qlc-guide-content ol.qlc-guide-flow li {
+  width: min(100%, 460px);
+  padding: 8px 12px;
+  border: 1px solid var(--qlc-line);
+  border-radius: 10px;
+  background: rgba(91, 212, 255, 0.05);
+  color: var(--qlc-text);
+}
+.qlc-guide-content ol.qlc-guide-flow li + li {
+  position: relative;
+  margin-top: 26px;
+}
+.qlc-guide-content ol.qlc-guide-flow li + li::before {
+  content: '↓';
+  position: absolute;
+  left: 50%;
+  top: -24px;
+  transform: translateX(-50%);
+  color: var(--qlc-blue2);
+  font-weight: 700;
+  line-height: 22px;
+}
+
+/* Citas — reagendar: aviso al cliente y horario propuesto por QLC. */
+.qlc-reschedule-box {
+  padding: 10px 12px;
+  border: 1px solid var(--qlc-warn-border);
+  border-radius: 10px;
+  background: rgba(200, 155, 60, 0.07);
+  font-size: 13px;
+}
+.qlc-reschedule-box p {
+  margin: 0 0 6px;
+  color: var(--qlc-text);
+}
+.qlc-reschedule-box p:first-child {
+  color: var(--qlc-warn);
+  font-weight: 700;
+}
+.qlc-proposal-line {
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--qlc-warn);
+}
+.qlc-proposal-line.ok {
+  color: var(--qlc-ok);
+}
+
+/* Estado de cuenta (cliente) — los datos que captura el admin. */
+.qlc-statement-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px 14px;
+  margin: 10px 0 0;
+}
+.qlc-statement-grid div {
+  min-width: 0;
+}
+.qlc-statement-grid dt {
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--qlc-muted2);
+}
+.qlc-statement-grid dd {
+  margin: 2px 0 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--qlc-text);
+  overflow-wrap: anywhere;
+}
+.qlc-statement-note {
+  margin-top: 10px;
+  font-size: 12px;
+}
+.qlc-statement-note strong {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--qlc-muted2);
+}
+.qlc-statement-note p {
+  margin: 2px 0 0;
+  color: var(--qlc-muted);
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+.qlc-statement-history-item {
+  flex-wrap: wrap;
+}
+.qlc-statement-more {
+  flex-basis: 100%;
+  font-size: 12px;
+}
+.qlc-statement-more summary {
+  cursor: pointer;
+  color: var(--qlc-blue2);
+}
+
+/* Subcuenta (cliente) — dos columnas: a la izquierda Modelo y Estado de cuenta
+   (juntos, sin hueco), a la derecha Estado de conexión; la Transferencia
+   Bitget va debajo a todo el ancho. En móvil, una columna. */
+.qlc-subaccount-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+.qlc-subaccount-layout > * {
+  min-width: 0;
+}
+@media (min-width: 900px) {
+  .qlc-subaccount-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    /* La fila 2 absorbe el alto sobrante de la columna derecha. */
+    grid-template-rows: auto 1fr auto;
+  }
+  .qlc-area-model {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .qlc-area-statement {
+    grid-column: 1;
+    grid-row: 2;
+    align-self: start;
+  }
+  .qlc-area-connection {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+  .qlc-area-transfer {
+    grid-column: 1 / -1;
+    grid-row: 3;
+  }
+}
+
+/* Historial de conexión (admin) — evento + papelera alineada a la derecha. */
+.qlc-history-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--qlc-muted);
+}
+.qlc-history-item > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Papelera "Borrar del historial" — visible siempre (tono rojo suave) y más
+   intensa al pasar el cursor, para que se identifique de un vistazo. */
+.qlc-trash-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--qlc-danger);
+  border-color: var(--qlc-danger-border);
+  opacity: 0.85;
+}
+.qlc-trash-btn:hover:not(:disabled),
+.qlc-trash-btn:focus-visible {
+  opacity: 1;
+  background: rgba(255, 92, 92, 0.12);
+}
+.qlc-history-head-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.qlc-history-del-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 4px;
+}
+
+/* ==========================================================
+   AFILIADOS / PROMOTORES (panel cliente, módulo admin, invitación)
+   ========================================================== */
+.qlc-invite-code {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 14px 0 6px;
+  padding: 14px 16px;
+  border: 1px solid var(--qlc-ok-border);
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(0, 168, 255, 0.1), rgba(0, 168, 255, 0.02));
+}
+.qlc-invite-code span {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--qlc-muted2);
+}
+.qlc-invite-code strong {
+  font-size: 22px;
+  letter-spacing: 0.06em;
+  color: var(--qlc-blue2);
+  word-break: break-all;
+}
+.qlc-invite-code small {
+  font-size: 12px;
+  color: var(--qlc-muted);
+}
+.qlc-invite-code.is-compact {
+  flex-direction: row;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+}
+.qlc-invite-code.is-compact strong {
+  font-size: 15px;
+}
+
+.qlc-aff-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: 18px;
+  align-items: stretch;
+  background: radial-gradient(circle at 90% 0%, rgba(0, 168, 255, 0.14), transparent 45%), var(--qlc-panel);
+}
+.qlc-aff-hero-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  grid-column: 1 / -1;
+}
+.qlc-aff-hero-head .qlc-kicker {
+  margin: 0;
+}
+.qlc-aff-section-title {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--qlc-muted2);
+  margin: 0 0 6px;
+}
+.qlc-aff-link-row {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+  margin-top: 10px;
+}
+.qlc-aff-link {
+  flex: 1;
+  min-width: 0;
+  padding: 11px 14px;
+  border: 1px solid var(--qlc-line);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.25);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+  color: var(--qlc-blue2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.qlc-aff-code-box {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--qlc-ok-border);
+  border-radius: 16px;
+  background: rgba(0, 168, 255, 0.05);
+}
+.qlc-aff-code {
+  font-size: 26px;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  color: var(--qlc-text);
+  word-break: break-all;
+}
+.qlc-aff-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 18px;
+  margin-top: 18px;
+  align-items: start;
+}
+.qlc-aff-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr));
+  gap: 10px;
+}
+.qlc-aff-list li {
+  padding: 12px 14px;
+  border: 1px solid var(--qlc-line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.qlc-aff-list li strong {
+  overflow-wrap: anywhere;
+}
+.qlc-aff-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--qlc-muted);
+}
+.qlc-aff-totals {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.qlc-aff-totals > div {
+  padding: 10px 12px;
+  border: 1px solid var(--qlc-line);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.qlc-aff-totals strong {
+  font-size: 18px;
+  overflow-wrap: anywhere;
+}
+.qlc-aff-qr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+}
+.qlc-aff-qr img {
+  width: min(280px, 100%);
+  height: auto;
+  border-radius: 14px;
+  background: #fff;
+  padding: 10px;
+}
+.qlc-aff-toolbar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 14px;
+}
+.qlc-aff-toolbar .qlc-input {
+  flex: 1 1 260px;
+  margin: 0;
+}
+.qlc-aff-segment {
+  display: inline-flex;
+  border: 1px solid var(--qlc-line);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.qlc-aff-segment button {
+  background: none;
+  border: none;
+  color: var(--qlc-muted);
+  padding: 8px 14px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+}
+.qlc-aff-segment button.is-active {
+  background: rgba(0, 168, 255, 0.16);
+  color: var(--qlc-text);
+}
+.qlc-aff-dl {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 8px 14px;
+  margin: 0;
+  font-size: 13px;
+}
+.qlc-aff-dl dt {
+  color: var(--qlc-muted2);
+}
+.qlc-aff-dl dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.qlc-aff-radio {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin: 6px 0 4px;
+  font-size: 13px;
+}
+.qlc-aff-radio label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+.qlc-aff-results {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  border: 1px solid var(--qlc-line);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.qlc-aff-results button {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--qlc-line);
+  color: var(--qlc-text);
+  padding: 9px 12px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+}
+.qlc-aff-results li:last-child button {
+  border-bottom: none;
+}
+.qlc-aff-results button:hover,
+.qlc-aff-results button:focus-visible {
+  background: rgba(0, 168, 255, 0.1);
+}
+@media (max-width: 980px) {
+  .qlc-aff-hero,
+  .qlc-aff-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 520px) {
+  .qlc-aff-link-row {
+    flex-direction: column;
+  }
+  .qlc-aff-totals {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .qlc-aff-code {
+    font-size: 21px;
+  }
+}
+
+/* QLC Affiliate Program — cuentas (PCB) de cada referido */
+.qlc-aff-referrals {
+  grid-template-columns: repeat(auto-fill, minmax(min(340px, 100%), 1fr));
+}
+.qlc-aff-account {
+  margin-top: 8px;
+  padding: 12px;
+  border: 1px solid var(--qlc-line);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.18);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+.qlc-aff-account-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.qlc-aff-account-head strong {
+  color: var(--qlc-blue2);
+  letter-spacing: 0.04em;
+}
+.qlc-aff-api {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  color: var(--qlc-muted);
+}
+.qlc-aff-milestones {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+.qlc-aff-milestones li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--qlc-muted);
+  min-width: 0;
+}
+@media (max-width: 520px) {
+  .qlc-aff-milestones {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.qlc-aff-share-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.qlc-aff-check-list {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 240px;
+  overflow: auto;
+}
+.qlc-aff-check-list label {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-size: 13px;
+  cursor: pointer;
+}
+@media (max-width: 520px) {
+  .qlc-aff-share-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 420px) {
+  .qlc-pm-split dd {
+    font-size: 20px;
+  }
+}
+
+/* Affiliate Dashboard — referidos contraíbles con comisiones por API */
+.qlc-aff-referral-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.qlc-aff-referral {
+  border: 1px solid var(--qlc-line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  min-width: 0;
+}
+.qlc-aff-referral.is-open {
+  border-color: var(--qlc-ok-border);
+}
+.qlc-aff-referral-head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 10px 14px;
+  background: none;
+  border: none;
+  color: var(--qlc-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.qlc-aff-referral-initials {
+  font-size: 15px;
+  letter-spacing: 0.04em;
+}
+.qlc-aff-referral-meta {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  color: var(--qlc-muted);
+}
+.qlc-aff-referral-body {
+  padding: 0 14px 14px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(340px, 100%), 1fr));
+  gap: 10px;
+}
+.qlc-aff-commissions {
+  border-top: 1px solid var(--qlc-line);
+  padding-top: 10px;
+}
+
+/* Paso obligatorio: pago de la comisión al promotor afiliador */
+.qlc-aff-prepay {
+  margin: 12px 0;
+  padding: 14px;
+  border: 1px solid var(--qlc-warn-border);
+  border-radius: 14px;
+  background: rgba(200, 155, 60, 0.06);
+}
+.qlc-aff-prepay.is-done {
+  border-color: var(--qlc-ok-border);
+  background: rgba(0, 168, 255, 0.05);
+}
+
+.qlc-aff-locked {
+  margin: 10px 0;
+  padding: 10px 12px;
+  border: 1px dashed var(--qlc-warn-border);
+  border-radius: 12px;
+  color: var(--qlc-warn);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* Tablas dentro de las Guías de Uso (p. ej. Guía QLC Affiliate Program). */
+.qlc-guide-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 0 14px;
+  font-size: 13px;
+}
+.qlc-guide-content th,
+.qlc-guide-content td {
+  border: 1px solid var(--qlc-line);
+  padding: 8px 10px;
+  text-align: left;
+  vertical-align: top;
+  color: var(--qlc-muted);
+  line-height: 1.5;
+}
+.qlc-guide-content th {
+  color: var(--qlc-text);
+  background: rgba(255, 255, 255, 0.04);
+  font-weight: 600;
+}
+@media (max-width: 640px) {
+  .qlc-guide-content table {
+    display: block;
+    overflow-x: auto;
+  }
+}
+
+/* Guías de Uso — listado + contenido. En pantallas pequeñas el listado se
+   apila arriba del contenido (antes era 260px fijos + 1fr también en móvil). */
+.qlc-detail-grid.qlc-guides-layout {
+  grid-template-columns: 260px minmax(0, 1fr);
+}
+@media (max-width: 860px) {
+  .qlc-detail-grid.qlc-guides-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.qlc-guides-layout .qlc-guides-item {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.35;
+}
+.qlc-guides-content {
+  scroll-margin-top: 16px;
+  overflow-wrap: break-word;
+}
+
+/* Guía de Uso — Permisos de API: aviso, capturas, permisos y casos de IP. */
+.qlc-guide-alert {
+  border: 1px solid var(--qlc-warn-border);
+  background: linear-gradient(135deg, rgba(200, 155, 60, 0.12), rgba(200, 155, 60, 0.03));
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin: 0 0 18px;
+}
+.qlc-guide-alert-kicker {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  font-weight: 700;
+  color: var(--qlc-warn);
+  margin-bottom: 4px;
+}
+.qlc-guide-alert-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--qlc-text);
+  margin-bottom: 8px;
+}
+.qlc-guide-content .qlc-guide-alert p {
+  margin: 0;
+}
+.qlc-guide-content .qlc-guide-figure {
+  margin: 4px 0 14px;
+  max-width: 760px;
+}
+.qlc-guide-content .qlc-guide-figure img {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--qlc-line);
+  border-radius: 10px;
+  background: #18191b;
+  cursor: zoom-in;
+}
+.qlc-guide-content .qlc-guide-figure figcaption {
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--qlc-muted2);
+}
+.qlc-guide-content ul.qlc-guide-perms {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.qlc-guide-content ul.qlc-guide-perms li {
+  border: 1px solid var(--qlc-ok-border);
+  background: rgba(0, 168, 255, 0.08);
+  border-radius: 999px;
+  padding: 5px 12px;
+  line-height: 1.4;
+  max-width: 100%;
+}
+.qlc-guide-content ul.qlc-guide-perms li::before {
+  content: '✓ ';
+  color: var(--qlc-blue2);
+  font-weight: 700;
+}
+.qlc-guide-content ul.qlc-guide-perms li span {
+  color: var(--qlc-muted2);
+  font-size: 12px;
+}
+.qlc-guide-ip-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+  gap: 10px;
+  margin: 0 0 12px;
+}
+.qlc-guide-ip-case {
+  border: 1px solid var(--qlc-line);
+  border-left: 3px solid var(--qlc-success);
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.02);
+}
+.qlc-guide-ip-case.is-ip {
+  border-left-color: var(--qlc-blue2);
+}
+.qlc-guide-ip-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--qlc-text);
+  margin-bottom: 4px;
+}
+.qlc-guide-content .qlc-guide-ip-case p {
+  margin: 0;
+}
+.qlc-guide-content p.qlc-guide-footnote {
+  margin-top: 18px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--qlc-muted2);
+}
+
+/* Ampliación de capturas de una guía. */
+.qlc-guide-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 16px 16px;
+  background: rgba(3, 5, 8, 0.88);
+  cursor: zoom-out;
+}
+.qlc-guide-lightbox img {
+  max-width: min(1200px, 100%);
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 10px;
+  border: 1px solid var(--qlc-line);
+  cursor: default;
+}
+.qlc-guide-lightbox-close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--qlc-line);
+  background: var(--qlc-panel);
+  color: var(--qlc-text);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* Perfil del cliente — "Administración de cuenta" (eliminar mi cuenta):
+   sección discreta al final del perfil, no un botón destacado. */
+.qlc-account-admin {
+  max-width: 480px;
+  margin-top: 18px;
+  border-color: var(--qlc-line);
+}
+.qlc-account-admin h3 {
+  margin: 0 0 6px;
+  font-size: 14px;
+  color: var(--qlc-muted);
+  letter-spacing: 0.02em;
+}
+.qlc-account-admin p {
+  margin: 0 0 12px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--qlc-muted2);
+}
+.qlc-account-admin-btn {
+  color: var(--qlc-danger);
+  border-color: var(--qlc-danger-border);
+}
+.qlc-account-admin-warning {
+  margin-top: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--qlc-muted);
+}
+.qlc-account-admin-code {
+  letter-spacing: 0.4em;
+  font-variant-numeric: tabular-nums;
+  max-width: 220px;
+}
+.qlc-account-admin-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 6px 0 14px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--qlc-text);
+  cursor: pointer;
+}
+.qlc-account-admin-check input {
+  margin-top: 3px;
+  flex: 0 0 auto;
+}
+
+/* ADMIN — consulta del estado de una cuenta con eliminación solicitada. */
+.qlc-deletion-status-grid {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 6px 16px;
+  margin: 0 0 12px;
+  font-size: 13px;
+}
+.qlc-deletion-status-grid dt {
+  color: var(--qlc-muted2);
+}
+.qlc-deletion-status-grid dd {
+  margin: 0;
+  color: var(--qlc-text);
+  overflow-wrap: anywhere;
+}

@@ -1,0 +1,341 @@
+const ES = {
+  title: 'Trading Academy',
+  extraLink: 'Educación financiera',
+  sections: {
+    inicio: {
+      navLabel: 'Inicio',
+      eyebrow: 'Formación avanzada · QLC',
+      title: 'Aprende a leer el mercado con',
+      highlight: 'criterio cuantitativo.',
+      description: 'Institutional Trading Academy es un programa de formación orientado al análisis sistemático, la medición del riesgo y la construcción de procesos de decisión. El objetivo no es perseguir cada movimiento: es aprender a evaluar escenarios con datos, reglas y disciplina.',
+    },
+    programa: {
+      navLabel: 'Programa',
+      eyebrow: 'Ruta de aprendizaje',
+      title: 'Un programa por etapas, de los fundamentos a la validación.',
+      description: 'Cada módulo desarrolla una competencia concreta mediante una metodología estructurada que integra formación especializada, herramientas de análisis y aplicación práctica.',
+    },
+    modulos: {
+      navLabel: 'Módulos',
+      eyebrow: '12 módulos',
+      title: 'Primero el riesgo y los datos; después el método.',
+      description: 'La secuencia está diseñada para que el alumno comprenda primero el riesgo y los datos, antes de construir, evaluar o aplicar un método operativo.',
+    },
+    perfil: {
+      navLabel: 'Perfil del Alumno',
+      eyebrow: 'Antes de inscribirte',
+      title: '¿A quién va dirigido?',
+      description: 'A inversionistas, traders y profesionales del sector financiero que deseen desarrollar conocimientos avanzados en análisis cuantitativo, diseño de estrategias y gestión sistemática del riesgo.',
+    },
+    metodo: {
+      navLabel: 'Método',
+      eyebrow: 'Dos formas de abordar el mercado',
+      title: '¿Qué diferencia al enfoque cuantitativo del trading retail?',
+      description: 'La diferencia no es una etiqueta ni una garantía de resultados. Está en cómo se formula una decisión, cómo se prueba y cómo se administra el riesgo.',
+    },
+    copytrading: {
+      navLabel: 'Trading Bot',
+      eyebrow: 'Alternativa de acceso',
+      title: '¿No tienes el capital para cursar la academia?',
+      description: 'Puedes conocer nuestro QLC Quantitative Trading Bot, el producto principal de QLC: un sistema de trading cuantitativo que conecta tu cuenta de exchange mediante tecnología propia y una conexión API autorizada para ejecutar operaciones automáticamente, sin que necesites desarrollar primero tu propio proceso operativo.',
+    },
+    contacto: {
+      navLabel: 'Preguntas',
+      eyebrow: 'Antes de decidir',
+      title: 'Preguntas frecuentes',
+      description: 'Recibe detalles del temario, perfil recomendado, condiciones de acceso y alternativas disponibles.',
+    },
+  },
+  hero: {
+    note: 'De la intuición a un proceso medible: hipótesis, evidencia histórica, control de exposición y evaluación continua.',
+    primary: 'Explorar el programa',
+    secondary: 'Conocer QLC Quantitative Trading Bot',
+  },
+  visual: {
+    head: 'QLC · Quantitative framework',
+    status: '● Sistema de análisis',
+    reference: 'Nivel de referencia',
+    metrics: [['Datos', 'Contexto histórico'], ['Reglas', 'Proceso repetible'], ['Riesgo', 'Exposición controlada']],
+  },
+  program: {
+    facts: [
+      { icon: 'calendar', label: 'Duración', value: '1 mes', note: 'Por módulo' },
+      { icon: 'wallet', label: 'Inversión', value: '1,000 USDT', note: 'Por módulo' },
+      { icon: 'users', label: 'Admisión', value: '20 plazas', note: 'Por convocatoria trimestral' },
+      { icon: 'video', label: 'Acompañamiento', value: 'Personalizado', note: 'Herramientas y sesiones por Google Meet' },
+    ],
+    admission: {
+      title: 'Admisión mediante evaluación previa',
+      text: 'Los candidatos recibirán por correo electrónico la notificación de aceptación o rechazo de su solicitud.',
+    },
+    bundle: {
+      title: 'Formación y tecnología en un solo programa',
+      text: 'El programa completo incorpora, sin costo adicional, una licencia de uso por 3 años de nuestro software especializado de gestión y operación multicuentas.',
+    },
+    details: [
+      ['Duración y modalidad', 'Cada módulo dura 1 mes e incluye herramientas de apoyo y asesoría personalizada en línea por Google Meet para resolver dudas, revisar avances y reforzar lo aprendido.'],
+      ['Proceso de admisión', 'Cupo limitado a 20 participantes por convocatoria, abierta cada tres meses. Los candidatos completan una evaluación previa para determinar su perfil y su adecuación a la metodología.'],
+    ],
+    structure: {
+      title: 'Estructura académica de QLC',
+      rows: [
+        ['Horas diarias', '1 hora'],
+        ['Horas semanales', '7 horas'],
+        ['Horas por módulo de 30 días', '30 horas', true],
+        ['Inversión por módulo', '1,000 USDT'],
+      ],
+    },
+    cta: 'Solicitar evaluación de admisión →',
+  },
+  moduleLabel: 'Módulo',
+  modules: [
+    ['Fundamentos del mercado', 'Cómo funcionan los mercados, los instrumentos, la liquidez, la volatilidad y la formación del precio.'],
+    ['Riesgo, exposición y capital', 'Diferencia capital, margen, exposición y pérdida potencial; define límites antes de operar.'],
+    ['Lectura estructurada del precio', 'Analiza niveles, rangos, compresión, expansión y escenarios de mercado.'],
+    ['Estadística aplicada al trading', 'Define eventos medibles y estudia frecuencia, distribución y percentiles.'],
+    ['Diseño del método cuantitativo', 'Convierte una hipótesis en reglas observables de activación, objetivo, invalidación y cierre.'],
+    ['Backtesting y calidad de datos', 'Evalúa una idea con datos históricos e identifica sesgos y conclusiones prematuras.'],
+    ['MAE, MFE y escenarios', 'Estudia el recorrido favorable y adverso de los movimientos y sus condiciones de salida.'],
+    ['Construcción de una estrategia', 'Integra filtros, señales y reglas de ejecución en un sistema documentado y revisable.'],
+    ['Pruebas fuera de muestra', 'Comprueba si el comportamiento se sostiene en datos distintos a los del diseño.'],
+    ['Asignación y diversificación', 'Distribuye exposición entre estrategias sin confundir diversificación con ausencia de riesgo.'],
+    ['Operación y control', 'Documenta decisiones, revisa desviaciones y mide el desempeño neto de costes.'],
+    ['Evaluación y mejora continua', 'Reporta métricas relevantes y revisa sin optimizar solo para el pasado.'],
+  ],
+  knowledge: {
+    eyebrow: 'Base sugerida',
+    title: 'Conocimientos recomendados',
+    text: 'Conocimientos básicos de mercados financieros, instrumentos de inversión y operaciones de trading, además de nociones de matemáticas, porcentajes, interpretación de datos y estadística básica. No es indispensable experiencia profesional en instituciones financieras.',
+  },
+  requirements: {
+    eyebrow: 'Participación',
+    title: 'Perfil y requisitos de participación',
+    items: [
+      'Computadora y conexión estable a internet para las herramientas de análisis y los materiales.',
+      'Conocimientos básicos de mercados financieros o disposición para adquirirlos.',
+      'Interés por el análisis cuantitativo y la evaluación objetiva de estrategias.',
+      'Comprender que toda estrategia implica riesgos y que el pasado no garantiza resultados futuros.',
+      'Tiempo para estudiar, realizar ejercicios y analizar resultados.',
+    ],
+    note: 'Su implementación con capital significativo requiere, además de formación, recursos financieros adecuados, controles de riesgo, infraestructura operativa y experiencia proporcional.',
+  },
+  approaches: [
+    {
+      eyebrow: 'Enfoque retail discrecional',
+      title: 'Decisiones centradas en la interpretación',
+      items: [
+        'Puede apoyarse principalmente en lectura visual, intuición o señales aisladas.',
+        'Las reglas pueden cambiar entre operaciones si no están documentadas.',
+        'La evaluación suele concentrarse en operaciones individuales o resultados recientes.',
+        'La gestión del riesgo puede abordarse después de identificar una oportunidad, en lugar de establecer parámetros de riesgo desde el inicio.',
+      ],
+    },
+    {
+      eyebrow: 'Enfoque cuantitativo e institucional',
+      title: 'Decisiones basadas en un proceso medible',
+      featured: true,
+      items: [
+        'Formula hipótesis y las traduce en reglas explícitas y reproducibles.',
+        'Estudia muestras, distribuciones, escenarios y comportamiento histórico.',
+        'Valida el método, contempla costes y busca detectar sesgos y sobreajuste.',
+        'Integra exposición, límites de riesgo, diversificación y revisión sistemática.',
+      ],
+    },
+  ],
+  methodNote: 'Una metodología avanzada exige capital, infraestructura y disciplina. No se recomienda comprometer dinero necesario para gastos esenciales ni asumir que más capital garantiza mejores resultados.',
+  copy: {
+    points: [
+      ['Otra vía de acceso:', 'no necesitas cursar toda la academia para conocer el producto.'],
+      ['Información antes de participar:', 'revisa funcionamiento, comisiones, condiciones y riesgos.'],
+      ['Decisión informada:', 'evalúa si el producto es compatible con tus objetivos y tu tolerancia a pérdidas.'],
+    ],
+    panelEyebrow: 'QLC · Producto principal',
+    panelTitle: ['QLC Quantitative ', 'Trading Bot'],
+    panelText: 'Trading cuantitativo automatizado, accesible desde 100 USDT: tus fondos permanecen en tu propia cuenta de exchange y QLC no necesita permisos de retiro. Conoce de antemano las reglas y los riesgos.',
+    cta: 'Conocer QLC Quantitative Trading Bot →',
+    disclaimer: 'El trading automatizado no elimina el riesgo de mercado ni garantiza beneficios. Pueden producirse pérdidas parciales o totales del capital asignado.',
+  },
+  faq: [
+    ['¿El curso garantiza resultados?', 'No. La formación transmite conceptos y procesos de análisis, pero no garantiza rentabilidad ni sustituye la experiencia, la práctica y la gestión del riesgo.'],
+    ['¿Necesito operar con mucho capital para estudiar?', 'No. La aplicación institucional a gran escala puede requerir recursos, controles e infraestructura acordes con el alcance de la operación.'],
+    ['¿El enfoque cuantitativo elimina las pérdidas?', 'No. Los datos históricos no predicen con certeza el futuro y los sistemas también atraviesan periodos adversos.'],
+    ['¿Qué ofrece QLC si no deseo cursar la academia?', 'Puedes conocer el QLC Quantitative Trading Bot y valorar si se ajusta a tu situación financiera y tolerancia al riesgo.'],
+  ],
+  contact: {
+    title: 'Conoce el programa o solicita información de QLC.',
+    cta: 'Solicitar información ↗',
+    disclaimer: 'Aviso: contenido educativo e informativo. No constituye asesoría financiera personalizada, oferta de inversión ni promesa de rendimientos. Toda operativa implica riesgo; verifica las condiciones aplicables en tu jurisdicción.',
+  },
+};
+
+const EN = {
+  title: 'Trading Academy',
+  extraLink: 'Financial education',
+  sections: {
+    inicio: {
+      navLabel: 'Home',
+      eyebrow: 'Advanced training · QLC',
+      title: 'Learn to read the market with',
+      highlight: 'quantitative judgment.',
+      description: 'Institutional Trading Academy is a training program focused on systematic analysis, risk measurement and building decision processes. The goal is not to chase every move: it is to learn to evaluate scenarios with data, rules and discipline.',
+    },
+    programa: {
+      navLabel: 'Program',
+      eyebrow: 'Learning path',
+      title: 'A staged program, from fundamentals to validation.',
+      description: 'Each module develops a specific skill through a structured methodology that combines specialized training, analysis tools and practical application.',
+    },
+    modulos: {
+      navLabel: 'Modules',
+      eyebrow: '12 modules',
+      title: 'Risk and data first; the method comes after.',
+      description: 'The sequence is designed so students first understand risk and data, before building, evaluating or applying an operating method.',
+    },
+    perfil: {
+      navLabel: 'Student profile',
+      eyebrow: 'Before you enroll',
+      title: 'Who is it for?',
+      description: 'Investors, traders and financial professionals who want to develop advanced knowledge in quantitative analysis, strategy design and systematic risk management.',
+    },
+    metodo: {
+      navLabel: 'Method',
+      eyebrow: 'Two ways to approach the market',
+      title: 'What sets the quantitative approach apart from retail trading?',
+      description: 'The difference is not a label or a guarantee of results. It lies in how a decision is formulated, how it is tested and how risk is managed.',
+    },
+    copytrading: {
+      navLabel: 'Trading Bot',
+      eyebrow: 'Alternative access',
+      title: 'Don’t have the capital to take the academy?',
+      description: 'You can explore our QLC Quantitative Trading Bot, QLC’s main product: a quantitative trading system that connects your exchange account through proprietary technology and an authorized API connection to execute trades automatically, without first developing your own operating process.',
+    },
+    contacto: {
+      navLabel: 'FAQ',
+      eyebrow: 'Before you decide',
+      title: 'Frequently asked questions',
+      description: 'Get details about the syllabus, recommended profile, access conditions and available alternatives.',
+    },
+  },
+  hero: {
+    note: 'From intuition to a measurable process: hypotheses, historical evidence, exposure control and continuous evaluation.',
+    primary: 'Explore the program',
+    secondary: 'Discover QLC Quantitative Trading Bot',
+  },
+  visual: {
+    head: 'QLC · Quantitative framework',
+    status: '● Analysis system',
+    reference: 'Reference level',
+    metrics: [['Data', 'Historical context'], ['Rules', 'Repeatable process'], ['Risk', 'Controlled exposure']],
+  },
+  program: {
+    facts: [
+      { icon: 'calendar', label: 'Duration', value: '1 month', note: 'Per module' },
+      { icon: 'wallet', label: 'Investment', value: '1,000 USDT', note: 'Per module' },
+      { icon: 'users', label: 'Admission', value: '20 seats', note: 'Per quarterly intake' },
+      { icon: 'video', label: 'Support', value: 'Personalized', note: 'Tools and Google Meet sessions' },
+    ],
+    admission: {
+      title: 'Admission through a prior assessment',
+      text: 'Candidates will receive an email notifying them whether their application has been accepted or rejected.',
+    },
+    bundle: {
+      title: 'Training and technology in a single program',
+      text: 'The complete program includes, at no additional cost, a 3-year license to use our specialized multi-account management and trading software.',
+    },
+    details: [
+      ['Duration and format', 'Each module lasts 1 month and includes support tools and personalized online guidance via Google Meet to answer questions, review progress and reinforce what you learn.'],
+      ['Admission process', 'Limited to 20 participants per intake, opening every three months. Candidates complete a prior assessment to determine their profile and fit with the methodology.'],
+    ],
+    structure: {
+      title: 'QLC academic structure',
+      rows: [
+        ['Daily hours', '1 hour'],
+        ['Weekly hours', '7 hours'],
+        ['Hours per 30-day module', '30 hours', true],
+        ['Investment per module', '1,000 USDT'],
+      ],
+    },
+    cta: 'Request an admission assessment →',
+  },
+  moduleLabel: 'Module',
+  modules: [
+    ['Market fundamentals', 'How markets, instruments, liquidity, volatility and price formation work.'],
+    ['Risk, exposure and capital', 'Distinguish capital, margin, exposure and potential loss; set limits before trading.'],
+    ['Structured price reading', 'Analyze levels, ranges, compression, expansion and market scenarios.'],
+    ['Statistics applied to trading', 'Define measurable events and study frequency, distribution and percentiles.'],
+    ['Designing the quantitative method', 'Turn a hypothesis into observable rules for activation, target, invalidation and exit.'],
+    ['Backtesting and data quality', 'Evaluate an idea with historical data and identify biases and premature conclusions.'],
+    ['MAE, MFE and scenarios', 'Study the favorable and adverse excursion of moves and their exit conditions.'],
+    ['Building a strategy', 'Combine filters, signals and execution rules into a documented, reviewable system.'],
+    ['Out-of-sample testing', 'Check whether behavior holds on data different from that used in the design.'],
+    ['Allocation and diversification', 'Spread exposure across strategies without confusing diversification with the absence of risk.'],
+    ['Operations and control', 'Document decisions, review deviations and measure performance net of costs.'],
+    ['Evaluation and continuous improvement', 'Report relevant metrics and review without optimizing only for the past.'],
+  ],
+  knowledge: {
+    eyebrow: 'Suggested background',
+    title: 'Recommended knowledge',
+    text: 'Basic knowledge of financial markets, investment instruments and trading operations, plus notions of mathematics, percentages, data interpretation and basic statistics. Professional experience at financial institutions is not required.',
+  },
+  requirements: {
+    eyebrow: 'Participation',
+    title: 'Profile and participation requirements',
+    items: [
+      'A computer and a stable internet connection for the analysis tools and materials.',
+      'Basic knowledge of financial markets or willingness to acquire it.',
+      'Interest in quantitative analysis and the objective evaluation of strategies.',
+      'Understanding that every strategy involves risk and that the past does not guarantee future results.',
+      'Time to study, do exercises and analyze results.',
+    ],
+    note: 'Implementing it with significant capital requires, in addition to training, adequate financial resources, risk controls, operating infrastructure and proportional experience.',
+  },
+  approaches: [
+    {
+      eyebrow: 'Discretionary retail approach',
+      title: 'Decisions centered on interpretation',
+      items: [
+        'It may rely mainly on visual reading, intuition or isolated signals.',
+        'Rules may change between trades if they are not documented.',
+        'Evaluation tends to focus on individual trades or recent results.',
+        'Risk management may be addressed after spotting an opportunity, instead of setting risk parameters from the start.',
+      ],
+    },
+    {
+      eyebrow: 'Quantitative and institutional approach',
+      title: 'Decisions based on a measurable process',
+      featured: true,
+      items: [
+        'Formulates hypotheses and translates them into explicit, reproducible rules.',
+        'Studies samples, distributions, scenarios and historical behavior.',
+        'Validates the method, accounts for costs and seeks to detect bias and overfitting.',
+        'Integrates exposure, risk limits, diversification and systematic review.',
+      ],
+    },
+  ],
+  methodNote: 'An advanced methodology demands capital, infrastructure and discipline. Do not commit money needed for essential expenses or assume that more capital guarantees better results.',
+  copy: {
+    points: [
+      ['Another way in:', 'you don’t need to complete the whole academy to explore the product.'],
+      ['Information before joining:', 'review how it works, fees, conditions and risks.'],
+      ['Informed decision:', 'assess whether the product fits your goals and your tolerance for losses.'],
+    ],
+    panelEyebrow: 'QLC · Main product',
+    panelTitle: ['QLC Quantitative ', 'Trading Bot'],
+    panelText: 'Automated quantitative trading, accessible from 100 USDT: your funds stay in your own exchange account and QLC does not need withdrawal permissions. Know the rules and risks in advance.',
+    cta: 'Discover QLC Quantitative Trading Bot →',
+    disclaimer: 'Automated trading does not eliminate market risk or guarantee profits. Partial or total losses of the allocated capital may occur.',
+  },
+  faq: [
+    ['Does the course guarantee results?', 'No. The training conveys concepts and analysis processes, but it does not guarantee profitability or replace experience, practice and risk management.'],
+    ['Do I need to trade a lot of capital to study?', 'No. Large-scale institutional application may require resources, controls and infrastructure in line with the scope of the operation.'],
+    ['Does the quantitative approach eliminate losses?', 'No. Historical data does not predict the future with certainty, and systems also go through adverse periods.'],
+    ['What does QLC offer if I don’t want to take the academy?', 'You can explore QLC Quantitative Trading Bot and assess whether it fits your financial situation and risk tolerance.'],
+  ],
+  contact: {
+    title: 'Explore the program or request information from QLC.',
+    cta: 'Request information ↗',
+    disclaimer: 'Notice: educational and informational content. It does not constitute personalized financial advice, an investment offer or a promise of returns. All trading involves risk; check the conditions that apply in your jurisdiction.',
+  },
+};
+
+export const TRADING_CONTENT = { es: ES, en: EN };

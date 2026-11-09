@@ -1,0 +1,303 @@
+import { useRef, useState } from 'react';
+import { Link } from '../../router.jsx';
+import api from '../../services/api';
+import { useLanguage } from '../../i18n/LanguageContext';
+import { translateBackendMessage } from '../../i18n/backendMessages';
+import { TRANSFER_REPORT_STATUS, statusOf } from '../../utils/statusLabels';
+import { formatCdmxDate, formatCdmxDateTime } from '../../utils/cdmxTime';
+import Modal from '../../components/Modal';
+import ConfirmModal from '../../components/ConfirmModal';
+import DocumentViewerModal from '../../components/DocumentViewerModal';
+import useCopyToClipboard from '../../hooks/useCopyToClipboard';
+
+/*
+ * TRANSFERENCIA INTERNA BITGET — reportes que envía el cliente (número de
+ * orden + fecha/hora), integrados en el flujo de pagos/garantía existente.
+ * Estados visibles simples: PENDIENTE / CONFIRMADO / RECHAZADO.
+ *  - Pago de un estado de cuenta → "Confirmar" lo deja PAGADO (backend).
+ *  - Pago de garantía → conserva sus pasos obligatorios (Transferencia
+ *    recibida → Garantía reportada → Confirmar pago), un botón a la vez.
+ */
+function nextAction(report, t) {
+  if (report.status === 'APROBADO' || report.status === 'RECHAZADO') return null;
+  if (report.statementId) return { label: t('adminPayments.confirm'), run: () => api.patch(`/admin/payment-reports/${report.id}`, { status: 'APROBADO' }) };
+  if (!report.transferReceivedAt) return { label: t('adminPayments.markTransferReceived'), run: () => api.patch(`/admin/payment-reports/${report.id}/transfer-received`) };
+  if (!report.guaranteeReportedAt) return { label: t('adminPayments.guaranteeReported'), run: () => api.patch(`/admin/payment-reports/${report.id}/guarantee-reported`) };
+  return { label: t('adminPayments.approvePayment'), run: () => api.patch(`/admin/payment-reports/${report.id}`, { status: 'APROBADO' }) };
+}
+
+export default function TransferReportList({ reports, receiveUid, showClient = false, onChanged }) {
+  const { t, language } = useLanguage();
+  const [busyId, setBusyId] = useState(null);
+  const [rejecting, setRejecting] = useState(null);
+  const [rejectReason, setRejectReason] = useState('');
+  const [viewingProof, setViewingProof] = useState(null);
+  const [deleting, setDeleting] = useState(null);
+  // Transferencia revisada que el admin quiere borrar del historial.
+  const [hiding, setHiding] = useState(null);
+  const [error, setError] = useState('');
+  const statusMap = TRANSFER_REPORT_STATUS(t);
+  const { copy, isCopied } = useCopyToClipboard();
+
+  // Bloqueo síncrono: una acción a la vez (evita dobles clics antes de que
+  // `busyId` se refleje en el render). El backend también es idempotente.
+  const busyRef = useRef(false);
+  const run = async (report, fn) => {
+    if (busyRef.current) return;
+    busyRef.current = true;
+    setBusyId(report.id);
+    setError('');
+    try {
+      await fn();
+      onChanged?.();
+    } catch (err) {
+      setError(translateBackendMessage(err.message, language));
+    } finally {
+      busyRef.current = false;
+      setBusyId(null);
+    }
+  };
+
+  // Las que el admin borró del historial no se muestran (siguen en la BD).
+  const visibleReports = reports.filter((r) => !r.adminHiddenAt);
+  if (!visibleReports.length) return <div className="qlc-empty">{t('adminPayments.noReports')}</div>;
+
+  return (
+    <>
+      {error && <p className="qlc-field-error">{error}</p>}
+      <ul className="qlc-plain-list qlc-transfer-list">
+        {visibleReports.map((r) => {
+          const st = statusOf(statusMap, r.status);
+          const action = nextAction(r, t);
+          // Un pago de estado de cuenta ya confirmado es registro contable: no se borra.
+          const canDelete = !(r.statementId && r.status === 'APROBADO');
+          const clientName = r.apiSubaccount?.client ? `${r.apiSubaccount.client.firstName} ${r.apiSubaccount.client.lastName}` : '';
+          const subLabel = r.apiSubaccount?.identifier || (r.apiSubaccount?.isPrincipal ? 'PRINCIPAL' : '—');
+          return (
+            <li key={r.id} className="qlc-transfer-item">
+              <div className="qlc-transfer-head">
+                <strong>{r.statementId ? t('adminPayments.conceptStatement') : t('adminPayments.conceptGuarantee')}</strong>
+                <span className="qlc-history-head-right">
+                  <span className={`qlc-badge ${st.className}`}>{st.text}</span>
+                  {(r.status === 'APROBADO' || r.status === 'RECHAZADO') && (
+                    <button
+                      type="button"
+                      className="qlc-btn ghost qlc-trash-btn qlc-icon-only"
+                      disabled={busyId === r.id}
+                      onClick={() => setHiding(r)}
+                      title={t('adminPayments.hideFromHistory')}
+                      aria-label={t('adminPayments.hideFromHistory')}
+                    >
+                      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                        <path fill="currentColor" d="M9 3h6l1 2h4v2H4V5h4l1-2Zm-3 6h12l-1 12H7L6 9Zm4 2v8h2v-8h-2Zm4 0v8h2v-8h-2Z" />
+                      </svg>
+                    </button>
+                  )}
+                </span>
+              </div>
+              <dl className="qlc-transfer-data">
+                {showClient && (
+                  <>
+                    <dt>{t('adminPayments.client')}</dt>
+                    <dd>
+                      {r.apiSubaccount?.clientId ? <Link to={`/admin/clients/${r.apiSubaccount.clientId}`}>{clientName}</Link> : clientName}
+                    </dd>
+                    <dt>{t('adminPayments.subaccount')}</dt>
+                    <dd>
+                      {r.apiSubaccount?.clientId ? (
+                        <Link to={`/admin/clients/${r.apiSubaccount.clientId}/api-subaccounts/${r.apiSubaccountId}`}>{subLabel}</Link>
+                      ) : (
+                        subLabel
+                      )}
+                    </dd>
+                  </>
+                )}
+                {/* UID que el cliente tenía a la vista al reportar (guardado en
+                    el reporte); los reportes anteriores muestran el vigente. */}
+                {(r.receiveUid || receiveUid) && r.bitgetOrderNumber && (
+                  <>
+                    <dt>{t('adminPayments.receiveUidUsed')}</dt>
+                    <dd><code>{r.receiveUid || receiveUid}</code></dd>
+                  </>
+                )}
+                {r.bitgetOrderNumber ? (
+                  <>
+                    <dt>{t('adminPayments.orderNumber')}</dt>
+                    <dd className="qlc-copy-row">
+                      <code>{r.bitgetOrderNumber}</code>
+                      <button type="button" className="qlc-btn ghost qlc-copy-btn" onClick={() => copy(r.bitgetOrderNumber, `order-${r.id}`)}>
+                        {isCopied(`order-${r.id}`) ? t('common.copied') : t('common.copy')}
+                      </button>
+                    </dd>
+                    <dt>{t('adminPayments.transactionAt')}</dt>
+                    <dd>{r.transactionAt ? formatCdmxDateTime(r.transactionAt) : '—'}</dd>
+                    <dt>{t('adminPayments.reportedAt')}</dt>
+                    <dd>{formatCdmxDateTime(r.reportedAt)}</dd>
+                    <dt>{t('adminPayments.evidence')}</dt>
+                    <dd>
+                      {r.evidenceFiles?.length ? (
+                        <ul className="qlc-evidence-list">
+                          {r.evidenceFiles.map((f) => (
+                            <li key={f.id}>
+                              <span className="qlc-evidence-name" title={f.fileName}>{f.fileName}</span>
+                              <button
+                                type="button"
+                                className="qlc-btn ghost qlc-copy-btn"
+                                onClick={() => setViewingProof({ url: `/admin/payment-reports/${r.id}/files/${f.id}`, fileName: f.fileName })}
+                              >
+                                {t('adminPayments.viewEvidence')}
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        '—'
+                      )}
+                    </dd>
+                    <dt>{t('adminPayments.status')}</dt>
+                    <dd>
+                      <span className={`qlc-badge ${st.className}`}>{st.text}</span>
+                      {r.status === 'RECHAZADO' && r.reviewNote && <span style={{ color: 'var(--qlc-muted2)' }}> · {r.reviewNote}</span>}
+                    </dd>
+                  </>
+                ) : (
+                  <>
+                    <dt>{t('adminPayments.legacyAmount')}</dt>
+                    <dd>{r.amount != null ? `${r.amount} ${r.currency}` : '—'} · {formatCdmxDate(r.reportedAt)}</dd>
+                    {r.reference && (
+                      <>
+                        <dt>{t('adminPayments.hashLabel')}</dt>
+                        <dd className="qlc-copy-row">
+                          <code style={{ wordBreak: 'break-all' }}>{r.reference}</code>
+                          <button type="button" className="qlc-btn ghost qlc-copy-btn" onClick={() => copy(r.reference, `ref-${r.id}`)}>
+                            {isCopied(`ref-${r.id}`) ? t('common.copied') : t('common.copy')}
+                          </button>
+                        </dd>
+                      </>
+                    )}
+                    {r.proofDriveFileId && (
+                      <>
+                        <dt>{t('adminPayments.viewProofImage')}</dt>
+                        <dd>
+                          <button
+                            type="button"
+                            className="qlc-btn ghost"
+                            onClick={() => setViewingProof({ url: `/admin/payment-reports/${r.id}/proof`, fileName: r.proofFileName || 'comprobante' })}
+                          >
+                            {t('adminPayments.viewProofImage')}
+                          </button>
+                        </dd>
+                      </>
+                    )}
+                  </>
+                )}
+                {r.transferReceivedAt && !r.statementId && (
+                  <>
+                    <dt>{t('adminPayments.transferReceivedOn')}</dt>
+                    <dd>{formatCdmxDate(r.transferReceivedAt)}</dd>
+                  </>
+                )}
+                {r.guaranteeReportedAt && !r.statementId && (
+                  <>
+                    <dt>{t('adminPayments.guaranteeReportedOn')}</dt>
+                    <dd>{formatCdmxDate(r.guaranteeReportedAt)}</dd>
+                  </>
+                )}
+              </dl>
+              {(action || canDelete) && (
+                <div className="qlc-transfer-actions">
+                  {action && (
+                    <>
+                      <button className="qlc-btn primary" disabled={busyId === r.id} onClick={() => run(r, action.run)}>
+                        {action.label}
+                      </button>
+                      <button
+                        className="qlc-btn ghost"
+                        disabled={busyId === r.id}
+                        onClick={() => {
+                          setRejectReason('');
+                          setRejecting(r);
+                        }}
+                      >
+                        {t('adminPayments.reject')}
+                      </button>
+                    </>
+                  )}
+                  {canDelete && (
+                    <button className="qlc-btn danger" disabled={busyId === r.id} onClick={() => setDeleting(r)}>
+                      {t('adminPayments.deleteReport')}
+                    </button>
+                  )}
+                </div>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+      {rejecting && (
+        <Modal title={t('adminPayments.rejectTitle')} onClose={() => setRejecting(null)} width={480}>
+          <p style={{ color: 'var(--qlc-muted)', fontSize: 14, marginTop: 0 }}>
+            {t('adminPayments.rejectMessage')
+              .replace('{name}', rejecting.apiSubaccount?.client ? `${rejecting.apiSubaccount.client.firstName} ${rejecting.apiSubaccount.client.lastName}` : '')
+              .replace('{order}', rejecting.bitgetOrderNumber || '—')}
+          </p>
+          {/* Motivo opcional: el cliente lo ve y puede CORREGIR el mismo reporte. */}
+          <label className="qlc-label" htmlFor="reject-reason">{t('adminPayments.rejectReason')}</label>
+          <textarea
+            id="reject-reason"
+            className="qlc-textarea"
+            rows={3}
+            maxLength={500}
+            value={rejectReason}
+            onChange={(e) => setRejectReason(e.target.value)}
+          />
+          {error && <p className="qlc-field-error">{error}</p>}
+          <div className="qlc-form-actions">
+            <button className="qlc-btn ghost" onClick={() => setRejecting(null)} disabled={busyId === rejecting.id}>
+              {t('common.cancel')}
+            </button>
+            <button
+              className="qlc-btn danger"
+              disabled={busyId === rejecting.id}
+              onClick={async () => {
+                await run(rejecting, () =>
+                  api.patch(`/admin/payment-reports/${rejecting.id}`, { status: 'RECHAZADO', reviewNote: rejectReason.trim() || undefined })
+                );
+                setRejecting(null);
+              }}
+            >
+              {t('adminPayments.reject')}
+            </button>
+          </div>
+        </Modal>
+      )}
+      {deleting && (
+        <ConfirmModal
+          title={t('adminPayments.deleteReportTitle')}
+          message={(deleting.statementId ? t('adminPayments.deleteReportMessage') : deleting.status === 'APROBADO' ? t('adminPayments.deleteGuaranteeApprovedMessage') : t('adminPayments.deleteReportMessage')).replace('{order}', deleting.bitgetOrderNumber || '—')}
+          confirmLabel={t('adminPayments.deleteReport')}
+          onClose={() => setDeleting(null)}
+          onConfirm={async () => {
+            await api.delete(`/admin/payment-reports/${deleting.id}`);
+            onChanged?.();
+          }}
+        />
+      )}
+      {hiding && (
+        <ConfirmModal
+          title={t('adminPayments.hideFromHistoryTitle')}
+          message={t('adminPayments.hideFromHistoryMessage').replace('{order}', hiding.bitgetOrderNumber || '—')}
+          confirmLabel={t('adminPayments.hideFromHistory')}
+          onClose={() => setHiding(null)}
+          onConfirm={async () => {
+            await api.delete(`/admin/payment-reports/${hiding.id}/history`);
+            onChanged?.();
+          }}
+        />
+      )}
+      {viewingProof && (
+        <DocumentViewerModal url={viewingProof.url} fileName={viewingProof.fileName} onClose={() => setViewingProof(null)} />
+      )}
+    </>
+  );
+}
