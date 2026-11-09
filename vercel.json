@@ -18,11 +18,11 @@
   "rewrites": [
     {
       "source": "/trad/api/:path*",
-      "destination": "https://qlctrade-api.onrender.com/trad/api/:path*"
+      "destination": "https://qlcsw-b.onrender.com/trad/api/:path*"
     },
     {
       "source": "/api/:path*",
-      "destination": "https://qlctrade-api.onrender.com/api/:path*"
+      "destination": "https://qlcsw-b.onrender.com/api/:path*"
     },
     {
       "source": "/((?!assets/|brand/|guides/|favicon\\.png|version\\.json).*)",

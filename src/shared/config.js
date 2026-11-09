@@ -1,6 +1,14 @@
 const trimSlashes = (value) => String(value || '').replace(/^\/+|\/+$/g, '');
 
-const API_ORIGIN = String(import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
+// VITE_API_URL es solo el origen del backend; cada módulo agrega su propia ruta.
+// Se tolera un valor terminado en /api o /trad/api para no duplicar el prefijo.
+export const normalizeApiOrigin = (value) =>
+  String(value || '')
+    .trim()
+    .replace(/\/+$/, '')
+    .replace(/(?:\/trad)?\/api$/, '');
+
+const API_ORIGIN = normalizeApiOrigin(import.meta.env.VITE_API_URL);
 
 export const TRADING_BASE_PATH = `/${trimSlashes(import.meta.env.VITE_TRADING_BASE_PATH || '/trad')}`;
 export const EDUCATION_API_URL = `${API_ORIGIN}/api`;
