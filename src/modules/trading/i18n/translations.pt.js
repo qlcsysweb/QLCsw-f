@@ -1121,6 +1121,7 @@ const pt = {
     "hashLabel": "Hash / referência da transação"
   },
   "adminProspects": {
+    "codeRequest": "Solicita código",
     "message": "Mensagem",
     "noMessage": "Sem mensagem",
     "kicker": "PROSPECTS",
@@ -1337,6 +1338,10 @@ const pt = {
     "chat_session_ended": {
       "title": "Chat de 15 minutos encerrado",
       "message": "A sessão de chat com {clientName} foi encerrada. Você já pode baixar a conversa em PDF em Suporte."
+    },
+    "affiliate_code_request_admin": {
+      "title": "Solicitação de código de afiliação",
+      "message": "{prospectName} ({email}) solicitou um código de afiliação para se cadastrar. Envie um por e-mail em até 24 horas."
     },
     "new_prospect_admin": {
       "title": "Novo prospect",
@@ -2310,6 +2315,14 @@ const pt = {
     "created": "Comissão registrada como PENDENTE."
   },
   "invite": {
+    "requestTitle": "Não tem código?",
+    "requestText": "Solicite um à equipe QLC: deixe seu nome e e-mail e em até 24 horas você receberá um por e-mail.",
+    "requestName": "Nome",
+    "requestEmail": "E-mail",
+    "requestSubmit": "Solicitar código",
+    "requestSending": "Enviando…",
+    "requestDone": "Recebemos sua solicitação. Em até 24 horas você receberá um código em {email}.",
+    "requestError": "Não foi possível enviar sua solicitação. Tente novamente.",
     "kicker": "CONVITE QLC",
     "gateTitle": "Cadastro por convite",
     "gateText": "Para se cadastrar na QLC você precisa de um código ou link de afiliação válido.",

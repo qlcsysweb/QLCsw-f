@@ -4,6 +4,7 @@ import { useNavigate, Link, useSearchParams } from '../router.jsx';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import QlcLogo from '../components/QlcLogo';
+import CodeRequestBox from '../components/CodeRequestBox';
 import { useLanguage } from '../i18n/LanguageContext';
 import { translateBackendMessage } from '../i18n/backendMessages';
 import { PrivacyNoticeModal, TermsAndConditionsModal } from '../components/LegalAcceptanceModal';
@@ -223,6 +224,7 @@ export default function RegisterPage() {
             {!checking && codeIsCurrent && <span style={{ color: 'var(--qlc-ok)' }}>✓ {t('invite.validText')}</span>}
             {!checking && codeError && <span className="qlc-field-error">{codeError}</span>}
           </div>
+          {!codeIsCurrent && <CodeRequestBox />}
 
           <label className="qlc-label">{t('register.firstName')}</label>
           <input className="qlc-input" value={form.firstName} onChange={update('firstName')} required />

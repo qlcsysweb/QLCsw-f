@@ -221,3 +221,21 @@ a.qlc-login-submit {
   background: rgba(91, 212, 255, 0.16);
   color: var(--qlc-blue2);
 }
+
+/* "¿No tienes código?" en el registro: solicitud al equipo de QLC. */
+.qlc-code-request {
+  margin: 4px 0 16px;
+  padding: 12px 14px;
+  border-radius: 11px;
+  border: 1px solid rgba(0, 168, 255, 0.4);
+  background: rgba(0, 168, 255, 0.08);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+.qlc-code-request b { display: block; font-size: 13.5px; margin-bottom: 2px; }
+.qlc-code-request p { margin: 0 0 10px; color: var(--qlc-muted); }
+.qlc-code-request .qlc-code-request-done { margin: 0; color: var(--qlc-ok); }
+.qlc-code-request-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.qlc-code-request-fields .qlc-input { margin: 0; min-width: 0; }
+.qlc-code-request-btn { margin-top: 8px; width: 100%; }
+@media (max-width: 480px) { .qlc-code-request-fields { grid-template-columns: 1fr; } }

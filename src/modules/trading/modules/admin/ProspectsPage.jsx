@@ -36,6 +36,7 @@ function ProspectRow({ p, onUpdateStatus, onDelete, t, prospectStatusMap, highli
     >
       <td>
         {p.firstName} {p.lastName || ''}
+        {p.source === 'solicitud_codigo' && <span className="qlc-badge warn" style={{ marginLeft: 8 }}>{t('adminProspects.codeRequest')}</span>}
         {/* Mensaje que escribió la persona en "Solicitar información". */}
         {p.message?.trim() ? (
           <div className="qlc-prospect-message">

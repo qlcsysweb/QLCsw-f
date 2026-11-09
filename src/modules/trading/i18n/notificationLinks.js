@@ -18,6 +18,7 @@ import { API_BASE_URL } from '../services/api';
 // misma sección general, donde el admin/cliente ya puede ver y actuar.
 const ADMIN_GENERAL_PATHS = {
   new_admin_registered_admin: '/admin/admins',
+  affiliate_code_request_admin: '/admin/prospects',
   new_prospect_admin: '/admin/prospects',
   new_prospect_admin_message: '/admin/prospects',
 };

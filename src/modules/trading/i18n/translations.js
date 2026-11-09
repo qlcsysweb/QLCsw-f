@@ -1192,6 +1192,7 @@ const es = {
   },
 
   adminProspects: {
+    codeRequest: 'Solicita código',
     message: 'Mensaje',
     noMessage: 'Sin mensaje',
     kicker: 'PROSPECTOS',
@@ -1421,6 +1422,10 @@ const es = {
     chat_session_ended: {
       title: 'Chat de 15 minutos finalizado',
       message: 'La sesión de chat con {clientName} finalizó. Ya puedes descargar la conversación en PDF desde Soporte.',
+    },
+    affiliate_code_request_admin: {
+      title: 'Solicitud de código de afiliación',
+      message: '{prospectName} ({email}) solicitó un código de afiliación para registrarse. Envíale uno por correo en un lapso de 24 horas.',
     },
     new_prospect_admin: {
       title: 'Nuevo prospecto',
@@ -2279,6 +2284,14 @@ const es = {
   },
 
   invite: {
+    requestTitle: '¿No tienes código?',
+    requestText: 'Solicita uno al equipo de QLC: deja tu nombre y correo y en un lapso de 24 horas te llegará uno por correo.',
+    requestName: 'Nombre',
+    requestEmail: 'Correo electrónico',
+    requestSubmit: 'Solicitar código',
+    requestSending: 'Enviando…',
+    requestDone: 'Recibimos tu solicitud. En un lapso de 24 horas te llegará un código a {email}.',
+    requestError: 'No pudimos enviar tu solicitud. Intenta de nuevo.',
     kicker: 'INVITACIÓN QLC',
     gateTitle: 'Registro por invitación',
     gateText: 'Para registrarte en QLC necesitas un código o enlace de afiliación válido.',
@@ -3621,6 +3634,7 @@ const en = {
   },
 
   adminProspects: {
+    codeRequest: 'Code request',
     message: 'Message',
     noMessage: 'No message',
     kicker: 'PROSPECTS',
@@ -3845,6 +3859,10 @@ const en = {
     chat_session_ended: {
       title: '15-minute chat finished',
       message: 'The chat session with {clientName} finished. You can now download the conversation as a PDF from Support.',
+    },
+    affiliate_code_request_admin: {
+      title: 'Affiliate code request',
+      message: '{prospectName} ({email}) requested an affiliate code to register. Send one by email within 24 hours.',
     },
     new_prospect_admin: {
       title: 'New prospect',
@@ -4782,6 +4800,14 @@ const en = {
   },
 
   invite: {
+    requestTitle: 'Don\'t have a code?',
+    requestText: 'Request one from the QLC team: leave your name and email and you will receive one by email within 24 hours.',
+    requestName: 'Name',
+    requestEmail: 'Email',
+    requestSubmit: 'Request code',
+    requestSending: 'Sending…',
+    requestDone: 'We received your request. Within 24 hours you will receive a code at {email}.',
+    requestError: 'We could not send your request. Please try again.',
     kicker: 'QLC INVITATION',
     gateTitle: 'Invitation-only registration',
     gateText: 'To register in QLC you need a valid affiliate code or link.',
