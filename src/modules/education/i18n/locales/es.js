@@ -149,7 +149,7 @@ export const es = {
       methodPassword: 'Contraseña',
       methodCode: 'Google Authenticator',
       methodReset: 'Restablecer contraseña',
-      codeHint: 'Disponible cuando ya registraste tu verificación en dos pasos.',
+      codeHint: 'Usa el código de la entrada «QLC Financial Education» de tu app. La de «Quantum Liquidity Capital» es de la plataforma de trading y aquí no funciona.',
       submit: 'Entrar',
     },
     register: {
@@ -195,16 +195,11 @@ export const es = {
       warning: 'Al restablecer tu contraseña también se reinicia tu Google Authenticator. Al iniciar sesión deberás registrarlo de nuevo.',
       sent: 'Si el correo está registrado como cliente, te enviamos un código de 6 dígitos que vence en 15 minutos. Revisa también la carpeta de spam.',
       invalid: 'Código incorrecto o vencido. No se cambió tu contraseña.',
-      unavailable: 'El restablecimiento por correo todavía no está disponible. Usa tu código de Google Authenticator o contacta al equipo de QLC.',
+      unavailable: 'No pudimos enviar el código en este momento. Intenta más tarde o contacta al equipo de QLC.',
       done: 'Contraseña restablecida. Al iniciar sesión deberás registrar de nuevo Google Authenticator.',
-      withAuthenticator: 'También puedes restablecerla con tu código de Google Authenticator',
     },
     reset: {
-      title: 'Restablecer contraseña',
-      subtitle: 'Usa el código de Google Authenticator que registraste en tu cuenta.',
-      back: 'Volver a iniciar sesión',
       submit: 'Guardar nueva contraseña',
-      note: 'Si no registraste tu verificación en dos pasos o perdiste el acceso a tu teléfono, solicita a un administrador que la restablezca.',
     },
   },
 };

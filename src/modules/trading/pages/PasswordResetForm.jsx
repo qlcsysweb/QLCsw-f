@@ -33,10 +33,19 @@ export default function PasswordResetForm({ initialEmail = '', onGoLogin }) {
     }
   };
 
+  const requestCode = () => api.post('/auth/password-reset/request', { email: email.trim(), language });
+
   const submitEmail = (e) => {
     e.preventDefault();
-    setError('');
-    setStep('code');
+    run(async () => {
+      await requestCode();
+      setStep('code');
+    });
+  };
+
+  const resend = () => {
+    setCode('');
+    run(requestCode);
   };
 
   const submitCode = (e) => {
@@ -94,8 +103,9 @@ export default function PasswordResetForm({ initialEmail = '', onGoLogin }) {
             autoFocus
             required
           />
-          <button className="qlc-btn primary qlc-login-submit" type="submit">
-            {t('passwordReset.next')}
+          {error && <div className="qlc-login-error">{error}</div>}
+          <button className="qlc-btn primary qlc-login-submit" type="submit" disabled={loading}>
+            {loading ? t('auth.submitting') : t('passwordReset.next')}
           </button>
         </form>
       )}
@@ -123,7 +133,9 @@ export default function PasswordResetForm({ initialEmail = '', onGoLogin }) {
           <button type="button" className="qlc-btn ghost qlc-login-submit" onClick={back} disabled={loading}>
             {t('passwordReset.back')}
           </button>
-          <p className="qlc-login-sub" style={{ marginTop: 14, fontSize: 12 }}>{t('passwordReset.noAuthenticator')}</p>
+          <div className="qlc-login-forgot">
+            <button type="button" onClick={resend} disabled={loading}>{t('passwordReset.resend')}</button>
+          </div>
         </form>
       )}
 

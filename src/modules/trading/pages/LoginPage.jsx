@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useLocation, Link } from '../router.jsx';
 import { useAuth } from '../context/AuthContext';
 import QlcLogo from '../components/QlcLogo';
-import QuantumBackdrop from '../components/QuantumBackdrop';
+import MarketBackdrop from '../components/MarketBackdrop';
 import { useLanguage } from '../i18n/LanguageContext';
 import { translateBackendMessage } from '../i18n/backendMessages';
 import PasswordResetForm from './PasswordResetForm';
@@ -72,7 +72,7 @@ export default function LoginPage() {
 
   return (
     <div className="qlc-login-screen">
-      <QuantumBackdrop />
+      <MarketBackdrop />
       <div className="qlc-login-box qlc-card">
         <div className="qlc-login-brand">
           <QlcLogo className="qlc-login-logo" animated alt="QLC" />

@@ -1,6 +1,6 @@
 import PasswordInput from '../../../components/PasswordInput';
 import { useEffect, useState } from 'react';
-import api, { API_BASE_URL } from '../../../services/api';
+import api from '../../../services/api';
 import ConfirmModal from '../../../components/ConfirmModal';
 import { useLanguage } from '../../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../../i18n/backendMessages';
@@ -9,17 +9,6 @@ import { translateBackendMessage } from '../../../i18n/backendMessages';
 // sistemaweb.qlc@gmail.com (sin Google Workspace), así que ya no existe una
 // cuenta de servicio: el admin autoriza esa cuenta una sola vez con OAuth2,
 // mismo patrón ya usado en Configuración → Correo.
-const OAUTH_CALLBACK_PATH = '/api/drive-config/oauth/callback';
-
-function backendPublicUrlGuess() {
-  try {
-    const url = new URL(API_BASE_URL, window.location.origin);
-    return `${url.origin}${url.pathname.replace(/\/api\/?$/, '')}`;
-  } catch {
-    return API_BASE_URL.replace(/\/api\/?$/, '');
-  }
-}
-
 export default function GoogleDriveSettingsPage() {
   const { t, language } = useLanguage();
   const [config, setConfig] = useState(null);
@@ -157,7 +146,7 @@ export default function GoogleDriveSettingsPage() {
   const statusLabel = STATUS_LABELS[config.connectionState] || STATUS_LABELS.NOT_CONFIGURED;
 
   const canConnectGoogle = Boolean(form.googleClientId || config.hasGoogleOAuthClient);
-  const redirectUri = `${backendPublicUrlGuess()}${OAUTH_CALLBACK_PATH}`;
+  const redirectUri = config.oauthRedirectUri || '—';
 
   return (
     <div>

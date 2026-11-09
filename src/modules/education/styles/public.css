@@ -603,8 +603,9 @@ h1.ps-title { font-size: clamp(32px, min(5.4vw, 8.4dvh), 78px); }
   .hero-glow { animation: none; }
 }
 
-.auth-shell { position: relative; isolation: isolate; background: #04070b; overflow-x: hidden; }
+.auth-shell { position: relative; isolation: isolate; background: #04070b; overflow-x: clip; }
 .auth-shell > :not(.trading-backdrop) { position: relative; z-index: 1; }
+.auth-shell > .pnav { position: sticky; top: 0; z-index: 40; }
 .trading-backdrop { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; background: radial-gradient(120% 90% at 50% 10%, #0a1520 0%, #05080c 55%, #030507 100%); animation: tbReveal 2.6s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
 .tb-chart { position: absolute; inset: -4%; width: 108%; height: 108%; filter: blur(1.6px); opacity: 0.85; }
 .tb-series line { stroke-width: 1.4; }

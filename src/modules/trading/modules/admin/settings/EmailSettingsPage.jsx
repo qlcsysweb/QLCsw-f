@@ -1,6 +1,6 @@
 import PasswordInput from '../../../components/PasswordInput';
 import { useEffect, useState } from 'react';
-import api, { API_BASE_URL } from '../../../services/api';
+import api from '../../../services/api';
 import ConfirmModal from '../../../components/ConfirmModal';
 import { useLanguage } from '../../../i18n/LanguageContext';
 import { translateBackendMessage } from '../../../i18n/backendMessages';
@@ -13,19 +13,6 @@ import { translateBackendMessage } from '../../../i18n/backendMessages';
 // de envío, Gmail API vía OAuth2 (HTTPS, nunca bloqueado). El admin elige
 // cuál método usar; ambos comparten el mismo botón "Enviar correo de
 // prueba".
-const OAUTH_CALLBACK_PATH = '/api/email-config/oauth/callback';
-
-function backendPublicUrlGuess() {
-  // Best-effort solo para mostrar en la guía "URI de redirección" — el valor
-  // real que Google usará es el que el backend arma con BACKEND_PUBLIC_URL.
-  try {
-    const url = new URL(API_BASE_URL, window.location.origin);
-    return `${url.origin}${url.pathname.replace(/\/api\/?$/, '')}`;
-  } catch {
-    return API_BASE_URL.replace(/\/api\/?$/, '');
-  }
-}
-
 export default function EmailSettingsPage() {
   const { t, language } = useLanguage();
   const [config, setConfig] = useState(null);
@@ -158,7 +145,7 @@ export default function EmailSettingsPage() {
     : { text: t('adminEmail.notConfigured'), className: 'muted', dot: '—' };
 
   const canConnectGoogle = Boolean((form.gmailUser || config.gmailUserMasked) && (form.googleClientId || config.hasGoogleOAuthClient));
-  const redirectUri = `${backendPublicUrlGuess()}${OAUTH_CALLBACK_PATH}`;
+  const redirectUri = config.oauthRedirectUri || '—';
 
   return (
     <div>

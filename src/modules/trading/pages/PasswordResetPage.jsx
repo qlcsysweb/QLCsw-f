@@ -1,6 +1,6 @@
 import { Link, useLocation } from '../router.jsx';
 import QlcLogo from '../components/QlcLogo';
-import QuantumBackdrop from '../components/QuantumBackdrop';
+import MarketBackdrop from '../components/MarketBackdrop';
 import { useLanguage } from '../i18n/LanguageContext';
 import PasswordResetForm from './PasswordResetForm';
 import './LoginPage.css';
@@ -11,7 +11,7 @@ export default function PasswordResetPage() {
 
   return (
     <div className="qlc-login-screen">
-      <QuantumBackdrop />
+      <MarketBackdrop />
       <div className="qlc-login-box qlc-card">
         <div className="qlc-login-brand">
           <QlcLogo className="qlc-login-logo" animated alt="QLC" />

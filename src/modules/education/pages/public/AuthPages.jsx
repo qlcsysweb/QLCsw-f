@@ -79,7 +79,6 @@ function EmailReset({ onDone }) {
         <Field label={t('auth.email')}><Input type="email" autoComplete="email" required {...f.bind('email')} /></Field>
         <FormError error={failure} />
         <Button type="submit" loading={f.state.busy}>{t('auth.emailReset.send')}</Button>
-        <p className="small muted"><Link to="/recuperar">{t('auth.emailReset.withAuthenticator')}</Link></p>
       </form>
     );
   }
@@ -274,35 +273,3 @@ export function TwoFactorSetup() {
   );
 }
 
-export function ForgotPassword() {
-  const { t } = useI18n();
-  const f = useForm({ email: '', code: '', password: '', confirm: '' });
-  const [local, setLocal] = useState(null);
-  const submit = (e) => {
-    e.preventDefault();
-    if (f.values.password !== f.values.confirm) return setLocal({ message: t('common.passwordMismatch') });
-    setLocal(null);
-    f.run(({ email, code, password }) => api.post('/auth/reset-password', { email, code, password }));
-  };
-  return (
-    <AuthCard title={t('auth.reset.title')} subtitle={t('auth.reset.subtitle')}
-      footer={<Link to="/login">{t('auth.reset.back')}</Link>}>
-      {f.state.done ? (
-        <div className="stack">
-          <p className="notice">{f.state.done.message}</p>
-          <Link className="btn-primary" to="/login">{t('common.login')}</Link>
-        </div>
-      ) : (
-        <form className="stack" onSubmit={submit}>
-          <Field label={t('auth.email')}><Input type="email" required autoComplete="email" {...f.bind('email')} /></Field>
-          <Field label={t('auth.authenticatorCode')}><CodeInput {...f.bind('code')} /></Field>
-          <Field label={t('auth.newPassword')} hint={t('auth.minChars')}><Input type="password" required minLength={8} autoComplete="new-password" {...f.bind('password')} /></Field>
-          <Field label={t('auth.confirmPassword')}><Input type="password" required minLength={8} autoComplete="new-password" {...f.bind('confirm')} /></Field>
-          <FormError error={local || f.state.error} />
-          <Button type="submit" loading={f.state.busy}>{t('auth.reset.submit')}</Button>
-          <p className="small muted">{t('auth.reset.note')}</p>
-        </form>
-      )}
-    </AuthCard>
-  );
-}

@@ -149,7 +149,7 @@ export const en = {
       methodPassword: 'Password',
       methodCode: 'Google Authenticator',
       methodReset: 'Reset password',
-      codeHint: 'Available once you have set up two-step verification.',
+      codeHint: 'Use the code from the “QLC Financial Education” entry in your app. The “Quantum Liquidity Capital” entry belongs to the trading platform and does not work here.',
       submit: 'Sign in',
     },
     register: {
@@ -195,16 +195,11 @@ export const en = {
       warning: 'Resetting your password also resets your Google Authenticator. You will have to register it again when you log in.',
       sent: 'If the email is registered as a client, we sent you a 6-digit code that expires in 15 minutes. Check your spam folder too.',
       invalid: 'Incorrect or expired code. Your password was not changed.',
-      unavailable: 'Reset by email is not available yet. Use your Google Authenticator code or contact the QLC team.',
+      unavailable: 'We could not send the code right now. Try again later or contact the QLC team.',
       done: 'Password reset. When you log in, you will have to register Google Authenticator again.',
-      withAuthenticator: 'You can also reset it with your Google Authenticator code',
     },
     reset: {
-      title: 'Reset password',
-      subtitle: 'Use the Google Authenticator code you registered on your account.',
-      back: 'Back to sign in',
       submit: 'Save new password',
-      note: 'If you did not set up two-step verification or lost access to your phone, ask an administrator to reset it.',
     },
   },
 };

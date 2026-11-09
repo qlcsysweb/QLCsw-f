@@ -1,0 +1,249 @@
+.qlc-login-screen {
+  position: relative;
+  isolation: isolate;
+}
+
+.qlc-login-box {
+  position: relative;
+  z-index: 1;
+  background: rgba(9, 14, 20, 0.86);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.55);
+}
+
+.qlc-market {
+  --market-up: #2fd08d;
+  --market-down: #f0596c;
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 40%, #0b1a24 0%, #060b10 60%, #030507 100%);
+}
+
+/* Cinta de pares que corre arriba, como en una terminal. */
+.qlc-market-tape {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 34px;
+  overflow: hidden;
+  background: rgba(3, 7, 11, 0.72);
+  border-bottom: 1px solid rgba(150, 190, 220, 0.12);
+}
+.qlc-market-tape-track {
+  display: flex;
+  width: max-content;
+  height: 100%;
+  align-items: center;
+  animation: qlcMarketTape 48s linear infinite;
+}
+.qlc-market-tape-track span {
+  padding: 0 26px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #9fb0c0;
+  white-space: nowrap;
+}
+.qlc-market-tape-track b {
+  margin-left: 4px;
+  font-size: 9px;
+}
+.qlc-market-tape-track .is-up b {
+  color: var(--market-up);
+}
+.qlc-market-tape-track .is-down b {
+  color: var(--market-down);
+}
+
+.qlc-market-chart {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Las velas se forman de izquierda a derecha y el ciclo vuelve a empezar. */
+.qlc-market-candle {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: qlcMarketCandle 22s cubic-bezier(0.2, 0.7, 0.2, 1) infinite both;
+}
+.qlc-market-candle.is-up line {
+  stroke: var(--market-up);
+}
+.qlc-market-candle.is-up rect {
+  fill: var(--market-up);
+}
+.qlc-market-candle.is-down line {
+  stroke: var(--market-down);
+}
+.qlc-market-candle.is-down rect {
+  fill: var(--market-down);
+}
+.qlc-market-candle line {
+  stroke-width: 1.6;
+}
+
+.qlc-market-line {
+  fill: none;
+  stroke: #e6bd63;
+  stroke-width: 2.4;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  filter: drop-shadow(0 0 6px rgba(230, 189, 99, 0.7));
+  animation: qlcMarketLine 22s linear infinite both;
+}
+
+/* Libro de órdenes: compras a la izquierda y ventas a la derecha. */
+.qlc-market-book {
+  position: absolute;
+  top: 34px;
+  bottom: 0;
+  width: 13vw;
+  min-width: 120px;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 14%, #000 72%, transparent);
+  mask-image: linear-gradient(to bottom, transparent, #000 14%, #000 72%, transparent);
+}
+.qlc-market-book.is-bid {
+  left: 0;
+}
+.qlc-market-book.is-ask {
+  right: 0;
+}
+.qlc-market-book-track {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  animation: qlcMarketBook 30s linear infinite;
+}
+.qlc-market-book.is-ask .qlc-market-book-track {
+  align-items: flex-end;
+  animation-direction: reverse;
+  animation-duration: 36s;
+}
+.qlc-market-book-track span {
+  flex: 0 0 18px;
+  border-radius: 2px;
+  opacity: 0.2;
+  animation: qlcMarketRow 3.6s ease-in-out infinite;
+  animation-delay: calc(var(--row) * -0.37s);
+}
+.qlc-market-book.is-bid span {
+  background: linear-gradient(90deg, rgba(47, 208, 141, 0.05), var(--market-up));
+}
+.qlc-market-book.is-ask span {
+  background: linear-gradient(270deg, rgba(240, 89, 108, 0.05), var(--market-down));
+}
+
+/* Gráfico de profundidad: compras y ventas que respiran contra el centro. */
+.qlc-market-depth {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 24vh;
+  transform-origin: bottom;
+  animation: qlcMarketDepth 7s ease-in-out infinite;
+}
+.qlc-market-depth .is-bid {
+  fill: rgba(47, 208, 141, 0.16);
+  stroke: rgba(47, 208, 141, 0.6);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+.qlc-market-depth .is-ask {
+  fill: rgba(240, 89, 108, 0.14);
+  stroke: rgba(240, 89, 108, 0.6);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+
+@keyframes qlcMarketTape {
+  to {
+    transform: translateX(-50%);
+  }
+}
+@keyframes qlcMarketCandle {
+  0% {
+    opacity: 0;
+    transform: scaleY(0);
+  }
+  3%,
+  70% {
+    opacity: 0.72;
+    transform: scaleY(1);
+  }
+  74%,
+  100% {
+    opacity: 0;
+    transform: scaleY(1);
+  }
+}
+@keyframes qlcMarketLine {
+  0% {
+    stroke-dashoffset: 1;
+    opacity: 1;
+  }
+  64% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  98% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}
+@keyframes qlcMarketBook {
+  to {
+    transform: translateY(-50%);
+  }
+}
+@keyframes qlcMarketRow {
+  0%,
+  100% {
+    opacity: 0.14;
+  }
+  50% {
+    opacity: 0.42;
+  }
+}
+@keyframes qlcMarketDepth {
+  0%,
+  100% {
+    transform: scaleY(0.82);
+  }
+  50% {
+    transform: scaleY(1.06);
+  }
+}
+
+@media (max-width: 720px) {
+  .qlc-market-book {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qlc-market-tape-track,
+  .qlc-market-candle,
+  .qlc-market-line,
+  .qlc-market-book-track,
+  .qlc-market-book-track span,
+  .qlc-market-depth {
+    animation: none;
+  }
+  .qlc-market-candle {
+    opacity: 0.72;
+  }
+}

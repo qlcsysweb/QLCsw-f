@@ -8,7 +8,7 @@ import { Empty, Loading } from '../components/ui/States.jsx';
 import { RequireAuth } from './guards.jsx';
 import { useI18n } from '../i18n/I18nContext.jsx';
 import PublicExperience from '../pages/public/experience/PublicExperience.jsx';
-import { ForgotPassword, Login, Register, TwoFactorSetup } from '../pages/public/AuthPages.jsx';
+import { Login, Register, TwoFactorSetup } from '../pages/public/AuthPages.jsx';
 
 const page = (loader) => lazy(loader);
 
@@ -77,7 +77,7 @@ export default function AppRoutes() {
         <Route element={<AuthLayout />}>
           <Route path="/login" element={<Login />} />
           <Route path="/registro" element={<Register />} />
-          <Route path="/recuperar" element={<ForgotPassword />} />
+          <Route path="/recuperar" element={<Navigate to="/login" replace />} />
           <Route path="/seguridad/2fa" element={<TwoFactorSetup />} />
           <Route path="/regalo" element={<RedeemPage />} />
           <Route path="/privacidad" element={<LegalPage doc="privacidad" />} />

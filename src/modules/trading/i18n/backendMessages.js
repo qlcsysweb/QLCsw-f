@@ -89,7 +89,9 @@ const KNOWN_MESSAGES = {
   'El UID de Bitget solo puede contener números': 'The Bitget UID may only contain numbers',
   'Esta subcuenta/API ya tiene un estado de cuenta sin pagar. Confirma su pago antes de generar uno nuevo.':
     'This subaccount/API already has an unpaid statement. Confirm its payment before generating a new one.',
-  'Correo o código de Google Authenticator incorrectos.': 'Incorrect email or Google Authenticator code.',
+  'Código incorrecto o vencido. Solicita uno nuevo si es necesario.': 'Incorrect or expired code. Request a new one if needed.',
+  'No pudimos enviar el código en este momento. Intenta más tarde o contacta a soporte@qlctrade.net.': 'We could not send the code right now. Try again later or contact soporte@qlctrade.net.',
+  'Si el correo está registrado, te enviamos un código para restablecer tu contraseña.': 'If the email is registered, we sent you a code to reset your password.',
   'El código debe tener 6 dígitos.': 'The code must have 6 digits.',
   'La verificación para restablecer la contraseña expiró. Vuelve a empezar.': 'The password reset verification expired. Please start again.',
   'Demasiados intentos de restablecimiento. Intenta más tarde.': 'Too many reset attempts. Please try again later.',
