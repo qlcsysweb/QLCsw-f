@@ -29,7 +29,7 @@ async function measureOffset() {
 
 export function SessionClock({ zones = ['UTC'] }) {
   const { lang } = useI18n();
-  const locale = lang === 'en' ? 'en-US' : 'es-MX';
+  const locale = { en: 'en-US', pt: 'pt-BR' }[lang] || 'es-MX';
   const [offset, setOffset] = useState(null);
   const [now, setNow] = useState(() => Date.now());
 

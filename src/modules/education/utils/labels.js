@@ -167,13 +167,62 @@ const OPTION_SOURCES = {
   taxItemTypes: TAX_ITEM_TYPES, resultPeriods: RESULT_PERIODS, scenarioTypes: SCENARIO_TYPES,
 };
 
+const PT = {
+  INCOME_CATEGORIES: { SALARIO: 'Salário', NEGOCIO: 'Negócio', RENTAS: 'Aluguéis', DIVIDENDOS: 'Dividendos', INTERESES: 'Juros', OTROS: 'Outros' },
+  EXPENSE_CATEGORIES: {
+    VIVIENDA: 'Moradia', ALIMENTACION: 'Alimentação', SERVICIOS: 'Serviços', TRANSPORTE: 'Transporte', SEGUROS: 'Seguros',
+    EDUCACION: 'Educação', ENTRETENIMIENTO: 'Entretenimento', VIAJES: 'Viagens', DEUDAS: 'Dívidas', OTROS: 'Outros',
+  },
+  PROTECTION_TYPES: {
+    LIQUIDEZ: 'Liquidez', FONDO_EMERGENCIA: 'Fundo de emergência', RESERVA: 'Reserva',
+    SEGURO_GASTOS_MEDICOS: 'Seguro de despesas médicas', SEGURO_VIDA: 'Seguro de vida', SEGURO_AUTO: 'Seguro de automóvel',
+    SEGURO_DESEMPLEO: 'Seguro-desemprego', SEGURO_EDUCACION: 'Seguro educacional', SEGURO_RETIRO: 'Seguro de aposentadoria ou renda vitalícia', OTRO_SEGURO: 'Outro seguro',
+  },
+  MOVEMENT_TYPES: { APORTACION: 'Aporte', DEDUCCION: 'Resgate' },
+  APPOINTMENT_STATUS: { PENDING: 'Pendente', CONFIRMED: 'Confirmada', COMPLETED: 'Concluída', CANCELLED: 'Cancelada' },
+  APPOINTMENT_CHANNELS: { CHAT_INTERNO: 'Chat interno', VIDEOLLAMADA: 'Videochamada', LLAMADA: 'Ligação', WHATSAPP: 'WhatsApp', PRESENCIAL: 'Presencial' },
+  APPOINTMENT_REASONS: ['Organização financeira', 'Planejamento de metas', 'Orçamento', 'Dívidas', 'Construção de patrimônio', 'Diversificação', 'Educação em investimentos'],
+  ACCESS_MODES: { FULL: 'Acesso completo anual', TOOLS: 'Somente ferramentas', TRIAL: 'Teste grátis de 1 mês', NONE: 'Sem acesso' },
+  PAYMENT_STATUS: { PENDING: 'Pendente', APPROVED: 'Aprovado', REJECTED: 'Recusado' },
+  ADMIN_LEVELS: { VIEW: 'Somente visualização', EDIT: 'Edição', FULL: 'Administração completa' },
+  PRODUCT_TYPES: {
+    RENTA_FIJA: 'Renda fixa', RENTA_VARIABLE: 'Renda variável', FONDOS: 'Fundos', ACCIONES: 'Ações',
+    BIENES_RAICES: 'Imóveis', NEGOCIO: 'Negócio', ACTIVO_DIGITAL: 'Ativo digital', ALTO_RIESGO: 'Alto risco', LIQUIDEZ: 'Liquidez',
+  },
+  HORIZONS: { CORTO: 'Curto prazo', MEDIANO: 'Médio prazo', LARGO: 'Longo prazo' },
+  LIQUIDITY_LEVELS: { ALTA: 'Alta', MEDIA: 'Média', BAJA: 'Baixa' },
+  PERCEIVED_RISK: { BAJO: 'Baixo', MEDIO: 'Médio', ALTO: 'Alto', MUY_ALTO: 'Muito alto' },
+  RISK_TOLERANCE: { CONSERVADOR: 'Conservador', MODERADO: 'Moderado', ALTO: 'Alto' },
+  FINANCIAL_GOALS: { CONSTRUIR_PATRIMONIO: 'Construir patrimônio', FONDO_EMERGENCIA: 'Criar um fundo de emergência', INVERTIR_MEJOR: 'Investir melhor', REDUCIR_DEUDAS: 'Reduzir dívidas', OTRO: 'Outro: escrever minha meta…' },
+  AUTOMATION_LEVELS: { MANUAL: 'Manual', SEMI: 'Semiautomatizado', AUTO: 'Automatizado' },
+  MONITORING_LEVELS: { BASIC: 'Básico', CONTINUOUS: 'Contínuo', ALERTS: 'Contínuo + alertas' },
+  MODULE_STATE: {
+    COMPLETED: 'Concluído', AVAILABLE: 'Disponível', LOCKED_ORDER: 'Conclua o módulo anterior', LOCKED_ACCESS: 'Requer acesso',
+    LOCKED_FILTER: 'Requer o filtro de mercados', LOCKED_ROUTE: 'Escolha a Rota de Mercados', COMING_SOON: 'Próxima etapa',
+  },
+  BUDGET_EXTRA: { FLUJO_DISPONIBLE: 'Fluxo disponível', AHORRO: 'Poupança', INVERSION: 'Investimento' },
+  DEBT_TYPES: {
+    TARJETA_CREDITO: 'Cartão de crédito', PRESTAMO_PERSONAL: 'Empréstimo pessoal', CREDITO_AUTOMOTRIZ: 'Financiamento de veículo',
+    HIPOTECA: 'Financiamento imobiliário', CREDITO_NOMINA: 'Crédito consignado', PRESTAMO_FAMILIAR: 'Empréstimo familiar', BNPL: 'Parcelamentos / BNPL',
+    DEUDA_NEGOCIO: 'Dívida do negócio', IMPUESTOS: 'Impostos pendentes', OTRA: 'Outra obrigação',
+  },
+  TAX_ITEM_TYPES: {
+    NEGOCIO: 'Negócio', INVERSION_FINANCIERA: 'Investimento financeiro', BIEN_INMUEBLE: 'Imóvel', RENTA_ACTIVOS: 'Aluguel de ativos',
+    PARTICIPACION_EMPRESA: 'Participação em empresa', CRIPTOACTIVOS: 'Criptoativos', OTRA: 'Outro investimento',
+  },
+  RESULT_PERIODS: { MENSUAL: 'Mensal', TRIMESTRAL: 'Trimestral', SEMESTRAL: 'Semestral', ANUAL: 'Anual', PERSONALIZADO: 'Personalizado' },
+  SCENARIO_TYPES: { AHORRO: 'Poupança', INVERSION: 'Investimento', META: 'Meta financeira', EFECTIVO: 'Dinheiro em espécie', OTRO: 'Outro' },
+  ESSENTIAL_SOURCES: { MOVEMENTS: 'Registros reais de receitas e despesas', BUDGET: 'Orçamento planejado do Módulo 7', DECLARED: 'Valor que você declarou', NONE: 'Sem informação' },
+  BLOCK_TITLES: { 1: 'Fundamentos, investimento e risco', 2: 'Organização e crescimento patrimonial' },
+};
+
 let currentLang = 'es';
 
 export function applyLabels(lang) {
-  const next = lang === 'en' ? 'en' : 'es';
+  const next = lang === 'en' || lang === 'pt' ? lang : 'es';
   if (next === currentLang) return;
   currentLang = next;
-  const dict = next === 'en' ? EN : ES;
+  const dict = { en: EN, pt: PT }[next] || ES;
   Object.entries(MAPS).forEach(([name, map]) => Object.assign(map, dict[name]));
   APPOINTMENT_REASONS.splice(0, APPOINTMENT_REASONS.length, ...dict.APPOINTMENT_REASONS);
   Object.entries(dict.MODULE_STATE).forEach(([key, label]) => { MODULE_STATE[key].label = label; });

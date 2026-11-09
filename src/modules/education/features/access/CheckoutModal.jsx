@@ -9,7 +9,7 @@ import { Field, FormError, Input, Textarea } from '../../components/ui/Form.jsx'
 import { date, priceMoney } from '../../utils/format.js';
 import { GiftCardModal } from '../gifts/GiftCard.jsx';
 import { BitgetInstructions, BitgetReportForm } from './BitgetPayment.jsx';
-import { COUNTRIES } from '../../shared/countries.js';
+import { countryLabel, sortedCountries } from '../../shared/countries.js';
 import { getLanguage, tr } from '../../i18n/tr.js';
 
 const METHODS = [
@@ -227,8 +227,8 @@ export function PaymentResult({ attempt, offer, codes, gift, access, credits, on
 function CountryPrompt({ onSaved }) {
   const [value, setValue] = useState('');
   const [state, setState] = useState({ busy: false, error: null });
-  const lang = getLanguage() === 'en' ? 'en' : 'es';
-  const list = [...COUNTRIES].sort((a, b) => a[lang].localeCompare(b[lang], lang));
+  const lang = getLanguage();
+  const list = sortedCountries(lang);
   const save = async () => {
     setState({ busy: true, error: null });
     try {
@@ -244,7 +244,7 @@ function CountryPrompt({ onSaved }) {
       <Field label={tr('País de residencia')}>
         <select className="input" value={value} onChange={(e) => setValue(e.target.value)}>
           <option value="">{tr('Selecciona tu país')}</option>
-          {list.map((c) => <option key={c.code} value={c.code}>{c[lang]}</option>)}
+          {list.map((c) => <option key={c.code} value={c.code}>{countryLabel(c, lang)}</option>)}
         </select>
       </Field>
       <FormError error={state.error} />

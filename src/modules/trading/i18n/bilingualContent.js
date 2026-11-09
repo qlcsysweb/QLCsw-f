@@ -2,8 +2,10 @@
 // base (español, siempre presente) y "en" es la traducción opcional.
 // Si el idioma activo es inglés pero la traducción todavía no existe, se
 // usa el español como respaldo (nunca se deja el campo vacío en público).
-export function pickBilingual(es, en, language) {
+export function pickBilingual(es, en, language, pt) {
   if (language === 'en' && en) return en;
+  // Portugués: si todavía no hay traducción se muestra el español.
+  if (language === 'pt' && pt) return pt;
   return es;
 }
 
@@ -26,19 +28,19 @@ export function isTranslationPending(es, en) {
 // PublicContent: entry = { value, valueEn } (una fila de `text(section,key)`).
 export function getLocalizedContentValue(entry, language, fallback = '') {
   if (!entry) return fallback;
-  return pickBilingual(entry.value, entry.valueEn, language) ?? fallback;
+  return pickBilingual(entry.value, entry.valueEn, language, entry.valuePt) ?? fallback;
 }
 
 export function getLocalizedModel(model, language) {
   if (!model) return model;
   return {
     ...model,
-    name: pickBilingual(model.name, model.nameEn, language),
-    tagline: pickBilingual(model.tagline, model.taglineEn, language),
-    description: pickBilingual(model.description, model.descriptionEn, language),
-    conditions: pickBilingual(model.conditions, model.conditionsEn, language),
-    period: pickBilingual(model.period, model.periodEn, language),
-    detailsContent: pickBilingual(model.detailsContent, model.detailsContentEn, language),
+    name: pickBilingual(model.name, model.nameEn, language, model.namePt),
+    tagline: pickBilingual(model.tagline, model.taglineEn, language, model.taglinePt),
+    description: pickBilingual(model.description, model.descriptionEn, language, model.descriptionPt),
+    conditions: pickBilingual(model.conditions, model.conditionsEn, language, model.conditionsPt),
+    period: pickBilingual(model.period, model.periodEn, language, model.periodPt),
+    detailsContent: pickBilingual(model.detailsContent, model.detailsContentEn, language, model.detailsContentPt),
   };
 }
 
@@ -46,8 +48,8 @@ export function getLocalizedFaq(faq, language) {
   if (!faq) return faq;
   return {
     ...faq,
-    question: pickBilingual(faq.question, faq.questionEn, language),
-    answer: pickBilingual(faq.answer, faq.answerEn, language),
+    question: pickBilingual(faq.question, faq.questionEn, language, faq.questionPt),
+    answer: pickBilingual(faq.answer, faq.answerEn, language, faq.answerPt),
   };
 }
 
@@ -55,7 +57,7 @@ export function getLocalizedTrackRecord(trackRecord, language) {
   if (!trackRecord) return trackRecord;
   return {
     ...trackRecord,
-    title: pickBilingual(trackRecord.title, trackRecord.titleEn, language),
-    description: pickBilingual(trackRecord.description, trackRecord.descriptionEn, language),
+    title: pickBilingual(trackRecord.title, trackRecord.titleEn, language, trackRecord.titlePt),
+    description: pickBilingual(trackRecord.description, trackRecord.descriptionEn, language, trackRecord.descriptionPt),
   };
 }

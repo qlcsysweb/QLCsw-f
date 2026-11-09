@@ -7,6 +7,11 @@ import QlcLogo from '../../../components/QlcLogo';
 import { useLanguage } from '../../../i18n/LanguageContext';
 import useSectionNav, { SECTIONS, HOME_ID, CONTACT_ID, CONTACT_PATH } from '../useSectionNav';
 
+// El inglés siempre va primero.
+const LANG_LABELS = { en: '🇺🇸 English', es: '🇪🇸 Español', pt: '🇧🇷 Português' };
+const MAIN_PAGE = { en: 'Main page', es: 'Página principal', pt: 'Página principal' };
+const OPEN_MENU = { en: 'Open menu', es: 'Abrir menú', pt: 'Abrir menu' };
+
 function LanguageDropdown() {
   const { t, language, setLanguage } = useLanguage();
   const [open, setOpen] = useState(false);
@@ -21,32 +26,25 @@ function LanguageDropdown() {
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
       >
-        {language === 'es' ? 'ES' : 'EN'} ▾
+        {String(language || 'es').toUpperCase()} ▾
       </button>
       {open && (
         <>
           {createPortal(<div className="qlc-nav-menu-backdrop" onClick={close} />, document.body)}
           <div className="qlc-nav-lang-panel">
-            <button
-              type="button"
-              className={`qlc-nav-lang-option${language === 'en' ? ' active' : ''}`}
-              onClick={() => {
-                setLanguage('en');
-                close();
-              }}
-            >
-              🇺🇸 English
-            </button>
-            <button
-              type="button"
-              className={`qlc-nav-lang-option${language === 'es' ? ' active' : ''}`}
-              onClick={() => {
-                setLanguage('es');
-                close();
-              }}
-            >
-              🇪🇸 Español
-            </button>
+            {Object.entries(LANG_LABELS).map(([code, label]) => (
+              <button
+                key={code}
+                type="button"
+                className={`qlc-nav-lang-option${language === code ? ' active' : ''}`}
+                onClick={() => {
+                  setLanguage(code);
+                  close();
+                }}
+              >
+                {label}
+              </button>
+            ))}
           </div>
         </>
       )}
@@ -69,7 +67,7 @@ export default function PublicNav({ activeId = null }) {
   const { t, language } = useLanguage();
   const goTo = useSectionNav();
   const [open, setOpen] = useState(false);
-  const mainPage = language === 'en' ? 'Main page' : 'Página principal';
+  const mainPage = MAIN_PAGE[language] || MAIN_PAGE.es;
 
   useEffect(() => {
     setOpen(false);
@@ -114,7 +112,7 @@ export default function PublicNav({ activeId = null }) {
           <button
             type="button"
             className="qlc-nav-burger"
-            aria-label={language === 'en' ? 'Open menu' : 'Abrir menú'}
+            aria-label={OPEN_MENU[language] || OPEN_MENU.es}
             aria-expanded={open}
             onClick={() => setOpen((v) => !v)}
           >

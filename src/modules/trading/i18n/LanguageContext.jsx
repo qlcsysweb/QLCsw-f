@@ -1,10 +1,13 @@
 import { createContext, useContext, useMemo, useState } from 'react';
 import { getCookie, setCookie } from '../utils/cookies';
 import translations from './translations';
+import pt from './translations.pt';
 
 const COOKIE_NAME = 'trad_language';
 const COOKIE_DAYS = 365;
-const SUPPORTED = ['es', 'en'];
+const SUPPORTED = ['es', 'en', 'pt'];
+// Lo que aún no tenga traducción al portugués se muestra en español.
+const DICTS = { ...translations, pt };
 
 const LanguageContext = createContext(null);
 
@@ -28,9 +31,9 @@ export function LanguageProvider({ children }) {
   };
 
   const t = useMemo(() => {
-    const dict = translations[language || 'es'];
+    const dict = DICTS[language || 'es'];
     return (key, fallback) => {
-      const value = resolveValue(dict, key);
+      const value = resolveValue(dict, key) ?? (language === 'pt' ? resolveValue(DICTS.es, key) : undefined);
       if (value !== undefined) return value;
       return fallback !== undefined ? fallback : key;
     };

@@ -34,6 +34,8 @@ export default function LegalPage({ doc }) {
       <div className="section-kicker">{BRAND_FULL}</div>
       <h1>{content.title}</h1>
       <p className="small muted">{legal.updatedLabel}: {legal.updated}</p>
+      {/* Sin versión legal revisada en portugués: se muestra la versión oficial en español. */}
+      {lang === 'pt' && <p className="small muted">Este documento está disponível apenas em espanhol, que é a versão oficial.</p>}
       <p className="subtitle">{content.intro}</p>
       {content.sections.map(([title, paragraphs]) => (
         <section key={title} className="legal-section">

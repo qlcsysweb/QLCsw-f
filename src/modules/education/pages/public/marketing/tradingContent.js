@@ -1,3 +1,4 @@
+import { PT } from './tradingContent.pt.js';
 const ES = {
   title: 'Trading Academy',
   extraLink: 'Educación financiera',
@@ -338,4 +339,4 @@ const EN = {
   },
 };
 
-export const TRADING_CONTENT = { es: ES, en: EN };
+export const TRADING_CONTENT = { es: ES, en: EN, pt: PT };

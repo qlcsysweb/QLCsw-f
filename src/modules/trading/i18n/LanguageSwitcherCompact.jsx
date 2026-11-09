@@ -7,6 +7,9 @@ import './LanguageSwitcherCompact.css';
  * interfaz solo muestra el idioma actual; las dos opciones aparecen al
  * abrir, igual que el menú hamburguesa del sitio público.
  */
+// El inglés siempre va primero.
+const LABELS = { en: '🇺🇸 English', es: '🇪🇸 Español', pt: '🇧🇷 Português' };
+
 export default function LanguageSwitcherCompact() {
   const { t, language, setLanguage } = useLanguage();
   const [open, setOpen] = useState(false);
@@ -14,33 +17,26 @@ export default function LanguageSwitcherCompact() {
   return (
     <div className="qlc-lang-switch">
       <button type="button" className="qlc-btn ghost qlc-lang-switch-btn" onClick={() => setOpen((v) => !v)}>
-        {language === 'es' ? '🇪🇸 Español' : '🇺🇸 English'}
+        {LABELS[language] || LABELS.es}
       </button>
       {open && (
         <>
           <div className="qlc-lang-switch-backdrop" onClick={() => setOpen(false)} />
           <div className="qlc-lang-switch-panel">
             <div className="qlc-lang-switch-heading">{t('language.label')}</div>
-            <button
-              type="button"
-              className={`qlc-lang-switch-option${language === 'en' ? ' active' : ''}`}
-              onClick={() => {
-                setLanguage('en');
-                setOpen(false);
-              }}
-            >
-              🇺🇸 English
-            </button>
-            <button
-              type="button"
-              className={`qlc-lang-switch-option${language === 'es' ? ' active' : ''}`}
-              onClick={() => {
-                setLanguage('es');
-                setOpen(false);
-              }}
-            >
-              🇪🇸 Español
-            </button>
+            {Object.entries(LABELS).map(([code, label]) => (
+              <button
+                key={code}
+                type="button"
+                className={`qlc-lang-switch-option${language === code ? ' active' : ''}`}
+                onClick={() => {
+                  setLanguage(code);
+                  setOpen(false);
+                }}
+              >
+                {label}
+              </button>
+            ))}
           </div>
         </>
       )}

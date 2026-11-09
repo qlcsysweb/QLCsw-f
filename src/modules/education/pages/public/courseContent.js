@@ -1,3 +1,4 @@
+import { PT } from './courseContent.pt.js';
 const ES = [
   {
     id: '01',
@@ -568,4 +569,4 @@ const EN = [
   },
 ];
 
-export const LESSONS = { es: ES, en: EN };
+export const LESSONS = { es: ES, en: EN, pt: PT };

@@ -3,18 +3,19 @@ import './languageGate.css';
 const OPTIONS = [
   { code: 'en', short: 'EN', label: 'English', action: 'Continue' },
   { code: 'es', short: 'ES', label: 'Español', action: 'Continuar' },
+  { code: 'pt', short: 'PT', label: 'Português', action: 'Continuar' },
 ];
 
 export default function LanguageGate({ logo, onSelect }) {
   return (
-    <div className="lang-gate" role="dialog" aria-modal="true" aria-label="Select language / Seleccionar idioma">
+    <div className="lang-gate" role="dialog" aria-modal="true" aria-label="Select language / Seleccionar idioma / Selecionar idioma">
       <div className="lang-gate-panel">
         {logo}
         <p className="lang-gate-brand">Quantum Liquidity Capital</p>
         <h1 className="lang-gate-title">
-          Welcome <span>Bienvenido</span>
+          Welcome <span>Bienvenido</span> <span>Bem-vindo</span>
         </h1>
-        <p className="lang-gate-sub">Choose your language · Elige tu idioma</p>
+        <p className="lang-gate-sub">Choose your language · Elige tu idioma · Escolha seu idioma</p>
 
         <div className="lang-gate-options">
           {OPTIONS.map(({ code, short, label, action }) => (
@@ -28,7 +29,7 @@ export default function LanguageGate({ logo, onSelect }) {
           ))}
         </div>
 
-        <p className="lang-gate-note">You can change it anytime · Puedes cambiarlo cuando quieras</p>
+        <p className="lang-gate-note">You can change it anytime · Puedes cambiarlo cuando quieras · Você pode mudar quando quiser</p>
       </div>
     </div>
   );

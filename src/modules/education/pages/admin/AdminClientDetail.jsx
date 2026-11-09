@@ -1,4 +1,4 @@
-import { COUNTRIES, countryName } from '../../shared/countries.js';
+import { countryLabel, countryName, sortedCountries } from '../../shared/countries.js';
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { api } from '../../api/client.js';
@@ -66,8 +66,8 @@ function TwoFactorReset({ client, onSaved }) {
 
 function ResidenceCountry({ client, canEdit, onSaved }) {
   const [error, setError] = useState(null);
-  const lang = getLanguage() === 'en' ? 'en' : 'es';
-  const list = [...COUNTRIES].sort((a, b) => a[lang].localeCompare(b[lang], lang));
+  const lang = getLanguage();
+  const list = sortedCountries(lang);
   const save = async (e) => {
     setError(null);
     try {
@@ -82,7 +82,7 @@ function ResidenceCountry({ client, canEdit, onSaved }) {
     <>
       <select className="input" value={client.residenceCountry || ''} onChange={save} aria-label={tr('País de residencia')}>
         {!client.residenceCountry && <option value="">—</option>}
-        {list.map((c) => <option key={c.code} value={c.code}>{c[lang]}</option>)}
+        {list.map((c) => <option key={c.code} value={c.code}>{countryLabel(c, lang)}</option>)}
       </select>
       <FormError error={error} />
     </>

@@ -207,7 +207,22 @@ export const COUNTRY_CODES = COUNTRIES.map((n) => n.code);
 
 export const isCountry = (code) => COUNTRY_CODES.includes(String(code || '').toUpperCase());
 
+// En portugués el nombre lo da el navegador (Intl); si no puede, se usa el español.
+let ptNames = null;
+const ptName = (country) => {
+  try {
+    ptNames = ptNames || new Intl.DisplayNames(['pt-BR'], { type: 'region' });
+    return ptNames.of(country.code) || country.es;
+  } catch {
+    return country.es;
+  }
+};
+
+export const countryLabel = (country, lang = 'es') => (lang === 'en' ? country.en : lang === 'pt' ? ptName(country) : country.es);
+
+export const sortedCountries = (lang = 'es') => [...COUNTRIES].sort((a, b) => countryLabel(a, lang).localeCompare(countryLabel(b, lang), lang));
+
 export const countryName = (code, lang = 'es') => {
   const found = COUNTRIES.find((n) => n.code === String(code || '').toUpperCase());
-  return found ? found[lang === 'en' ? 'en' : 'es'] : null;
+  return found ? countryLabel(found, lang) : null;
 };

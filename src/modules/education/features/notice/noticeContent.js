@@ -43,4 +43,20 @@ export const NOTICE_TEXT = {
     info: 'Request information ↗',
     close: 'Close',
   },
+  pt: {
+    title: 'QLC Quantitative Trading Bot | Uma oportunidade para diversificar sua carteira',
+    intro: (m) => `Prezado investidor: nosso produto principal, o QLC Quantitative Trading Bot, registra atualmente um retorno sobre o investimento (ROI) de ${fmt(m.returnPct)}% em ${fmt(m.days)} dias, com ${fmt(m.wins)} operações vencedoras, ${fmt(m.losses)} perdedoras e uma taxa de acerto de ${fmt(m.hitRate)}%. O drawdown máximo registrado é de ${fmt(m.drawdown)}%.`,
+    evaluate: 'Avalie nossas métricas, analise o risco em relação ao resultado e descubra se o QLC Quantitative Trading Bot é uma opção para complementar sua carteira de investimentos.',
+    live: 'Confira nossas operações ao vivo no nosso perfil Trader Elite da sua exchange ou solicite informações para acessar nosso produto.',
+    disclaimer: 'Resultados passados não garantem resultados futuros. Investir envolve riscos, incluindo a perda de capital.',
+    metrics: (m) => [
+      ['Retorno sobre o investimento (ROI)', `${fmt(m.returnPct)}%`, `${fmt(m.days)} dias`],
+      ['Operações vencedoras', fmt(m.wins), `${fmt(m.losses)} perdedoras`],
+      ['Taxa de acerto', `${fmt(m.hitRate)}%`, 'Operações fechadas'],
+      ['Drawdown máximo', `${fmt(m.drawdown)}%`, 'Registrado'],
+    ],
+    bitget: 'Ver perfil na sua exchange ↗',
+    info: 'Solicitar informações ↗',
+    close: 'Fechar',
+  },
 };

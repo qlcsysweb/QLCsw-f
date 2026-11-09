@@ -12,27 +12,33 @@ const PUBLIC_CONTENT = {
   "como_funciona": {
     "connection_text": {
       "value": "QLC no necesita recibir ni trasladar el capital del cliente para ejecutar la estrategia. La conexión API permite la operación sobre la cuenta autorizada, con permisos limitados y sin autorización para retirar fondos.",
-      "valueEn": "QLC doesn't need to receive or move the client's capital to execute the strategy. The API connection allows operation on the authorized account, with limited permissions and no authorization to withdraw funds."
+      "valueEn": "QLC doesn't need to receive or move the client's capital to execute the strategy. The API connection allows operation on the authorized account, with limited permissions and no authorization to withdraw funds.",
+      "valuePt": "A QLC não precisa receber nem movimentar o capital do cliente para executar a estratégia. A conexão API permite a operação na conta autorizada, com permissões limitadas e sem autorização para sacar fundos."
     },
     "connection_title": {
       "value": "El capital permanece donde pertenece.",
-      "valueEn": "The capital stays where it belongs."
+      "valueEn": "The capital stays where it belongs.",
+      "valuePt": "O capital permanece onde pertence."
     },
     "h2_line1": {
       "value": "Tu cuenta.",
-      "valueEn": "Your account."
+      "valueEn": "Your account.",
+      "valuePt": "Sua conta."
     },
     "h2_line2": {
       "value": "Nuestra infraestructura.",
-      "valueEn": "Our infrastructure."
+      "valueEn": "Our infrastructure.",
+      "valuePt": "Nossa infraestrutura."
     },
     "kicker": {
       "value": "CÓMO FUNCIONA",
-      "valueEn": "HOW IT WORKS"
+      "valueEn": "HOW IT WORKS",
+      "valuePt": "COMO FUNCIONA"
     },
     "sub": {
       "value": "El flujo es directo: el cliente mantiene su cuenta en el exchange, autoriza una conexión API y QLC ejecuta la estrategia directamente sobre ella.",
-      "valueEn": "The flow is direct: the client keeps their account on the exchange, authorizes an API connection, and QLC executes the strategy directly on it."
+      "valueEn": "The flow is direct: the client keeps their account on the exchange, authorizes an API connection, and QLC executes the strategy directly on it.",
+      "valuePt": "O fluxo é direto: o cliente mantém sua conta na exchange, autoriza uma conexão API e a QLC executa a estratégia diretamente nela."
     }
   },
   "contacto": {
@@ -42,21 +48,25 @@ const PUBLIC_CONTENT = {
     },
     "sub": {
       "value": "Trading cuantitativo · Algoritmos · Ejecución API · Microposiciones",
-      "valueEn": "Quantitative trading · Algorithms · API Execution · Micro-positions"
+      "valueEn": "Quantitative trading · Algorithms · API Execution · Micro-positions",
+      "valuePt": "Trading quantitativo · Algoritmos · Execução via API · Microposições"
     },
     "title": {
       "value": "BOT TRADING INSTITUCIONAL.",
-      "valueEn": "INSTITUTIONAL BOT TRADING."
+      "valueEn": "INSTITUTIONAL BOT TRADING.",
+      "valuePt": "BOT TRADING INSTITUCIONAL."
     }
   },
   "footer": {
     "disclaimer": {
       "value": "Los activos digitales y el trading apalancado implican riesgos significativos. Los resultados históricos no garantizan resultados futuros. La información presentada es de carácter informativo y está sujeta a los términos y condiciones aplicables.",
-      "valueEn": "Digital assets and leveraged trading involve significant risks. Past performance does not guarantee future results. The information presented is for informational purposes and is subject to applicable terms and conditions."
+      "valueEn": "Digital assets and leveraged trading involve significant risks. Past performance does not guarantee future results. The information presented is for informational purposes and is subject to applicable terms and conditions.",
+      "valuePt": "Ativos digitais e trading alavancado implicam riscos significativos. Resultados históricos não garantem resultados futuros. As informações apresentadas têm caráter informativo e estão sujeitas aos termos e condições aplicáveis."
     },
     "tagline": {
       "value": "Trading institucional. Accesible desde 100 USDT.",
-      "valueEn": "Institutional trading. Accessible from 100 USDT."
+      "valueEn": "Institutional trading. Accessible from 100 USDT.",
+      "valuePt": "Trading institucional. Acessível a partir de 100 USDT."
     }
   },
   "hero": {
@@ -66,7 +76,8 @@ const PUBLIC_CONTENT = {
     },
     "lead": {
       "value": "QLC es una estrategia de bot trading institucional: nuestro bot ejecuta la estrategia directamente en la cuenta del cliente mediante tecnología propia y una conexión API autorizada.",
-      "valueEn": "QLC is an institutional bot trading strategy: our bot executes the strategy directly on the client's account using proprietary technology and an authorized API connection."
+      "valueEn": "QLC is an institutional bot trading strategy: our bot executes the strategy directly on the client's account using proprietary technology and an authorized API connection.",
+      "valuePt": "A QLC é uma estratégia de bot trading institucional: nosso bot executa a estratégia diretamente na conta do cliente por meio de tecnologia própria e de uma conexão API autorizada."
     },
     "mini_platform_label": {
       "value": "BITGET",
@@ -78,11 +89,13 @@ const PUBLIC_CONTENT = {
     },
     "title_line1": {
       "value": "Bot Trading Institucional.",
-      "valueEn": "Institutional Bot Trading."
+      "valueEn": "Institutional Bot Trading.",
+      "valuePt": "Bot Trading Institucional."
     },
     "title_line2": {
       "value": "Accesible desde 100 USDT.",
-      "valueEn": "Accessible starting at 100 USDT."
+      "valueEn": "Accessible starting at 100 USDT.",
+      "valuePt": "Acessível a partir de 100 USDT."
     }
   },
   "legal": {
@@ -106,7 +119,8 @@ const PUBLIC_CONTENT = {
   "microposiciones": {
     "lead": {
       "value": "QLC adapta una arquitectura de trading institucional a cuentas individuales mediante una metodología basada en microposiciones y ejecución sistemática.",
-      "valueEn": "QLC adapts an institutional trading architecture to individual accounts through a methodology based on micro-positions and systematic execution."
+      "valueEn": "QLC adapts an institutional trading architecture to individual accounts through a methodology based on micro-positions and systematic execution.",
+      "valuePt": "A QLC adapta uma arquitetura de trading institucional a contas individuais por meio de uma metodologia baseada em microposições e execução sistemática."
     },
     "range": {
       "value": "100 – 2,000 USDT",
@@ -116,95 +130,116 @@ const PUBLIC_CONTENT = {
   "modelo": {
     "h2_line1": {
       "value": "Bot trading institucional.",
-      "valueEn": "Institutional bot trading."
+      "valueEn": "Institutional bot trading.",
+      "valuePt": "Bot trading institucional."
     },
     "h2_line2": {
       "value": "Sin salir de tu cuenta.",
-      "valueEn": "Without leaving your account."
+      "valueEn": "Without leaving your account.",
+      "valuePt": "Sem sair da sua conta."
     },
     "intro": {
       "value": "La estrategia de QLC se ejecuta directamente sobre la cuenta del cliente mediante una conexión API. El capital permanece en su propia cuenta de exchange.",
-      "valueEn": "QLC's strategy is executed directly on the client's account through an API connection. The capital stays in their own exchange account."
+      "valueEn": "QLC's strategy is executed directly on the client's account through an API connection. The capital stays in their own exchange account.",
+      "valuePt": "A estratégia da QLC é executada diretamente na conta do cliente por meio de uma conexão API. O capital permanece na própria conta da exchange."
     },
     "kicker": {
       "value": "EL CONCEPTO",
-      "valueEn": "THE CONCEPT"
+      "valueEn": "THE CONCEPT",
+      "valuePt": "O CONCEITO"
     }
   },
   "modelos": {
     "note": {
       "value": "Las referencias de rendimiento son objetivos o parámetros del modelo y no constituyen una garantía de resultados futuros.",
-      "valueEn": "Performance references are targets or model parameters and do not constitute a guarantee of future results."
+      "valueEn": "Performance references are targets or model parameters and do not constitute a guarantee of future results.",
+      "valuePt": "As referências de rendimento são objetivos ou parâmetros do modelo e não constituem uma garantia de resultados futuros."
     }
   },
   "problema": {
     "body_1": {
       "value": "La mayoría de los traders minoristas enfrenta los mercados con herramientas limitadas: gráficos, indicadores y líneas en una pantalla, intentando anticipar si el precio subirá o bajará.",
-      "valueEn": "Most retail traders face the markets with limited tools: charts, indicators and lines on a screen, trying to anticipate whether the price will rise or fall."
+      "valueEn": "Most retail traders face the markets with limited tools: charts, indicators and lines on a screen, trying to anticipate whether the price will rise or fall.",
+      "valuePt": "A maioria dos traders de varejo enfrenta os mercados com ferramentas limitadas: gráficos, indicadores e linhas em uma tela, tentando antecipar se o preço vai subir ou cair."
     },
     "body_2": {
       "value": "Mientras tanto, el entorno profesional utiliza modelos cuantitativos, algoritmos, software especializado y herramientas de análisis de última generación, desarrolladas para procesar información y ejecutar estrategias con una capacidad que un operador humano no puede igualar.",
-      "valueEn": "Meanwhile, the professional environment uses quantitative models, algorithms, specialized software and state-of-the-art analysis tools, built to process information and execute strategies with a capacity no human operator can match."
+      "valueEn": "Meanwhile, the professional environment uses quantitative models, algorithms, specialized software and state-of-the-art analysis tools, built to process information and execute strategies with a capacity no human operator can match.",
+      "valuePt": "Enquanto isso, o ambiente profissional usa modelos quantitativos, algoritmos, software especializado e ferramentas de análise de última geração, desenvolvidas para processar informações e executar estratégias com uma capacidade que um operador humano não consegue igualar."
     },
     "body_3": {
       "value": "El problema no siempre es la estrategia. Es la infraestructura disponible para ejecutarla.",
-      "valueEn": "The problem isn't always the strategy. It's the infrastructure available to execute it."
+      "valueEn": "The problem isn't always the strategy. It's the infrastructure available to execute it.",
+      "valuePt": "O problema nem sempre é a estratégia. É a infraestrutura disponível para executá-la."
     },
     "body_4": {
       "value": "QLC cambia esa ecuación.",
-      "valueEn": "QLC changes that equation."
+      "valueEn": "QLC changes that equation.",
+      "valuePt": "A QLC muda essa equação."
     },
     "body_5": {
       "value": "Ponemos al alcance de inversores individuales una estrategia de Bot Trading Institucional, basada en nuestra propia estrategia, tecnología y sistemas de ejecución.",
-      "valueEn": "We put an institutional Bot Trading strategy within reach of individual investors, built on our own strategy, technology and execution systems."
+      "valueEn": "We put an institutional Bot Trading strategy within reach of individual investors, built on our own strategy, technology and execution systems.",
+      "valuePt": "Colocamos ao alcance de investidores individuais uma estratégia de Bot Trading Institucional, baseada em nossa própria estratégia, tecnologia e sistemas de execução."
     },
     "body_6": {
       "value": "Desde 100 USDT.",
-      "valueEn": "Starting from 100 USDT."
+      "valueEn": "Starting from 100 USDT.",
+      "valuePt": "A partir de 100 USDT."
     },
     "body_7": {
       "value": "Tu cuenta sigue siendo individual. Nuestra gestión es global.",
-      "valueEn": "Your account remains individual. Our management is global."
+      "valueEn": "Your account remains individual. Our management is global.",
+      "valuePt": "Sua conta continua sendo individual. Nossa gestão é global."
     },
     "body_8": {
       "value": "Tú ves tu cuenta. Nosotros vemos tu cuenta como parte de una estructura global de miles de cuentas.",
-      "valueEn": "You see your account. We see your account as part of a global structure of thousands of accounts."
+      "valueEn": "You see your account. We see your account as part of a global structure of thousands of accounts.",
+      "valuePt": "Você vê a sua conta. Nós vemos a sua conta como parte de uma estrutura global de milhares de contas."
     },
     "body_9": {
       "value": "La diferencia no está solamente en lo que ves en el gráfico. Está en todo lo que ocurre detrás de él.",
-      "valueEn": "The difference isn't only in what you see on the chart. It's in everything that happens behind it."
+      "valueEn": "The difference isn't only in what you see on the chart. It's in everything that happens behind it.",
+      "valuePt": "A diferença não está apenas no que você vê no gráfico. Está em tudo o que acontece por trás dele."
     },
     "closing": {
       "value": "QLC — Infraestructura institucional. Ahora al alcance del inversor individual.",
-      "valueEn": "QLC — Institutional infrastructure. Now within reach of the individual investor."
+      "valueEn": "QLC — Institutional infrastructure. Now within reach of the individual investor.",
+      "valuePt": "QLC — Infraestrutura institucional. Agora ao alcance do investidor individual."
     },
     "lead": {
       "value": "El 95% pierde. El 5% opera con otra infraestructura.",
-      "valueEn": "95% lose. 5% operate with a different infrastructure."
+      "valueEn": "95% lose. 5% operate with a different infrastructure.",
+      "valuePt": "95% perdem. Os 5% operam com outra infraestrutura."
     },
     "title": {
       "value": "EL JUEGO NO ES PAREJO.",
-      "valueEn": "THE GAME ISN'T LEVEL."
+      "valueEn": "THE GAME ISN'T LEVEL.",
+      "valuePt": "O JOGO NÃO É JUSTO."
     }
   },
   "resultados": {
     "lead_1": {
       "value": "No te pedimos que confíes en nosotros. Te damos acceso a una referencia externa para que puedas consultar directamente en Bitget los indicadores de rendimiento del perfil.",
-      "valueEn": "We do not ask you to trust us. We give you access to an external reference so you can review the profile performance indicators directly on Bitget."
+      "valueEn": "We do not ask you to trust us. We give you access to an external reference so you can review the profile performance indicators directly on Bitget.",
+      "valuePt": "Não pedimos que você confie em nós. Damos acesso a uma referência externa para que você possa consultar diretamente na Bitget os indicadores de rendimento do perfil."
     },
     "lead_2": {
       "value": "Este perfil de trading está conectado mediante API a nuestra infraestructura tecnológica.",
-      "valueEn": "This trading profile is connected via API to our technology infrastructure."
+      "valueEn": "This trading profile is connected via API to our technology infrastructure.",
+      "valuePt": "Este perfil de trading está conectado via API à nossa infraestrutura tecnológica."
     }
   },
   "seguridad": {
     "h2_line1": {
       "value": "Tu cuenta.",
-      "valueEn": "Your account."
+      "valueEn": "Your account.",
+      "valuePt": "Sua conta."
     },
     "h2_line2": {
       "value": "Tu capital. Tu control.",
-      "valueEn": "Your capital. Your control."
+      "valueEn": "Your capital. Your control.",
+      "valuePt": "Seu capital. Seu controle."
     },
     "kicker": {
       "value": "CONTROL",
@@ -214,41 +249,50 @@ const PUBLIC_CONTENT = {
   "sobre_qlc": {
     "body_1": {
       "value": "QLC desarrolla y opera infraestructura tecnológica especializada para conectar, coordinar y ejecutar estrategias de trading sobre cuentas individuales de sus usuarios.",
-      "valueEn": "QLC develops and operates specialized technology infrastructure to connect, coordinate, and execute trading strategies on its users' individual accounts."
+      "valueEn": "QLC develops and operates specialized technology infrastructure to connect, coordinate, and execute trading strategies on its users' individual accounts.",
+      "valuePt": "A QLC desenvolve e opera infraestrutura tecnológica especializada para conectar, coordenar e executar estratégias de trading nas contas individuais de seus usuários."
     },
     "body_2": {
       "value": "Nuestra función se centra en proporcionar la tecnología, los sistemas y la infraestructura necesarios para una ejecución estructurada y coordinada.",
-      "valueEn": "Our role is centered on providing the technology, systems, and infrastructure needed for structured, coordinated execution."
+      "valueEn": "Our role is centered on providing the technology, systems, and infrastructure needed for structured, coordinated execution.",
+      "valuePt": "Nossa função se concentra em fornecer a tecnologia, os sistemas e a infraestrutura necessários para uma execução estruturada e coordenada."
     },
     "body_3": {
       "value": "QLC no es un banco, no es una institución financiera y no custodia los fondos de sus usuarios. Los fondos permanecen en la cuenta del propio cliente en el exchange correspondiente, bajo su titularidad y control.",
-      "valueEn": "QLC is not a bank, is not a financial institution, and does not hold custody of its users' funds. Funds remain in the client's own account on the corresponding exchange, under their ownership and control."
+      "valueEn": "QLC is not a bank, is not a financial institution, and does not hold custody of its users' funds. Funds remain in the client's own account on the corresponding exchange, under their ownership and control.",
+      "valuePt": "A QLC não é um banco, não é uma instituição financeira e não custodia os fundos de seus usuários. Os fundos permanecem na conta do próprio cliente na exchange correspondente, sob sua titularidade e controle."
     },
     "body_4": {
       "value": "El alcance de los servicios de QLC se limita a las funciones tecnológicas expresamente contratadas.",
-      "valueEn": "The scope of QLC's services is limited to the technological functions expressly contracted."
+      "valueEn": "The scope of QLC's services is limited to the technological functions expressly contracted.",
+      "valuePt": "O alcance dos serviços da QLC se limita às funções tecnológicas expressamente contratadas."
     },
     "intro": {
       "value": "QLC es una empresa enfocada en infraestructura tecnológica para la ejecución de estrategias algorítmicas y cuantitativas aplicadas a mercados de activos digitales.",
-      "valueEn": "QLC is a company focused on technology infrastructure for executing algorithmic and quantitative strategies applied to digital asset markets."
+      "valueEn": "QLC is a company focused on technology infrastructure for executing algorithmic and quantitative strategies applied to digital asset markets.",
+      "valuePt": "A QLC é uma empresa focada em infraestrutura tecnológica para a execução de estratégias algorítmicas e quantitativas aplicadas a mercados de ativos digitais."
     }
   },
   "tecnologia": {
     "h2_line1": {
       "value": "Una arquitectura.",
-      "valueEn": "An architecture."
+      "valueEn": "An architecture.",
+      "valuePt": "Uma arquitetura."
     },
     "h2_line2": {
       "value": "Una experiencia sencilla.",
-      "valueEn": "A simple experience."
+      "valueEn": "A simple experience.",
+      "valuePt": "Uma experiência simples."
     },
     "kicker": {
       "value": "INFRAESTRUCTURA",
-      "valueEn": "INFRASTRUCTURE"
+      "valueEn": "INFRASTRUCTURE",
+      "valuePt": "INFRAESTRUTURA"
     },
     "sub": {
       "value": "La complejidad tecnológica pertenece a QLC. Para el cliente, el producto se resume en una conexión, una estrategia y una ejecución directa en su cuenta.",
-      "valueEn": "The technological complexity belongs to QLC. For the client, the product comes down to a connection, a strategy, and direct execution on their account."
+      "valueEn": "The technological complexity belongs to QLC. For the client, the product comes down to a connection, a strategy, and direct execution on their account.",
+      "valuePt": "A complexidade tecnológica pertence à QLC. Para o cliente, o produto se resume a uma conexão, uma estratégia e uma execução direta na sua conta."
     }
   }
 };

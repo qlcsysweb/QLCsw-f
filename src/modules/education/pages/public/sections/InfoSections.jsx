@@ -74,18 +74,19 @@ export function FeatureSection({ section, go }) {
 }
 
 const PUBLIC_PLANS = [
-  ['TOOLS_ALL', { es: ['Herramientas', '30 días', 'Todas las herramientas financieras por 30 días o por 1 año. Se bloquean al terminar y se renuevan cuando quieras. No incluye la Masterclass.'], en: ['Tools', '30 days', 'All financial tools for 30 days or 1 year. They lock when the period ends and can be renewed anytime. Masterclass not included.'] }],
-  ['FULL_ANNUAL', { es: ['Membresía anual', '1 año', 'Todas las herramientas y todos los módulos de la Masterclass durante 12 meses.'], en: ['Annual membership', '1 year', 'All tools and every Masterclass module for 12 months.'] }],
-  ['DIAMOND_ANNUAL', { es: ['Membresía anual', '1 año', 'Todo lo de QLC Premium Access más 6 sesiones de orientación personalizada de 20 minutos.'], en: ['Annual membership', '1 year', 'Everything in QLC Premium Access plus 6 personal guidance sessions of 20 minutes.'] }],
+  ['TOOLS_ALL', { es: ['Herramientas', '30 días', 'Todas las herramientas financieras por 30 días o por 1 año. Se bloquean al terminar y se renuevan cuando quieras. No incluye la Masterclass.'], en: ['Tools', '30 days', 'All financial tools for 30 days or 1 year. They lock when the period ends and can be renewed anytime. Masterclass not included.'], pt: ['Ferramentas', '30 dias', 'Todas as ferramentas financeiras por 30 dias ou por 1 ano. São bloqueadas ao terminar o período e podem ser renovadas quando quiser. Não inclui a Masterclass.'] }],
+  ['FULL_ANNUAL', { es: ['Membresía anual', '1 año', 'Todas las herramientas y todos los módulos de la Masterclass durante 12 meses.'], en: ['Annual membership', '1 year', 'All tools and every Masterclass module for 12 months.'], pt: ['Assinatura anual', '1 ano', 'Todas as ferramentas e todos os módulos da Masterclass durante 12 meses.'] }],
+  ['DIAMOND_ANNUAL', { es: ['Membresía anual', '1 año', 'Todo lo de QLC Premium Access más 6 sesiones de orientación personalizada de 20 minutos.'], en: ['Annual membership', '1 year', 'Everything in QLC Premium Access plus 6 personal guidance sessions of 20 minutes.'], pt: ['Assinatura anual', '1 ano', 'Tudo do QLC Premium Access mais 6 sessões de orientação personalizada de 20 minutos.'] }],
 ];
 
 export function AccessSection({ section, offers, go }) {
   const { t, lang } = useI18n();
   const find = (code) => offers.find((o) => o.code === code);
+  const pick = (copy) => copy[lang] || copy.es;
   const extra = [
-    [find('MASTERCLASS_M1'), lang === 'es' ? 'Masterclass por módulo · 30 días, en orden' : 'Masterclass per module · 30 days, in order'],
-    [find('CONSULTA'), lang === 'es' ? 'Consulta sobre ejercicios' : 'Exercise question'],
-    [find('ORIENTACION'), lang === 'es' ? 'Orientación personalizada · 20 minutos' : 'Personal guidance · 20 minutes'],
+    [find('MASTERCLASS_M1'), pick({ es: 'Masterclass por módulo · 30 días, en orden', en: 'Masterclass per module · 30 days, in order', pt: 'Masterclass por módulo · 30 dias, em ordem' })],
+    [find('CONSULTA'), pick({ es: 'Consulta sobre ejercicios', en: 'Exercise question', pt: 'Consulta sobre exercícios' })],
+    [find('ORIENTACION'), pick({ es: 'Orientación personalizada · 20 minutos', en: 'Personal guidance · 20 minutes', pt: 'Orientação personalizada · 20 minutos' })],
   ].filter(([o]) => o);
   return (
     <div className="ps-container access">
@@ -94,7 +95,7 @@ export function AccessSection({ section, offers, go }) {
         {PUBLIC_PLANS.map(([code, copy], i) => {
           const offer = find(code);
           if (!offer) return null;
-          const [tag, period, text] = copy[lang === 'es' ? 'es' : 'en'];
+          const [tag, period, text] = pick(copy);
           return (
             <article key={code} className={`access-card reveal-card ${code === 'DIAMOND_ANNUAL' ? 'is-featured' : ''}`} style={{ '--c': i }}>
               <span className="access-tag">{tag}</span>
@@ -102,9 +103,9 @@ export function AccessSection({ section, offers, go }) {
               <p>{text}</p>
               <div className="access-prices">
                 <div className="access-price">{priceLabel(offer, t)}<small> / {period}</small></div>
-                {code === 'TOOLS_ALL' && find('TOOLS_ANNUAL') && <div className="access-price">{priceLabel(find('TOOLS_ANNUAL'), t)}<small> / {lang === 'es' ? '1 año' : '1 year'}</small></div>}
+                {code === 'TOOLS_ALL' && find('TOOLS_ANNUAL') && <div className="access-price">{priceLabel(find('TOOLS_ANNUAL'), t)}<small> / {pick({ es: '1 año', en: '1 year', pt: '1 ano' })}</small></div>}
               </div>
-              {offer.giftable !== false && <CtaButton label={lang === 'es' ? '🎁 Regalar' : '🎁 Give as a gift'} target="/app/acceso#regalar" go={go} variant="ghost" />}
+              {offer.giftable !== false && <CtaButton label={pick({ es: '🎁 Regalar', en: '🎁 Give as a gift', pt: '🎁 Presentear' })} target="/app/acceso#regalar" go={go} variant="ghost" />}
             </article>
           );
         })}

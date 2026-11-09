@@ -1,3 +1,4 @@
+import { KNOWN_MESSAGES_PT } from './backendMessages.pt.js';
 /*
  * El backend responde siempre con mensajes humanos en español (no con
  * códigos de error) — ver backend/src/middleware/errorHandler.js y
@@ -246,7 +247,9 @@ const PREFIX_MESSAGES = [
 // Se completa según se detecten mensajes nuevos frecuentes — nunca rompe si
 // el mensaje no está catalogado, simplemente devuelve el original.
 export function translateBackendMessage(message, language) {
-  if (!message || language !== 'en') return message;
+  if (!message) return message;
+  if (language === 'pt') return KNOWN_MESSAGES_PT[message] || message;
+  if (language !== 'en') return message;
   if (KNOWN_MESSAGES[message]) return KNOWN_MESSAGES[message];
   const prefixMatch = PREFIX_MESSAGES.find((p) => message.startsWith(p.prefix));
   if (prefixMatch) return prefixMatch.translated + message.slice(prefixMatch.prefix.length);

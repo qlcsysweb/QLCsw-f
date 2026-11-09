@@ -25,7 +25,7 @@ export function LanguageSync() {
       return;
     }
     if (saved.current.id !== user.id) saved.current = { id: user.id, language: user.language || 'es' };
-    const firstVisit = !wasSynced(user.id) && saved.current.language === 'es' && lang === 'en';
+    const firstVisit = !wasSynced(user.id) && saved.current.language === 'es' && lang !== 'es';
     if (langChoice.pending() || firstVisit) {
       langChoice.clear();
       markSynced(user.id);

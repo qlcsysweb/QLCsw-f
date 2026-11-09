@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { es } from './locales/es.js';
 import { en } from './locales/en.js';
+import { pt } from './locales/pt.js';
 import { setFormatLocale } from '../utils/format.js';
 import { applyLabels } from '../utils/labels.js';
 import { setTrLang } from './tr.js';
@@ -8,9 +9,10 @@ import { setTrLang } from './tr.js';
 export const LANGUAGES = [
   { code: 'en', label: 'English', short: 'EN' },
   { code: 'es', label: 'Español', short: 'ES' },
+  { code: 'pt', label: 'Português', short: 'PT' },
 ];
 
-const MESSAGES = { es, en };
+const MESSAGES = { es, en, pt };
 const DEFAULT_LANG = 'es';
 const STORAGE_KEY = 'edu_lang';
 const PENDING_KEY = 'edu_lang_pending';

@@ -1,3 +1,4 @@
+import { PT } from './publicContent.pt.js';
 const ES = [
   {
     key: 'inicio',
@@ -204,4 +205,4 @@ const EN = [
   },
 ];
 
-export const PUBLIC_SECTIONS = { es: ES, en: EN };
+export const PUBLIC_SECTIONS = { es: ES, en: EN, pt: PT };

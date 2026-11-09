@@ -32,7 +32,7 @@ export default function DualClock({ zones = ['CDMX', 'UTC'] }) {
     };
   }, []);
 
-  const locale = language === 'en' ? 'en-US' : 'es-MX';
+  const locale = { en: 'en-US', pt: 'pt-BR' }[language] || 'es-MX';
   const rows = [
     { label: 'CDMX', ...formatParts(now, 'America/Mexico_City', locale) },
     { label: 'UTC', ...formatParts(now, 'UTC', locale) },

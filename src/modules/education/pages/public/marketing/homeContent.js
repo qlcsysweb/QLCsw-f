@@ -1,3 +1,4 @@
+import { PT } from './homeContent.pt.js';
 const ES = {
   title: 'Academia',
   extraLink: 'Institutional Trading Academy',
@@ -206,4 +207,4 @@ const EN = {
   ],
 };
 
-export const HOME_CONTENT = { es: ES, en: EN };
+export const HOME_CONTENT = { es: ES, en: EN, pt: PT };

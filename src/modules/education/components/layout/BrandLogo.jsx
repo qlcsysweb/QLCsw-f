@@ -3,6 +3,7 @@ import { useI18n } from '../../i18n/I18nContext.jsx';
 export const LOGOS = {
   es: '/brand/qlc-logo-es.mp4',
   en: '/brand/qlc-logo-en.mp4',
+  pt: '/brand/qlc-logo-es.mp4',
 };
 
 export function BrandLogo({ alt = '', className = '', width, height }) {

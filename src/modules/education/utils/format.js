@@ -1,7 +1,8 @@
 let locale = 'es-MX';
+const LOCALES = { en: 'en-US', es: 'es-MX', pt: 'pt-BR' };
 
 export const setFormatLocale = (lang) => {
-  locale = lang === 'en' ? 'en-US' : 'es-MX';
+  locale = LOCALES[lang] || LOCALES.es;
 };
 
 export const CURRENCIES = [
