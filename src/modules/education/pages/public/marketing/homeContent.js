@@ -17,7 +17,7 @@ const ES = {
       secondaryCtaTarget: 'enfoque',
       items: [
         { title: 'Finanzas', text: 'Orden patrimonial' },
-        { title: 'Mercados', text: 'Análisis técnico' },
+        { title: 'Mercados', text: 'Análisis cuantitativo' },
         { title: 'Riesgo', text: 'Decisiones informadas' },
       ],
     },
@@ -121,7 +121,7 @@ const EN = {
       secondaryCtaTarget: 'enfoque',
       items: [
         { title: 'Finance', text: 'Wealth organization' },
-        { title: 'Markets', text: 'Technical analysis' },
+        { title: 'Markets', text: 'Quantitative analysis' },
         { title: 'Risk', text: 'Informed decisions' },
       ],
     },

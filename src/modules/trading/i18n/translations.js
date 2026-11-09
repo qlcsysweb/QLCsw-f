@@ -262,8 +262,8 @@ const es = {
   },
 
   problemaIntro: {
-    title: 'QLC: un aliado estratégico para tu cartera de inversión',
-    body: 'QLC no busca administrar todo tu patrimonio, sino ofrecerte acceso a una estrategia algorítmica especializada que complemente tu cartera mediante una exposición controlada a mercados de alto riesgo y alto potencial de rentabilidad.',
+    title: 'QLC: un aliado estratégico para tu portafolio de inversión',
+    body: 'QLC no busca administrar todo tu patrimonio, sino ofrecerte acceso a una estrategia algorítmica especializada que complemente tu portafolio de inversión mediante una exposición controlada a mercados de alto riesgo y alto potencial de rentabilidad.',
     rangeLabel: 'Asignación inicial para nuevos clientes:',
     limitA: 'Este límite funciona como un mecanismo de disciplina para evitar una exposición excesiva desde el inicio. Los incrementos de capital por encima de este rango se realizan',
     limitBold: 'únicamente por invitación de QLC',

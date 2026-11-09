@@ -225,8 +225,8 @@ const pt = {
     "source": "Fonte: gráficos exibidos no vídeo do VisualEconomik «Así arruina el TRADING a miles de personas cada año». Valores aproximados."
   },
   "problemaIntro": {
-    "title": "QLC: um aliado estratégico para sua carteira de investimentos",
-    "body": "A QLC não busca administrar todo o seu patrimônio, mas oferecer acesso a uma estratégia algorítmica especializada que complemente sua carteira por meio de uma exposição controlada a mercados de alto risco e alto potencial de rentabilidade.",
+    "title": "QLC: um aliado estratégico para seu portfólio de investimentos",
+    "body": "A QLC não busca administrar todo o seu patrimônio, mas oferecer acesso a uma estratégia algorítmica especializada que complemente seu portfólio de investimentos por meio de uma exposição controlada a mercados de alto risco e alto potencial de rentabilidade.",
     "rangeLabel": "Alocação inicial para novos clientes:",
     "limitA": "Este limite funciona como um mecanismo de disciplina para evitar uma exposição excessiva desde o início. Os aumentos de capital acima desta faixa são feitos",
     "limitBold": "apenas por convite da QLC",

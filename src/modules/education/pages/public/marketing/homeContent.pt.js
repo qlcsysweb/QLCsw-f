@@ -22,7 +22,7 @@ export const PT = {
         },
         {
           "title": "Mercados",
-          "text": "Análise técnica"
+          "text": "Análise quantitativa"
         },
         {
           "title": "Risco",
