@@ -1792,4 +1792,5 @@ export const PAGES_EN = {
   'Depósito en OXXO · {order} · {date}': 'OXXO deposit · {order} · {date}',
   'Envío de USDT a una wallet por la red Solana': 'USDT transfer to a wallet on the Solana network',
   'Débito o crédito, en la página de Mercado Pago. Aprobación inmediata': 'Debit or credit, on the Mercado Pago page. Instant approval',
+  'Envío de USDT a una wallet por la red Solana; se aprueba en máximo 24 horas': 'USDT transfer to a wallet on the Solana network; approved within 24 hours',
 };
