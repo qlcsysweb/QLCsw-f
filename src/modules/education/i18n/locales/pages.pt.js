@@ -1805,4 +1805,6 @@ export const PAGES_PT = {
   "Foto del ticket de OXXO": "Foto do recibo do OXXO",
   "Confirma tu pago": "Confirme seu pagamento",
   "Depósito en OXXO · {order} · {date}": "Depósito no OXXO · {order} · {date}",
+  "Envío de USDT a una wallet por la red Solana": "Envio de USDT para uma carteira pela rede Solana",
+  "Débito o crédito, en la página de Mercado Pago. Aprobación inmediata": "Débito ou crédito, na página do Mercado Pago. Aprovação imediata",
 };

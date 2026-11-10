@@ -46,11 +46,11 @@ const chargePreview = (total, currency, charge) => {
 };
 
 const GATEWAYS = {
-  BITGET: { label: 'Cripto (USDT)', hint: 'Por UID de Bitget o a una wallet', icon: '₮' },
+  BITGET: { label: 'Cripto (USDT)', hint: 'Envío de USDT a una wallet por la red Solana', icon: '₮' },
   OXXO: { label: 'OXXO', hint: 'Pagas en efectivo en tienda con una referencia', icon: '🏪' },
   OXXO_DEPOSITO: { label: 'OXXO', hint: 'Depósito en efectivo en caja; se aprueba en máximo 24 horas', icon: '🏪' },
   STP: { label: 'Transferencia STP', hint: 'Transferencia interbancaria (SPEI) desde tu banco; se aprueba en máximo 24 horas', icon: '🏦' },
-  MERCADOPAGO: { label: 'Tarjeta', hint: 'Débito o crédito, en la página de Mercado Pago', icon: '💳' },
+  MERCADOPAGO: { label: 'Tarjeta', hint: 'Débito o crédito, en la página de Mercado Pago. Aprobación inmediata', icon: '💳' },
 };
 const MANUAL_MXN = ['STP', 'OXXO_DEPOSITO'];
 
