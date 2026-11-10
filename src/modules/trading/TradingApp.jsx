@@ -42,7 +42,6 @@ import ClientDashboardPage from './modules/client/DashboardPage';
 import ClientProfilePage from './modules/client/ProfilePage';
 import ClientSubaccountsPage from './modules/client/SubaccountsPage';
 import ClientSubaccountDetailPage from './modules/client/SubaccountDetailPage';
-import ClientDocumentsPage from './modules/client/DocumentsPage';
 import ClientSupportPage from './modules/client/SupportPage';
 import ClientNotificationsPage from './modules/client/NotificationsPage';
 import ClientGuidesPage from './modules/client/GuidesPage';
@@ -123,7 +122,8 @@ function AppRoutes() {
               <Route path="profile" element={<ClientProfilePage />} />
               <Route path="api-subaccounts" element={<ClientSubaccountsPage />} />
               <Route path="api-subaccounts/:id" element={<ClientSubaccountDetailPage />} />
-              <Route path="documents" element={<ClientDocumentsPage />} />
+              {/* Ya no se pide identificación oficial (QLC es un software): Documentos redirige al inicio. */}
+              <Route path="documents" element={<Navigate to="/client" replace />} />
               <Route path="messages" element={<Navigate to="/client" replace />} />
               <Route path="guides" element={<ClientGuidesPage />} />
               <Route path="affiliates" element={<ClientAffiliatePage />} />

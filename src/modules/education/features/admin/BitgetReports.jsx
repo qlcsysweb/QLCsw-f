@@ -53,7 +53,7 @@ export function BitgetReports({ onChanged }) {
   };
 
   return (
-    <Card title={tr('Transferencias internas Bitget')}>
+    <Card title={tr('Transferencias reportadas (STP y Bitget)')}>
       <div className="stack">
         <Field label={tr('Estado')}>
           <Select value={status} onChange={(e) => setStatus(e.target.value)} options={OPTIONS.map((o) => ({ ...o, label: tr(o.label) }))} />
@@ -63,6 +63,7 @@ export function BitgetReports({ onChanged }) {
           {(data) => (
             <DataTable rows={data.rows} empty={tr('Sin transferencias reportadas.')} columns={[
               { key: 'createdAt', label: tr('Reportado'), render: (r) => dateTime(r.createdAt) },
+              { key: 'method', label: tr('Método'), render: (r) => (r.provider === 'STP' ? 'STP (SPEI)' : 'Bitget') },
               { key: 'user', label: tr('Cliente'), render: (r) => <Link to={`/admin/clientes/${r.user.id}`}>{r.user.name}<span className="small block">{r.user.email}</span></Link> },
               { key: 'product', label: tr('Producto'), render: (r) => <>{tr(r.attempt?.product || '')}<span className="small block">{`${priceMoney(r.attempt?.amount)} ${r.attempt?.currency || ''}`}</span></> },
               { key: 'order', label: tr('Comprobante'), render: (r) => <span className="wallet-order">{r.orderNumber}<span className="small block">{dateTime(r.transferredAt)}</span></span> },

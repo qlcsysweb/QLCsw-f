@@ -60,7 +60,7 @@ function NoticeEditor({ notice, onSaved }) {
             <Input type="url" value={f.bitgetUrl} onChange={(e) => setF({ ...f, bitgetUrl: e.target.value })} placeholder="https://www.bitget.com/…" />
           </Field>
           <Field label={tr('Enlace para solicitar información')}>
-            <Input type="url" value={f.infoUrl} onChange={(e) => setF({ ...f, infoUrl: e.target.value })} placeholder="https://www.qlctrade.net/" />
+            <Input type="url" value={f.infoUrl} onChange={(e) => setF({ ...f, infoUrl: e.target.value })} placeholder="https://www.qlctrade.net/trad" />
           </Field>
           <FormError error={state.error} />
           {state.saved && <p className="small up">{tr('Aviso actualizado. Los clientes lo verán en su próximo inicio de sesión.')}</p>}

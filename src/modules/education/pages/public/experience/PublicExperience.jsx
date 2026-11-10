@@ -31,7 +31,11 @@ export default function PublicExperience() {
     if (!target) return;
     if (target === 'filtro-qlc') return setFilterOpen(true);
     if (target.startsWith('/')) return navigate(target);
-    if (/^https?:\/\//.test(target)) return window.open(target, '_blank', 'noopener');
+    // QLC Bot (/trad) vive en el mismo sitio: se abre en la misma pestaña. Solo los sitios externos abren otra.
+    if (/^https?:\/\//.test(target)) {
+      if (new URL(target).origin === window.location.origin) return window.location.assign(target);
+      return window.open(target, '_blank', 'noopener');
+    }
     return select(target);
   }, [navigate, select]);
 

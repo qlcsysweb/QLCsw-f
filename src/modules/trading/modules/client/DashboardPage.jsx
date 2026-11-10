@@ -24,6 +24,8 @@ const APPOINTMENT_STATUS_KEYS = {
   CANCELADA: { text: 'cancelled', className: 'danger', dot: '×' },
 };
 
+const ID_STEP = /identificaci|identification|identidad|identity/i;
+
 export default function DashboardPage() {
   const { t, language } = useLanguage();
   const [dashboard, setDashboard] = useState(null);
@@ -45,7 +47,8 @@ export default function DashboardPage() {
     // administrable desde el panel (CMS), el cliente solo lo consulta.
     api
       .get('/client/process-steps')
-      .then(({ data }) => setProcessSteps(data.steps))
+      // QLC es un software (bot): ya no se pide identificación oficial, así que ese paso no se muestra.
+      .then(({ data }) => setProcessSteps((data.steps || []).filter((step) => !ID_STEP.test(`${step.titleEs || ''} ${step.titleEn || ''}`))))
       .catch(() => {});
   };
   useEffect(load, []);

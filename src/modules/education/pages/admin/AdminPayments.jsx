@@ -40,7 +40,7 @@ export default function AdminPayments() {
               { key: 'user', label: tr('Cliente'), render: (a) => <Link to={`/admin/clientes/${a.user.id}`}>{tr(a.user.name)}<span className="small block">{a.user.email}</span></Link> },
               { key: 'offer', label: tr('Producto'), render: (a) => `${a.offer?.name || ''}${a.quantity > 1 ? ` × ${a.quantity}` : ''}${a.kind === 'GIFT' ? ` · ${tr('Regalo')}` : a.kind === 'PROMO' ? ` · ${tr('Promoción')}` : ''}` },
               { key: 'amount', label: tr('Monto'), align: 'right', render: (a) => (a.amount === null ? tr('Por definir') : `${priceMoney(a.amount)} ${a.currency}${a.chargedAmount !== null && a.chargedAmount !== undefined && a.chargedCurrency !== a.currency ? ` · ${priceMoney(a.chargedAmount)} ${a.chargedCurrency}` : ''}`) },
-              { key: 'provider', label: tr('Proveedor'), render: (a) => ({ MOCK: tr('Simulado'), PAYPAL: 'PayPal', DLOCALGO: 'dLocal Go', BITGET: 'Bitget' }[a.provider] || 'Mercado Pago') },
+              { key: 'provider', label: tr('Proveedor'), render: (a) => ({ MOCK: tr('Simulado'), PAYPAL: 'PayPal', DLOCALGO: 'dLocal Go', BITGET: 'Bitget', STP: 'STP (SPEI)' }[a.provider] || 'Mercado Pago') },
               { key: 'status', label: tr('Estado'), render: (a) => <Pill variant={a.status === 'APPROVED' ? '' : a.status === 'REJECTED' ? 'bad' : 'warn'}>{tr(PAYMENT_STATUS[a.status])}</Pill> },
             ]} />
           )}

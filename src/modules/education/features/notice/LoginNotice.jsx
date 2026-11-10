@@ -21,6 +21,18 @@ const dismiss = () => {
   }
 };
 
+// "Solicitar información" lleva a la página principal de QLC Bot (/trad), en la misma pestaña.
+// Si en el panel quedó la raíz del sitio (la página de educación), se corrige a /trad.
+function botInfoUrl(raw) {
+  try {
+    const url = new URL(raw, window.location.origin);
+    if (url.pathname === '/' || url.pathname === '') url.pathname = '/trad';
+    return url.origin === window.location.origin ? `${url.pathname}${url.search}${url.hash}` : url.href;
+  } catch {
+    return '/trad';
+  }
+}
+
 export function NoticeBody({ notice, text }) {
   return (
     <div className="stack login-notice">
@@ -71,7 +83,7 @@ export function LoginNotice() {
       footer={notice && (
         <>
           {notice.bitgetUrl && <a className="btn-secondary" href={notice.bitgetUrl} target="_blank" rel="noopener noreferrer">{text.bitget}</a>}
-          {notice.infoUrl && <a className="btn-primary" href={notice.infoUrl} target="_blank" rel="noopener noreferrer">{text.info}</a>}
+          {notice.infoUrl && <a className="btn-primary" href={botInfoUrl(notice.infoUrl)}>{text.info}</a>}
           <Button variant="secondary" onClick={close}>{text.close}</Button>
         </>
       )}

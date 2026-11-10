@@ -189,16 +189,73 @@ function BitgetEditor({ data, canManage, onSaved }) {
   );
 }
 
+// Transferencia interbancaria (SPEI) a la CLABE de STP: el cliente sube su comprobante y se aprueba a mano.
+function StpEditor({ data, canManage, onSaved }) {
+  const [f, setF] = useState({ clabe: data.clabe, bank: data.bank, beneficiary: data.beneficiary, instructions: data.instructions });
+  const [state, setState] = useState({ busy: false, error: null, info: null });
+  const run = async (extra, info) => {
+    setState({ busy: true, error: null, info: null });
+    try {
+      await api.put('/admin/stp-settings', { clabe: f.clabe.replace(/\s/g, ''), bank: f.bank.trim(), beneficiary: f.beneficiary.trim(), instructions: f.instructions.trim(), ...extra });
+      setState({ busy: false, error: null, info });
+    } catch (error) {
+      setState({ busy: false, error, info: null });
+    }
+    onSaved();
+  };
+  return (
+    <div className="stack">
+      <div className="mail-status">
+        {data.enabled ? <Pill>{tr('Activa')}</Pill> : <Pill variant="warn">{tr('Desactivada')}</Pill>}
+        <span className="small muted">{tr('Solo para clientes que residen en México. Se cobra en pesos (MXN).')}</span>
+      </div>
+      <p className="small muted">{tr('El cliente ve estos datos, hace la transferencia desde su banco, sube la captura o comprobante y confirma que pagó. Se le avisa que su pago se aprueba en máximo {hours} horas. Tú lo revisas en Pagos (Transferencia recibida → Confirmar pago) y al confirmar se activa su acceso y le llega un correo.', { hours: data.reviewHours })}</p>
+      <div className="form-grid cols-2">
+        <Field label={tr('CLABE (18 dígitos)')}>
+          <Input name="qlc-stp-clabe" autoComplete="off" inputMode="numeric" maxLength={22} value={f.clabe} disabled={!canManage} onChange={(e) => setF({ ...f, clabe: e.target.value })} />
+        </Field>
+        <Field label={tr('Banco')}>
+          <Input maxLength={80} value={f.bank} disabled={!canManage} onChange={(e) => setF({ ...f, bank: e.target.value })} />
+        </Field>
+        <Field label={tr('Beneficiario')} hint={tr('Nombre del titular de la cuenta, tal como aparece en el banco.')}>
+          <Input maxLength={120} value={f.beneficiary} disabled={!canManage} onChange={(e) => setF({ ...f, beneficiary: e.target.value })} />
+        </Field>
+        <Field label={tr('Instrucciones adicionales (opcional)')} full>
+          <Textarea rows={3} maxLength={1000} value={f.instructions} disabled={!canManage} onChange={(e) => setF({ ...f, instructions: e.target.value })} />
+        </Field>
+      </div>
+      <p className="small muted">{tr('El tipo de cambio a pesos es el mismo de Mercado Pago.')}</p>
+      {!data.enabled && data.missing.length > 0 && <p className="small muted">{tr('Para activar falta:')} {data.missing.map((m) => tr(m)).join(', ')}.</p>}
+      <FormError error={state.error} />
+      {state.info && <p className="small up">{state.info}</p>}
+      {canManage && (
+        <div className="form-actions">
+          <Button variant="secondary" loading={state.busy} onClick={() => run({}, tr('Configuración guardada.'))}>{tr('Guardar')}</Button>
+          {data.enabled
+            ? <Button variant="danger" loading={state.busy} onClick={() => run({ enabled: false }, tr('Transferencia STP desactivada.'))}>{tr('Desactivar STP')}</Button>
+            : <Button loading={state.busy} onClick={() => run({ enabled: true }, tr('Transferencia STP activada.'))}>{tr('Activar STP')}</Button>}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function AdminGateway() {
   const { user } = useAuth();
   const res = useAsync(() => api.get('/admin/payment-settings'), []);
   const bg = useAsync(() => api.get('/admin/bitget-settings'), []);
+  const stp = useAsync(() => api.get('/admin/stp-settings'), []);
   return (
     <>
-      <PageHeader kicker={tr('Comercial')} title={tr('Pasarela de pago')} subtitle={tr('Mercado Pago solo se muestra a clientes que residen en México: pagan en su página, con suscripción en productos mensuales o anuales y pago único en los demás. La transferencia Bitget se muestra a todos.')} />
+      <PageHeader kicker={tr('Comercial')} title={tr('Pasarela de pago')} subtitle={tr('Mercado Pago solo se muestra a clientes que residen en México: pagan en su página, con suscripción en productos mensuales o anuales y pago único en los demás. La transferencia STP también es solo para México. La transferencia Bitget se muestra a todos.')} />
       <Card title={tr('Mercado Pago')}>
         <AsyncView {...res} onRetry={res.reload}>
           {(data) => <Editor data={data} canManage={user?.adminLevel === 'FULL'} onSaved={res.reload} />}
+        </AsyncView>
+      </Card>
+      <Card title={tr('Transferencia interbancaria STP (SPEI)')}>
+        <AsyncView {...stp} onRetry={stp.reload}>
+          {(data) => <StpEditor data={data} canManage={user?.adminLevel === 'FULL'} onSaved={stp.reload} />}
         </AsyncView>
       </Card>
       <Card title={tr('Transferencia en USDT (Bitget y wallet)')}>

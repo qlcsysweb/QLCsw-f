@@ -1856,6 +1856,7 @@ const pt = {
     "overdueHint": "O prazo de 72 horas terminou sem pagamento confirmado.",
     "goPay": "Ir pagar",
     "viewPdf": "Ver PDF",
+    "downloadPdf": "Baixar PDF",
     "previous": "Extratos anteriores",
     "pendingCount": "{count} subcontas/API com extrato não pago",
     "generateTitle": "Gerar extrato",

@@ -564,3 +564,6 @@ button.module-tile { width: 100%; font: inherit; text-align: left; cursor: point
 .alloc-items li { display: flex; justify-content: space-between; gap: 12px; font-size: 11px; color: var(--muted); line-height: 1.6; }
 .alloc-items li span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .debt-breakdown { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 4px; margin-top: 6px; }
+
+/* Aviso del plazo de revisión de la transferencia STP. */
+.stp-notice { margin: 0; padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(245, 197, 66, 0.5); background: rgba(245, 197, 66, 0.1); color: var(--text); line-height: 1.5; }

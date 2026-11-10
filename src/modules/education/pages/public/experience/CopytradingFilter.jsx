@@ -31,7 +31,7 @@ export function CopytradingFilter({ open, onClose }) {
           <p>{t('public.copy.yesNext')}</p>
           <div className="form-actions">
             {pathname !== '/trading-academy' && <Link className="btn-secondary" to="/trading-academy" onClick={close}>{t('public.copy.toTrading')}</Link>}
-            <a className="btn-primary" href={QLC_COPYTRADING_URL} target="_blank" rel="noopener noreferrer" onClick={close}>{t('public.copy.toQlc')}</a>
+            <a className="btn-primary" href={QLC_COPYTRADING_URL} onClick={close}>{t('public.copy.toQlc')}</a>
           </div>
         </div>
       )}

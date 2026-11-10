@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, useLocation, Link } from '../../router.jsx';
-import api, { API_BASE_URL } from '../../services/api';
+import api from '../../services/api';
+import { downloadAuthenticatedFile } from '../../utils/downloadFile';
 import Modal from '../../components/Modal';
 import { API_CONNECTION_STATUS, statusOf } from '../../utils/statusLabels';
 import { formatCdmxDate, formatDateOnly } from '../../utils/cdmxTime';
@@ -69,6 +70,14 @@ export default function SubaccountDetailPage() {
   const [distributionCurrent, setDistributionCurrent] = useState(null);
 
   const apiStatusMap = API_CONNECTION_STATUS(t);
+
+  // El estado de cuenta se descarga como archivo PDF (no se abre para verlo en otra pestaña).
+  const downloadStatement = (statement) => {
+    const name = `estado-de-cuenta-${String(statement.periodEnd || statement.id).slice(0, 10)}.pdf`;
+    downloadAuthenticatedFile(api, `/client/statements/${statement.id}/download`, name).catch((err) => {
+      setError(translateBackendMessage(err.message, language));
+    });
+  };
 
   const load = () => {
     api
@@ -369,9 +378,9 @@ export default function SubaccountDetailPage() {
           {latestStatement && <StatementDetails statement={latestStatement} />}
           <div className="qlc-statement-actions">
             {latestStatement?.hasPdf && (
-              <a className="qlc-btn ghost" href={`${API_BASE_URL}/client/statements/${latestStatement.id}/download`} target="_blank" rel="noreferrer">
-                {t('statementStatus.viewPdf')}
-              </a>
+              <button type="button" className="qlc-btn ghost" onClick={() => downloadStatement(latestStatement)}>
+                {t('statementStatus.downloadPdf')}
+              </button>
             )}
             {hasUnpaidStatement && (
               <a className="qlc-btn primary" href="#garantia">
@@ -390,9 +399,9 @@ export default function SubaccountDetailPage() {
                       {s.hasPdf && (
                         <>
                           {' · '}
-                          <a href={`${API_BASE_URL}/client/statements/${s.id}/download`} target="_blank" rel="noreferrer">
-                            {t('statementStatus.viewPdf')}
-                          </a>
+                          <button type="button" className="qlc-link-btn" onClick={() => downloadStatement(s)}>
+                            {t('statementStatus.downloadPdf')}
+                          </button>
                         </>
                       )}
                     </span>

@@ -47,7 +47,7 @@ export const pt = {
       yesText: 'O conteúdo da QLC é destinado a pessoas com conhecimento prévio de trading e de trading automatizado. É uma estratégia de alto risco e nenhum resultado é garantido.',
       yesNext: 'Sabendo que é uma estratégia de alto risco, conheça a plataforma e você poderá adquirir conhecimentos.',
       toTrading: 'Conhecer o Trading Institucional',
-      toQlc: 'Continuar para o QLC Quantitative Trading Bot ↗',
+      toQlc: 'Continuar para o QLC Quantitative Trading Bot →',
       noText: 'O conteúdo da QLC é destinado a pessoas com conhecimento prévio de trading e de trading automatizado.',
       noStrong: 'Se você está começando no mundo dos investimentos, pode começar pela educação financeira',
       noRest: ' e aprender a organizar suas finanças, definir metas e construir patrimônio.',
