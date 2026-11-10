@@ -19,7 +19,7 @@ export function TrialNotice() {
   return (
     <Card id="prueba-gratis" className="trial-notice" title={tr('Prueba gratis de 1 mes')} actions={<Pill variant="warn">{tr('{n} días restantes', { n: daysLeft(trial.expiresAt) })}</Pill>}>
       {checkpoint && <p><b>{tr('¡Completaste el {module}!', { module: checkpoint })}</b> {tr('Recuerda que estás usando la prueba gratis.')}</p>}
-      <p>{tr('Tu prueba gratis de las herramientas {tools} vence el {date}.', { tools: toolList(trial.tools), date: date(trial.expiresAt) })}</p>
+      <p>{tr('Tu prueba gratis de las herramientas {tools} vence el', { tools: toolList(trial.tools) })} <strong className="trial-expiry">{date(trial.expiresAt)}</strong>.</p>
       <p className="small muted">{tr('El resto de la plataforma se desbloquea con una de las formas de adquirir de abajo. Tus datos se conservan cuando pagas.')}</p>
     </Card>
   );

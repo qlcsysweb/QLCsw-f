@@ -91,9 +91,34 @@ export function BitgetInstructions({ uid, instructions, wallet, amount, currency
 
 export const STP_HOURS = 24;
 
-// Datos para la transferencia interbancaria (SPEI) a la CLABE de STP.
-export function StpInstructions({ stp, amount, currency, reference }) {
+// Datos de los pagos manuales en pesos: depósito en OXXO o transferencia interbancaria (SPEI) a STP.
+function OxxoDepositInstructions({ stp, amount, currency, reference }) {
+  return (
+    <div className="stack">
+      <h4>{tr('Depósito en efectivo en OXXO')}</h4>
+      <div className="checkout-amount">
+        <span>{tr('Monto a depositar')}</span>
+        <strong>{amount === null || amount === undefined ? '—' : `${priceMoney(amount)} ${currency}`}</strong>
+      </div>
+      <div className="inline-form">
+        <Field label={tr('Número para depositar en OXXO')} hint={tr('Díctalo en caja o muéstralo en tu celular.')}><Input readOnly value={String(stp.oxxoNumber || '').replace(/(\d{4})(?=\d)/g, '$1 ')} /></Field>
+        <CopyButton value={stp.oxxoNumber} />
+      </div>
+      {reference && <p className="small muted">{tr('Titular de la compra: {name}', { name: reference })}</p>}
+      {stp.oxxoInstructions && <p className="small muted" style={{ whiteSpace: 'pre-line' }}>{stp.oxxoInstructions}</p>}
+      <ol className="small">
+        <li>{tr('Ve a cualquier OXXO y deposita el monto completo al número de arriba.')}</li>
+        <li>{tr('Guarda tu ticket y tómale una foto.')}</li>
+        <li>{tr('Llena abajo «Confirma tu pago»: sube la foto del ticket y confirma que ya pagaste.')}</li>
+      </ol>
+      <p className="stp-notice small">{tr('Revisamos cada pago a mano. Tu pago se aprobará en un plazo máximo de {hours} horas (puede ser antes) y te enviaremos un correo en cuanto quede aprobado.', { hours: stp.reviewHours || STP_HOURS })}</p>
+    </div>
+  );
+}
+
+export function StpInstructions({ stp, kind = 'STP', amount, currency, reference }) {
   if (!stp) return null;
+  if (kind === 'OXXO_DEPOSITO') return <OxxoDepositInstructions stp={stp} amount={amount} currency={currency} reference={reference} />;
   return (
     <div className="stack">
       <h4>{tr('Transferencia interbancaria (SPEI)')}</h4>
@@ -127,8 +152,10 @@ export function StpInstructions({ stp, amount, currency, reference }) {
 }
 
 export function BitgetReportForm({ attemptId, report, uid, wallet, provider = 'BITGET', onDone, onCancel }) {
-  const isStp = (report?.provider || provider) === 'STP';
-  const [f, setF] = useState({ orderNumber: report?.orderNumber && !(isStp && report.orderNumber.startsWith('STP-')) ? report.orderNumber : '', transferredAt: report ? toLocalInput(report.transferredAt) : '' });
+  const manualKind = report?.provider || provider;
+  const isStp = manualKind === 'STP' || manualKind === 'OXXO_DEPOSITO';
+  const isOxxo = manualKind === 'OXXO_DEPOSITO';
+  const [f, setF] = useState({ orderNumber: report?.orderNumber && !(isStp && /^(STP|OXXO)-/.test(report.orderNumber)) ? report.orderNumber : '', transferredAt: report ? toLocalInput(report.transferredAt) : '' });
   const [files, setFiles] = useState([]);
   const [removed, setRemoved] = useState([]);
   const [state, setState] = useState({ busy: false, error: null });
@@ -165,10 +192,10 @@ export function BitgetReportForm({ attemptId, report, uid, wallet, provider = 'B
 
   return (
     <form className="stack" onSubmit={submit}>
-      <h4>{tr('Confirma tu transferencia')}</h4>
+      <h4>{isOxxo ? tr('Confirma tu pago') : tr('Confirma tu transferencia')}</h4>
       <div className="form-grid cols-2">
         {isStp ? (
-          <Field label={tr('Clave de rastreo (opcional)')} hint={tr('Aparece en tu comprobante de SPEI. Si no la tienes, déjala vacía.')}>
+          <Field label={isOxxo ? tr('Folio del ticket (opcional)') : tr('Clave de rastreo (opcional)')} hint={isOxxo ? tr('Aparece en tu ticket de OXXO. Si no lo tienes, déjalo vacío.') : tr('Aparece en tu comprobante de SPEI. Si no la tienes, déjala vacía.')}>
             <Input maxLength={40} autoComplete="off" value={f.orderNumber} onChange={(e) => setF({ ...f, orderNumber: e.target.value })} />
           </Field>
         ) : (
@@ -179,7 +206,7 @@ export function BitgetReportForm({ attemptId, report, uid, wallet, provider = 'B
         )}
         <Field label={tr('Fecha y hora de la transacción')}><Input required type="datetime-local" value={f.transferredAt} onChange={(e) => setF({ ...f, transferredAt: e.target.value })} /></Field>
       </div>
-      <Field label={isStp ? tr('Captura o comprobante de la transferencia') : tr('Evidencia')} hint={tr('De 1 a 5 archivos JPG, PNG, WEBP o PDF, de máximo 5 MB cada uno.')}>
+      <Field label={isOxxo ? tr('Foto del ticket de OXXO') : isStp ? tr('Captura o comprobante de la transferencia') : tr('Evidencia')} hint={tr('De 1 a 5 archivos JPG, PNG, WEBP o PDF, de máximo 5 MB cada uno.')}>
         <Input type="file" accept={ACCEPT} multiple disabled={total >= MAX_FILES} onChange={addFiles} />
       </Field>
       {total > 0 && (
@@ -237,10 +264,10 @@ export function BitgetReportsCard() {
               <b>{tr(r.attempt?.product || '')}</b>
               <span className="small muted">{`${priceMoney(r.attempt?.amount)} ${r.attempt?.currency || ''}`}</span>
             </div>
-            <p className="small muted">{r.provider === 'STP' ? tr('Transferencia STP · {order} · {date}', { order: r.orderNumber, date: dateTime(r.transferredAt) }) : tr('Comprobante {order} · {date}', { order: r.orderNumber, date: dateTime(r.transferredAt) })}</p>
+            <p className="small muted">{r.provider === 'STP' ? tr('Transferencia STP · {order} · {date}', { order: r.orderNumber, date: dateTime(r.transferredAt) }) : r.provider === 'OXXO_DEPOSITO' ? tr('Depósito en OXXO · {order} · {date}', { order: r.orderNumber, date: dateTime(r.transferredAt) }) : tr('Comprobante {order} · {date}', { order: r.orderNumber, date: dateTime(r.transferredAt) })}</p>
             {r.status === 'REJECTED' && <p className="small down">{r.rejectReason ? tr('Motivo: {reason}', { reason: r.rejectReason }) : tr('Tu reporte fue rechazado. Corrígelo para enviarlo de nuevo.')}</p>}
             {r.status === 'REVIEW' && <p className="small muted">{tr('Identificamos tu transferencia. Tu pago sigue en revisión.')}</p>}
-            {r.provider === 'STP' && ['PENDING', 'REVIEW'].includes(r.status) && <p className="small muted">{tr('Tu pago se aprobará en un plazo máximo de {hours} horas y te avisaremos por correo.', { hours: data.stp?.reviewHours || STP_HOURS })}</p>}
+            {['STP', 'OXXO_DEPOSITO'].includes(r.provider) && ['PENDING', 'REVIEW'].includes(r.status) && <p className="small muted">{tr('Tu pago se aprobará en un plazo máximo de {hours} horas y te avisaremos por correo.', { hours: data.stp?.reviewHours || STP_HOURS })}</p>}
             <div className="form-actions">
               {r.files.map((file) => <button key={file.id} type="button" className="btn-link" onClick={() => openEvidence(`/payments/bitget/files/${file.id}`)}>{file.name}</button>)}
               {['PENDING', 'REJECTED'].includes(r.status) && <Button variant="secondary" onClick={() => setFixing(r)}>{tr('Corregir reporte')}</Button>}
@@ -256,8 +283,8 @@ export function BitgetReportsCard() {
       <Modal open={!!paying} title={tr('Reportar transferencia')} onClose={() => setPaying(null)}>
         {paying && (
           <div className="stack">
-            {paying.provider === 'STP'
-              ? <StpInstructions stp={data.stp} amount={paying.amount} currency={paying.currency} />
+            {['STP', 'OXXO_DEPOSITO'].includes(paying.provider)
+              ? <StpInstructions stp={data.stp} kind={paying.provider} amount={paying.amount} currency={paying.currency} reference={data.stp?.reference} />
               : <BitgetInstructions uid={data.info?.uid} instructions={data.info?.instructions} wallet={data.info?.wallet} amount={paying.amount} currency={paying.currency} />}
             <BitgetReportForm attemptId={paying.id} provider={paying.provider} uid={data.info?.uid} wallet={data.info?.wallet} onDone={done} onCancel={() => setPaying(null)} />
           </div>

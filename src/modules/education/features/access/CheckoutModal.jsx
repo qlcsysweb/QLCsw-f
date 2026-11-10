@@ -46,11 +46,29 @@ const chargePreview = (total, currency, charge) => {
 };
 
 const GATEWAYS = {
-  MERCADOPAGO: { label: 'Mercado Pago', hint: 'Pagas en la página de Mercado Pago' },
-  OXXO: { label: 'Efectivo en OXXO', hint: 'Pagas en tienda con una referencia o código QR' },
-  STP: { label: 'Transferencia interbancaria (SPEI)', hint: 'Desde tu banco; se aprueba en máximo 24 horas' },
-  BITGET: { label: 'Transferencia en USDT', hint: 'Por UID de Bitget o a una wallet' },
+  BITGET: { label: 'Cripto (USDT)', hint: 'Por UID de Bitget o a una wallet', icon: '₮' },
+  OXXO: { label: 'OXXO', hint: 'Pagas en efectivo en tienda con una referencia', icon: '🏪' },
+  OXXO_DEPOSITO: { label: 'OXXO', hint: 'Depósito en efectivo en caja; se aprueba en máximo 24 horas', icon: '🏪' },
+  STP: { label: 'Transferencia STP', hint: 'Transferencia interbancaria (SPEI) desde tu banco; se aprueba en máximo 24 horas', icon: '🏦' },
+  MERCADOPAGO: { label: 'Tarjeta', hint: 'Débito o crédito, en la página de Mercado Pago', icon: '💳' },
 };
+const MANUAL_MXN = ['STP', 'OXXO_DEPOSITO'];
+
+// Paso "Pago": el cliente elige cómo pagar y después ve los datos de esa opción.
+function MethodPicker({ gateways, gateway, setGateway }) {
+  return (
+    <fieldset className="checkout-methods checkout-methods-pick">
+      <legend>{tr('Elige cómo quieres pagar')}</legend>
+      {gateways.map((code) => (
+        <label key={code} className={`checkout-method ${gateway === code ? 'is-selected' : ''}`}>
+          <input type="radio" name="gateway" value={code} checked={gateway === code} onChange={() => setGateway(code)} />
+          <span className="checkout-method-icon" aria-hidden="true">{GATEWAYS[code].icon}</span>
+          <span><b>{tr(GATEWAYS[code].label)}</b><small>{tr(GATEWAYS[code].hint)}</small></span>
+        </label>
+      ))}
+    </fieldset>
+  );
+}
 
 const periodLabel = (cycle) => tr(cycle === 'YEARLY' ? 'año' : 'mes');
 
@@ -86,7 +104,7 @@ function Summary({ offer, method, setMethod, gift, setGift, promo, quantity, set
         {chargePreview(total, offer.currency, charge) && <small><b>{tr(recurring ? 'Se cobrará cada ' + (recurring === 'YEARLY' ? 'año' : 'mes') + ': {amount}' : 'Se cobrará: {amount}', { amount: chargePreview(total, offer.currency, charge) })}</b></small>}
         {gift && <small>{tr('El periodo empieza cuando la persona active su regalo, no hoy.')}</small>}
         {promo && <small>{tr('Tu acceso se activará cuando el equipo de QLC autorice el pago.')}</small>}
-        {(gateway === 'BITGET' || gateway === 'OXXO' || gateway === 'STP') && !gift && !promo && offer.billingCycle && <small><b>{tr('Este pago no se renueva solo: te avisaremos por correo antes de que venza.')}</b></small>}
+        {gateway && gateway !== 'MERCADOPAGO' && !gift && !promo && offer.billingCycle && <small><b>{tr('Este pago no se renueva solo: te avisaremos por correo antes de que venza.')}</b></small>}
         {recurring && <small><b>{tr('Suscripción con cobro automático cada {period} hasta que canceles en Mi acceso.', { period: periodLabel(recurring) })}</b></small>}
         {!gift && !promo && !recurring && offer.type === 'FULL_ANNUAL' && <small>{tr('Vigencia de')}{' '}{offer.accessDays || 365}{' '}{tr('días')}</small>}
         {!recurring && !gift && !promo && offer.type === 'TOOL_ONLY' && <small>{offer.accessDays || 30}{' '}{tr('días de acceso por pago. Al terminar se bloquea y puedes renovar.')}</small>}
@@ -94,17 +112,7 @@ function Summary({ offer, method, setMethod, gift, setGift, promo, quantity, set
         {!gift && !promo && offer.sessions > 0 && <small>{tr('Incluye {n} sesiones de orientación de 20 minutos', { n: offer.sessions })}</small>}
       </div>
       {gateways.length > 0 ? (
-        gateways.length > 1 ? (
-          <fieldset className="checkout-methods">
-            <legend>{tr('Método de pago')}</legend>
-            {gateways.map((code) => (
-              <label key={code} className={`checkout-method ${gateway === code ? 'is-selected' : ''}`}>
-                <input type="radio" name="gateway" value={code} checked={gateway === code} onChange={() => setGateway(code)} />
-                <span><b>{tr(GATEWAYS[code].label)}</b><small>{tr(GATEWAYS[code].hint)}</small></span>
-              </label>
-            ))}
-          </fieldset>
-        ) : <p className="small muted">{gateway === 'OXXO' ? tr('En el siguiente paso verás tu referencia para pagar en OXXO.') : gateway === 'BITGET' ? tr('En el siguiente paso verás los datos de QLC para transferir tus USDT.') : gateway === 'STP' ? tr('En el siguiente paso verás la CLABE para tu transferencia y subirás tu comprobante.') : tr('En el siguiente paso pagarás en la página de Mercado Pago.')}</p>
+        <p className="small muted">{tr('En el siguiente paso eliges cómo pagar: {methods}.', { methods: gateways.map((code) => tr(GATEWAYS[code].label)).join(', ') })}</p>
       ) : !simulated ? <p className="small muted">{tr('Por ahora no hay una forma de pago disponible para tu país. Escríbenos para ayudarte.')}</p> : (
       <fieldset className="checkout-methods">
         <legend>{tr('Método de pago')}</legend>
@@ -261,7 +269,7 @@ export function CheckoutModal({ offer, mode = 'buy', promo = null, onClose }) {
   const needsCountry = !accessInfo?.residenceCountry;
   const [chosenGateway, setGateway] = useState(null);
   const selectedGateway = gateways.includes(chosenGateway) ? chosenGateway : gateways[0] || null;
-  const charge = selectedGateway === 'BITGET' ? accessInfo?.bitget : selectedGateway === 'STP' ? accessInfo?.stp : selectedGateway === 'MERCADOPAGO' || selectedGateway === 'OXXO' ? accessInfo?.charge : null;
+  const charge = selectedGateway === 'BITGET' ? accessInfo?.bitget : MANUAL_MXN.includes(selectedGateway) ? accessInfo?.stp : selectedGateway === 'MERCADOPAGO' || selectedGateway === 'OXXO' ? accessInfo?.charge : null;
   const navigate = useNavigate();
   const [outcome, setOutcome] = useState({ paid: false, access: null, credits: null });
   const [bitget, setBitget] = useState(null);
@@ -297,8 +305,8 @@ export function CheckoutModal({ offer, mode = 'buy', promo = null, onClose }) {
     } else if (res.checkout.mode === 'OXXO' && res.checkout.oxxo) {
       setOxxo(res.checkout.oxxo);
       setStep('oxxo');
-    } else if (res.checkout.mode === 'STP' && res.checkout.stp) {
-      setStp(res.checkout.stp);
+    } else if ((res.checkout.mode === 'STP' || res.checkout.mode === 'OXXO_DEPOSITO') && res.checkout.stp) {
+      setStp({ ...res.checkout.stp, kind: res.checkout.mode });
       setStep('stp');
     } else if (res.checkout.mode === 'BITGET') {
       setBitget({ uid: res.checkout.uid, instructions: res.checkout.instructions, wallet: res.checkout.wallet });
@@ -337,9 +345,19 @@ export function CheckoutModal({ offer, mode = 'buy', promo = null, onClose }) {
           <FormError error={state.error} />
           <div className="form-actions">
             <Button variant="secondary" onClick={onClose}>{tr('Cancelar')}</Button>
-            <Button loading={state.busy} disabled={needsCountry || (!simulated && !selectedGateway)} onClick={start} data-autofocus>{tr('Continuar al pago')}</Button>
+            <Button loading={state.busy} disabled={needsCountry || (!simulated && !selectedGateway)} onClick={gateways.length > 0 ? () => setStep('method') : start} data-autofocus>{tr('Continuar al pago')}</Button>
           </div>
         </>
+      )}
+      {step === 'method' && (
+        <div className="stack">
+          <MethodPicker gateways={gateways} gateway={selectedGateway} setGateway={setGateway} />
+          <FormError error={state.error} />
+          <div className="form-actions">
+            <Button variant="secondary" onClick={() => setStep('summary')}>{tr('Atrás')}</Button>
+            <Button loading={state.busy} disabled={!selectedGateway} onClick={start} data-autofocus>{tr('Continuar')}</Button>
+          </div>
+        </div>
       )}
       {step === 'bitget' && attempt && bitget && (
         <div className="stack">
@@ -349,17 +367,16 @@ export function CheckoutModal({ offer, mode = 'buy', promo = null, onClose }) {
       )}
       {step === 'stp' && attempt && stp && (
         <div className="stack">
-          <StpInstructions stp={stp} amount={attempt.chargedAmount} currency={attempt.chargedCurrency} reference={stp.reference} />
-          <BitgetReportForm attemptId={attempt.id} provider="STP" onDone={() => setStep('reported')} />
+          <StpInstructions stp={stp} kind={stp.kind} amount={attempt.chargedAmount} currency={attempt.chargedCurrency} reference={stp.reference} />
+          <BitgetReportForm attemptId={attempt.id} provider={stp.kind} onDone={() => setStep('reported')} />
         </div>
       )}
       {step === 'oxxo' && oxxo && <OxxoTicket oxxo={oxxo} onClose={finish} />}
       {step === 'reported' && (
         <div className="checkout-processing-result" role="status">
           <h4>{tr('Transferencia reportada')}</h4>
-          <p className="muted">{stp
-            ? tr('Recibimos tu comprobante. Tu pago se aprobará en un plazo máximo de {hours} horas (puede ser antes); en cuanto quede aprobado se activa tu acceso y te enviamos un correo. Puedes ver el estado en Mi acceso.', { hours: stp.reviewHours || STP_HOURS })
-            : tr('Revisaremos tu transferencia. Tu acceso se activará cuando se confirme el pago y te avisaremos. Puedes ver el estado en Mi acceso.')}</p>
+          <p className="muted">{tr('Recibimos tu comprobante. Revisaremos tu pago y te avisaremos por correo. Puedes ver el estado en Mi acceso.')}</p>
+          <p className="stp-notice small">{tr('Tu acceso se activará en un plazo máximo de {hours} horas después de confirmado el pago.', { hours: stp?.reviewHours || STP_HOURS })}</p>
           <div className="form-actions"><Button onClick={finish}>{tr('Entendido')}</Button></div>
         </div>
       )}

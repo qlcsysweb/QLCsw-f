@@ -191,12 +191,12 @@ function BitgetEditor({ data, canManage, onSaved }) {
 
 // Transferencia interbancaria (SPEI) a la CLABE de STP: el cliente sube su comprobante y se aprueba a mano.
 function StpEditor({ data, canManage, onSaved }) {
-  const [f, setF] = useState({ clabe: data.clabe, bank: data.bank, beneficiary: data.beneficiary, instructions: data.instructions });
+  const [f, setF] = useState({ clabe: data.clabe, bank: data.bank, beneficiary: data.beneficiary, instructions: data.instructions, oxxoNumber: data.oxxoNumber, oxxoInstructions: data.oxxoInstructions });
   const [state, setState] = useState({ busy: false, error: null, info: null });
   const run = async (extra, info) => {
     setState({ busy: true, error: null, info: null });
     try {
-      await api.put('/admin/stp-settings', { clabe: f.clabe.replace(/\s/g, ''), bank: f.bank.trim(), beneficiary: f.beneficiary.trim(), instructions: f.instructions.trim(), ...extra });
+      await api.put('/admin/stp-settings', { clabe: f.clabe.replace(/\s/g, ''), bank: f.bank.trim(), beneficiary: f.beneficiary.trim(), instructions: f.instructions.trim(), oxxoNumber: f.oxxoNumber.replace(/\s/g, ''), oxxoInstructions: f.oxxoInstructions.trim(), ...extra });
       setState({ busy: false, error: null, info });
     } catch (error) {
       setState({ busy: false, error, info: null });
@@ -217,15 +217,29 @@ function StpEditor({ data, canManage, onSaved }) {
         <Field label={tr('Banco')}>
           <Input maxLength={80} value={f.bank} disabled={!canManage} onChange={(e) => setF({ ...f, bank: e.target.value })} />
         </Field>
-        <Field label={tr('Beneficiario')} hint={tr('Nombre del titular de la cuenta, tal como aparece en el banco.')}>
+        <Field label={tr('Beneficiario (opcional)')} hint={tr('Si lo dejas vacío, al cliente se le muestra su propio nombre como beneficiario.')}>
           <Input maxLength={120} value={f.beneficiary} disabled={!canManage} onChange={(e) => setF({ ...f, beneficiary: e.target.value })} />
         </Field>
         <Field label={tr('Instrucciones adicionales (opcional)')} full>
           <Textarea rows={3} maxLength={1000} value={f.instructions} disabled={!canManage} onChange={(e) => setF({ ...f, instructions: e.target.value })} />
         </Field>
       </div>
+      {data.missing.length > 0 && <p className="small muted">{tr('Para que STP se muestre falta:')} {data.missing.map((m) => tr(m)).join(', ')}.</p>}
+      <h4>{tr('Depósito en efectivo en OXXO')}</h4>
+      <div className="mail-status">
+        {data.oxxoEnabled ? <Pill>{tr('Activo')}</Pill> : <Pill variant="warn">{tr('Desactivado')}</Pill>}
+        <span className="small muted">{tr('El cliente deposita en caja a este número, sube la foto del ticket y lo apruebas igual que STP.')}</span>
+      </div>
+      <div className="form-grid cols-2">
+        <Field label={tr('Número para depositar en OXXO')}>
+          <Input autoComplete="off" inputMode="numeric" maxLength={24} value={f.oxxoNumber} disabled={!canManage} onChange={(e) => setF({ ...f, oxxoNumber: e.target.value })} />
+        </Field>
+        <Field label={tr('Instrucciones para OXXO (opcional)')}>
+          <Textarea rows={2} maxLength={1000} value={f.oxxoInstructions} disabled={!canManage} onChange={(e) => setF({ ...f, oxxoInstructions: e.target.value })} />
+        </Field>
+      </div>
+      {data.oxxoMissing.length > 0 && <p className="small muted">{tr('Para que OXXO se muestre falta:')} {data.oxxoMissing.map((m) => tr(m)).join(', ')}.</p>}
       <p className="small muted">{tr('El tipo de cambio a pesos es el mismo de Mercado Pago.')}</p>
-      {!data.enabled && data.missing.length > 0 && <p className="small muted">{tr('Para activar falta:')} {data.missing.map((m) => tr(m)).join(', ')}.</p>}
       <FormError error={state.error} />
       {state.info && <p className="small up">{state.info}</p>}
       {canManage && (
@@ -234,6 +248,9 @@ function StpEditor({ data, canManage, onSaved }) {
           {data.enabled
             ? <Button variant="danger" loading={state.busy} onClick={() => run({ enabled: false }, tr('Transferencia STP desactivada.'))}>{tr('Desactivar STP')}</Button>
             : <Button loading={state.busy} onClick={() => run({ enabled: true }, tr('Transferencia STP activada.'))}>{tr('Activar STP')}</Button>}
+          {data.oxxoEnabled
+            ? <Button variant="danger" loading={state.busy} onClick={() => run({ oxxoEnabled: false }, tr('Depósito en OXXO desactivado.'))}>{tr('Desactivar OXXO')}</Button>
+            : <Button loading={state.busy} onClick={() => run({ oxxoEnabled: true }, tr('Depósito en OXXO activado.'))}>{tr('Activar OXXO')}</Button>}
         </div>
       )}
     </div>
@@ -253,7 +270,7 @@ export default function AdminGateway() {
           {(data) => <Editor data={data} canManage={user?.adminLevel === 'FULL'} onSaved={res.reload} />}
         </AsyncView>
       </Card>
-      <Card title={tr('Transferencia interbancaria STP (SPEI)')}>
+      <Card title={tr('Pagos manuales en México: transferencia STP y depósito en OXXO')}>
         <AsyncView {...stp} onRetry={stp.reload}>
           {(data) => <StpEditor data={data} canManage={user?.adminLevel === 'FULL'} onSaved={stp.reload} />}
         </AsyncView>

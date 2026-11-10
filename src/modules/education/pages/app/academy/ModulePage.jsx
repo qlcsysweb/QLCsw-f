@@ -63,7 +63,7 @@ function Progress({ module, onDone }) {
       setState({ busy: false, error: null, saved: true });
       await onDone();
       if (status === 'COMPLETED' && !isAdminView && access?.trial?.checkpoints?.includes(module.number)) {
-        // Prueba gratis: al terminar el M3 y el M9 se le recuerda en Mi acceso.
+        // Prueba gratis: al terminar el M2 y el M9 se le recuerda en Mi acceso.
         await refreshAccess?.();
         navigate(`${basePath}/acceso?prueba=M${module.number}`);
       } else if (status === 'COMPLETED') {
