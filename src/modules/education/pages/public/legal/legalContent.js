@@ -16,7 +16,7 @@ const ES = {
         `Para cualquier asunto relacionado con tus datos personales puedes escribirnos ${contactText}.`,
       ]],
       ['Datos que tratamos', [
-        'Identificación y contacto: nombre, correo electrónico y, de forma opcional, teléfono.',
+        'Datos de contacto: nombre, correo electrónico y país de residencia.',
         'Datos de cuenta y seguridad: contraseña (almacenada solo como hash irreversible) y la clave de verificación en dos pasos (almacenada cifrada).',
         'Información financiera que tú mismo registras: ingresos, gastos, activos, deudas, presupuestos, metas, cortes mensuales y resultados de las herramientas educativas.',
         'Datos de compra: producto adquirido, monto, estado del pago y vigencia del acceso. QLC no almacena números completos de tarjetas; el cobro lo procesa el proveedor de pagos.',

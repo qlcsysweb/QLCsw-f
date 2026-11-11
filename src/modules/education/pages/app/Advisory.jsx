@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { AppointmentChat } from '../../features/appointments/AppointmentChat.jsx';
 import { useWorkspace } from '../../context/WorkspaceContext.jsx';
 import { useAsync } from '../../hooks/useAsync.js';
 import { APPOINTMENT_DURATIONS, fromUtcInputs, utcDateTime } from '../../utils/format.js';
@@ -63,6 +65,16 @@ export default function Advisory() {
   const offer = (accessInfo?.offers || []).find((o) => o.code === 'ORIENTACION');
   const [open, setOpen] = useState(false);
   const [buy, setBuy] = useState(false);
+  const [params, setParams] = useSearchParams();
+  const [chatId, setChatId] = useState(() => params.get('chat'));
+  useEffect(() => {
+    const fromUrl = params.get('chat');
+    if (fromUrl) setChatId(fromUrl);
+  }, [params]);
+  const closeChat = () => {
+    setChatId(null);
+    if (params.get('chat')) setParams({}, { replace: true });
+  };
   const sessions = credits.data?.ORIENTACION || 0;
   const cancel = async (a) => {
     if (!window.confirm(tr('¿Cancelar esta cita?'))) return;
@@ -96,12 +108,16 @@ export default function Advisory() {
               { key: 'channel', label: tr('Canal'), render: (a) => `${APPOINTMENT_CHANNELS[a.channel]} · ${a.durationMin} min` },
               { key: 'status', label: tr('Estado'), render: (a) => <Pill variant={STATUS_VARIANT[a.status]}>{tr(APPOINTMENT_STATUS[a.status])}</Pill> },
               { key: 'adminNotes', label: tr('Notas del asesor'), render: (a) => a.adminNotes || '—' },
+              { key: 'chat', label: tr('Chat'), render: (a) => (['CONFIRMED', 'COMPLETED'].includes(a.status)
+                ? <Button variant={a.status === 'CONFIRMED' ? undefined : 'secondary'} onClick={() => setChatId(a.id)}>{a.status === 'CONFIRMED' ? tr('Entrar al chat') : tr('Ver chat')}</Button>
+                : a.status === 'PENDING' ? <span className="small muted">{tr('Se abre al confirmarse')}</span> : '—') },
               { key: 'x', label: '', render: (a) => canEdit && ['PENDING', 'CONFIRMED'].includes(a.status) && <button className="btn-link danger" onClick={() => cancel(a)}>{tr('Cancelar')}</button> },
             ]} />
           </Card>
         )}
       </AsyncView>
       <p className="small muted">{tr('La asesoría es educativa y de planificación financiera dentro del alcance del servicio; no constituye recomendación de inversión.')}</p>
+      {chatId && <AppointmentChat api={api} base={`/appointments/${chatId}/chat`} filePath={(id) => `/appointments/chat-files/${id}`} mine={isAdminView ? 'ADMIN' : 'CLIENT'} onClose={closeChat} />}
       <Modal open={open} title={tr('Solicitar cita')} onClose={() => setOpen(false)}>
         <RequestForm onCancel={() => setOpen(false)} onDone={() => { setOpen(false); res.reload(); credits.reload(); }} />
       </Modal>

@@ -112,7 +112,6 @@ function OxxoDepositInstructions({ stp, amount, currency, reference }) {
         <li>{tr('Guarda tu ticket y tómale una foto.')}</li>
         <li>{tr('Llena abajo «Confirma tu pago»: sube la foto del ticket y confirma que ya pagaste.')}</li>
       </ol>
-      <p className="stp-notice small">{tr('Revisamos cada pago a mano. Tu pago se aprobará en un plazo máximo de {hours} horas (puede ser antes) y te enviaremos un correo en cuanto quede aprobado.', { hours: stp.reviewHours || STP_HOURS })}</p>
     </div>
   );
 }

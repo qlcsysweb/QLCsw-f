@@ -10,12 +10,14 @@ import { CheckoutModal, offerPrice } from '../access/CheckoutModal.jsx';
 import { ToolCard } from './ResultParts.jsx';
 import { dateTime } from '../../utils/format.js';
 import { tr } from '../../i18n/tr.js';
+import { FileLinks, FilePicker, formWith } from '../files/Attachments.jsx';
 
 export function ModuleQuestions({ number }) {
   const { api, canEdit, isAdminView } = useWorkspace();
   const { accessInfo, user } = useAuth();
   const res = useAsync(() => api.get(`/academy/modules/${number}/questions`), [api, number]);
   const [text, setText] = useState('');
+  const [files, setFiles] = useState([]);
   const [state, setState] = useState({ busy: false, error: null, sent: false });
   const [buy, setBuy] = useState(false);
   const offer = (accessInfo?.offers || []).find((o) => o.code === 'CONSULTA');
@@ -29,8 +31,9 @@ export function ModuleQuestions({ number }) {
   const send = async () => {
     setState({ busy: true, error: null, sent: false });
     try {
-      await api.post(`/academy/modules/${number}/questions`, { question: text });
+      await api.upload(`/academy/modules/${number}/questions`, formWith({ question: text }, files));
       setText('');
+      setFiles([]);
       setState({ busy: false, error: null, sent: true });
       res.reload();
     } catch (error) {
@@ -49,6 +52,7 @@ export function ModuleQuestions({ number }) {
           <Field label={tr('Tu consulta')}>
             <Textarea rows={4} maxLength={3000} value={text} onChange={(e) => setText(e.target.value)} placeholder={tr('Escribe tu duda sobre el ejercicio o la herramienta')} />
           </Field>
+          <FilePicker files={files} setFiles={setFiles} onError={(error) => setState((st) => ({ ...st, error }))} />
           <FormError error={state.error} />
           {state.sent && <p className="small up">{tr('Consulta enviada. Te avisaremos aquí cuando el equipo responda.')}</p>}
           <div className="form-actions">
@@ -63,11 +67,13 @@ export function ModuleQuestions({ number }) {
           <div key={q.id} className="qa-item">
             <small className="muted">{dateTime(q.createdAt)}</small>
             <p>{q.question}</p>
+            <FileLinks api={api} files={(q.files || []).filter((f) => f.by !== 'ADMIN')} pathFor={(id) => `/academy/question-files/${id}`} />
             {q.answer ? (
               <div className="exercise-reply">
                 <b>{tr('Respuesta del equipo QLC')}</b>
                 <small>{dateTime(q.answeredAt)}</small>
                 <p>{q.answer}</p>
+                <FileLinks api={api} files={(q.files || []).filter((f) => f.by === 'ADMIN')} pathFor={(id) => `/academy/question-files/${id}`} />
               </div>
             ) : <Pill variant="warn">{tr('Pendiente de respuesta')}</Pill>}
           </div>

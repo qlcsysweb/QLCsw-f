@@ -56,7 +56,7 @@ export const pt = {
     notice: {
       title: 'Aviso importante',
       p1: 'Este site tem fins exclusivamente informativos e educacionais. Não constitui assessoria financeira personalizada, recomendação de investimento, oferta pública nem garantia de resultados. Ativos digitais e trading alavancado podem implicar perdas significativas. Resultados históricos ou métricas públicas não garantem resultados futuros.',
-      p2: 'As referências à QLC descrevem o conceito educacional e operacional apresentado em sua documentação. A estrutura contratual, regulatória e operacional da QLC deverá ser validada antes de qualquer lançamento comercial. Cada pessoa deve avaliar de forma independente sua situação financeira, tolerância ao risco, objetivos, obrigações e marco legal aplicável, e consultar profissionais independentes quando for o caso.',
+      p2: 'As referências à QLC descrevem o conceito educacional e operacional apresentado em sua documentação. Cada pessoa deve avaliar de forma independente sua situação financeira, tolerância ao risco, objetivos, obrigações e marco legal aplicável, e consultar profissionais independentes quando for o caso.',
       copyright: '© Quantum Liquidity Capital · Educação Financeira',
     },
     lead: {

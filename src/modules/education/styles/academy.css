@@ -575,3 +575,28 @@ button.module-tile { width: 100%; font: inherit; text-align: left; cursor: point
 .checkout-methods-pick { grid-template-columns: 1fr 1fr; }
 .checkout-method-icon { font-size: 20px; width: 28px; text-align: center; flex: 0 0 auto; }
 @media (max-width: 560px) { .checkout-methods-pick { grid-template-columns: 1fr; } }
+
+/* Chat interno de citas. */
+.appt-chat { display: flex; flex-direction: column; gap: 10px; }
+.appt-chat-list { max-height: 46vh; min-height: 180px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 10px; border: 1px solid var(--line); border-radius: 12px; background: rgba(255, 255, 255, 0.02); }
+.appt-chat-form { display: flex; flex-direction: column; gap: 8px; }
+.appt-chat-form textarea { resize: vertical; }
+.appt-chat-pending { margin: 0; padding-left: 16px; }
+.appt-chat-file { text-align: left; }
+.appt-chat-timer { margin: 0; padding: 8px 12px; border-radius: 10px; font-size: 13px; }
+.appt-chat-timer b { font-variant-numeric: tabular-nums; font-size: 15px; }
+.appt-chat-timer.is-wait { background: rgba(0, 168, 255, 0.1); border: 1px solid rgba(0, 168, 255, 0.4); }
+.appt-chat-timer.is-live { background: rgba(46, 204, 113, 0.12); border: 1px solid rgba(46, 204, 113, 0.5); }
+.appt-chat-timer.is-ended { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--line); color: var(--muted); }
+/* Próximas citas en la barra del administrador. */
+.nav-upcoming { margin: 10px 0 4px; padding: 10px; border: 1px solid var(--line); border-radius: 12px; display: flex; flex-direction: column; gap: 6px; }
+.nav-upcoming-title { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); display: flex; justify-content: space-between; align-items: center; }
+.nav-upcoming a { display: flex; flex-direction: column; gap: 2px; padding: 6px 8px; border-radius: 8px; text-decoration: none; color: var(--text); font-size: 12.5px; background: rgba(255, 255, 255, 0.03); }
+.nav-upcoming a:hover { background: rgba(0, 168, 255, 0.12); }
+.nav-upcoming a small { color: var(--muted); }
+.nav-upcoming a.is-live { border: 1px solid rgba(46, 204, 113, 0.6); }
+
+/* Archivos adjuntos en consultas y chats. */
+.attach-picker { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.attach-list { width: 100%; margin: 0; padding-left: 16px; }
+.attach-links { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: center; margin: 4px 0; }

@@ -11,6 +11,7 @@ import { Button } from '../../components/ui/Button.jsx';
 import { Modal } from '../../components/ui/Modal.jsx';
 import { AsyncView } from '../../components/ui/States.jsx';
 import { tr } from '../../i18n/tr.js';
+import { FileLinks, FilePicker, formWith } from '../../features/files/Attachments.jsx';
 
 const STATUS = { PENDING: ['Por responder', 'warn'], ANSWERED: ['Respondido', ''] };
 const preview = (text, n = 120) => (text.length > n ? `${text.slice(0, n)}…` : text);
@@ -93,11 +94,12 @@ export default function AdminExercises() {
 
 function AnswerModal({ item, canEdit, onClose, onSaved }) {
   const [answer, setAnswer] = useState(item.answer || '');
+  const [files, setFiles] = useState([]);
   const [state, setState] = useState({ busy: false, error: null });
   const save = async () => {
     setState({ busy: true, error: null });
     try {
-      await api.patch(`/admin/questions/${item.id}`, { answer });
+      await api.upload(`/admin/questions/${item.id}`, formWith({ answer }, files), 'PATCH');
       onSaved();
     } catch (error) {
       setState({ busy: false, error });
@@ -113,10 +115,15 @@ function AnswerModal({ item, canEdit, onClose, onSaved }) {
       <div className="stack">
         <p className="small muted">{item.user?.email} · {dateTime(item.createdAt)}</p>
         <div className="exercise-message">{item.question}</div>
+        <FileLinks api={api} files={(item.files || []).filter((f) => f.by !== 'ADMIN')} pathFor={(id) => `/admin/question-files/${id}`} label={tr('Archivos del cliente')} />
+        <FileLinks api={api} files={(item.files || []).filter((f) => f.by === 'ADMIN')} pathFor={(id) => `/admin/question-files/${id}`} label={tr('Archivos enviados por QLC')} />
         {canEdit ? (
-          <Field label={tr('Respuesta')} hint={tr('El cliente la verá en Ejercicio y avance de este módulo, dentro de Consultas al equipo QLC.')}>
-            <Textarea rows={5} maxLength={5000} value={answer} onChange={(e) => setAnswer(e.target.value)} />
-          </Field>
+          <>
+            <Field label={tr('Respuesta')} hint={tr('El cliente la verá en Ejercicio y avance de este módulo, dentro de Consultas al equipo QLC.')}>
+              <Textarea rows={5} maxLength={5000} value={answer} onChange={(e) => setAnswer(e.target.value)} />
+            </Field>
+            <FilePicker files={files} setFiles={setFiles} onError={(error) => setState((st) => ({ ...st, error }))} />
+          </>
         ) : item.answer && <div className="exercise-reply"><b>{tr('Respuesta enviada')}</b><p>{item.answer}</p></div>}
         <FormError error={state.error} />
       </div>

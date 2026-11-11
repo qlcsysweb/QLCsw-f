@@ -5,6 +5,8 @@ import { useAuth } from '../context/AuthContext.jsx';
 import { WorkspaceProvider } from '../context/WorkspaceContext.jsx';
 import { Brand, Disclaimer } from '../components/layout/Brand.jsx';
 import { SessionClock } from '../components/layout/SessionClock.jsx';
+import { NotificationsBell } from '../features/notifications/NotificationsBell.jsx';
+import { UpcomingAppointments } from '../features/appointments/UpcomingAppointments.jsx';
 import { ErrorState, Loading } from '../components/ui/States.jsx';
 import { Card } from '../components/ui/Card.jsx';
 import { tr } from '../i18n/tr.js';
@@ -64,6 +66,7 @@ export function AdminLayout() {
               </NavLink>
             ),
           )}
+          <UpcomingAppointments />
           <SecurityNavButton />
           <button type="button" className="nav-logout" onClick={logout}><span className="ico">⎋</span>{t('app.logout')}</button>
         </nav>
@@ -71,6 +74,7 @@ export function AdminLayout() {
         <div className="userbox">{t('app.admin')}: {user?.name}<br /><span>{ADMIN_LEVELS[user?.adminLevel] || t('app.noLevel')}</span></div>
       </aside>
       <main className="main">
+        <div className="topbar admin-topbar"><NotificationsBell /></div>
         <div className="page-enter" key={`${location.pathname}-${lang}`}><Outlet /></div>
         <Disclaimer />
       </main>

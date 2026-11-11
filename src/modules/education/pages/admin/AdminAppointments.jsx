@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { AppointmentChat } from '../../features/appointments/AppointmentChat.jsx';
 import { api } from '../../api/client.js';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useAsync } from '../../hooks/useAsync.js';
@@ -57,6 +58,16 @@ export default function AdminAppointments() {
   const { user } = useAuth();
   const [status, setStatus] = useState('PENDING');
   const [editing, setEditing] = useState(null);
+  const [params, setParams] = useSearchParams();
+  const [chatId, setChatId] = useState(() => params.get('chat'));
+  useEffect(() => {
+    const fromUrl = params.get('chat');
+    if (fromUrl) setChatId(fromUrl);
+  }, [params]);
+  const closeChat = () => {
+    setChatId(null);
+    if (params.get('chat')) setParams({}, { replace: true });
+  };
   const res = useAsync(() => api.get(`/admin/appointments${status ? `?status=${status}` : ''}`), [status]);
   const canEdit = ['EDIT', 'FULL'].includes(user?.adminLevel);
 
@@ -73,11 +84,13 @@ export default function AdminAppointments() {
               { key: 'reason', label: tr('Motivo') },
               { key: 'channel', label: tr('Canal'), render: (a) => `${APPOINTMENT_CHANNELS[a.channel]} · ${a.durationMin} min` },
               { key: 'status', label: tr('Estado'), render: (a) => <Pill variant={a.status === 'PENDING' ? 'warn' : a.status === 'CANCELLED' ? 'bad' : ''}>{tr(APPOINTMENT_STATUS[a.status])}</Pill> },
+              { key: 'chat', label: tr('Chat'), render: (a) => (['CONFIRMED', 'COMPLETED'].includes(a.status) ? <Button variant={a.status === 'CONFIRMED' ? undefined : 'secondary'} onClick={() => setChatId(a.id)}>{a.status === 'CONFIRMED' ? tr('Entrar al chat') : tr('Ver chat')}</Button> : <span className="small muted">{tr('Confirma la cita para abrirlo')}</span>) },
               { key: 'x', label: '', render: (a) => canEdit && <button className="btn-link" onClick={() => setEditing(a)}>{tr('Gestionar')}</button> },
             ]} />
           )}
         </AsyncView>
       </Card>
+      {chatId && <AppointmentChat api={api} base={`/admin/appointments/${chatId}/chat`} filePath={(id) => `/admin/appointment-files/${id}`} mine="ADMIN" onClose={closeChat} />}
       {editing && <EditAppointment appt={editing} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); res.reload(); }} />}
     </>
   );
