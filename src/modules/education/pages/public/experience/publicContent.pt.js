@@ -28,6 +28,42 @@ export const PT = [
     ]
   },
   {
+    "key": "problemas",
+    "navLabel": "O que resolve",
+    "eyebrow": "O problema que resolvemos",
+    "title": "Você se identifica com algum destes problemas?",
+    "description": "Ninguém procura uma calculadora ou um simulador por si só: as pessoas querem resolver um problema com o seu dinheiro. O QLC Financial Education oferece uma ferramenta para cada um.",
+    "secondaryText": "Não é apenas um curso gravado: você aprende, usa as ferramentas com seus próprios dados e acompanha sua evolução financeira mês a mês.",
+    "primaryCtaLabel": "Teste grátis por 1 mês",
+    "primaryCtaTarget": "/registro",
+    "items": [
+      {
+        "title": "Não sei quanto posso gastar sem comprometer minhas finanças.",
+        "text": "Orçamento e controle de gastos (M7): defina quanto pode gastar por mês e compare com o que realmente gasta."
+      },
+      {
+        "title": "Não sei quanto patrimônio tenho de verdade.",
+        "text": "Diagnóstico financeiro (M1) e registro de patrimônio: some o que você tem, subtraia o que deve e conheça seu patrimônio real."
+      },
+      {
+        "title": "Tenho dívidas e não sei como me organizar.",
+        "text": "Dívidas e custo do dinheiro (M9): organize suas dívidas, veja quanto realmente custam e monte um plano para pagá-las."
+      },
+      {
+        "title": "Quero poupar, mas não consigo.",
+        "text": "Reserva de emergência e poupança (M8): defina uma meta, separe sua poupança e acompanhe seu progresso mês a mês."
+      },
+      {
+        "title": "Não sei se minhas decisões financeiras estão melhorando minha situação.",
+        "text": "Fechamentos mensais e plano patrimonial anual (M12): meça como seu patrimônio muda e entenda por quê."
+      },
+      {
+        "title": "Quero administrar meu dinheiro sem depender de terceiros.",
+        "text": "Academia + ferramentas: aprenda cada tema, aplique nas suas próprias informações e decida com critério."
+      }
+    ]
+  },
+  {
     "key": "curso",
     "navLabel": "Formação Financeira",
     "navHighlight": true,

@@ -11,6 +11,7 @@ import { usePublicContent } from './usePublicContent.js';
 
 const RENDERERS = {
   inicio: HeroSection,
+  problemas: FeatureSection,
   curso: CourseSection,
   patrimonio: LayersSection,
   plataforma: FeatureSection,

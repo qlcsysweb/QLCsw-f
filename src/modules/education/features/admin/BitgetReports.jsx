@@ -6,7 +6,7 @@ import { useAsync } from '../../hooks/useAsync.js';
 import { dateTime, priceMoney } from '../../utils/format.js';
 import { Card, Pill } from '../../components/ui/Card.jsx';
 import { Button } from '../../components/ui/Button.jsx';
-import { Field, FormError, Select, Textarea } from '../../components/ui/Form.jsx';
+import { Field, FormError, Input, Select, Textarea } from '../../components/ui/Form.jsx';
 import { Modal } from '../../components/ui/Modal.jsx';
 import { AsyncView } from '../../components/ui/States.jsx';
 import { DataTable } from '../../components/ui/DataTable.jsx';
@@ -21,13 +21,18 @@ const OPTIONS = [
   { value: 'REJECTED', label: 'Rechazado' },
 ];
 
+// Hoy en hora de Ciudad de México: los reportes se agrupan por ese día.
+const todayCdmx = () => new Date(Date.now() - 6 * 3600000).toISOString().slice(0, 10);
+
 export function BitgetReports({ onChanged }) {
   const { user } = useAuth();
   const [status, setStatus] = useState('');
+  const [day, setDay] = useState(todayCdmx);
   const [rejecting, setRejecting] = useState(null);
   const [reason, setReason] = useState('');
   const [state, setState] = useState({ busy: false, error: null });
-  const res = useAsync(() => api.get(`/admin/bitget-reports${status ? `?status=${status}` : ''}`), [status]);
+  const query = new URLSearchParams({ ...(status ? { status } : {}), ...(day ? { day } : {}) }).toString();
+  const res = useAsync(() => api.get(`/admin/bitget-reports${query ? `?${query}` : ''}`), [query]);
   const full = user?.adminLevel === 'FULL';
   const canEdit = full || user?.adminLevel === 'EDIT';
 
@@ -53,17 +58,24 @@ export function BitgetReports({ onChanged }) {
   };
 
   return (
-    <Card title={tr('Pagos reportados (STP, OXXO y Bitget)')}>
+    <Card title={tr('Pagos reportados (STP, OXXO y cripto)')}>
       <div className="stack">
-        <Field label={tr('Estado')}>
-          <Select value={status} onChange={(e) => setStatus(e.target.value)} options={OPTIONS.map((o) => ({ ...o, label: tr(o.label) }))} />
-        </Field>
+        <div className="inline-form">
+          <Field label={tr('Estado')}>
+            <Select value={status} onChange={(e) => setStatus(e.target.value)} options={OPTIONS.map((o) => ({ ...o, label: tr(o.label) }))} />
+          </Field>
+          <Field label={tr('Día')}>
+            <Input type="date" value={day} max={todayCdmx()} onChange={(e) => setDay(e.target.value)} />
+          </Field>
+          {day !== todayCdmx() && <button type="button" className="btn-link" onClick={() => setDay(todayCdmx())}>{tr('Hoy')}</button>}
+          {day && <button type="button" className="btn-link" onClick={() => setDay('')}>{tr('Ver todos')}</button>}
+        </div>
         <FormError error={state.error} />
         <AsyncView {...res} onRetry={res.reload}>
           {(data) => (
             <DataTable rows={data.rows} empty={tr('Sin transferencias reportadas.')} columns={[
               { key: 'createdAt', label: tr('Reportado'), render: (r) => dateTime(r.createdAt) },
-              { key: 'method', label: tr('Método'), render: (r) => ({ STP: 'STP (SPEI)', OXXO_DEPOSITO: 'OXXO' }[r.provider] || 'Bitget') },
+              { key: 'method', label: tr('Método'), render: (r) => ({ STP: 'STP (SPEI)', OXXO_DEPOSITO: 'OXXO' }[r.provider] || 'Cripto (USDT)') },
               { key: 'user', label: tr('Cliente'), render: (r) => <Link to={`/admin/clientes/${r.user.id}`}>{r.user.name}<span className="small block">{r.user.email}</span></Link> },
               { key: 'product', label: tr('Producto'), render: (r) => <>{tr(r.attempt?.product || '')}<span className="small block">{`${priceMoney(r.attempt?.amount)} ${r.attempt?.currency || ''}`}</span></> },
               { key: 'order', label: tr('Comprobante'), render: (r) => <span className="wallet-order">{r.orderNumber}<span className="small block">{dateTime(r.transferredAt)}</span></span> },

@@ -145,7 +145,6 @@ export function StpInstructions({ stp, kind = 'STP', amount, currency, reference
         <li>{tr('Toma una captura de pantalla o descarga el comprobante de tu banco.')}</li>
         <li>{tr('Llena abajo «Confirma tu transferencia»: sube tu comprobante y confirma que ya pagaste.')}</li>
       </ol>
-      <p className="stp-notice small">{tr('Revisamos cada transferencia a mano. Tu pago se aprobará en un plazo máximo de {hours} horas (puede ser antes) y te enviaremos un correo en cuanto quede aprobado.', { hours: stp.reviewHours || STP_HOURS })}</p>
     </div>
   );
 }

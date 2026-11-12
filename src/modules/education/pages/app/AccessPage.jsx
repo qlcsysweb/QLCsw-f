@@ -195,7 +195,7 @@ export default function AccessPage() {
             { key: 'createdAt', label: tr('Fecha'), render: (a) => dateTime(a.createdAt) },
             { key: 'offer', label: tr('Producto'), render: (a) => a.offer?.name },
             { key: 'amount', label: tr('Monto'), align: 'right', render: (a) => (a.amount === null ? tr('Por definir') : `${priceMoney(a.amount)} ${a.currency}${a.chargedAmount !== null && a.chargedAmount !== undefined && a.chargedCurrency !== a.currency ? ` · ${priceMoney(a.chargedAmount)} ${a.chargedCurrency}` : ''}`) },
-            { key: 'provider', label: tr('Proveedor'), render: (a) => ({ MOCK: tr('Simulado'), PAYPAL: 'PayPal', DLOCALGO: tr('Pago local'), BITGET: 'Bitget', STP: tr('Transferencia STP'), OXXO_DEPOSITO: 'OXXO' }[a.provider] || tr('Tarjeta')) },
+            { key: 'provider', label: tr('Proveedor'), render: (a) => ({ MOCK: tr('Simulado'), PAYPAL: 'PayPal', DLOCALGO: tr('Pago local'), BITGET: tr('Cripto (USDT)'), STP: tr('Transferencia STP'), OXXO_DEPOSITO: 'OXXO' }[a.provider] || tr('Tarjeta')) },
             { key: 'status', label: tr('Estado'), render: (a) => <Pill variant={a.status === 'APPROVED' ? '' : a.status === 'REJECTED' ? 'bad' : 'warn'}>{tr(PAYMENT_STATUS[a.status])}</Pill> },
           ]}
         />
