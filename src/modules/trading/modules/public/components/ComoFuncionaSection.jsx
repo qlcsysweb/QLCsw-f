@@ -25,7 +25,7 @@ export default function ComoFuncionaSection({ text, media = () => [] }) {
           {text(
             'como_funciona',
             'sub',
-            'El flujo es directo: el cliente mantiene su cuenta en el exchange, autoriza una conexión API y QLC ejecuta la estrategia directamente sobre ella.'
+            'El flujo es directo: el cliente mantiene sus fondos en su propia cuenta dentro del exchange, autoriza una conexión API y QLC ejecuta la estrategia directamente sobre ella.'
           )}
         </p>
 

@@ -36,9 +36,9 @@ const PUBLIC_CONTENT = {
       "valuePt": "COMO FUNCIONA"
     },
     "sub": {
-      "value": "El flujo es directo: el cliente mantiene su cuenta en el exchange, autoriza una conexión API y QLC ejecuta la estrategia directamente sobre ella.",
-      "valueEn": "The flow is direct: the client keeps their account on the exchange, authorizes an API connection, and QLC executes the strategy directly on it.",
-      "valuePt": "O fluxo é direto: o cliente mantém sua conta na exchange, autoriza uma conexão API e a QLC executa a estratégia diretamente nela."
+      "value": "El flujo es directo: el cliente mantiene sus fondos en su propia cuenta dentro del exchange, autoriza una conexión API y QLC ejecuta la estrategia directamente sobre ella.",
+      "valueEn": "The flow is direct: the client keeps their funds in their own account on the exchange, authorizes an API connection, and QLC executes the strategy directly on it.",
+      "valuePt": "O fluxo é direto: o cliente mantém seus fundos na própria conta dentro da exchange, autoriza uma conexão API e a QLC executa a estratégia diretamente nela."
     }
   },
   "contacto": {

@@ -85,7 +85,6 @@ export function BitgetInstructions({ uid, instructions, wallet, amount, currency
         <li>{saveReferenceStep({ uid, wallet })}</li>
         <li>{tr('Llena abajo «Confirma tu transferencia» con ese dato, la fecha y hora, y tu evidencia.')}</li>
       </ol>
-      <p className="stp-notice small">{tr('Revisamos cada transferencia a mano. Tu pago se aprobará en un plazo máximo de {hours} horas (puede ser antes) y te enviaremos un correo en cuanto quede aprobado.', { hours: STP_HOURS })}</p>
     </div>
   );
 }

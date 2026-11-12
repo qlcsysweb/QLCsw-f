@@ -50,6 +50,7 @@ export function AppointmentChat({ api, base, filePath, mine, onClose }) {
     const load = () => api.get(base).then((res) => {
       if (!alive) return;
       setData(res);
+      setState((st) => (st.error && !st.busy ? { ...st, error: null } : st));
       if (res.chat?.serverTime) setOffset(new Date(res.chat.serverTime).getTime() - Date.now());
     }).catch((error) => alive && setState((s) => ({ ...s, error })));
     load();
@@ -108,7 +109,7 @@ export function AppointmentChat({ api, base, filePath, mine, onClose }) {
   const canSend = data?.chat?.canSend;
   return (
     <Modal open wide title={appt ? tr('Chat de la cita · {date}', { date: utcDateTime(appt.scheduledAt) }) : tr('Chat de la cita')} onClose={onClose}>
-      {!data ? <p className="muted">{tr('Cargando…')}</p> : (
+      {!data && state.error ? <FormError error={state.error} /> : !data ? <p className="muted">{tr('Cargando…')}</p> : (
         <div className="appt-chat">
           <Countdown chat={data.chat} offset={offset} />
           {mine === 'ADMIN' && appt?.user && <p className="small muted">{tr('Cliente')}: <b>{appt.user.name}</b> · {appt.user.email}</p>}
