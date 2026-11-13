@@ -22,11 +22,12 @@ function OfferEditor({ offer, onSaved, canEdit }) {
   const save = async () => {
     setState({ busy: true, error: null });
     try {
+      const { billingCycle, ...fields } = f;
       await api.put(`/admin/pricing/${offer.code}`, {
-        ...f,
+        ...fields,
         price: f.price === '' ? null : Number(f.price),
         accessDays: Number(f.accessDays || (offer.type === 'TOOL_ONLY' ? 30 : 365)),
-        ...(recurrable ? { billingCycle: f.billingCycle || null } : {}),
+        ...(recurrable ? { billingCycle: billingCycle || null } : {}),
       });
       setConfirm(false);
       setState({ busy: false, error: null });
