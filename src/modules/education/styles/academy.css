@@ -600,3 +600,7 @@ button.module-tile { width: 100%; font: inherit; text-align: left; cursor: point
 .attach-picker { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
 .attach-list { width: 100%; margin: 0; padding-left: 16px; }
 .attach-links { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: center; margin: 4px 0; }
+
+/* Hora en formato 24 h con dos listas. */
+.time24 { display: inline-flex; align-items: center; gap: 6px; width: 100%; }
+.time24 select { flex: 1; min-width: 0; }

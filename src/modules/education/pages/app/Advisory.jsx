@@ -12,6 +12,7 @@ import { Field, FormError, FormGrid, Input, Select, Textarea } from '../../compo
 import { AsyncView } from '../../components/ui/States.jsx';
 import { DataTable } from '../../components/ui/DataTable.jsx';
 import { tr } from '../../i18n/tr.js';
+import { Time24 } from '../../components/ui/Time24.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { DataShareCard } from '../../features/share/DataShare.jsx';
 import { api as rootApi } from '../../api/client.js';
@@ -42,7 +43,7 @@ function RequestForm({ onDone, onCancel }) {
       <FormGrid>
         <Field label={tr('Motivo')} full><Select value={f.reason} onChange={set('reason')} options={APPOINTMENT_REASONS.map((r) => ({ value: r, label: r }))} /></Field>
         <Field label={tr('Fecha (UTC)')}><Input type="date" required value={f.date} onChange={set('date')} min={new Date().toISOString().slice(0, 10)} /></Field>
-        <Field label={tr('Hora (UTC, formato 24 h)')} hint={tr('Hora universal coordinada. Ahora son las {time} UTC.', { time: new Date().toISOString().slice(11, 16) })}><Input type="time" required value={f.time} onChange={set('time')} /></Field>
+        <Field label={tr('Hora (UTC, formato 24 h)')} hint={tr('Hora universal coordinada. Ahora son las {time} UTC.', { time: new Date().toISOString().slice(11, 16) })}><Time24 required value={f.time} onChange={(time) => setF({ ...f, time })} /></Field>
         <Field label={tr('Duración')} hint={tr('Cada bloque de 20 minutos usa una sesión disponible.')}><Select value={f.durationMin} onChange={set('durationMin')} options={APPOINTMENT_DURATIONS.map((m) => ({ value: m, label: `${m} minutos` }))} /></Field>
         <Field label={tr('Canal de atención')} hint={tr('La asesoría se atiende por el chat interno de la plataforma.')}><Input value={tr('Chat interno')} readOnly /></Field>
         <Field label={tr('Notas (opcional)')} full><Textarea value={f.notes} onChange={set('notes')} maxLength={1000} /></Field>
@@ -76,6 +77,11 @@ export default function Advisory() {
     if (params.get('chat')) setParams({}, { replace: true });
   };
   const sessions = credits.data?.ORIENTACION || 0;
+  const remove = async (a) => {
+    if (!window.confirm(tr('¿Borrar esta cita de tu lista? No se puede deshacer.'))) return;
+    await api.del(`/appointments/${a.id}`);
+    res.reload();
+  };
   const cancel = async (a) => {
     if (!window.confirm(tr('¿Cancelar esta cita?'))) return;
     await api.post(`/appointments/${a.id}/cancel`);
@@ -111,7 +117,9 @@ export default function Advisory() {
               { key: 'chat', label: tr('Chat'), render: (a) => (['CONFIRMED', 'COMPLETED'].includes(a.status)
                 ? <Button variant={a.status === 'CONFIRMED' ? undefined : 'secondary'} onClick={() => setChatId(a.id)}>{a.status === 'CONFIRMED' ? tr('Entrar al chat') : tr('Ver chat')}</Button>
                 : a.status === 'PENDING' ? <span className="small muted">{tr('Se abre al confirmarse')}</span> : '—') },
-              { key: 'x', label: '', render: (a) => canEdit && ['PENDING', 'CONFIRMED'].includes(a.status) && <button className="btn-link danger" onClick={() => cancel(a)}>{tr('Cancelar')}</button> },
+              { key: 'x', label: '', render: (a) => canEdit && (['PENDING', 'CONFIRMED'].includes(a.status)
+                ? <button className="btn-link danger" onClick={() => cancel(a)}>{tr('Cancelar')}</button>
+                : <button className="btn-link danger" onClick={() => remove(a)}>{tr('Borrar')}</button>) },
             ]} />
           </Card>
         )}

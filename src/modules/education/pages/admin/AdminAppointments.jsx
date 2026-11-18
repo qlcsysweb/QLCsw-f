@@ -13,6 +13,7 @@ import { Field, FormError, FormGrid, Input, Select, Textarea } from '../../compo
 import { AsyncView } from '../../components/ui/States.jsx';
 import { DataTable } from '../../components/ui/DataTable.jsx';
 import { tr } from '../../i18n/tr.js';
+import { Time24 } from '../../components/ui/Time24.jsx';
 
 const statusOptions = Object.entries(APPOINTMENT_STATUS).map(([value, label]) => ({ value, label }));
 
@@ -41,7 +42,7 @@ function EditAppointment({ appt, onClose, onSaved }) {
           <Field label={tr('Estado')}><Select value={f.status} onChange={set('status')} options={statusOptions} /></Field>
           <Field label={tr('Duración')}><Select value={f.durationMin} onChange={set('durationMin')} options={APPOINTMENT_DURATIONS.map((m) => ({ value: m, label: `${m} minutos` }))} /></Field>
           <Field label={tr('Fecha')}><Input type="date" value={f.date} onChange={set('date')} /></Field>
-          <Field label={tr('Hora')}><Input type="time" value={f.time} onChange={set('time')} /></Field>
+          <Field label={tr('Hora (UTC, 24 h)')}><Time24 value={f.time} onChange={(time) => setF({ ...f, time })} /></Field>
           <Field label={tr('Notas del asesor')} full><Textarea value={f.adminNotes} onChange={set('adminNotes')} maxLength={1000} /></Field>
         </FormGrid>
         <FormError error={state.error} />
