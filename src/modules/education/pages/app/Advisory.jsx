@@ -57,6 +57,38 @@ function RequestForm({ onDone, onCancel }) {
   );
 }
 
+// Cambia la fecha y hora de una cita sin gastar otra sesión (p. ej. si no se tomó a tiempo).
+function RescheduleForm({ appt, onDone, onCancel }) {
+  const { api } = useWorkspace();
+  const [f, setF] = useState({ date: '', time: '' });
+  const [state, setState] = useState({ saving: false, error: null });
+  const submit = async (e) => {
+    e.preventDefault();
+    setState({ saving: true, error: null });
+    try {
+      await api.post(`/appointments/${appt.id}/reschedule`, { scheduledAt: fromUtcInputs(f.date, f.time) });
+      onDone();
+    } catch (error) {
+      setState({ saving: false, error });
+    }
+  };
+  return (
+    <form className="stack" onSubmit={submit}>
+      <p className="small muted">{tr('Cita actual: {date} · {n} minutos. Se usan las mismas sesiones; no se descuenta otra.', { date: utcDateTime(appt.scheduledAt), n: appt.durationMin })}</p>
+      <FormGrid>
+        <Field label={tr('Nueva fecha (UTC)')}><Input type="date" required value={f.date} onChange={(e) => setF({ ...f, date: e.target.value })} min={new Date().toISOString().slice(0, 10)} /></Field>
+        <Field label={tr('Nueva hora (UTC, formato 24 h)')} hint={tr('Hora universal coordinada. Ahora son las {time} UTC.', { time: new Date().toISOString().slice(11, 16) })}><Time24 required value={f.time} onChange={(time) => setF({ ...f, time })} /></Field>
+      </FormGrid>
+      <p className="small muted">{tr('La cita vuelve a quedar pendiente hasta que el equipo de QLC la confirme.')}</p>
+      <FormError error={state.error} />
+      <div className="form-actions">
+        <Button type="button" variant="secondary" onClick={onCancel}>{tr('Cancelar')}</Button>
+        <Button type="submit" loading={state.saving} disabled={!f.date || !f.time}>{tr('Reagendar')}</Button>
+      </div>
+    </form>
+  );
+}
+
 export default function Advisory() {
   const { api, canEdit, isAdminView } = useWorkspace();
   const { user, accessInfo } = useAuth();
@@ -66,6 +98,7 @@ export default function Advisory() {
   const offer = (accessInfo?.offers || []).find((o) => o.code === 'ORIENTACION');
   const [open, setOpen] = useState(false);
   const [buy, setBuy] = useState(false);
+  const [moving, setMoving] = useState(null);
   const [params, setParams] = useSearchParams();
   const [chatId, setChatId] = useState(() => params.get('chat'));
   useEffect(() => {
@@ -118,7 +151,12 @@ export default function Advisory() {
                 ? <Button variant={a.status === 'CONFIRMED' ? undefined : 'secondary'} onClick={() => setChatId(a.id)}>{a.status === 'CONFIRMED' ? tr('Entrar al chat') : tr('Ver chat')}</Button>
                 : a.status === 'PENDING' ? <span className="small muted">{tr('Se abre al confirmarse')}</span> : '—') },
               { key: 'x', label: '', render: (a) => canEdit && (['PENDING', 'CONFIRMED'].includes(a.status)
-                ? <button className="btn-link danger" onClick={() => cancel(a)}>{tr('Cancelar')}</button>
+                ? (
+                  <span className="stack-inline">
+                    <button className="btn-link" onClick={() => setMoving(a)}>{new Date(a.scheduledAt).getTime() + (a.durationMin || 20) * 60000 < Date.now() ? tr('No se tomó · Reagendar') : tr('Reagendar')}</button>
+                    <button className="btn-link danger" onClick={() => cancel(a)}>{tr('Cancelar')}</button>
+                  </span>
+                )
                 : <button className="btn-link danger" onClick={() => remove(a)}>{tr('Borrar')}</button>) },
             ]} />
           </Card>
@@ -126,6 +164,9 @@ export default function Advisory() {
       </AsyncView>
       <p className="small muted">{tr('La asesoría es educativa y de planificación financiera dentro del alcance del servicio; no constituye recomendación de inversión.')}</p>
       {chatId && <AppointmentChat api={api} base={`/appointments/${chatId}/chat`} filePath={(id) => `/appointments/chat-files/${id}`} mine={isAdminView ? 'ADMIN' : 'CLIENT'} onClose={closeChat} />}
+      <Modal open={!!moving} title={tr('Reagendar cita')} onClose={() => setMoving(null)}>
+        {moving && <RescheduleForm appt={moving} onCancel={() => setMoving(null)} onDone={() => { setMoving(null); res.reload(); }} />}
+      </Modal>
       <Modal open={open} title={tr('Solicitar cita')} onClose={() => setOpen(false)}>
         <RequestForm onCancel={() => setOpen(false)} onDone={() => { setOpen(false); res.reload(); credits.reload(); }} />
       </Modal>

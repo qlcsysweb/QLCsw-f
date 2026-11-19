@@ -604,3 +604,5 @@ button.module-tile { width: 100%; font: inherit; text-align: left; cursor: point
 /* Hora en formato 24 h con dos listas. */
 .time24 { display: inline-flex; align-items: center; gap: 6px; width: 100%; }
 .time24 select { flex: 1; min-width: 0; }
+
+.stack-inline { display: inline-flex; flex-wrap: wrap; gap: 4px 12px; }
