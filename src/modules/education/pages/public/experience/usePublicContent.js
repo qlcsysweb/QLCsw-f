@@ -55,5 +55,6 @@ export function usePublicOffers() {
 export function usePublicContent() {
   const offers = usePublicOffers();
   const { lang } = useI18n();
-  return { sections: PUBLIC_SECTIONS[lang] || PUBLIC_SECTIONS.es, offers };
+  // La sección del QLC Quantitative Trading Bot ('qlc') no se muestra en la página pública.
+  return { sections: (PUBLIC_SECTIONS[lang] || PUBLIC_SECTIONS.es).filter((s) => s.key !== 'qlc'), offers };
 }

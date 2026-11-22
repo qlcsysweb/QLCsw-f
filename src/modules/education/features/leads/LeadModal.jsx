@@ -53,8 +53,7 @@ function LeadForm({ interest, onClose }) {
       <div className="form-grid cols-2">
         <Field label={t('public.lead.name')}><Input required maxLength={120} autoComplete="name" value={f.name} onChange={set('name')} /></Field>
         <Field label={t('public.lead.email')}><Input type="email" required maxLength={160} autoComplete="email" value={f.email} onChange={set('email')} /></Field>
-        <Field label={t('public.lead.phone')}><Input type="tel" maxLength={30} autoComplete="tel" value={f.phone} onChange={set('phone')} /></Field>
-        <Field label={t('public.lead.interest')}><Select value={f.interest} onChange={set('interest')} options={Object.keys(LEAD_INTERESTS).map((value) => ({ value, label: t(`public.lead.interests.${value}`) }))} /></Field>
+        <Field label={t('public.lead.interest')}><Select value={f.interest} onChange={set('interest')} options={Object.keys(LEAD_INTERESTS).filter((value) => value !== 'COPYTRADING').map((value) => ({ value, label: t(`public.lead.interests.${value}`) }))} /></Field>
         <Field label={t('public.lead.message')} full><Textarea rows={3} maxLength={1000} value={f.message} onChange={set('message')} placeholder={t('public.lead.messagePlaceholder')} /></Field>
       </div>
       <label className="check legal-check">

@@ -8,7 +8,9 @@ import { LegalNotice } from '../experience/LegalNotice.jsx';
 import { CtaButton, SectionHead } from '../sections/SectionParts.jsx';
 import { TRADING_CONTENT } from './tradingContent.js';
 
-const SLIDES = ['inicio', 'programa', 'modulos', 'perfil', 'metodo', 'copytrading', 'contacto'];
+// El QLC Quantitative Trading Bot no se muestra en las páginas públicas.
+const SLIDES = ['inicio', 'programa', 'modulos', 'perfil', 'metodo', 'contacto'];
+const mentionsBot = ([q, a]) => /Trading Bot/i.test(`${q} ${a}`);
 
 const FACT_ICONS = {
   calendar: <path d="M7 3v3m10-3v3M4 9h16M5 5.5h14A1.5 1.5 0 0 1 20.5 7v12a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 19V7A1.5 1.5 0 0 1 5 5.5Zm3 7h.01M12 12.5h.01M16 12.5h.01M8 16h.01M12 16h.01" />,
@@ -56,7 +58,6 @@ const SLIDE_RENDERERS = {
         <div className="hero-note reveal" style={{ '--r': 3 }}><span className="hero-note-text">{c.hero.note}</span></div>
         <div className="ps-ctas reveal" style={{ '--r': 4 }}>
           <CtaButton label={c.hero.primary} target="programa" go={go} />
-          <CtaButton label={c.hero.secondary} target="copytrading" go={go} variant="ghost" />
         </div>
       </div>
       <div className="hero-visual reveal-visual"><QuantVisual visual={c.visual} /></div>
@@ -162,7 +163,7 @@ const SLIDE_RENDERERS = {
     <div className="ps-container ta-slide">
       <SectionHead section={section} compact />
       <div className="ta-faq ta-fill">
-        {c.faq.map(([q, a], i) => (
+        {c.faq.filter((item) => !mentionsBot(item)).map(([q, a], i) => (
           <details key={q} className="reveal-card" style={{ '--c': i }}><summary>{q}</summary><p>{a}</p></details>
         ))}
       </div>

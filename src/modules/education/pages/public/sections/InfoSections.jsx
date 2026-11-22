@@ -122,7 +122,7 @@ export function AccessSection({ section, offers, go }) {
   );
 }
 
-export function RoutesSection({ section, go }) {
+export function RoutesSection({ section, go, extra = null }) {
   return (
     <div className="ps-container routes">
       <SectionHead section={section} compact />
@@ -137,6 +137,7 @@ export function RoutesSection({ section, go }) {
             <CtaButton label={r.cta} target={r.target} go={go} variant={i === 0 ? 'primary' : 'ghost'} />
           </article>
         ))}
+        {extra}
       </div>
     </div>
   );

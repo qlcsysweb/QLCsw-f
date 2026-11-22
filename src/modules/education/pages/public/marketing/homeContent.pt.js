@@ -9,7 +9,7 @@ export const PT = {
       "eyebrow": "Quantum Liquidity Capital · Formação",
       "title": "Construa seu conhecimento.",
       "highlight": "Invista com critério.",
-      "description": "A QLC Institutional Investment Academy reúne três soluções complementares: educação financeira para organizar e compreender seu patrimônio, formação especializada em trading para estudar os mercados com um enfoque quantitativo e o QLC Quantitative Trading Bot, um sistema de trading quantitativo automatizado que opera na sua própria conta por meio de uma conexão API autorizada.",
+      "description": "A QLC Institutional Investment Academy reúne duas soluções complementares: educação financeira para organizar e compreender seu patrimônio e formação especializada em trading para estudar os mercados com um enfoque quantitativo.",
       "secondaryText": "Primeiro entenda sua situação financeira. Depois escolha a formação que corresponde aos seus objetivos, experiência e capacidade de risco.",
       "primaryCtaLabel": "Conhecer os programas",
       "primaryCtaTarget": "productos",
@@ -34,9 +34,9 @@ export const PT = {
       "key": "productos",
       "navLabel": "Soluções QLC",
       "navHighlight": true,
-      "eyebrow": "Três produtos · Uma visão",
+      "eyebrow": "Dois programas · Uma visão",
       "title": "Escolha sua rota de formação.",
-      "description": "Cada programa responde a uma necessidade diferente: começar pelas bases das finanças pessoais, aprofundar a análise dos mercados ou participar de uma estratégia gerida.",
+      "description": "Cada programa responde a uma necessidade diferente: começar pelas bases das finanças pessoais ou aprofundar a análise dos mercados.",
       "items": [
         {
           "tag": "Rota 01 · Fundamentos",
@@ -63,20 +63,6 @@ export const PT = {
           ],
           "cta": "Explorar o curso de trading",
           "target": "/trading-academy"
-        },
-        {
-          "tag": "Rota 03 · Trading Bot",
-          "label": "QLC Quantitative Trading Bot",
-          "title": "QLC Quantitative Trading Bot",
-          "text": "Nosso produto principal: trading quantitativo automatizado, acessível a partir de 100 USDT, que conecta sua conta da exchange por meio de tecnologia própria e uma conexão API autorizada.",
-          "list": [
-            "Seus fundos permanecem na sua própria conta; a QLC não precisa de permissões de saque.",
-            "Informações sobre funcionamento, comissões e condições.",
-            "Avaliação de riscos antes de participar."
-          ],
-          "cta": "Conhecer o Trading Bot",
-          "target": "filtro-qlc",
-          "gold": true
         }
       ]
     },
@@ -100,14 +86,6 @@ export const PT = {
           "text": "Escolha a Trading Academy se você busca aprender análise quantitativa, testes de estratégias e avaliação sistemática do risco.",
           "cta": "Ir para a Trading Academy",
           "target": "/trading-academy"
-        },
-        {
-          "tag": "03 · Explorar",
-          "title": "Busco uma alternativa de operação",
-          "text": "Solicite informações sobre o QLC Quantitative Trading Bot e avalie se as condições e os riscos são compatíveis com a sua situação.",
-          "cta": "Ir para o Trading Bot",
-          "target": "filtro-qlc",
-          "gold": true
         }
       ]
     },
@@ -154,7 +132,7 @@ export const PT = {
       "secondaryText": "Aviso: conteúdo educacional e informativo; não constitui assessoria financeira personalizada nem promessa de rendimento. Todo investimento e operação de trading implica riscos, incluindo perdas parciais ou totais. Verifique as condições e a disponibilidade de cada produto na sua jurisdição.",
       "primaryCtaLabel": "Solicitar informações",
       "primaryCtaTarget": "solicitar-info",
-      "footer": "Educação financeira · Trading quantitativo · QLC Quantitative Trading Bot"
+      "footer": "Educação financeira · Trading quantitativo"
     }
   ]
 };
