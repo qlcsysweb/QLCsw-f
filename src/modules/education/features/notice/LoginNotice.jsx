@@ -4,6 +4,7 @@ import { Button } from '../../components/ui/Button.jsx';
 import { Modal } from '../../components/ui/Modal.jsx';
 import { useI18n } from '../../i18n/I18nContext.jsx';
 import { NOTICE_FLAG, NOTICE_TEXT } from './noticeContent.js';
+import { BotVideo, pickVideo } from './BotVideo.jsx';
 
 const pending = () => {
   try {
@@ -52,6 +53,8 @@ export function NoticeBody({ notice, text }) {
 export function LoginNotice() {
   const { lang } = useI18n();
   const [notice, setNotice] = useState(null);
+  // Primero el video del Trading Bot (si hay uno configurado para el idioma) y después el aviso.
+  const [videoId, setVideoId] = useState(null);
   const text = NOTICE_TEXT[lang] || NOTICE_TEXT.es;
 
   useEffect(() => {
@@ -60,8 +63,10 @@ export function LoginNotice() {
     api.get('/public/notice')
       .then((data) => {
         if (!alive) return;
+        const video = pickVideo(data?.video, lang);
+        if (video) setVideoId(video);
         if (data?.active) setNotice(data);
-        else dismiss();
+        else if (!video) dismiss();
       })
       .catch(dismiss);
     return () => {
@@ -73,6 +78,13 @@ export function LoginNotice() {
     dismiss();
     setNotice(null);
   };
+
+  const videoDone = () => {
+    setVideoId(null);
+    if (!notice) dismiss();
+  };
+
+  if (videoId) return <BotVideo videoId={videoId} lang={lang} onDone={videoDone} />;
 
   return (
     <Modal

@@ -24,6 +24,8 @@ const toForm = (n) => ({
   metrics: Object.fromEntries(METRICS.map(([k]) => [k, String(n.metrics[k] ?? '')])),
   bitgetUrl: n.bitgetUrl || '',
   infoUrl: n.infoUrl || '',
+  videoEsUrl: n.videoEsUrl || '',
+  videoEnUrl: n.videoEnUrl || '',
 });
 
 const toBody = (f) => ({ ...f, metrics: Object.fromEntries(METRICS.map(([k]) => [k, Number(f.metrics[k] || 0)])) });
@@ -60,6 +62,16 @@ function NoticeEditor({ notice, onSaved }) {
           <Field label={tr('Enlace al perfil Trader Elite de Bitget')} hint={tr('En el aviso, si lo dejas vacío no se muestra el botón. En la página principal se usa el perfil de QLC por defecto.')}>
             <Input type="url" value={f.bitgetUrl} onChange={(e) => setF({ ...f, bitgetUrl: e.target.value })} placeholder="https://share.glassgs.com/sl/GQYXP2GMTJZJ" />
           </Field>
+          <h4>{tr('Video del Trading Bot al iniciar sesión')}</h4>
+          <p className="small muted">{tr('Pega el enlace de YouTube de cada video. Se muestra al cliente cada vez que inicia sesión, antes de este aviso, en un recuadro propio sin la marca de YouTube. Los clientes con la plataforma en español ven el video en español; con cualquier otro idioma, el video en inglés. Déjalo vacío para no mostrar video.')}</p>
+          <div className="form-grid cols-2">
+            <Field label={tr('Video en español (enlace de YouTube)')}>
+              <Input type="url" value={f.videoEsUrl} onChange={(e) => setF({ ...f, videoEsUrl: e.target.value })} placeholder="https://youtu.be/…" />
+            </Field>
+            <Field label={tr('Video en inglés (enlace de YouTube)')}>
+              <Input type="url" value={f.videoEnUrl} onChange={(e) => setF({ ...f, videoEnUrl: e.target.value })} placeholder="https://youtu.be/…" />
+            </Field>
+          </div>
           <Field label={tr('Enlace para solicitar información')}>
             <Input type="url" value={f.infoUrl} onChange={(e) => setF({ ...f, infoUrl: e.target.value })} placeholder="https://www.qlctrade.net/trad" />
           </Field>
