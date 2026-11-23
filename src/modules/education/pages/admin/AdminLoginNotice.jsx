@@ -51,13 +51,14 @@ function NoticeEditor({ notice, onSaved }) {
             <input type="checkbox" checked={f.active} onChange={(e) => setF({ ...f, active: e.target.checked })} />
             <span>{tr('Mostrar el aviso cada vez que un cliente inicia sesión')}</span>
           </label>
+          <p className="small muted">{tr('Estas métricas y el enlace de Bitget también se muestran en la página principal, en la tarjeta "Conocimiento respaldado por experiencia real" (ROI, tasa de éxito y drawdown máximo).')}</p>
           <div className="form-grid cols-2">
             {METRICS.map(([k, label, step]) => (
               <Field key={k} label={tr(label)}><Input type="number" inputMode="decimal" step={step} min={k === 'returnPct' ? undefined : 0} required value={f.metrics[k]} onChange={setMetric(k)} /></Field>
             ))}
           </div>
-          <Field label={tr('Enlace al perfil Trader Elite de Bitget')} hint={tr('Opcional. Si lo dejas vacío no se muestra el botón.')}>
-            <Input type="url" value={f.bitgetUrl} onChange={(e) => setF({ ...f, bitgetUrl: e.target.value })} placeholder="https://www.bitget.com/…" />
+          <Field label={tr('Enlace al perfil Trader Elite de Bitget')} hint={tr('En el aviso, si lo dejas vacío no se muestra el botón. En la página principal se usa el perfil de QLC por defecto.')}>
+            <Input type="url" value={f.bitgetUrl} onChange={(e) => setF({ ...f, bitgetUrl: e.target.value })} placeholder="https://share.glassgs.com/sl/GQYXP2GMTJZJ" />
           </Field>
           <Field label={tr('Enlace para solicitar información')}>
             <Input type="url" value={f.infoUrl} onChange={(e) => setF({ ...f, infoUrl: e.target.value })} placeholder="https://www.qlctrade.net/trad" />

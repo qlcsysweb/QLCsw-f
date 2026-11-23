@@ -7,11 +7,14 @@ import { useI18n } from '../../../i18n/I18nContext.jsx';
 import { LegalNotice } from '../experience/LegalNotice.jsx';
 import { HeroSection } from '../sections/HeroSection.jsx';
 import { ClosingSection, LayersSection, RoutesSection } from '../sections/InfoSections.jsx';
-import { EvidenceCard } from '../sections/EvidenceCard.jsx';
-
-// Rutas de formación + la tarjeta de experiencia real (métricas de Bitget) en el tercer espacio.
-const ProductsSection = (props) => <RoutesSection {...props} extra={<EvidenceCard index={(props.section?.items || []).length} />} />;
+import { EvidenceCard, EvidenceIntro } from '../sections/EvidenceCard.jsx';
 import { HOME_CONTENT } from './homeContent.js';
+
+// Rutas de formación: el texto "Conocimiento respaldado por experiencia real" arriba de las tarjetas y,
+// en el tercer espacio, la tarjeta con el logo, las métricas de Bitget y el botón al perfil.
+const ProductsSection = (props) => (
+  <RoutesSection {...props} intro={<EvidenceIntro />} extra={<EvidenceCard index={(props.section?.items || []).length} />} />
+);
 
 const RENDERERS = {
   inicio: HeroSection,

@@ -722,7 +722,12 @@ h1.ps-title { font-size: clamp(32px, min(5.4vw, 8.4dvh), 78px); }
 @media (prefers-reduced-motion: reduce) { .trial-badge { animation: none; } }
 
 /* Tarjeta "Conocimiento respaldado por experiencia real" (métricas de Bitget). */
-.evidence-card { gap: 10px; }
+.evidence-card { gap: 12px; align-items: stretch; justify-content: center; }
+.evidence-card .evidence-logo { align-self: center; width: min(220px, 70%); }
+.evidence-intro { margin: 4px 0 18px; padding: 14px 18px; border-left: 3px solid #f5c542; border-radius: 12px; background: rgba(245, 197, 66, 0.06); display: flex; flex-direction: column; gap: 6px; max-width: 980px; }
+.evidence-intro p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.55; }
+.evidence-intro p b { color: var(--text); }
+.evidence-eyebrow { font-size: 11.5px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: #f5c542; }
 .evidence-card p { margin: 0; }
 .evidence-logo { width: 96px; height: auto; border-radius: 12px; align-self: flex-start; }
 .evidence-metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 4px 0; }

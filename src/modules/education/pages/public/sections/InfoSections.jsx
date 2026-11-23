@@ -122,10 +122,11 @@ export function AccessSection({ section, offers, go }) {
   );
 }
 
-export function RoutesSection({ section, go, extra = null }) {
+export function RoutesSection({ section, go, extra = null, intro = null }) {
   return (
     <div className="ps-container routes">
       <SectionHead section={section} compact />
+      {intro}
       <div className="routes-grid">
         {(section.items || []).map((r, i) => (
           <article key={r.title} className={`access-card route-card reveal-card ${r.gold ? 'is-gold' : i === 0 ? 'is-featured' : ''}`} style={{ '--c': i }}>
