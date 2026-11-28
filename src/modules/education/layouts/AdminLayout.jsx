@@ -6,6 +6,7 @@ import { WorkspaceProvider } from '../context/WorkspaceContext.jsx';
 import { Brand, Disclaimer } from '../components/layout/Brand.jsx';
 import { SessionClock } from '../components/layout/SessionClock.jsx';
 import { NotificationsBell } from '../features/notifications/NotificationsBell.jsx';
+import { TradingPanelButton } from '../features/admin/TradingPanelButton.jsx';
 import { UpcomingAppointments } from '../features/appointments/UpcomingAppointments.jsx';
 import { ErrorState, Loading } from '../components/ui/States.jsx';
 import { Card } from '../components/ui/Card.jsx';
@@ -56,6 +57,11 @@ export function AdminLayout() {
           <button type="button" className="icon-btn menu-toggle" onClick={() => setMenuOpen((v) => !v)} aria-label={t('app.openMenu')} aria-expanded={menuOpen}>{menuOpen ? '×' : '☰'}</button>
         </div>
         <SessionClock zones={['CDMX', 'UTC']} />
+        {/* Plataforma actual y acceso directo al panel de trading cuantitativo (misma sesión de administrador). */}
+        <div className="platform-switch">
+          <span className="platform-current">{tr('Estás en: Panel de Educación financiera')}</span>
+          <TradingPanelButton />
+        </div>
         <nav className="nav">
           {NAV.filter((n) => !n.full || user?.adminLevel === 'FULL').map((n) =>
             n.group ? (

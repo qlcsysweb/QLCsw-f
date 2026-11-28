@@ -67,7 +67,7 @@ const COPY = {
 };
 
 // Perfil público de QLC en Bitget. Si en el panel (Aviso Trading Bot) se guarda otro enlace, se usa ese.
-const DEFAULT_BITGET_URL = 'https://share.glassgs.com/sl/GQYXP2GMTJZJ';
+const DEFAULT_BITGET_URL = 'https://share.glassgs.com/sl/XMF4AQUFJTHA';
 
 const pct = (n, sign = false) => (n === null || n === undefined || Number.isNaN(Number(n)) ? '—' : `${sign && Number(n) > 0 ? '+' : ''}${Number(n).toFixed(2)}%`);
 

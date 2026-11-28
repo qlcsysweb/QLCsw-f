@@ -60,7 +60,7 @@ function NoticeEditor({ notice, onSaved }) {
             ))}
           </div>
           <Field label={tr('Enlace al perfil Trader Elite de Bitget')} hint={tr('En el aviso, si lo dejas vacío no se muestra el botón. En la página principal se usa el perfil de QLC por defecto.')}>
-            <Input type="url" value={f.bitgetUrl} onChange={(e) => setF({ ...f, bitgetUrl: e.target.value })} placeholder="https://share.glassgs.com/sl/GQYXP2GMTJZJ" />
+            <Input type="url" value={f.bitgetUrl} onChange={(e) => setF({ ...f, bitgetUrl: e.target.value })} placeholder="https://share.glassgs.com/sl/XMF4AQUFJTHA" />
           </Field>
           <h4>{tr('Video del Trading Bot al iniciar sesión')}</h4>
           <p className="small muted">{tr('Pega el enlace de YouTube de cada video. Se muestra al cliente cada vez que inicia sesión, antes de este aviso, en un recuadro propio sin la marca de YouTube. Los clientes con la plataforma en español ven el video en español; con cualquier otro idioma, el video en inglés. Déjalo vacío para no mostrar video.')}</p>

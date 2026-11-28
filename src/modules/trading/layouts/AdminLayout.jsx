@@ -59,6 +59,11 @@ export default function AdminLayout() {
           <span>{t('adminNav.brand')}</span>
         </div>
         <DualClock />
+        {/* Plataforma actual y regreso al panel de educación (enlace fuera de /trad, recarga completa). */}
+        <div className="platform-switch">
+          <span className="platform-current">Estás en: Panel de Trading cuantitativo</span>
+          <a className="trading-panel-btn" href="/admin">⇄ Panel administrador de Educación financiera</a>
+        </div>
         <nav>
           <NavLink
             to="/admin/notifications"
